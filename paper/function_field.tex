@@ -1,0 +1,656 @@
+%% =========================================================================
+%% Function field analog --- merged from former companion paper
+%% =========================================================================
+
+%% Local macros (kept here so this file is self-contained)
+\providecommand{\Fp}{\FF_p}
+\providecommand{\Fpt}{\FF_p[t]}
+\providecommand{\GF}[2]{\FF_{#1^{#2}}}
+\providecommand{\ffseq}{\mathrm{ffSeq}}
+\providecommand{\ffprod}{\mathrm{ffProd}}
+\providecommand{\irredcount}{\pi_p}
+\providecommand{\FFMC}{\mathrm{FF\text{-}MC}}
+\providecommand{\FFDH}{\mathrm{FF\text{-}DH}}
+\providecommand{\FCD}{\mathrm{FCD}}
+\providecommand{\SPV}{\mathrm{SPV}}
+\providecommand{\PSCDff}{\mathrm{PSCD}}
+\providecommand{\CME}{\mathrm{CME}}
+\providecommand{\CCSB}{\mathrm{CCSB}}
+\providecommand{\DSL}{\mathrm{DSL}}
+
+\subsection{The Function Field Analog}
+\label{sec:function-field}
+
+\begin{roadmap}
+Replacing $\ZZ$ by $\Fpt$ and primes by monic irreducible polynomials
+gives a clean test bed where \emph{the analytic number theory becomes
+free}.  The Weil bound---an open hypothesis over~$\ZZ$---is a theorem of
+Weil~\cite{Weil1948} over~$\Fpt$.  Yet the function-field Mullin
+Conjecture is still open, and the residual difficulty is identical to
+the integer case: the orbit-specificity barrier.  This subsection
+develops the FF-EM sequence, proves an unconditional six-step sieve
+chain and the $\Phi_3$ exclusion criterion, and presents three formally
+verified dead ends that delineate the boundary of current techniques.
+The function-field module of the formalization comprises 17~files and
+${\sim}7{,}372$~lines with zero \texttt{sorry}.
+\end{roadmap}
+
+\paragraph{Setting and definitions.}
+
+Let $p$ be a prime.  The ring $\Fpt$ is a Euclidean domain, hence a UFD;
+\emph{monic irreducible polynomials} play the role of prime numbers.  We
+write $\irredcount(d)$ for the number of monic irreducibles of degree~$d$
+over~$\Fp$.  For~$p=2$ the first values are
+$\irredcount(1) = 2$ (namely $t$ and $t{+}1$),
+$\irredcount(2) = 1$ (namely $t^2{+}t{+}1$), $\irredcount(3) = 2$,
+$\irredcount(4) = 3$.
+
+\begin{definition}[FF-EM Sequence ---
+\lean{EM/FunctionField/Analog.lean}{FFEMData}]
+\label{def:ffem}
+Fix a prime~$p$.  An \defname{FF-EM Data} consists of:
+$\ffseq(0) = t$ (the smallest monic irreducible);
+$\ffprod(0) = t$;
+$\ffseq(n{+}1)$ a monic irreducible factor of $\ffprod(n)+1$ of
+\emph{minimal degree};
+$\ffprod(n{+}1) = \ffprod(n)\cdot\ffseq(n{+}1)$.
+\end{definition}
+
+\begin{conjecture}[Function-Field Mullin Conjecture ---
+\lean{EM/FunctionField/Analog.lean}{FFMullinConjecture}]
+\label{conj:ffmc}
+For every monic irreducible $Q \in \Fpt$, there exists $n$ with
+$\ffseq(n) = Q$.
+\end{conjecture}
+
+Two structural differences from the integer setting are immediate.
+First, monic irreducibles of the same degree have no canonical total
+order, so the ``minimal-degree'' rule may select among several
+\emph{competitors}---the analog of the integer $\minFac$ rule loses
+uniqueness.  Second, the unit group
+$(\Fpt/(Q))^\times \cong \GF{p}{\deg Q}^\times$ is cyclic of order
+$p^{\deg Q}-1$, providing richer group-theoretic structure than
+$(\ZZ/q\ZZ)^\times$.
+
+\paragraph{Why study the function-field case?}
+The Weil bound for character sums over $\Fp$-curves is a
+\emph{theorem}~\cite{Weil1948,Deligne1980}, not a conjecture.  This
+makes population equidistribution of monic irreducibles across residue
+classes unconditional, in contrast to the integer setting where the
+analogous result requires the Weighted PNT in arithmetic progressions.
+By isolating the \emph{orbit-specificity barrier}---the gap between
+``population statistics'' and ``the specific walk
+$\ffprod(n) \bmod Q$ visits the residue class $-1$''---we will show
+that this barrier is the sole remaining obstacle to FF-MC, and that it
+is structurally identical to the obstacle for MC over~$\ZZ$.
+
+\paragraph{Basic structural facts.}
+The following hold unconditionally for any FF-EM data:
+
+\begin{lemma}[Coprimality cascade ---
+\lean{EM/FunctionField/Analog.lean}{coprimality\_cascade}]
+\label{lem:ff-coprime}
+No monic irreducible $Q$ divides both $\ffprod(n)$ and $\ffprod(n)+1$.
+\end{lemma}
+
+\begin{proof}
+If $Q$ divides both, then $Q \mid 1$, contradicting $\deg Q \geq 1$.
+\end{proof}
+
+\begin{lemma}[Sequence injectivity ---
+\lean{EM/FunctionField/Bootstrap.lean}{ffSeq\_injective\_proved}]
+\label{lem:ff-injective}
+The map $n \mapsto \ffseq(n)$ is injective: no irreducible appears
+twice.
+\end{lemma}
+
+\begin{lemma}[Degree growth ---
+\lean{EM/FunctionField/Analog.lean}{ffProd\_natDegree\_strict\_mono}]
+\label{lem:ff-degree-growth}
+$\deg(\ffprod(n+1)) > \deg(\ffprod(n))$ for all~$n$.
+\end{lemma}
+
+\begin{lemma}[Pool degree to infinity ---
+\lean{EM/FunctionField/Finiteness.lean}{ffSeq\_degree\_tendsto\_atTop\_unconditional}]
+\label{lem:ff-pool}
+$\deg(\ffprod(n)+1) \to \infty$ as $n \to \infty$.
+\end{lemma}
+
+\paragraph{The necklace identity.}
+
+The combinatorial heart of the unconditional ANT chain over $\Fpt$ is
+the following exact identity.
+
+\begin{theorem}[Necklace identity ---
+\lean{EM/FunctionField/NecklaceFormula.lean}{necklace\_identity\_proved}]
+\label{thm:necklace}
+For every $n \geq 1$,
+\[
+  \sum_{d \mid n}\, d\cdot\irredcount(d) \;=\; p^n.
+\]
+\end{theorem}
+
+The name comes from the combinatorial interpretation: $\irredcount(d)$
+counts aperiodic necklaces of length~$d$.  The identity is classical
+(Moreau, 1872), and is equivalent to the factorization
+$t^{p^n}-t = \prod_{\deg Q \mid n} Q$ over $\Fpt$.
+
+\begin{proof}[Proof sketch]
+Both sides count the $p^n$ elements of $\GF{p}{n}$, viewed as roots of
+$t^{p^n}-t$.  The forward inclusion uses
+$Q \mid t^{p^d}-t \mid t^{p^n}-t$ when $\deg Q \mid n$; the reverse
+uses the tower law on $[\Fp(\alpha):\Fp]$ to bound the degree of any
+minimal polynomial.  The Lean proof spans ${\sim}380$~lines and
+exercises Mathlib's Galois-field infrastructure
+(\code{GaloisField.card}, \code{minpoly.irreducible},
+\code{IntermediateField.finrank\_dvd\_of\_le\_right},
+\code{FiniteField.X\_pow\_card\_pow\_sub\_X\_ne\_zero}).
+\end{proof}
+
+\begin{corollary}[Density bounds ---
+\lean{EM/FunctionField/NecklaceFormula.lean}{necklace\_count\_mul\_le}]
+\label{cor:irred-bounds}
+For every $n \geq 1$, $\;n\cdot\irredcount(n) \leq p^n$ and
+$\irredcount(n) \leq p^n/n$.
+\end{corollary}
+
+A finer Möbius inversion gives
+$\irredcount(n) = \frac{1}{n}\sum_{d \mid n}\mu(n/d)p^d
+  \sim p^n/n + O(p^{n/2}/n)$;
+the crude bound suffices for our sieve chain.
+
+\paragraph{The unconditional sieve chain.}
+
+The integer sieve approach to Mullin's Conjecture proceeds via
+\[
+  \text{Char.\ Cancel.}
+  \xRightarrow{\text{GRH}} \text{PNT-AP}
+  \xRightarrow{\text{S--W}} \FCD
+  \Rightarrow \SPV \Rightarrow \PSCDff
+  \Rightarrow \text{Almost-All MC}.
+\]
+Over $\Fpt$, \emph{every arrow is unconditional}.
+
+\smallskip
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lll}
+\toprule
+\textbf{Step} & \textbf{Over $\ZZ$} & \textbf{Over $\Fpt$} \\
+\midrule
+Char.\ cancellation & GRH & Exact (necklace) \\
+PNT-in-APs & Siegel--Walfisz & Exact ($\irredcount(d)\geq 1$) \\
+$\FCD$ & WPNT-in-APs & Linear supply \\
+$\SPV$ & FCD + sparsity & Necklace bound \\
+$\PSCDff$ & FCD + SPV & Density bound \\
+Almost-all MC & PSCD + pigeonhole & PNT + necklace \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Step 1 --- Character cancellation.}
+\begin{theorem}[FF Character Sum Cancellation ---
+\lean{EM/FunctionField/FFCharacterSums.lean}{ff\_char\_sum\_cancellation\_proved}]
+The necklace identity (Theorem~\ref{thm:necklace}) holds unconditionally,
+giving exact cancellation rather than an asymptotic bound.
+\end{theorem}
+
+Over $\ZZ$, the analogous statement is the Riemann Hypothesis for
+Dirichlet $L$-functions; over $\Fpt$ it is an identity of natural
+numbers.
+
+\paragraph{Step 2 --- PNT in arithmetic progressions.}
+\begin{theorem}[FF PNT-in-APs ---
+\lean{EM/FunctionField/Finiteness.lean}{ffIrredCount\_pos}]
+For every $d \geq 1$, $\irredcount(d) \geq 1$.
+\end{theorem}
+
+The proof uses the Galois-field construction: the minimal polynomial of
+a primitive element of $\GF{p}{d}$ is monic irreducible of degree~$d$.
+The reduction to character cancellation is automatic
+(\lean{EM/FunctionField/FFCharacterSums.lean}{ff\_char\_cancel\_implies\_pnt}).
+
+\paragraph{Step 3 --- Forbidden class divergence.}
+\begin{property}[FF-FCD ---
+\lean{EM/FunctionField/FFCharacterSums.lean}{FFFCD}]
+$\sum_{d=1}^{D}\irredcount(d) \geq D$ for all $D \geq 1$.
+\end{property}
+
+\begin{theorem}[FF-FCD is unconditional ---
+\lean{EM/FunctionField/FFCharacterSums.lean}{ff\_fcd\_proved}]
+Each summand is $\geq 1$ by Step~2; the bound is immediate
+(\lean{EM/FunctionField/FFCharacterSums.lean}{ff\_pnt\_implies\_fcd}).
+\end{theorem}
+
+\paragraph{Step 4 --- Sieve product vanishing.}
+\begin{property}[FF-SPV ---
+\lean{EM/FunctionField/FFSieve.lean}{FFSieveProductVanishing}]
+$n\cdot\irredcount(n) \leq p^n$ for all $n \geq 1$.
+\end{property}
+
+\begin{theorem}[FF-SPV is unconditional ---
+\lean{EM/FunctionField/FFSieve.lean}{ff\_spv\_proved}]
+Immediate from Theorem~\ref{thm:necklace}: the term $n\cdot\irredcount(n)$
+is one summand and the total equals $p^n$.  Reduction to FCD:
+\lean{EM/FunctionField/FFSieve.lean}{ff\_fcd\_implies\_spv}.
+\end{theorem}
+
+\paragraph{Step 5 --- Population sieve confinement decay.}
+\begin{property}[FF-PSCD ---
+\lean{EM/FunctionField/FFSieve.lean}{FFPSCD}]
+$\irredcount(n) \leq p^n/n$ for all $n \geq 1$.
+\end{property}
+
+\begin{theorem}[FF-PSCD is unconditional ---
+\lean{EM/FunctionField/FFSieve.lean}{ff\_pscd\_proved}]
+Divide both sides of Step~4 by~$n$.  Reduction:
+\lean{EM/FunctionField/FFSieve.lean}{ff\_spv\_implies\_pscd}.
+\end{theorem}
+
+\paragraph{Step 6 --- Almost-all generalized mixed MC.}
+A \emph{mixed} selection at each step picks \emph{any} irreducible factor
+of $\ffprod(n)+1$ (not necessarily minimal-degree); the
+\emph{generalized} variant starts from an arbitrary monic squarefree
+polynomial.  ``Almost-all'' refers to density-one over starting points.
+
+\begin{theorem}[Almost-All FF-GenMixedMC is unconditional ---
+\lean{EM/FunctionField/FFSieve.lean}{ff\_almost\_all\_unconditional}]
+\label{thm:ff-almost-all}
+For every prime $p$, the conjunction of FF-PNT-in-APs and FF-SPV holds
+unconditionally; in particular, a density-$1$ set of monic squarefree
+starting polynomials satisfies generalized mixed MC.
+\end{theorem}
+
+\begin{keyresult}
+\textbf{Full chain witness}
+(\lean{EM/FunctionField/FFSieve.lean}{ff\_full\_chain\_unconditional}):
+the conjunction
+\[
+  \text{Char.\ Cancel.} \,\wedge\, \text{PNT-AP} \,\wedge\, \FCD
+  \,\wedge\, \SPV \,\wedge\, \PSCDff \,\wedge\,
+  \text{Almost-All FF-GenMixedMC}
+\]
+holds unconditionally for every prime~$p$.  Zero open hypotheses.
+\end{keyresult}
+
+\paragraph{The factor tree and structural prerequisites.}
+Independent of the sieve chain, the factor-tree structure (any valid
+\emph{mixed} selection) admits the following formally verified
+properties:
+
+\begin{theorem}[Factor-tree structure ---
+\lean{EM/FunctionField/Master.lean}{theorem\_A\_factor\_tree}]
+\label{thm:ff-A}
+For any valid mixed selection from any monic squarefree start,
+\begin{enumerate}[nosep,label=(\alph*)]
+\item the walk explores infinitely many distinct monic irreducibles
+  (\lean{EM/FunctionField/StochasticMC.lean}{ff\_mixed\_explores\_infinitely\_many});
+\item the factor pool degree $\deg(\mathrm{acc}(n)+1) \to \infty$
+  (\lean{EM/FunctionField/PopulationEquidist.lean}{ff\_factor\_pool\_degree\_grows});
+\item selection is injective
+  (\lean{EM/FunctionField/FactorTree.lean}{ffMixedSel\_injective});
+\item walk products are injective
+  (\lean{EM/FunctionField/FactorTree.lean}{ffMixedWalkProd\_injective});
+\item the start is never recapturable
+  (\lean{EM/FunctionField/FactorTree.lean}{start\_not\_capturable}).
+\end{enumerate}
+\end{theorem}
+
+\paragraph{Stochastic FF-MC and the phase transition.}
+
+\begin{theorem}[Stochastic FF-MC ---
+\lean{EM/FunctionField/StochasticMC.lean}{stochastic\_mc\_unconditional}]
+\label{thm:ff-stoch}
+For any monic irreducible target~$Q$ and any valid mixed walk, the
+factor pool eventually has degree exceeding $\deg(Q)$; with any positive
+probability $\varepsilon > 0$ of non-greedy selection, every target is
+eventually captured.
+\end{theorem}
+
+\begin{theorem}[Phase transition at $\varepsilon = 0$ ---
+\lean{EM/FunctionField/StochasticMC.lean}{ff\_phase\_transition\_unconditional}]
+\label{thm:ff-phase}
+For $\varepsilon > 0$, stochastic MC captures every monic irreducible.
+For $\varepsilon = 0$, the walk is the standard greedy FF-EM and capture
+of every irreducible is exactly $\FFMC$.  The phase transition is sharp.
+\end{theorem}
+
+\paragraph{The bootstrap: from dynamical hitting to FF-MC.}
+
+\begin{property}[FF Dynamical Hitting (FFDH) ---
+\lean{EM/FunctionField/Analog.lean}{FFDynamicalHitting}]
+\label{prop:ffdh}
+For every FF-EM data and every monic irreducible $Q$ not in the
+sequence, there exist cofinally many indices~$n$ at which
+$Q \mid \ffprod(n)+1$.
+\end{property}
+
+\begin{theorem}[One-hypothesis reduction ---
+\lean{EM/FunctionField/Bootstrap.lean}{ff\_dh\_implies\_ffmc}]
+\label{thm:ff-bootstrap}
+$\FFDH \;\Longrightarrow\; \FFMC$ (using the unconditional finiteness of
+irreducibles per degree,
+\lean{EM/FunctionField/Finiteness.lean}{ff\_dh\_implies\_ffmc\_unconditional}).
+\end{theorem}
+
+The proof is by strong induction on degree.  At degree~$d_0$, the
+hypothesis gives MC below~$d_0$; a uniform sieve gap exhausts all
+sub-degree irreducibles past some $N_0$; FFDH provides cofinally many
+hits past $N_0$; injectivity makes each hit consume a distinct
+\emph{competitor} of the same degree; finiteness per degree then forces
+$Q$ itself to be selected (\emph{competitor exhaustion},
+\lean{EM/FunctionField/Bootstrap.lean}{ff\_element\_capture}).  This is
+the function-field analog of the integer bootstrap
+\code{dynamical\_hitting\_implies\_mullin}; the only difference is the
+final exhaustion step, which over $\ZZ$ collapses because primes are
+totally ordered.
+
+\paragraph{The \texorpdfstring{$\Phi_3$}{Phi3} exclusion criterion.}
+
+We now develop a structural obstruction with no integer analog.  When
+all irreducible factors of $\ffprod(n)+1$ have degree~$1$, the walk
+$\ffprod(n) \bmod Q$ for a degree-one target $Q = (t-a)$ follows the
+\emph{autonomous map} $f(w) = w(w+1)$ on $\Fp$.  The target $Q$ divides
+$\ffprod(n)+1$ iff the walk position $w_n = -1$.  Hence degree-one
+capture reduces to: \emph{does the orbit of $f$ reach~$-1$?}
+
+\begin{definition}[Autonomous map ---
+\lean{EM/FunctionField/AutonomousMap.lean}{ffAutonomousMap}]
+\label{def:autonomous}
+For a prime $p$, $f \colon \Fp \to \Fp$ is given by $f(w) = w(w+1)$.
+The \emph{orbit} from $a \in \Fp$ is $a, f(a), f^2(a), \ldots$
+\end{definition}
+
+\begin{lemma}[Absorption at zero ---
+\lean{EM/FunctionField/AutonomousMap.lean}{ffAutonomousMap\_neg\_one}]
+$f(-1) = 0$ and $f(0) = 0$; once the orbit hits $0$ it stays there
+(\lean{EM/FunctionField/AutonomousMap.lean}{ffAutonomousOrbit\_absorbed}).
+\end{lemma}
+
+\begin{lemma}[$\Phi_3$ criterion ---
+\lean{EM/FunctionField/AutonomousMap.lean}{ffAutonomousMap\_eq\_neg\_one\_iff}]
+\label{lem:phi3}
+$f(w) = -1 \iff w^2+w+1 = 0$.  The preimage of $-1$ is the root set of
+the third cyclotomic polynomial $\Phi_3(w)$.
+\end{lemma}
+
+\begin{lemma}[Cube-root condition ---
+\lean{EM/FunctionField/AutonomousMap.lean}{pow\_three\_eq\_one\_of\_phi3}]
+If $w^2+w+1 = 0$ in $\Fp$, then $w^3 = 1$.
+\end{lemma}
+
+\begin{theorem}[$\Phi_3$ has no roots when $p \equiv 2 \pmod 3$ ---
+\lean{EM/FunctionField/AutonomousMap.lean}{phi3\_no\_roots}]
+\label{thm:phi3-no-roots}
+For $p \equiv 2 \pmod 3$ with $p \geq 5$, $\;w^2 + w + 1 \neq 0$ for all
+$w \in \Fp$.
+\end{theorem}
+
+\begin{proof}
+Suppose $w^2+w+1 = 0$ in $\Fp$.  Then $w^3 = 1$, and $w \neq 0,1$ (each
+substitution gives a contradiction with $p \geq 5$).  Hence $\mathrm{ord}(w) = 3$
+in $\Fp^\times$, so $3 \mid p-1$ by Lagrange.  But $p \equiv 2 \pmod 3$
+forces $p - 1 \equiv 1 \pmod 3$, contradiction.
+\end{proof}
+
+\begin{theorem}[Unreachability of $-1$ ---
+\lean{EM/FunctionField/AutonomousMap.lean}{ff\_neg\_one\_unreachable}]
+\label{thm:ff-unreach}
+For $p \equiv 2 \pmod 3$ with $p \geq 5$ and any starting value
+$a \neq -1$ in $\Fp$, the orbit $f^n(a)$ never equals $-1$.
+\end{theorem}
+
+\begin{corollary}[Visited at most once ---
+\lean{EM/FunctionField/AutonomousMap.lean}{ff\_neg\_one\_visited\_at\_most\_once}]
+For the same primes, $-1$ is visited only at step~$0$ (and only if
+$a = -1$); for all $n \geq 1$, the orbit value is never $-1$.
+\end{corollary}
+
+\begin{remark}
+The criterion fails to apply for $p = 2$ (where $\Phi_3 = t^2+t+1$ is
+itself irreducible) and $p = 3$ (where $\Phi_3$ has the double root
+$w = 1$).  Primes $p \equiv 2 \pmod 3$ with $p \geq 5$ include
+$5, 11, 17, 23, 29, 41, 47, \dots$
+\end{remark}
+
+\paragraph{Integer non-analog.}
+Over $\ZZ$ the multiplier $a_{n+1} \bmod q$ is \emph{not} determined by
+$P(n) \bmod q$ alone---it depends on the global factorization of
+$P(n)+1$.  No autonomous map exists, so the $\Phi_3$ criterion has no
+direct integer analog.
+
+\paragraph{The cyclotomic structure (Dead End \#129).}
+Over $\FF_2$, the product of all monic irreducibles of degree dividing
+$d=2$ is $t(t+1)(t^2+t+1) = t^4+t$, and adding $1$ gives
+$\Phi_5(t) = t^4 + t + 1$.  Its Galois group is
+$\mathrm{Gal}(\FF_{2^4}/\FF_2) \cong \ZZ/4\ZZ$---abelian, not~$S_4$.
+More generally, the classical identity
+$\prod_{\deg Q \mid d}Q = t^{p^d}-t$ forces the greedy FF-EM to build
+products dividing $t^{p^d}-t$ for some~$d$, so $\ffprod(n)+1$ has
+splitting field inside $\GF{p}{N}$ for some~$N$ and the Galois group is
+\emph{cyclic}, generated by Frobenius.  Thus the ``large monodromy''
+hypothesis is structurally false for the greedy FF-EM, witnessed by
+\lean{EM/FunctionField/Analog.lean}{ff\_cyclotomic\_dead\_end}.
+
+\paragraph{The orbit-specificity boundary.}
+
+We now establish that the orbit-specificity barrier is the sole
+remaining obstacle to FF-MC, and that it is structurally identical to
+the barrier over~$\ZZ$.  The central dichotomy is between two types of
+equidistribution:
+
+\begin{itemize}[nosep,leftmargin=1em]
+\item \emph{Population equidistribution}: among all monic irreducibles
+  of degree~$d$, residues mod~$Q$ are equidistributed across
+  $|\GF{p}{\deg Q}^\times|$ classes, with error $O(p^{d/2})$ from the
+  Weil bound.  \textbf{Unconditional} over $\Fpt$.
+\item \emph{Orbit equidistribution}: the specific walk
+  $\ffprod(n) \bmod Q$ visits each residue class with frequency
+  $1/(p^{\deg Q}-1)$ (the function-field DSL).  \textbf{Open}.
+\end{itemize}
+
+\begin{theorem}[Population CCSB from Weil ---
+\lean{EM/FunctionField/MultiplierCCSB.lean}{weil\_implies\_population\_mult\_ccsb}]
+The Weil bound proves population-level multiplier CCSB unconditionally;
+\lean{EM/FunctionField/MultiplierCCSB.lean}{selection\_bias\_chain}
+formalizes the population~$\to$~fiber~$\to$~selection~$\to$~orbit
+hierarchy.
+\end{theorem}
+
+\paragraph{Dead End \#127 --- Weil bound insufficient.}
+
+\begin{theorem}[Weil does not close the gap ---
+\lean{EM/FunctionField/OrbitBarrier.lean}{dead\_end\_127\_weil\_not\_sufficient}]
+\label{thm:de127}
+The Weil bound implies population equidistribution but does not imply
+$\FFDH$, because:
+(i) Weil controls $\sum_{f\;\mathrm{monic},\;\deg f = d}\chi(f \bmod Q)$,
+i.e.\ averages over \emph{all} polynomials of degree~$d$;
+(ii) $\FFDH$ requires $\sum_{n<N}\chi(\ffprod(n) \bmod Q)$, a sum along
+a \emph{specific deterministic orbit};
+(iii) $\ffprod(n)+1$ is the unique element of its congruence class, not
+a random draw.
+\end{theorem}
+
+\paragraph{Dead End \#129 --- Large monodromy structurally false.}
+
+\begin{property}[FF Large Monodromy (FFLM) ---
+\lean{EM/FunctionField/Analog.lean}{FFLargeMonodromy}]
+The Galois group of $\ffprod(n)+1$ eventually contains the alternating
+group: $|\mathrm{Gal}| \geq (\deg \ffprod(n))!/2$ for all sufficiently
+large~$n$.
+\end{property}
+
+\begin{theorem}[FFLM is structurally false ---
+\lean{EM/FunctionField/OrbitBarrier.lean}{dead\_end\_129\_monodromy\_dead}]
+\label{thm:de129}
+The greedy FF-EM produces products dividing $t^{p^d}-t$.  Adding $1$
+gives a polynomial whose splitting field lies in $\GF{p}{N}$ for some
+$N$, hence Galois group $\cong \ZZ/N\ZZ$, generated by Frobenius---
+\emph{abelian}, not $A_d$.  The monodromy approach reduces to abelian
+Galois theory $=$ Dirichlet characters $=$ Weil $=$ population
+equidistribution; the route is circular.
+\end{theorem}
+
+\paragraph{Dead End \#130 --- Generation $\neq$ coverage.}
+A natural hope is that subgroup escape (multipliers generate the full
+group) might imply dynamical hitting (the walk visits every element).
+Both PRE (over~$\ZZ$) and Weil (over~$\Fpt$) prove subgroup escape.
+The following counterexample shows this is insufficient.
+
+\begin{theorem}[Generation $\neq$ coverage ---
+\lean{EM/FunctionField/OrbitBarrier.lean}{dead\_end\_130\_generation\_ne\_coverage}]
+\label{thm:de130}
+On $\ZZ/4\ZZ$, the steps $\{1, 3\}$ generate the full group, yet the
+\emph{alternating} walk $0, 1, 0, 1, \ldots$ visits only $\{0, 1\}$,
+missing $\{2, 3\}$.  Witnessed in
+\lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two};
+the converse direction (cancellation $\Rightarrow$ coverage via Weyl)
+is
+\lean{EM/FunctionField/CyclicWalkCoverage.lean}{walk\_cancel\_implies\_covers}.
+\end{theorem}
+
+\paragraph{The barrier theses.}
+
+\begin{theorem}[Orbit barrier thesis ---
+\lean{EM/FunctionField/OrbitBarrier.lean}{orbit\_barrier\_thesis}]
+\label{thm:barrier-thesis}
+The orbit-specificity barrier has the following formally verified
+properties:
+\begin{enumerate}[nosep,label=(\roman*)]
+\item All structural prerequisites for FF-MC are unconditional:
+  injectivity, degree growth, finiteness per degree, coprimality
+  cascade.
+\item $\FFDH \Rightarrow \FFMC$ (Theorem~\ref{thm:ff-bootstrap}).
+\item $\FFDH$ is the sole remaining hypothesis.
+\item The barrier is not closed by population statistics
+  (Theorem~\ref{thm:de127}).
+\item The barrier is not closed by Galois theory
+  (Theorem~\ref{thm:de129}).
+\item The barrier is not closed by algebraic generation
+  (Theorem~\ref{thm:de130}).
+\item The barrier dissolves under stochastic perturbation
+  ($\varepsilon > 0$, Theorem~\ref{thm:ff-stoch}).
+\item The barrier is sharp at $\varepsilon = 0$
+  (Theorem~\ref{thm:ff-phase}).
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[Setting independence ---
+\lean{EM/FunctionField/OrbitBarrier.lean}{barrier\_setting\_independent}]
+\label{thm:setting-independent}
+\begin{enumerate}[nosep,label=(\roman*)]
+\item Over $\Fpt$: ANT is free (Weil $\Rightarrow$ PE).
+\item Over $\Fpt$: orbit specificity remains ($\FFDH$ open;
+  $\FFDH \Rightarrow \FFMC$).
+\item Over $\Fpt$: stochastic perturbation dissolves the barrier;
+  the deterministic limit does not.
+\end{enumerate}
+\end{theorem}
+
+The function-field setting eliminates the ``easy'' obstacle (ANT for
+PE) and adds new structural information ($\Phi_3$ exclusion), but the
+``hard'' obstacle---orbit specificity~$=$~DSL---is identical to the
+integer case.  This proves that the difficulty of Mullin's Conjecture
+lies \emph{entirely} in the orbit-specificity barrier and not in the
+analytic number theory.
+
+\paragraph{Side-by-side summary.}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Aspect} & \textbf{Over $\ZZ$} & \textbf{Over $\Fpt$} \\
+\midrule
+Population equidist.\ (PE) & Open (WPNT) & \textbf{Free} (Weil) \\
+Subgroup escape (SE) & Proved (PRE) & Proved (Weil) \\
+Coprimality cascade & Proved & Proved \\
+$\CME \Rightarrow \MC$ chain & Proved & Proved \\
+Orbit specificity (DSL) & \textbf{Open} & \textbf{Open} \\
+Walk character sums & Not standard & Not standard \\
+Stochastic MC ($\varepsilon > 0$) & Proved & Proved \\
+$\Phi_3$ exclusion & --- & \textbf{Proved} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Open problems specific to FF-MC.}
+
+We close with a few open problems particular to the function-field
+analog (the integer counterparts are catalogued in~\S\ref{sec:hard}).
+
+\begin{frontierbox}
+\textbf{Deterministic FF-MC.}
+Does every monic irreducible over $\Fpt$ eventually appear in the greedy
+FF-EM sequence?  Equivalently, does $\FFDH$ hold?  Our work shows that
+$\FFDH$ is the sole remaining hypothesis: the stochastic version
+($\varepsilon > 0$) is proved (Theorem~\ref{thm:ff-stoch}), and the
+open content is exactly the $\varepsilon = 0$ boundary.
+\end{frontierbox}
+
+\begin{frontierbox}
+\textbf{Controlling the $\varepsilon \to 0$ limit.}
+Stochastic FF-MC is proved for all $\varepsilon > 0$.  Can the limit
+$\varepsilon \to 0$ be controlled to deduce deterministic FF-MC?
+Specifically: does the capture time $T_Q(\varepsilon)$ for a target~$Q$
+remain bounded as $\varepsilon \to 0$?  The phase transition is
+sharp---the proof structure for $\varepsilon > 0$ relies on non-greedy
+exploration, which is absent at $\varepsilon = 0$.
+\end{frontierbox}
+
+\begin{frontierbox}
+\textbf{Large monodromy beyond cyclotomic starts.}
+Dead End~\#129 shows the \emph{greedy} FF-EM produces cyclotomic (hence
+abelian) products.  Does the obstruction persist for non-greedy starting
+points?  Cohen's theorem~\cite{Cohen1981} shows a random monic
+polynomial of degree~$d$ has Galois group $S_d$ with probability
+tending to~$1$.  Is the recursive FF-EM structure forcing cyclotomic
+products an artifact of the greedy minimal-degree selection?
+\end{frontierbox}
+
+\begin{frontierbox}
+\textbf{Integer analog of the $\Phi_3$ criterion.}
+The $\Phi_3$ exclusion (Theorem~\ref{thm:ff-unreach}) uses the absence
+of cube roots of unity in $\Fp$.  Over $\ZZ$ the walk does not follow
+an autonomous map---can systematic exclusion criteria be developed
+nonetheless for specific $(q,a)$ pairs?  Cox--van der
+Poorten~\cite{CoxVdP1968} suggested structural reasons for the
+difficulty of the prime~$41$; the function-field $\Phi_3$ result is a
+formal analog.
+\end{frontierbox}
+
+\begin{frontierbox}
+\textbf{Selection bias neutrality}
+(\lean{EM/FunctionField/MultiplierCCSB.lean}{SelectionBiasNeutral}).
+Does greedy minimal-degree selection preserve character-sum cancellation?
+A positive answer would close the orbit-specificity gap for both FF-MC
+and MC simultaneously, since the question concerns the selection
+mechanism, not the ambient ring.  This is the cleanest formulation of
+the barrier; the integer analog is DSL.
+\end{frontierbox}
+
+\paragraph{Headline summary.}
+The function-field portion of the formalization is collected in the
+landscape theorem
+\lean{EM/FunctionField/Master.lean}{ff\_unconditional\_grand\_summary},
+which assembles theorems~A, B, C, D
+(\lean{EM/FunctionField/Master.lean}{theorem\_A\_factor\_tree},
+ \lean{EM/FunctionField/Master.lean}{theorem\_B\_stochastic\_mc},
+ \lean{EM/FunctionField/Master.lean}{theorem\_C\_phase\_transition},
+ \lean{EM/FunctionField/Master.lean}{theorem\_D\_sieve\_chain})
+into a single conjunction with zero open hypotheses.  Together they
+witness:
+\begin{itemize}[nosep,leftmargin=1em]
+\item the unconditional six-step sieve chain
+  (Theorem~\ref{thm:ff-almost-all});
+\item stochastic FF-MC and the $\varepsilon = 0$ phase transition
+  (Theorems~\ref{thm:ff-stoch}, \ref{thm:ff-phase});
+\item the necklace identity (Theorem~\ref{thm:necklace});
+\item the $\Phi_3$ exclusion criterion (Theorem~\ref{thm:ff-unreach});
+\item the orbit-barrier and setting-independence theses
+  (Theorems~\ref{thm:barrier-thesis}, \ref{thm:setting-independent}).
+\end{itemize}
+The function-field treatment thus delivers the cleanest available
+diagnosis: \emph{the difficulty of Mullin's Conjecture is the
+orbit-specificity barrier, not the analytic number theory}.

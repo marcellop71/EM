@@ -1,0 +1,661 @@
+%% =========================================================================
+\section{The Residue Walk}
+\label{sec:walk}
+\label{sec:bootstrap}
+%% =========================================================================
+
+For any starting point $s \geq 2$, the generalized EM sequence and
+running product are defined by mutual recursion:
+\begin{align}
+	\Prod{s}(0) &= s, &
+	\seq{s}(k) &= \minFac\bigl(\Prod{s}(k)+1\bigr), &
+	\Prod{s}(k+1) &= \Prod{s}(k) \cdot \seq{s}(k).
+	\label{eq:gen-em}
+\end{align}
+The standard Euclid--Mullin sequence is the case $s = 2$
+(\lean{EM/Ensemble/Structure.lean}{genProd\_two\_eq\_prod}).
+We use subscripted notation throughout: $\seq{s}$, $\Prod{s}$ denote
+the sequence and accumulator from starting point~$s$.
+
+\begin{leancode}
+-- Core EM sequence (mutual recursion via aux : Nat -> Nat x Nat)
+def aux : Nat -> Nat x Nat
+  | 0     => (2, 2)
+  | n + 1 => let (_, p) := aux n
+             let f := Nat.minFac (p + 1)
+             (f, p * f)
+
+def seq  (n : Nat) : Nat := (aux n).1   -- n-th prime
+def prod (n : Nat) : Nat := (aux n).2   -- running product
+\end{leancode}
+
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{genSeq\_prime},
+  \lean{EM/Ensemble/Structure.lean}{genSeq\_injective}]\label{thm:seq-props}
+For any $s \geq 2$, every $\seq{s}(k)$ is prime.
+For squarefree~$s$, the map $k \mapsto \seq{s}(k)$ is injective:
+no prime appears twice.
+\end{theorem}
+
+\noindent Further structural properties, all fully proved:
+\begin{itemize}[nosep]
+\item \textbf{Divisibility}: $s \mid \Prod{s}(k)$ for all~$k$
+  (\lean{EM/Ensemble/FirstMoment.lean}{start\_dvd\_genProd}).
+\item \textbf{Strict monotonicity}: $\Prod{s}(k) < \Prod{s}(k{+}1)$
+  (\lean{EM/Ensemble/Structure.lean}{genProd\_strict\_mono}).
+\item \textbf{Squarefreeness}: for squarefree~$s$, $\Prod{s}(k)$ is
+  squarefree for all~$k$
+  (\lean{EM/Population/ReciprocalSum.lean}{genProd\_squarefree}).
+\end{itemize}
+
+\begin{theorem}[\defname{Tail identification} ---
+  \lean{EM/Ensemble/Structure.lean}{genProd\_restart}]\label{thm:tail-id}
+Restarting the EM process from the $M$-th accumulator of orbit~$s$
+gives the tail of that orbit:
+\[
+  \Prod{\Prod{s}(M)}(k) \;=\; \Prod{s}(M + k),
+  \qquad
+  \seq{\Prod{s}(M)}(k) \;=\; \seq{s}(M + k).
+\]
+\end{theorem}
+
+\begin{proof}
+By induction on~$k$.  The base case $k = 0$ is immediate from the
+definition $\Prod{n}(0) = n$.  For the step,
+$\Prod{\Prod{s}(M)}(k{+}1) = \Prod{\Prod{s}(M)}(k) \cdot
+\minFac(\Prod{\Prod{s}(M)}(k) + 1)$; the inductive hypothesis
+replaces both occurrences by $\Prod{s}(M{+}k)$, giving
+$\Prod{s}(M{+}k) \cdot \minFac(\Prod{s}(M{+}k) + 1) =
+\Prod{s}(M{+}k{+}1)$.  The sequence identity follows by
+definition.
+\end{proof}
+
+\noindent The tail identification says that the family of
+generalized EM orbits is closed under ``time-shifting'': the orbit
+starting from any intermediate accumulator is not a new object but a
+suffix of the original orbit.
+
+\begin{definition}[\defname{Walk} and \defname{Multiplier}]\label{def:walk-mult}
+For any prime~$q$, the \textbf{residue walk} $\walkZ{s}{q}{\cdot}$ and the
+\textbf{multiplier} $\multZ{s}{q}{\cdot}$ project the accumulator and the
+next prime onto $\ZZ/q\ZZ$:
+$$\begin{aligned}\label{eq:walk}
+  &\walkZ{s}{q}{n} \coloneqq \Prod{s}(n) \bmod q, \\
+  &\multZ{s}{q}{n} \coloneqq \seq{s}(n{+}1) \bmod q.
+\end{aligned}$$
+The first subscript is the starting point; the second is the modulus.
+\end{definition}
+
+\begin{proposition}[\defname{Walk recurrence} ---
+  \lean{EM/Group/Core.lean}{walkZ\_succ},
+  \lean{EM/Ensemble/EM.lean}{genWalkZ\_succ}]\label{prop:recurrence}
+$\walkZ{s}{q}{n\!+\!1} = \walkZ{s}{q}{n} \cdot \multZ{s}{q}{n}$ in
+$\ZZ/q\ZZ$, for any starting point~$s$.
+\end{proposition}
+
+\begin{theorem}[\defname{Walk--Divisibility Bridge} ---
+  \lean{EM/Ensemble/EM.lean}{genWalkZ\_eq\_neg\_one\_iff}]\label{thm:bridge}
+For any starting point~$s$ and prime~$q$:
+\[
+  \walkZ{s}{q}{k} = -1
+  \quad\Longleftrightarrow\quad
+  q \mid \Prod{s}(k) + 1.
+\]
+\end{theorem}
+
+\begin{leancode}
+-- The walk and bridge in Lean 4
+def walkZ (q : Nat) (n : Nat) : ZMod q := (prod n : ZMod q)
+def multZ (q : Nat) (n : Nat) : ZMod q := (seq (n+1) : ZMod q)
+
+-- The bridge: walk hits -1 iff q divides prod(k)+1
+theorem genWalkZ_eq_neg_one_iff (hq : Nat.Prime q) :
+    genWalkZ s q k = -1 <-> q | genProd s k + 1
+\end{leancode}
+
+\noindent The walk can be in one of two regimes:
+
+\begin{enumerate}[nosep]
+\item \textbf{Living regime.}  If $q \nmid s$ and $q$ has not yet appeared in
+  $\seq{s}(0), \ldots, \seq{s}(n{-}1)$, then $q \nmid \Prod{s}(n)$
+  (since $\Prod{s}(n) = s \cdot \seq{s}(0) \cdots \seq{s}(n{-}1)$
+  and $q$ divides none of these factors).
+  So $\walkZ{s}{q}{n} \in (\ZZ/q\ZZ)^\times$---the walk lives
+  in the group of units.
+
+\item \textbf{Dead regime.}  If $q = \seq{s}(k)$ for some~$k$,
+  then $q \mid \Prod{s}(m)$ for all $m > k$, so $\walkZ{s}{q}{m} = 0$
+  forever.  The walk has \emph{collapsed to zero}
+  (\lean{EM/Equidist/Bootstrap.lean}{walkZ\_capture\_then\_collapse},
+  proved for $s = 2$).
+\end{enumerate}
+
+\noindent The transition from living to dead can happen only
+through~$-1$ (Theorem~\ref{thm:bridge}).
+
+Hitting $-1$ is a \emph{necessary} condition for the walk to die (for
+$q$ to enter the sequence): if $q \mid \Prod{s}(n)+1$, then
+$\walkZ{s}{q}{n} = -1$.  But it is not sufficient by itself.  When
+$\walkZ{s}{q}{n} = -1$, the walk dies only if $q = \minFac(\Prod{s}(n)+1)$,
+i.e.\ no smaller prime divides $\Prod{s}(n)+1$.  If a smaller prime~$p$
+also divides $\Prod{s}(n)+1$, then $\minFac(\Prod{s}(n)+1) \leq p < q$
+and $q$ is \emph{not} selected---the walk \emph{bounces off}~$-1$ and continues living.
+The walk may therefore hit~$-1$ multiple times without dying.  Death
+occurs only at a hit where $q$ is the smallest available factor:
+\[
+  \cdots \to \underbrace{\walkZ{s}{q}{n} = -1}_{\text{bounce}}
+  \to (\ZZ/q\ZZ)^\times \to \cdots \to
+  \underbrace{\walkZ{s}{q}{n_0} = -1}_{\substack{\text{lethal hit:}\\
+    q = \minFac}}
+  \to \underbrace{\walkZ{s}{q}{n_0{+}1} = 0}_{\text{dead}}
+  \to 0 \to \cdots
+\]
+
+What determines whether a hit on~$-1$ is a bounce or a lethal hit?
+The answer depends on which other primes divide $\Prod{s}(n)+1$.
+We now specialize to the standard orbit~$s = 2$, where the
+\emph{sieve gap} provides the answer.
+
+\begin{definition}[\defname{$\MC({<}\,q)$}]\label{def:mc-below}
+For a prime~$q$, write $\MC({<}\,q)$ for the statement that every
+prime smaller than~$q$ appears in the EM sequence:
+$\forall\, p < q,\; p \text{ prime} \;\Rightarrow\; \exists\, k,\;
+\seq{2}(k) = p$.
+\end{definition}
+
+\noindent When $\MC({<}\,q)$ holds, every prime $p < q$ has entered the sequence
+at some stage~$k_p$, so $p \mid \Prod{2}(n)$ for all $n \geq k_p$.
+Past a uniform stage $N_0 = \max_p k_p$, every prime $p < q$ divides
+$\Prod{2}(n)$, and therefore cannot divide $\Prod{2}(n)+1$ (since
+$\gcd(\Prod{2}(n), \Prod{2}(n)+1) = 1$).  This is the \textbf{sieve gap}:
+past~$N_0$, the only primes that can divide $\Prod{2}(n)+1$ are
+$\geq q$.
+
+\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/Equidist/Threshold.lean}{mcBelow\_implies\_seq\_ge}]\label{thm:roughness}
+If $\MC({<}\,q)$ holds, then $\exists\, N_0$ such that
+$\seq{2}(n{+}1) \geq q$ for all $n \geq N_0$.
+\end{theorem}
+
+\noindent The sieve gap transforms hitting~$-1$ from a necessary condition into
+a sufficient one:
+
+\begin{theorem}[\defname{Lethal hit} --- \lean{EM/Equidist/Threshold.lean}{mcBelow\_hit\_is\_lethal}]\label{thm:lethal-hit}
+If $\MC({<}\,q)$ holds and $\walkZ{2}{q}{n} = -1$ for some $n$ past the
+sieve gap, then $\seq{2}(n{+}1) = q$.
+\end{theorem}
+
+\begin{proof}
+Since $n$ is past the sieve gap, no prime $< q$ divides
+$\Prod{2}(n)+1$ (Theorem~\ref{thm:roughness}).  But $\walkZ{2}{q}{n} = -1$
+gives $q \mid \Prod{2}(n)+1$, so $q = \minFac(\Prod{2}(n)+1)$, and
+$\seq{2}(n{+}1) = q$.
+\end{proof}
+
+\begin{definition}[Missing prime]\label{def:missing}
+A prime~$q$ is \textbf{missing} if $\seq{2}(n) \neq q$ for all~$n$.
+\end{definition}
+
+\noindent Mullin's Conjecture asserts that no prime is missing.
+Under $\MC({<}\,q)$, the first hit on~$-1$ past the sieve gap is
+lethal.  This immediately constrains missing primes:
+
+\begin{theorem}[\lean{EM/Equidist/Threshold.lean}{mcBelow\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
+If $\MC({<}\,q)$ holds and $q$ is missing, then the walk \emph{never}
+hits~$-1$ past the sieve gap: $\exists\, N_0$ such that
+$\walkZ{2}{q}{n} \neq -1$ for all $n \geq N_0$.
+\end{theorem}
+
+\begin{proof}
+Any hit past the sieve gap would give $\seq{2}(n{+}1) = q$
+(Theorem~\ref{thm:lethal-hit}), contradicting $q$ missing.
+\end{proof}
+
+\noindent For the first missing prime~$q$, the hypothesis $\MC({<}\,q)$ holds
+by definition.  So its walk avoids~$-1$ permanently past the sieve
+gap, the walk $\walkZ{2}{q}{\cdot}$ is infinite: it stays
+in~$(\ZZ/q\ZZ)^\times$ forever, never collapsing to zero.
+
+\paragraph{The forbidden multiplier and the death channel}
+
+The following algebraic observations hold for every starting point~$s$.
+Suppose the walk is at position $c \in (\ZZ/q\ZZ)^\times$ at step~$n$.
+The walk would hit $-1$ at step $n{+}1$ if and only if
+\[
+  \walkZ{s}{q}{n} \cdot \multZ{s}{q}{n} = -1,
+  \quad\text{i.e.,}\quad
+  \multZ{s}{q}{n} = -c^{-1}.
+\]
+
+\noindent So at every step, there is exactly \textbf{one forbidden multiplier}
+$f(n) = -\walkZ{s}{q}{n}^{-1}$---the unique residue class that would
+send the walk to~$-1$.  This is $1$~element out of $q-1$ possible
+unit residues.
+
+\begin{definition}[\defname{Death channel}]\label{def:death-channel}
+The \textbf{death channel} at position $c$ is the residue class
+$b(c) = -c^{-1} \bmod q$.
+\end{definition}
+
+\noindent When the walk is at~$c$, the death channel is the set of primes
+$p \equiv -c^{-1} \pmod{q}$, which by Dirichlet's theorem has density $1/(q-1)$ among all primes.
+The death channel \emph{moves} with the walk: as $c$ changes from step
+to step, the forbidden class changes with it.  The map $c \mapsto
+-c^{-1}$ is a bijection on $(\ZZ/q\ZZ)^\times$ (it is the composition
+of inversion and negation).
+
+\begin{theorem}[\lean{EM/Equidist/Sieve.lean}{walk\_hits\_neg\_one\_iff\_mult\_eq\_forbidden}]\label{thm:forbidden}
+For any starting point~$s$ and step~$n$ with $\walkZ{s}{q}{n} \in (\ZZ/q\ZZ)^\times$:
+\[
+  \walkZ{s}{q}{n{+}1} = -1
+  \quad\Longleftrightarrow\quad
+  \multZ{s}{q}{n} = -\walkZ{s}{q}{n}^{-1}.
+\]
+\end{theorem}
+
+\noindent In any orbit where $q$ never appears, the multiplier avoids the
+death channel at every step, forever.
+This brings us to discuss multipliers.
+
+\subsection{The Confinement Theorem and SubgroupEscape}
+
+Before asking whether the walk hits~$-1$, we must ask whether it
+\emph{can}.  The walk is multiplicative:
+$\walkZ{s}{q}{n} = \walkZ{s}{q}{0} \cdot \prod_{k < n} \multZ{s}{q}{k}$.
+The reachable set is the coset
+$\walkZ{s}{q}{0} \cdot \langle \text{multipliers} \rangle$.
+
+\begin{theorem}[\defname{Confinement} --- \lean{EM/Group/Core.lean}{confinement\_forward}]\label{thm:confinement}
+For any starting point~$s$: if every multiplier lies in a subgroup
+$H \leq (\ZZ/q\ZZ)^\times$, then the walk is confined to the coset
+$\walkZ{s}{q}{0} \cdot H$.
+In particular, if $-1 \notin \walkZ{s}{q}{0} \cdot H$, the walk
+\emph{never} hits~$-1$.
+\end{theorem}
+
+\noindent This motivates:
+
+\begin{property}[\defname{SubgroupEscape} (\abbr{SE})]\label{def:se}
+For a starting point~$s$ and prime~$q$: no proper subgroup
+$H < (\ZZ/q\ZZ)^\times$ contains all multipliers.  Equivalently,
+$\langle \multZ{s}{q}{n} : n \in \NN \rangle = (\ZZ/q\ZZ)^\times$.
+\end{property}
+
+\begin{theorem}[\lean{EM/Group/Escape.lean}{se\_of\_maximal\_escape}]
+SE holds iff multipliers escape every \emph{maximal} proper subgroup.
+Since $(\ZZ/q\ZZ)^\times$ is cyclic, the maximal subgroups are the
+index-$\ell$ subgroups for prime $\ell \mid q\!-\!1$.
+\end{theorem}
+
+\noindent When SE holds, the walk is not confined to any proper coset: every
+element of $(\ZZ/q\ZZ)^\times$, including~$-1$, is \emph{reachable}.
+But reachability does not imply hitting---that is a dynamical question.
+
+\subsection{The first missing prime}
+
+We now assemble the key argument.  Suppose, toward contradiction, that
+Mullin's Conjecture is false.  Then there exists a \textbf{first
+missing prime}: the smallest prime~$q$ that never appears in the EM
+sequence. For this~$q$:
+
+\begin{enumerate}[label=(\alph*),nosep]
+\item $\MC({<}\,q)$ holds---by definition, every prime smaller than~$q$
+  is in the sequence.
+\item The walk $\walkZ{2}{q}{\cdot}$ is infinite---since $q$ is missing,
+  $\walkZ{2}{q}{n} \in (\ZZ/q\ZZ)^\times$ for all~$n$.
+\item Past the sieve gap, the walk never hits~$-1$.  Here is why.
+  Eventually (say for $n \geq N_0$), all primes $< q$ have entered
+  the sequence and divide $\Prod{2}(n)$.  For $n \geq N_0$, no prime
+  $< q$ can divide $\Prod{2}(n)+1$ (since it divides $\Prod{2}(n)$ and
+  $\gcd(\Prod{2}(n), \Prod{2}(n)+1) = 1$).  So if $\walkZ{2}{q}{n} = -1$ for
+  some $n \geq N_0$, then $q \mid \Prod{2}(n)+1$, and $q$ is the smallest
+  prime factor of $\Prod{2}(n)+1$ (all smaller primes are excluded).
+  Then $\seq{2}(n{+}1) = q$, contradicting $q$ being missing.
+\end{enumerate}
+
+\
+
+\noindent Therefore: \textbf{for the first missing prime~$q$, the walk is an
+infinite trajectory on $(\ZZ/q\ZZ)^\times$ that avoids the death
+channel at every step past the sieve gap.} Equivalently: $\multZ{2}{q}{n} \neq -\walkZ{2}{q}{n}^{-1}$ for all $n \geq N_0$.
+
+\subsection{The inductive bootstrap}
+
+The walk avoids~$-1$ forever.  Can it at least \emph{reach}~$-1$?
+That is: does SE hold?
+
+\begin{theorem}[\defname{PrimeResidueEscape} (\abbr{PRE});
+  \lean{EM/Equidist/Bootstrap.lean}{prime\_residue\_escape}]\label{thm:pre}
+For every prime $p \geq 5$ and every proper subgroup
+$H < (\ZZ/p\ZZ)^\times$, some odd prime $r < p$ has residue
+$r \bmod p \notin H$.
+\end{theorem}
+
+\begin{proof}
+Suppose every odd prime $r \in [3, p)$ satisfies $r \bmod p \in H$.
+Since $H$ is a subgroup, every \emph{product} of such primes is
+in~$H$.  Every odd number in~$[1, p)$ factors into odd primes $< p$,
+so every odd number in~$[1, p)$ maps into~$H$.  In particular,
+$p - 2 \equiv -2$ and $p - 4 \equiv -4$ are both in~$H$ (both odd
+and $< p$ for $p \geq 5$).  Then $2 = (-4)(-2)^{-1} \in H$, so every
+even number in $[1, p)$ is in~$H$ as well.  Hence
+$H = (\ZZ/p\ZZ)^\times$, contradicting $H$ proper.
+\end{proof}
+
+\begin{leancode}
+-- PRE: every proper subgroup misses some small prime
+def PrimeResidueEscape : Prop :=
+  forall (p : Nat) [Fact (Nat.Prime p)], 5 <= p ->
+    forall (H : Subgroup (ZMod p)^x), H != top ->
+      exists (r : Nat), Nat.Prime r /\ r < p /\ 3 <= r /\
+        Units.mk0 ((r : Nat) : ZMod p) (...) not_in H
+
+theorem prime_residue_escape : PrimeResidueEscape := by
+  -- Elementary: all odd n < p are in H => 2 = (-4)(-2)^{-1} in H
+  -- => H = top, contradiction
+  ...
+\end{leancode}
+
+\begin{theorem}[\lean{EM/Equidist/Bootstrap.lean}{mcBelow\_pre\_implies\_se}]
+\label{thm:bootstrap}
+$\MC({<}\,p) + \PRE \;\Longrightarrow\; \SE(p)$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Let $H < (\ZZ/p\ZZ)^\times$ be proper.  By PRE, some odd prime
+$r < p$ has $r \bmod p \notin H$.  By $\MC({<}\,p)$, the prime~$r$
+appears as $\seq{2}(k)$ for some~$k$.  Then $\multZ{2}{p}{k{-}1} \equiv r
+\pmod{p} \notin H$.
+\end{proof}
+
+\begin{corollary}\label{cor:fmp-se}
+For the first missing prime~$q$: the multipliers generate all of
+$(\ZZ/q\ZZ)^\times$.  SubgroupEscape holds, and $-1$ is reachable.
+\end{corollary}
+
+The one-prime gap (Theorem~\ref{thm:one-prime-gap}) shows that
+$\MC({<}\,q)$ plus a single divisibility event $q \mid \Prod{2}(n)+1$
+past the sieve gap gives $\MC(q)$.  The bootstrap
+(Theorem~\ref{thm:bootstrap}) shows that $\MC({<}\,q)$ gives $\SE(q)$
+for free.  These two facts compose into the primary reduction of
+Mullin's Conjecture.
+
+\begin{property}[\defname{SingleHitHypothesis} (\abbr{SHH})]\label{def:shh}
+For every prime~$q$: if $\MC({<}\,q)$ and $\SE(q)$ hold and $q$ is
+missing, then there exists~$n$ past the sieve gap with
+$q \mid \Prod{2}(n)+1$.
+
+\
+
+\noindent Equivalently: for every prime~$q$, if $\MC({<}\,q)$ and $\SE(q)$
+hold, then either $q$ already appears in the sequence, or there
+exists $n \geq N_0(q)$ with $\walkZ{2}{q}{n} = -1$.
+\end{property}
+
+\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/Equidist/Bootstrap.lean}{single\_hit\_implies\_mc}]
+\label{thm:single-hit}
+$\mathrm{SingleHitHypothesis} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+\begin{proof}
+By strong induction on~$p$.  Assume $\MC({<}\,p)$.
+
+\
+
+\begin{enumerate}[nosep]
+\item \textbf{Bootstrap gives SE\@.}
+    $\MC({<}\,p) + \PRE \Rightarrow \SE(p)$ (Theorem~\ref{thm:bootstrap}).
+    Since PRE is proved unconditionally (Theorem~\ref{thm:pre}), we
+    obtain $\SE(p)$.
+
+\item \textbf{SHH gives a hit.}
+    Since $\MC({<}\,p)$ and $\SE(p)$ hold, SHH provides
+    $n \geq N_0$ (past the sieve gap) with $p \mid \Prod{2}(n)+1$.
+
+\item \textbf{The sieve gap closes.}
+    Past $N_0$, all primes $< p$ divide $\Prod{2}(n)$ and hence cannot
+    divide $\Prod{2}(n)+1$.  So $p = \minFac(\Prod{2}(n)+1)$, giving
+    $\seq{2}(n{+}1) = p$.
+\end{enumerate}
+\end{proof}
+
+\subsection{The death channel avoidance paradox}
+
+We now have a precise and sharp picture of the first missing prime~$q$:
+
+\
+
+\begin{enumerate}[nosep]
+\item The walk lives in $(\ZZ/q\ZZ)^\times$ forever.
+\item The multipliers generate the full group---$-1$ is reachable.
+\item The walk never reaches $-1$---the death channel is avoided at
+  every step past the sieve gap.
+\item At each step, the death channel is a single residue class out
+  of $q - 1$---a ``target'' of density $1/(q-1)$.
+\end{enumerate}
+
+\
+
+\noindent Mullin's Conjecture is therefore equivalent to: \textbf{this situation
+is impossible.}  The open problem is now:
+
+\begin{center}
+\emph{Does the multiplicative walk on $(\ZZ/q\ZZ)^\times$ defined by
+the EM sequence, whose multipliers generate the full group, hit~$-1$
+at least once past the sieve gap?}
+\end{center}
+
+``At least once past the sieve gap'' is the precise requirement.  Not
+cofinally, not equidistributed---once.
+The intuition for impossibility rests on an information-theoretic
+asymmetry.  At step~$n$, the death channel
+$f(n) = -\walkZ{2}{q}{n}^{-1}$ is determined by the walk position
+$\walkZ{2}{q}{n} = \Prod{2}(n) \bmod q$, which carries $O(\log q)$ bits of
+information.  The multiplier
+$\multZ{2}{q}{n} = \minFac(\Prod{2}(n)+1) \bmod q$ is determined by the
+full integer $\Prod{2}(n)+1$, which has $\sim 2^n$ bits.  The factoring
+operation $\minFac$ extracts global arithmetic information from all
+$\sim 2^n$ bits; the death channel is determined by $O(\log q)$ bits.
+For the multiplier to systematically avoid the death channel, the
+$O(\log q)$-bit residue would have to predict the outcome of an
+operation on a $2^n$-bit integer---a ``prediction'' whose information
+content vanishes exponentially.
+
+More precisely: for a generic $q$-rough integer $N \equiv a \pmod{q}$,
+the conditional distribution of $\minFac(N) \bmod q$ is
+asymptotically uniform over $(\ZZ/q\ZZ)^\times$, by CRT\@.  Knowing
+$N \bmod q$ does not constrain $N \bmod p$ for any other prime~$p$,
+so it does not constrain which primes $\leq N^{1/2}$ divide~$N$.  The
+density of the death channel among all primes is $1/(q-1)$, and the
+conditional probability that $\minFac(N)$ falls in the death channel
+is $1/(q-1) + o(1)$ as $N \to \infty$, \emph{independently of the
+residue class~$a$}.
+
+For the EM sequence, $\Prod{2}(n)+1$ grows super-exponentially
+($\Prod{2}(n)+1 \geq 2^{2^n}$), so the $o(1)$ error at each step
+shrinks exponentially fast.  The ``probability'' of avoiding the death
+channel for~$N$ consecutive steps is heuristically
+$(1 - 1/(q-1))^N \to 0$.  Converting this heuristic into a proof is
+the content of the conjecture.
+
+\subsection{Sufficient conditions for the single hit}
+\label{sec:sufficient-conditions}
+
+Several formally verified strategies produce the required single hit
+past the sieve gap.  Each implies MC via the Single Hit Theorem.
+
+\begin{property}[\defname{DynamicalHitting} (\abbr{DH})]\label{def:dh}\label{def:hh}
+For every missing prime~$q$: $\SE(q) \Rightarrow \HH(q)$, where
+$\HH(q)$ (\defname{HittingHypothesis}) asks for cofinal hitting:
+$\forall\, N,\; \exists\, n \geq N,\; q \mid (\Prod{2}(n) + 1)$.
+\end{property}
+
+\begin{theorem}[\lean{EM/Equidist/Bootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\label{thm:dh-mc}
+$\DH \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+DH is stronger than SHH: it does not assume $\MC({<}\,q)$ and asks for
+infinitely many hits rather than one.  But the extra strength is
+convenient---DH interfaces cleanly with character sum methods.
+In the death channel language, DH asserts: if the multipliers generate
+$(\ZZ/q\ZZ)^\times$, then the multiplier cannot avoid the forbidden
+residue $-\walkZ{2}{q}{n}^{-1}$ forever.  Equivalently: there is no
+infinite walk on a cyclic group, with a generating set of multipliers,
+that dodges a single moving target of density $1/(q-1)$ at every step.
+
+The key structural point: SHH is \textbf{strictly weaker} than
+DynamicalHitting in two ways.
+First, SHH assumes $\MC({<}\,q)$, which DH does not (DH only assumes SE).
+Second, SHH asks for one hit past the sieve gap, while DH asks for
+cofinal hitting.  Both extra assumptions are harmless in the inductive
+proof---$\MC({<}\,q)$ is always available at the inductive step, and
+one hit is all the Single Hit Theorem needs---but they make SHH
+genuinely easier to satisfy as a mathematical statement.
+
+\begin{remark}\label{rem:shh-vs-dh}
+The logical relationships among the hitting hypotheses are:
+\[
+  \HH \;\Longrightarrow\; \DH \;\Longrightarrow\; \mathrm{SHH},
+\]
+where $\HH$ on its own denotes the \emph{unconditional} version of
+$\HH(q)$ from Definition~\ref{def:dh}: cofinal hitting asserted for
+every missing~$q$ without assuming $\SE(q)$.
+DH conditions cofinal hitting on SE, and SHH asks for a
+single hit past the sieve gap given both $\MC({<}\,q)$ and SE\@.
+All three imply MC\@.  SHH is the weakest: it assumes the most
+($\MC({<}\,q)$ and SE, both provided free by the inductive bootstrap)
+and demands the least (one hit, not infinitely many).
+The converses need not hold.
+\end{remark}
+
+\begin{property}[\defname{ComplexCharSumBound} (\abbr{CCSB})]\label{def:ccsb-intro}
+For every missing prime~$q$ and every non-trivial character~$\chi$:
+$\|S_\chi(N)\| = o(N)$, where
+$S_\chi(N) = \sum_{n<N}\chi(\walkZ{2}{q}{n})$.
+\end{property}
+
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{complex\_csb\_mc'}]
+\label{thm:ccsb-mc-intro}
+$\mathrm{CCSB} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+CCSB produces the hit via Fourier inversion: if all non-trivial
+character sums are $o(N)$, the hit count at~$-1$ is
+$N/(q{-}1) + o(N)$, which is eventually positive.  One hit past
+the sieve gap is lethal (Section~\ref{sec:character}).
+
+\begin{property}[\defname{ConditionalMultiplierEquidist} (\abbr{CME})]\label{def:cme-intro}
+For every missing prime~$q$, every non-trivial~$\chi$, and every walk
+position~$c$: the multiplier characters
+$\chi(\multZ{2}{q}{n})$ conditioned on $\walkZ{2}{q}{n} = c$ are equidistributed
+(their partial sums are $o(N)$).
+\end{property}
+
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_mc}]
+\label{thm:cme-mc-intro}
+$\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
+\end{theorem}
+
+CME is the sharpest hypothesis: it asserts that the factoring
+operation destroys correlation between consecutive multiplier residues
+conditioned on the walk position.  It implies CCSB for all character
+orders, bypassing the $d \geq 3$ barrier that blocks the
+BRE route.
+
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{vcb\_ped\_implies\_mc}]
+\label{thm:vcb-ped-mc-intro}
+$\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+VCB (Vanishing Conditional Bias) is a weakening of CME that permits
+fiber sums to be proportional to visit counts rather than small;
+combined with PED (Positive Escape Density), it reaches CCSB\@.
+
+Each of these strategies produces at least one hit past the sieve gap,
+which the Single Hit Theorem (Theorem~\ref{thm:single-hit}) converts
+into MC\@.
+
+\paragraph{Why it's hard: the walk controls nothing}
+
+The difficulty is entirely in the coupling between walk position and
+multiplier.  At step~$n$:
+
+\begin{itemize}[nosep]
+\item The \textbf{walk position} $\walkZ{2}{q}{n} = \Prod{2}(n) \bmod q$
+  determines the death channel $f(n) = -\walkZ{2}{q}{n}^{-1}$.
+\item The \textbf{multiplier}
+  $\multZ{2}{q}{n} = \minFac(\Prod{2}(n)+1) \bmod q$ is what must fall
+  into the death channel.
+\item Both depend on $\Prod{2}(n)$: the walk position depends on
+  $\Prod{2}(n) \bmod q$, and the multiplier depends on $\Prod{2}(n)+1$ as
+  a full integer.
+\end{itemize}
+
+The walk position sees $O(\log q)$ bits; the multiplier sees all
+$\sim 2^n$ bits.  But they share the same underlying object
+$\Prod{2}(n)$.  The question is whether this shared dependence creates a
+correlation strong enough for the multiplier to systematically avoid
+one residue class out of $q-1$.
+
+For a \emph{random} sequence of multipliers drawn uniformly from
+$(\ZZ/q\ZZ)^\times$, the probability of avoiding the death channel
+for $N$ steps is $(1 - 1/(q-1))^N \to 0$.  The EM walk is not
+random---it is deterministic---but the factoring operation that
+determines each multiplier is, heuristically, a decorrelating ``hash.''
+This is the \textbf{factorization independence heuristic}: the
+function $\minFac$, applied to a $2^n$-bit integer, produces an
+output that is effectively uncorrelated with the $O(\log q)$-bit
+residue class of the input.
+
+Every open hypothesis in this paper---DH, CCSB, CME---is a precise
+formalization of this heuristic.
+
+\subsection{Supporting infrastructure}
+
+The remainder of this section collects the supporting results that
+flesh out the bootstrap: the one-prime gap, the sieve gap, and the power residue decomposition.
+
+\paragraph{The Sieve Gap and the One-Prime Gap}
+
+The $q$-roughness theorem (Theorem~\ref{thm:roughness}) resolves the
+selectability problem described in Section~\ref{sec:intro}: past the
+sieve gap, $q$ is the smallest available factor whenever it divides
+the Euclid number.  This gives the one-prime gap:
+
+\begin{theorem}[\defname{One-prime gap} --- \lean{EM/Equidist/Threshold.lean}{mcBelow\_cofinal\_hit\_implies\_mc\_at}]
+\label{thm:one-prime-gap}
+$\MC({<}\,q)$ plus a single hitting event
+$q \mid \Prod{2}(n)+1$ for some $n$ past the sieve gap
+implies $\MC(q)$.
+\end{theorem}
+
+\paragraph{The Power Residue Decomposition}
+
+Since $(\ZZ/q\ZZ)^\times$ is cyclic of order $q\!-\!1$, its subgroup
+lattice is determined by the prime factorization of $q\!-\!1$.  A
+multiplier set generates the full group if and only if it escapes every
+maximal subgroup---and the maximal subgroups correspond to the prime
+divisors $\ell$ of~$q\!-\!1$.  This decomposition converts SE into
+independent conditions, one per prime~$\ell \mid q\!-\!1$.
+
+\begin{property}[\defname{PowerResidueEscape} ($\abbr{PRE}_\ell$)]
+$\exists\, n : \multZ{2}{q}{n}^{(q-1)/\ell} \neq 1$ in $(\ZZ/q\ZZ)^\times$.
+\end{property}
+
+\begin{theorem}[\abbr{PRE} $\Leftrightarrow$ \abbr{SE} --- \lean{EM/Equidist/CharPRE.lean}{pre\_iff\_se}]
+$\mathrm{PRE} \;\Longleftrightarrow\; \SE$.
+The forward direction uses only Lagrange's theorem; the reverse uses
+cyclicity of $(\ZZ/q\ZZ)^\times$.
+\end{theorem}
+
+\paragraph{Quadratic Reciprocity Obstruction}
+
+The power residue decomposition raises a natural question: for how many
+primes~$q$ could SE actually \emph{fail}?  Since each PRE$_\ell$
+condition asks only that \emph{one} multiplier among infinitely many
+escapes the $\ell$-th power subgroup, SE failure requires all
+multipliers to be $\ell$-th power residues for some $\ell \mid q{-}1$.
+By CRT and quadratic reciprocity, the density of primes~$q$ for which
+the first~$k$ multiplier primes all fail to escape the index-2
+subgroup is at most $O(2^{-k})$.  Extending this to a rigorous
+density-zero statement for SE failure would require controlling all
+prime divisors $\ell \mid q{-}1$ simultaneously, which remains open.

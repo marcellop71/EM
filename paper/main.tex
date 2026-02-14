@@ -1,0 +1,438 @@
+\documentclass[10pt,a4paper]{article}
+
+%% === Fonts (lualatex-native) ================================================
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\setmainfont{TeX Gyre Pagella}[Ligatures=TeX]
+\setsansfont{TeX Gyre Heros}[Scale=MatchLowercase, Ligatures=TeX]
+\setmonofont{TeX Gyre Heros}[Scale=MatchLowercase]
+\usepackage{mathpazo}  % Palatino math to match text
+
+%% === Layout =================================================================
+\usepackage[
+  a4paper,
+  textwidth=34pc,
+  textheight=48\baselineskip,
+  marginparwidth=4pc,
+  marginparsep=0.8pc,
+  left=1.2in,
+  top=1.1in,
+]{geometry}
+\usepackage{microtype}
+\emergencystretch=1.5em
+
+%% === Paragraph spacing ======================================================
+\usepackage{parskip}
+\setlength{\parskip}{0.35\baselineskip plus 0.1\baselineskip minus 0.05\baselineskip}
+
+%% === Colors (must come before titlesec) ======================================
+\usepackage[svgnames,dvipsnames,table]{xcolor}
+
+% Existing ink colors
+\definecolor{codeink}{HTML}{1B6B6D}
+\definecolor{leanink}{HTML}{4338CA}
+\definecolor{defink}{HTML}{7C3AED}
+
+% Section heading colors
+\definecolor{paragraphcolor}{HTML}{374151}
+\definecolor{explaincolor}{HTML}{6B7280}
+
+% Theorem environment border colors
+\definecolor{thmframe}{HTML}{3B82F6}    % blue — theorems, lemmas, corollaries
+\definecolor{defframe}{HTML}{16A34A}    % green — definitions
+\definecolor{propframe}{HTML}{DB2777}   % pink — open properties/hypotheses
+\definecolor{conjframe}{HTML}{DC2626}   % red — conjectures
+\definecolor{remframe}{HTML}{D97706}    % amber — remarks
+
+%% === Section headings =======================================================
+\usepackage{titlesec}
+
+\titleformat{\section}
+  {\Large\bfseries\sffamily}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{2.5ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+\titleformat{\subsection}
+  {\large\bfseries\sffamily}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{2ex plus 1ex minus .2ex}{1ex plus .2ex}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\sffamily}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{1.5ex plus 0.5ex minus .2ex}{0.8ex plus .2ex}
+
+\titleformat{\paragraph}[hang]
+  {\normalsize\bfseries\sffamily\color{paragraphcolor}}
+  {}
+  {0pt}
+  {}
+\titlespacing*{\paragraph}{0pt}{1.5ex plus 0.5ex minus 0.2ex}{0.5em}
+
+\titleformat{\subparagraph}[runin]
+  {\normalsize\itshape\color{explaincolor}}
+  {}
+  {0pt}
+  {}
+\titlespacing*{\subparagraph}{0pt}{0.8ex plus 0.3ex}{0.5em}
+
+%% === Standard packages ======================================================
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{tikz-cd}
+\usetikzlibrary{positioning,arrows.meta,calc}
+\usepackage{float}
+\usepackage{scalerel}
+
+% Table rules
+\arrayrulecolor{gray!50}
+
+%% === Hyperref ===============================================================
+\usepackage[
+  colorlinks=true,
+  linkcolor=leanink!80!black,
+  citecolor=defink!80!black,
+  urlcolor=codeink,
+  bookmarksnumbered=true,
+  bookmarksopen=true,
+  bookmarksopenlevel=2,
+]{hyperref}
+
+%% === Running headers ========================================================
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\nouppercase{\leftmark}}
+\fancyhead[R]{\small\sffamily\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{%
+  \color{gray!40}\leaders\hrule height \headrulewidth\hfill}}
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[C]{\small\sffamily\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+%% === Table of contents styling ==============================================
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\sffamily\bfseries}
+\renewcommand{\cftsubsecfont}{\sffamily}
+\renewcommand{\cftsecpagefont}{\sffamily\bfseries}
+\renewcommand{\cftsubsecpagefont}{\sffamily}
+\setlength{\cftbeforesecskip}{0.5ex}
+
+%% === Inline code and Lean links =============================================
+\newcommand{\code}[1]{%
+  \ifmmode\text{\color{codeink}\sffamily\small #1}\else{\color{codeink}\sffamily\small #1}\fi%
+}
+
+\newcommand{\leanurl}{https://github.com/marcellop71/EM/blob/main}
+\newcommand{\lean}[2]{%
+  \texorpdfstring{%
+    \href{\leanurl/#1}{%
+      {\color{leanink}\sffamily\footnotesize%
+        \scalerel*{\checkmark}{X}\kern0.12em#2}}%
+  }{#2}%
+}
+
+% Allow line breaks at underscores everywhere.
+\renewcommand{\_}{\textunderscore\hspace{0pt}}
+
+%% === Status markers ===========================================================
+\newcommand{\proved}{\texorpdfstring{%
+  {\color{thmframe}\sffamily\footnotesize\bfseries [proved]}}{[proved]}}
+\newcommand{\openhyp}{\texorpdfstring{%
+  {\color{propframe}\sffamily\footnotesize\bfseries [open]}}{[open]}}
+\newcommand{\superseded}{\texorpdfstring{%
+  {\color{gray}\sffamily\footnotesize\bfseries [superseded]}}{[superseded]}}
+
+%% === Named definitions/theorems =============================================
+\newcommand{\defname}[1]{\texorpdfstring{{\color{defink}\textsc{#1}}}{#1}}
+\newcommand{\abbr}[1]{\texorpdfstring{{\color{defink}\textsc{\textbf{#1}}}}{#1}}
+
+%% === Theorem environments ===================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{property}[theorem]{Property}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+%% === Colored left-border bars for theorem environments ======================
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{theorems,breakable,skins}
+
+\tcolorboxenvironment{theorem}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{thmframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+}
+\tcolorboxenvironment{lemma}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{thmframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+}
+\tcolorboxenvironment{proposition}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{thmframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+}
+\tcolorboxenvironment{corollary}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{thmframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+}
+\tcolorboxenvironment{conjecture}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{conjframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+}
+\tcolorboxenvironment{definition}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{defframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+}
+\tcolorboxenvironment{property}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{propframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+}
+\tcolorboxenvironment{remark}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=1mm, bottom=1mm,
+  borderline west={2pt}{0pt}{remframe},
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+  before upper={\small},
+}
+\tcolorboxenvironment{proof}{
+  blanker, breakable,
+  left=3mm, right=0mm, top=0.5mm, bottom=0.5mm,
+  borderline west={1pt}{0pt}{gray!40},
+  before skip=0.3\baselineskip, after skip=0.8\baselineskip,
+  before upper={\small},
+}
+
+%% === Contribution highlight box =============================================
+\newenvironment{contribution}{%
+  \begin{tcolorbox}[
+    blanker, breakable,
+    left=3mm, right=3mm, top=2mm, bottom=2mm,
+    borderline west={2pt}{0pt}{leanink},
+    borderline east={2pt}{0pt}{leanink},
+    colback=leanink!3,
+    before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+  ]
+  \small\sffamily
+}{%
+  \end{tcolorbox}
+}
+
+%% === Road-map box (section-opening summaries) ================================
+\definecolor{roadmapbg}{HTML}{F0F4FF}
+\definecolor{roadmapframe}{HTML}{6366F1}
+\newtcolorbox{roadmap}[1][]{%
+  enhanced, breakable,
+  colback=roadmapbg, colframe=roadmapframe,
+  boxrule=0.6pt,
+  left=4mm, right=4mm, top=3mm, bottom=2mm,
+  fonttitle=\sffamily\bfseries\small,
+  title={Section roadmap},
+  coltitle=roadmapframe,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=roadmapbg, colframe=roadmapbg,
+    boxrule=0pt, left=1mm, right=1mm},
+  before skip=0.8\baselineskip, after skip=1\baselineskip,
+  #1
+}
+
+%% === Key result box (the 5--10 landmark theorems) ============================
+\definecolor{keybg}{HTML}{FFFBEB}
+\definecolor{keyframe}{HTML}{D97706}
+\newtcolorbox{keyresult}[1][]{%
+  enhanced, breakable,
+  colback=keybg, colframe=keyframe,
+  boxrule=0.8pt,
+  left=4mm, right=4mm, top=3mm, bottom=2mm,
+  before skip=1\baselineskip, after skip=1\baselineskip,
+  #1
+}
+
+%% === Dead-end box ============================================================
+\definecolor{deadbg}{HTML}{FEF2F2}
+\definecolor{deadframe}{HTML}{991B1B}
+\newtcolorbox{deadend}[1][]{%
+  enhanced, breakable,
+  colback=deadbg, colframe=deadframe!60,
+  boxrule=0.5pt,
+  left=4mm, right=4mm, top=2mm, bottom=2mm,
+  fonttitle=\sffamily\bfseries\small\color{deadframe},
+  coltitle=deadframe,
+  #1
+}
+
+%% === Open problem / frontier box =============================================
+\definecolor{openbg}{HTML}{FDF2F8}
+\definecolor{openframe}{HTML}{BE185D}
+\newtcolorbox{frontierbox}[1][]{%
+  enhanced, breakable,
+  colback=openbg, colframe=openframe!60,
+  boxrule=0.5pt,
+  left=4mm, right=4mm, top=2mm, bottom=2mm,
+  before skip=0.8\baselineskip, after skip=0.8\baselineskip,
+  #1
+}
+
+%% === Aside / intuition box (lighter, for heuristic discussion) ===============
+\definecolor{asidebg}{HTML}{F9FAFB}
+\definecolor{asideframe}{HTML}{9CA3AF}
+\newenvironment{aside}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    colback=asidebg, colframe=asideframe,
+    boxrule=0.4pt,
+    left=4mm, right=4mm, top=2mm, bottom=2mm,
+    before skip=0.6\baselineskip, after skip=0.6\baselineskip,
+  ]
+  \small
+}{%
+  \end{tcolorbox}
+}
+
+%% === Lean code blocks ========================================================
+\newfontfamily\leanfont{Fira Code}[Scale=MatchLowercase,NFSSFamily=firacode]
+\usepackage{listings}
+\definecolor{leanbg}{HTML}{F5F3FF}
+\definecolor{leankw}{HTML}{4338CA}
+\definecolor{leancmt}{HTML}{6B7280}
+\lstdefinelanguage{Lean4}{
+  morekeywords={def,theorem,lemma,where,let,if,then,else,match,with,by,
+    Prop,Type,variable,section,end,namespace,open,import,structure,class,
+    instance,noncomputable,private,fun,have,exact,sorry,abbrev},
+  morecomment=[l]{--},
+  morecomment=[n]{/-}{-/},
+  sensitive=true,
+}
+\lstset{
+  language=Lean4,
+  basicstyle=\leanfont\small,
+  keywordstyle=\color{leankw}\bfseries,
+  commentstyle=\color{leancmt}\itshape,
+  breaklines=true,
+  columns=flexible,
+  keepspaces=true,
+  showstringspaces=false,
+  literate=
+    {→}{{$\to$}}1
+    {∀}{{$\forall$}}1
+    {∃}{{$\exists$}}1
+    {ℕ}{{$\mathbb{N}$}}1
+    {ℂ}{{$\mathbb{C}$}}1
+    {ℤ}{{$\mathbb{Z}$}}1
+    {ℝ}{{$\mathbb{R}$}}1
+    {≤}{{$\leq$}}1
+    {≥}{{$\geq$}}1
+    {≠}{{$\neq$}}1
+    {×}{{$\times$}}1
+    {⊤}{{$\top$}}1
+    {⊥}{{$\bot$}}1
+    {∉}{{$\notin$}}1
+    {∈}{{$\in$}}1
+    {ˣ}{{${}^{\times}$}}1
+    {₀}{{${}_0$}}1
+    {₁}{{${}_1$}}1
+    {·}{{$\cdot$}}1
+    {‖}{{$\|$}}1
+    {∧}{{$\wedge$}}1
+    {∨}{{$\vee$}}1
+    {¬}{{$\neg$}}1
+    {⟨}{{$\langle$}}1
+    {⟩}{{$\rangle$}}1
+    {↔}{{$\leftrightarrow$}}1
+    {⊆}{{$\subseteq$}}1
+    {∣}{{$\mid$}}1
+    {∘}{{$\circ$}}1
+    {λ}{{$\lambda$}}1,
+}
+\newtcblisting{leancode}[1][]{%
+  listing only,
+  listing options={language=Lean4},
+  enhanced, breakable,
+  colback=leanbg,
+  colframe=leanink!40,
+  boxrule=0.4pt,
+  left=3mm, right=3mm, top=2mm, bottom=2mm,
+  before skip=0.6\baselineskip, after skip=0.6\baselineskip,
+  #1
+}
+
+%% === Margin signposts ========================================================
+\newcommand{\marginnote}[1]{%
+  \marginpar{\raggedright\footnotesize\sffamily\color{gray!70!black}#1}}
+\newcommand{\keymark}{\marginnote{$\bigstar$\,key result}}
+\newcommand{\deadmark}{\marginnote{$\times$\,dead end}}
+\newcommand{\openmark}{\marginnote{$\circ$\,open}}
+
+\setlength{\headheight}{22pt}
+
+%% === Math macros ============================================================
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\seq}[1]{\mathrm{em}_{#1}}
+\newcommand{\Prod}[1]{\mathrm{P}_{#1}}
+\newcommand{\minFac}{\mathrm{minFac}}
+\newcommand{\walkZ}[3]{\mathrm{P}_{#1,#2}(#3)}
+\newcommand{\multZ}[3]{\mathrm{m}_{#1,#2}(#3)}
+\newcommand{\SE}{\mathrm{SE}}
+\newcommand{\MH}{\mathrm{MH}}
+\newcommand{\HH}{\mathrm{HH}}
+\renewcommand{\DH}{\mathrm{DH}}
+\newcommand{\MC}{\mathrm{MC}}
+\newcommand{\PE}{\mathrm{PE}}
+\newcommand{\ME}{\mathrm{ME}}
+\newcommand{\EMPR}{\mathrm{EMPR}}
+\newcommand{\WHP}{\mathrm{WHP}}
+\newcommand{\EKE}{\mathrm{EKE}}
+\newcommand{\PRE}{\mathrm{PRE}}
+
+\title{A formalized reduction of the Mullin's Conjecture}
+
+\author{Marcello Paris}
+\date{March 2026}
+
+\begin{document}
+
+\maketitle
+\input{abstract.tex}
+
+\newpage
+\tableofcontents
+
+\newpage
+\input{introduction.tex}
+\input{background.tex}
+\input{the_residue_walk.tex}
+\input{the_character_sum_reduction.tex}
+\input{the_ensemble_reduction.tex}
+\input{why_its_hard.tex}
+\input{variants.tex}
+\input{appendix.tex}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+\input{the_lean_formalization.tex}
+\input{bibliography.tex}
+
+\end{document}
