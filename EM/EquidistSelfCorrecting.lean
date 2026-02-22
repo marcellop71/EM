@@ -681,6 +681,55 @@ theorem order2_noLongRuns_mc (L : Nat) (hL : 0 < L) (hnlr : NoLongRuns L)
 
 end BREOrder2
 
+/-! ## §35.1. NoLongRuns for Quadratic Residues
+
+This subsection provides a specialized variant of `NoLongRuns` restricted to
+order-2 characters, corresponding to the natural statement "no L consecutive
+quadratic residues after the sieve gap" when q ≡ 1 (mod 4).
+
+For a prime q, an order-2 character χ takes only values ±1. The most important
+example is the quadratic residue (Legendre) character when q ≡ 1 (mod 4).
+The condition `NoLongRunsQuadratic L` asserts that beyond some threshold, we
+never see L consecutive multipliers all satisfying χ(m) = 1 (i.e., all in the
+kernel of χ).
+
+This is a natural restriction of the general `NoLongRuns L` hypothesis:
+- `NoLongRuns L` quantifies over ALL nontrivial characters χ
+- `NoLongRunsQuadratic L` quantifies only over order-2 characters
+
+Note: The reduction `NoLongRunsQuadratic L → MC` would require a proof that
+controlling ONLY order-2 characters is sufficient for PED. The existing
+`order2_noLongRuns_mc` theorem assumes full `NoLongRuns L` (all characters),
+so `NoLongRunsQuadratic` represents a genuinely weaker (and more natural)
+hypothesis that would require a new proof strategy. This is left as future work.
+-/
+
+open Classical in
+/-- **NoLongRunsQuadratic(L)**: For every prime q not in the sequence,
+    for every order-2 character χ mod q (which includes the quadratic residue
+    character when q ≡ 1 mod 4), there exists N₀ such that for all n ≥ N₀,
+    among the L consecutive multipliers m(n), ..., m(n+L-1), at least one
+    satisfies χ(m(n+k)) ≠ 1.
+
+    **Interpretation**: No run of L consecutive quadratic residues after the
+    sieve gap (for primes where the QR character is nontrivial).
+
+    **Status**: This is strictly weaker than `NoLongRuns L` (which requires
+    escapes for ALL nontrivial characters, not just order-2 ones). Whether
+    this weaker hypothesis is sufficient for MC is an open question. -/
+def NoLongRunsQuadratic (L : Nat) : Prop :=
+  ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
+  ∀ (χ : (ZMod q)ˣ →* ℂˣ) (_hχ : χ ≠ 1) (_hord2 : IsOrder2 χ),
+  ∃ N₀ : ℕ, ∀ n ≥ N₀,
+    ∃ k, k < L ∧ χ (emMultUnit q hq hne (n + k)) ≠ 1
+
+/-- **NoLongRuns implies NoLongRunsQuadratic**: the general no-long-runs
+    hypothesis implies the order-2 restricted version. -/
+theorem noLongRuns_implies_noLongRunsQuadratic (L : ℕ) (hnlr : NoLongRuns L) :
+    NoLongRunsQuadratic L := by
+  intro q inst hq hne χ hχ _hord2
+  exact @hnlr q inst hq hne χ hχ
+
 /-! ## §36. Sieve Equidistribution, Dirichlet Independence, and Multi-Modular CSB
 
 This section contains three components:

@@ -21,7 +21,7 @@
 
 % Lean 4 source links for formally verified results.
 % Set \leanurl to the repository blob URL for clickable source references.
-\newcommand{\leanurl}{https://github.com/mparis/EM/blob/main}
+\newcommand{\leanurl}{https://github.com/marcellop71/EM/blob/main}
 \definecolor{leanink}{HTML}{4338CA}
 \newcommand{\lean}[2]{%
   \texorpdfstring{%
@@ -54,11 +54,11 @@
 \newcommand{\ZZ}{\mathbb{Z}}
 \newcommand{\NN}{\mathbb{N}}
 \newcommand{\FF}{\mathbb{F}}
-\newcommand{\seq}{\mathrm{seq}}
-\newcommand{\Prod}{\mathrm{prod}}
+\newcommand{\seq}{\mathrm{em}}
+\newcommand{\Prod}{\mathrm{P}}
 \newcommand{\minFac}{\mathrm{minFac}}
-\newcommand{\walkZ}{\mathrm{walkZ}}
-\newcommand{\multZ}{\mathrm{multZ}}
+\newcommand{\walkZ}[2]{\mathrm{P}_{#1}(#2)}
+\newcommand{\multZ}[2]{\mathrm{m}_{#1}(#2)}
 \newcommand{\SE}{\mathrm{SE}}
 \newcommand{\MH}{\mathrm{MH}}
 \newcommand{\HH}{\mathrm{HH}}
@@ -71,8 +71,7 @@
 \newcommand{\EKE}{\mathrm{EKE}}
 \newcommand{\PRE}{\mathrm{PRE}}
 
-\title{The Irreducible Core of Mullin's Conjecture:\\
-A Machine-Verified Reduction}
+\title{A formalized reduction of the Mullin's Conjecture}
 
 \author{Marcello Paris}
 \date{February 2026}
@@ -87,28 +86,35 @@ $a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, where $\text{lpf}$ is
 the least prime factor.
 Mullin's Conjecture (MC, 1963) asserts that every prime eventually
 appears.  We present a Lean~4 formalization
-(${\sim}22{,}400$~lines, \textbf{zero sorry}) that reduces MC to a
+(${\sim}26{,}900$~lines, 35~files, \textbf{zero sorry}) that reduces MC to a
 single open hypothesis.
 
-An \emph{inductive bootstrap} eliminates the algebraic half: we prove
-that for any prime $p \geq 5$, some odd prime $r < p$ escapes every
-proper subgroup of $(\ZZ/p\ZZ)^\times$, using only modular
-arithmetic.  A \emph{Fourier bridge} handles the analytic half: MC
-follows whenever certain walk character sums are $o(N)$.  Together
-these yield \textbf{DynamicalHitting}~(DH)~$\Rightarrow$~MC\@: if a
-multiplicative walk whose multipliers generate
-$(\ZZ/q\ZZ)^\times$ hits every element cofinally, MC holds.
+An \emph{inductive bootstrap} yields the primary reduction: the
+\textbf{Single Hit Theorem} shows that MC follows if, for each
+prime~$q$, the multiplicative walk on $(\ZZ/q\ZZ)^\times$ hits~$-1$
+at least once past a computable bound.  The algebraic precondition
+(SubgroupEscape) is free: for any prime $p \geq 5$, some odd prime
+$r < p$ escapes every proper subgroup of $(\ZZ/p\ZZ)^\times$, proved
+using only modular arithmetic.  A separate \emph{Fourier bridge}
+gives a parallel reduction: MC follows whenever certain walk character
+sums are $o(N)$.
 
 Multiple reduction routes---algebraic, character-analytic,
 sieve-theoretic---all converge on the same
 \emph{orbit-specificity gap}: transferring generic equidistribution
 to one deterministic orbit.  The sharpest sufficient condition is
-Conditional Multiplier Equidistribution~(CME), proved to imply the
+Conditional Multiplier Equidistribution~(CME)---the statement that
+the factoring operation in the EM construction destroys correlation
+between consecutive multiplier residues---proved to imply the
 Complex Character Sum Bound~(CCSB) for all character orders,
-bypassing the $d \geq 3$ barrier.  Twelve dead ends are documented.
-
-The formalization comprises ${\sim}770$~theorems and
-${\sim}460$~definitions across 32~files.
+bypassing the $d \geq 3$ barrier.  CME decomposes as
+$\mathrm{CME} = \mathrm{VCB} + \mathrm{Dec}$, where
+Vanishing Conditional Bias~(VCB) is a strictly weaker hypothesis
+permitting fiber sums to be proportional to visit counts rather than
+small.  We prove $\mathrm{VCB} + \mathrm{PED} \Rightarrow
+\mathrm{CCSB}$, giving nine independent routes to MC.
+Over a hundred dead ends are
+documented, precisely delineating the boundary of current methods.
 \end{abstract}
 
 \newpage
@@ -120,8 +126,6 @@ ${\sim}460$~definitions across 32~files.
 \section{Introduction}
 \label{sec:intro}
 %% =========================================================================
-
-\subsection{Mullin's Conjecture}
 
 Euclid's proposition IX.20 of the \emph{Elements} shows that for any
 finite set of primes, each prime factor of their product plus one is outside the
@@ -148,14 +152,18 @@ The first twenty terms (0-indexed) are
   1741,\;
   \underbrace{1313797957}_{a(19)},\; \ldots
 \end{gather*}
-The sequence behaves almost randomly: small primes appear out of their
+The sequence shows an erratic behavior: small primes appear out of their
 natural order ($5$ not until position~$6$, $11$ at position~$11$,
 $37$ at position~$17$), while enormous primes---a 7-digit number at
 position~$7$, a 14-digit number at position~$8$---appear early.  As of
-2025, 51~terms are known.  Remarkably, $41$ and $47$---the two smallest
-primes not yet observed---have not appeared even after 51~terms, while
-$31$ does not show up until position~50.
-By construction, no prime can appear twice.
+2025, only 51~terms are known and some primes like $41$ and $47$ are
+not yet observed.  Computing further terms requires \emph{complete}
+factorization of $\Prod(n)+1$ (where $\Prod(n) \coloneqq a(0)\cdots a(n)$
+is the running product): finding any prime factor is not
+enough---one must certify that no smaller factor exists.  Since
+$\Prod(n)$ grows super-exponentially, this quickly exceeds the reach
+of all known factoring algorithms.  By construction, no prime can
+appear twice.
 
 \begin{conjecture}[Mullin, 1963]\label{conj:mullin}
 Every prime number eventually appears in the Euclid--Mullin sequence.
@@ -163,246 +171,146 @@ Every prime number eventually appears in the Euclid--Mullin sequence.
 
 The conjecture has resisted proof for over sixty years.  The difficulty
 is showing that the deterministic $\minFac$ rule eventually \emph{selects} each prime.
+That the rule matters is not idle speculation: Cox and van der
+Poorten~\cite{CoxVdP1968} showed that replacing $\minFac$ with the
+\emph{largest} prime factor provably misses infinitely many primes.
+
 Each step couples the next prime to the full factorization history, creating a recursive dependency that
 defeats both probabilistic heuristics and standard sieve methods.
 
-The crux of the difficulty is a \emph{selectability} problem.  At each
-step, $\Prod(n)+1$ has many prime factors, and any of them could serve
-as the next term---but only the \emph{smallest} is chosen.  A target
-prime~$q$ may divide $\Prod(n)+1$ infinitely often (it is
-``selectable'') yet never be selected if a smaller prime always divides
-$\Prod(n)+1$ as well.  Our formalization makes this tension precise and
-shows that the inductive structure of MC eliminates this obstruction for
-the tail of the sequence.
+At each step, $\Prod(n)+1$ may have many prime factors, and just the \emph{smallest} is chosen.
+So, a target prime~$q$ may possibly divide $\Prod(n)+1$ for many (maybe infinite) $n$,
+yet never be selected if a smaller prime always divides $\Prod(n)+1$ as well.
+Our formalization tries to make this tension precise.
 
-\subsection{History and Computational Status}
+\paragraph{The accumulator structure.}
+The running product $\Prod(n)$ is an \emph{accumulator}: a single
+number that commits to the entire sequence history via irreversible
+multiplication, analogous to the cumulative digest in a hash chain.
+The accumulator poses a challenge~$\Prod(n)+1$; the response
+$\minFac(\Prod(n)+1)$ extends the chain; and the updated accumulator
+$\Prod(n{+}1) = \Prod(n) \cdot \minFac(\Prod(n){+}1)$ absorbs the
+response irreversibly---once a prime enters the product, it divides
+every future product and can never appear again
+(Theorem~\ref{thm:extinct}).
 
-Mullin posed the conjecture in 1963~\cite{Mullin1963}.  In over sixty
-years, no proof has been found, and no theoretical approach has come
-close.  The problem sits in an unusual position: it is elementary to
-state, each individual step is deterministic, yet the global behavior
-of the sequence appears completely intractable.
+This accumulator coupling is what makes standard tools fail.  Sieve
+methods require approximate independence between the events
+``$p \mid m$'' for different~$m$; here successive challenges
+$\Prod(n)+1$ share a cumulative history.  Ergodic methods require a
+fixed or state-dependent map; here the map at step~$n$ depends on the
+full accumulator, not just the current residue.  The walk
+reformulation (Section~\ref{sec:walk}) tames this coupling by
+projecting the accumulator onto a finite group: $\walkZ{q}{n} =
+\Prod(n) \bmod q$ preserves the divisibility information relevant
+to~$q$ while discarding the accumulator's combinatorial complexity.
+But the information lost in this projection is exactly the source of
+difficulty: the walk position determines \emph{whether} $q$ can divide
+$\Prod(n)+1$; the full accumulator determines \emph{which} prime is
+actually selected.  Every open hypothesis in this paper---DH, CCSB,
+CME---addresses this gap.
 
-\paragraph{The largest-factor variant.}
-Cox and van der Poorten~\cite{CoxVdP1968} showed that the related sequence using
-the \emph{largest} prime factor---where each term is
-$\operatorname{gpf}(\Prod(n) + 1)$ instead of $\minFac$---provably
-misses infinitely many primes (for instance,~$5$ never appears).  By
-always jumping to the largest factor of $\Prod(n) + 1$, the sequence
-leaps past small primes and can never return to them, since each Euclid
-number is coprime to every earlier term.  This refuted the natural
-strengthening that surjectivity holds regardless of the factor-selection
-rule, and showed that the $\minFac$ rule is essential to the conjecture.
+\paragraph{The factoring channel.}
+The accumulator structure of the EM sequence is closely analogous to a
+cryptographic hash chain: each term is deterministically derived from
+its predecessor through an operation---integer factorization---that
+destroys algebraic relationships.  In an iterated SHA-256 chain
+$x_0, H(x_0), H(H(x_0)), \ldots$, each value is uniquely determined
+by the seed, yet consecutive terms pass every reasonable statistical
+test for independence.  In the EM sequence, the running product
+$\Prod(n)$ determines $\Prod(n)+1$, whose smallest prime factor
+becomes the next multiplier; but the $O(\log q)$ bits visible in the
+residue $\Prod(n) \bmod q$ cannot control the outcome of factoring the
+${\sim}2^n$-bit integer $\Prod(n)+1$.  This \emph{information
+bottleneck} is why the multiplier residues behave as if
+independent---and why the walk on $(\ZZ/q\ZZ)^\times$ should visit
+every element, including the ``death state'' $-1$ that would put~$q$
+in the sequence.  The analogy is tighter than it may appear: in both
+cases the pseudorandomness claim concerns a fully deterministic process
+whose forward map is easy but whose outputs resist structural
+prediction---the difference being that $\minFac$ achieves this not by
+cryptographic design but accidentally, through the information
+bottleneck of projecting a ${\sim}2^n$-bit integer onto $O(\log q)$
+bits.  Our formalization makes this intuition precise: we
+identify the exact mathematical content---Conditional Multiplier
+Equidistribution---needed to convert ``the factoring channel destroys
+correlation'' into a proof of MC, and show it implies the conjecture
+through a verified chain of reductions.
 
-\paragraph{Variants and surveys.}
-Booker~\cite{BoSa2012} showed that a carefully chosen variant of the
-Euclid--Mullin sequence \emph{does} contain every prime: by selecting a
-specific (not necessarily smallest) prime factor at each step, one can
-steer the sequence to hit every prime.  This demonstrates that the
-conjecture is \emph{delicate}: the surjectivity depends on the precise
-rule, not just the Euclidean structure.  Pollack and
-Trevi\~{n}o~\cite{PollackTrevino2014} surveyed the problem's place in
-the broader landscape of Euclid-inspired sequences, and studied
-distributional properties of primes ``forgotten'' by Euclid-type
-constructions.
-
-\paragraph{Computational status.}
-The sequence has been extended through a series of large-scale
-factoring efforts:
-\begin{itemize}[nosep]
-\item Wagstaff~(1993) computed through the 43rd term.
-\item In 2010, the 180-digit number $\Prod(43) + 1$ was factored via
-  GNFS (General Number Field Sieve), yielding a 68-digit prime as
-  $a(44)$.  Terms $a(45)$--$a(47)$ followed.
-\item In 2012, Propper factored the 256-digit number $\Prod(47)+1$ by
-  ECM (Elliptic Curve Method), discovering a 75-digit factor and
-  extending the sequence to 51~terms
-  (Booker--Irvine~\cite{BoIr2016}).
-\item Finding $a(52)$ requires factoring a 335-digit number.  No
-  factorization is known as of 2025.
-\end{itemize}
-After 51~terms, the smallest primes not yet observed are $41$ and $47$.
-Note that $31$---a smaller prime---does not appear until position~$50$.
-
-\paragraph{Why computation cannot resolve the conjecture.}
-Even heroic computation is fundamentally unable to address the
-conjecture.  Each new term requires factoring a number whose digit
-count grows roughly linearly with the number of terms, quickly
-exceeding the reach of any known factoring algorithm.  But even if we
-could compute millions of terms, this would prove nothing: the
-conjecture is a $\forall$-statement over all primes, and no finite
-computation can rule out the possibility that some prime first appears
-at an astronomically large index.
-
-More fundamentally, the sequence exhibits a sensitive dependence on its
-full history.  Each term $a(n+1) = \minFac(\Prod(n)+1)$ depends on the
-\emph{complete factorization} of a number that encodes all previous
-terms.  Changing a single early term alters every subsequent one.  This
-global coupling is what makes the sequence appear random despite being
-deterministic, and it means that local or statistical reasoning
-about ``typical'' behavior is unreliable.  There are no known density
-arguments, probabilistic heuristics, or sieve-theoretic bounds that
-bear on the conjecture.  The problem requires a structural argument
-about the sequence's long-term dynamics---which is precisely what our
-formalization provides.
-
-\subsection{Main Result and Approach}
+\
 
 Our main result is a formally verified reduction of MC to a single
-hypothesis about the dynamics of a residue walk.  The strategy proceeds
-in three stages:
+dynamical question: for each prime~$q$, does the walk on
+$(\ZZ/q\ZZ)^\times$ hit~$-1$ at least once past a computable bound?
+The strategy proceeds in three stages:
+
+\
+
 \begin{enumerate}[nosep]
 \item \textbf{Reformulation.}  We recast ``does prime~$q$ appear?'' as
   ``does a multiplicative walk on the cyclic group $(\ZZ/q\ZZ)^\times$
   hit the element~$-1$?''  This translation is exact
   (Section~\ref{sec:walk}).
 \item \textbf{Bootstrap.}  We show that the algebraic precondition for
-  walk equidistribution---that the multipliers generate the full
+  the walk to reach~$-1$---that the multipliers generate the full
   group---is \emph{free}, following from the inductive hypothesis
   $\MC({<}\,p)$ via an elementary lemma
-  (Section~\ref{sec:bootstrap}).  This reduces MC to a single
-  dynamical question.
+  (Section~\ref{sec:bootstrap}).  A single hit on~$-1$ past the
+  sieve gap suffices for MC\@.
 \item \textbf{Diagnosis.}  We develop the harmonic-analytic and
   sieve-theoretic infrastructure to determine \emph{precisely} what
-  kind of statement would close the conjecture, and why known methods
+  kind of statement would produce the required hit, and why known methods
   fall short (Sections~\ref{sec:character}--\ref{sec:hard}).
 \end{enumerate}
+
+\
+
 The formalization serves two purposes:
 (i)~it guarantees that every reduction is logically sound, and (ii)~it
 precisely delineates the boundary between what is proved and what
 remains open, preventing the kind of subtle gap that plagues pencil-and-paper
 reductions involving multiple interacting hypotheses.
 
-\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\
+
+The primary reduction is:
+
+\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/EquidistBootstrap.lean}{single\_hit\_implies\_mc}]
 \label{thm:main}
-$\mathrm{DynamicalHitting} \;\Longrightarrow\; \MC$.
+$\mathrm{SingleHitHypothesis} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
-DynamicalHitting asserts: if the multiplier residues generate
-$(\ZZ/q\ZZ)^\times$ (SubgroupEscape), then the walk hits~$-1$
-cofinally (HittingHypothesis).  The proof is by strong induction
-on~$p$, with PrimeResidueEscape (proved elementarily) bootstrapping SE
-at each step.
+SingleHitHypothesis asks: for every missing prime~$q$, if $\MC({<}\,q)$
+and $\SE(q)$ hold, then $q \mid \Prod(n)+1$ for some~$n$ past the
+sieve gap.  The proof is by strong induction on~$p$: the inductive
+hypothesis gives $\MC({<}\,p)$, PrimeResidueEscape (proved elementarily)
+bootstraps $\SE(p)$, and the single hit past the sieve gap gives
+$\seq(n{+}1) = p$.
 
-A parallel reduction gives a clean character-analytic statement:
+The algebraic precondition---that the multipliers generate
+$(\ZZ/q\ZZ)^\times$---is free; the open problem is purely dynamical.
+Multiple strategies for producing the required hit are formally verified:
+
+\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\label{thm:dh-main}
+$\mathrm{DynamicalHitting} \;\Longrightarrow\; \MC$.
+\end{theorem}
 
 \begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
 $\mathrm{ComplexCharSumBound} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
-Both reductions are fully machine-verified with zero \code{sorry}.
-The formalization thus provides a complete ``roadmap'' for proving MC:
-any future proof need only establish one of these open hypotheses
-(DynamicalHitting, ComplexCharSumBound, or any of the equivalent
-formulations in \S\ref{sec:character} and \S\ref{sec:open}), and the
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
+$\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
+\end{theorem}
+
+All reductions are fully machine-verified with zero \code{sorry}.
+Each strategy produces at least one hit past the sieve gap, which the
+Single Hit Theorem converts into MC\@.  The formalization thus
+provides a precise ``roadmap'': prove DynamicalHitting,
+ComplexCharSumBound, CME, VCB~$+$~PED, or any of the equivalent
+formulations in \S\ref{sec:character} and \S\ref{sec:open}, and the
 rest follows by machine-checked deduction.
-
-\subsection{Analogies and Context}
-
-Mullin's Conjecture has no known applications: if proved tomorrow, no
-other theorem in number theory would follow from it.  The value of the
-problem lies instead in what it \emph{is an instance of}---and in the
-methods its resolution would require.  The orbit-specificity barrier
-identified by this formalization appears, in recognizable form, across
-several active areas of mathematics.
-
-\paragraph{Artin's conjecture and the orbit-specificity gap.}
-The closest structural analogue to MC is Artin's conjecture on
-primitive roots~\cite{Artin1927}: for any integer $a \neq -1$ that is not a
-perfect square, the group $(\ZZ/p\ZZ)^\times$ is generated by~$a$ for
-infinitely many primes~$p$.  The parallel is precise:
-\begin{itemize}[nosep]
-\item \textbf{Artin} asks whether the orbit of a fixed generator~$a$
-  under repeated multiplication fills $(\ZZ/p\ZZ)^\times$.
-\item \textbf{Mullin} asks whether the orbit of~$2$ under
-  multiplication by successive EM primes in $(\ZZ/q\ZZ)^\times$ hits
-  the single element~$-1$.
-\end{itemize}
-Both conjectures are blocked by the same fundamental obstacle:
-transferring \emph{averaged} equidistribution results (which hold for
-most moduli or most generators) to \emph{one specific deterministic
-orbit}.  Hooley~\cite{Hooley1967} proved Artin's conjecture conditional on GRH
-for Dedekind zeta functions of Kummer extensions---because GRH
-provides the uniformity across individual characters needed to control
-a single orbit.  In our setting, this uniformity is exactly what CCSB
-demands.
-
-The analogy is not merely structural.  The Kummer extensions
-$\mathbb{Q}(\zeta_\ell, a^{1/\ell})$ that appear in Hooley's proof
-are the same extensions that arise in the EffectiveKummerEscape
-approach to SubgroupEscape (Section~\ref{sec:open}).  The elementary
-PRE lemma (Theorem~\ref{thm:pre}) sidesteps this Chebotarev machinery
-entirely for the algebraic component, but the dynamical
-component---does the walk \emph{hit}~$-1$, not merely \emph{generate}
-the full group?---remains exactly the orbit-specificity gap that GRH
-closes for Artin and that no known tool closes for Mullin.
-
-\paragraph{Multiplicative walks on finite groups.}
-The walk reformulation (Section~\ref{sec:walk}) places MC in the
-framework of random walks on finite groups, studied systematically by
-Diaconis and others since the
-1980s~\cite{ChungDiaconisGraham1987}.  The Diaconis--Shahshahani upper
-bound lemma~\cite{DiaconisShahshahani1981} shows that a random walk on a finite group~$G$
-driven by i.i.d.\ multipliers from a conjugation-invariant
-distribution mixes in $O(\log |G|)$ steps, with mixing measured by
-character sums.
-
-The EM walk has the same algebraic structure---a multiplicative walk
-on the cyclic group $(\ZZ/q\ZZ)^\times$---but violates every
-assumption of the classical mixing theory.  The multipliers are
-deterministic, not random; they are not identically distributed; and
-most critically, the multiplier at step~$n$ depends on the walk
-position at step~$n$, creating exactly the position-multiplier
-correlation that the Diaconis--Shahshahani framework assumes away.
-CCSB is the precise derandomization of the mixing-time bound: it asks
-that the Fourier coefficients of the walk's occupation measure tend to
-zero for every non-trivial character.
-
-\paragraph{Smallest prime factor distribution.}
-The SieveTransfer hypothesis (Section~\ref{sec:open}) connects MC to
-the distribution of the smallest prime factor function
-$P^-(n) = \min\{p : p \mid n\}$, studied by Alladi~\cite{Alladi1977},
-Hildebrand~\cite{Hildebrand1986}, and others.  For generic integers in an arithmetic
-progression $n \equiv a \pmod{q}$, the distribution of $P^-(n)$ is
-controlled by the Dickman function and CRT-based equidistribution
-results.  MC asks whether this equidistribution transfers from generic
-integers to the specific subsequence $\{\Prod(n)+1\}_{n \geq 0}$.
-The same orbit-specificity transfer problem arises for Mersenne
-numbers $2^p - 1$, Fibonacci numbers, and polynomial iterates
-$f^{\circ n}(a)$ in arithmetic dynamics.
-
-\paragraph{The marginal/joint barrier and Sarnak's conjecture.}
-The formalization identifies a precise meta-obstacle
-(Section~\ref{sec:hard}): \emph{marginal} equidistribution of the
-multiplier residues is provable (the EM primes are equidistributed in
-residue classes, by Dirichlet's theorem); what MC requires is
-\emph{joint} equidistribution of the pair (walk position, multiplier),
-conditioned on the walk's history.  This barrier is an instance of a
-broader phenomenon.  Sarnak's conjecture~\cite{Sarnak2010} asserts that the
-M\"obius function $\mu(n)$ is orthogonal to every bounded
-deterministic sequence:
-$\frac{1}{N} \sum_{n \leq N} \mu(n) \, a_n \to 0$.
-CCSB is a M\"obius-orthogonality-type statement for the EM sequence,
-placing MC squarely within the Sarnak program's conceptual framework,
-even though the EM sequence falls outside the technical scope of
-existing results (which require zero topological entropy).
-
-\paragraph{Greedy sieves and orbit-hitting.}
-MC is the simplest nontrivial instance of a broader question: does a
-greedy, deterministic prime-selection process eventually cover all
-primes?  The Cox--van der Poorten result~\cite{CoxVdP1968} shows that this
-determinism is fragile: choosing the \emph{largest} factor instead
-provably misses primes.  More generally, MC belongs to the family of
-\emph{orbit-hitting problems} in arithmetic dynamics: given a map~$T$
-on a space~$X$ and a target set $S \subset X$, does the orbit
-eventually enter~$S$?  Unlike Artin (where the map $x \mapsto ax$ is
-the same at every step) or Collatz (where the map depends only on the
-current state), the EM map varies at each step, determined by the
-factorization of a number that depends on the entire orbit history.
-This self-referential coupling is what the walk--multiplier framework
-makes precise, and the formalization shows it is the sole source of
-difficulty: once the coupling is controlled (via CCSB or CME), MC
-follows by machine-checked deduction.
 
 \paragraph{Notation.}
 Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
@@ -411,10 +319,11 @@ source code.
 
 \paragraph{Organization.}
 The paper follows the logical structure of the reduction.
-Section~\ref{sec:walk} reformulates MC as a walk-hitting problem and
-establishes the algebraic prerequisites.
+Section~\ref{sec:walk} reformulates MC as a walk-hitting problem,
+establishes the algebraic prerequisites, and derives the first missing prime's death channel avoidance.
 Section~\ref{sec:bootstrap} presents the inductive bootstrap---the
-core mathematical insight that makes SubgroupEscape free.
+core insight that SubgroupEscape is free---and proves the Single Hit
+Theorem, reducing MC to producing one hit at each prime.
 Section~\ref{sec:character} develops the character-analytic reduction
 (CCSB~$\Rightarrow$~MC), including the large sieve infrastructure, the
 spectral energy bridge, and the van der Corput--autocorrelation route.
@@ -422,23 +331,20 @@ Section~\ref{sec:hard} explains \emph{why} the remaining hypothesis is
 difficult by analyzing dead ends and structural barriers.
 Section~\ref{sec:lean} describes the Lean formalization.
 Section~\ref{sec:open} discusses open problems and paths forward.
+Appendix~\ref{app:history} collects the historical background;
+Appendix~\ref{app:analogies} discusses analogies with
+Artin's conjecture, multiplicative walks, Sarnak's program, and
+sieve theory;
+Appendix~\ref{app:routes} presents additional sieve and spectral routes to MC;
+Appendix~\ref{app:agents} describes the human--AI methodology;
+and Appendix~\ref{sec:glossary} provides a glossary of all definitions and hypotheses.
 
 %% =========================================================================
-\section{The Residue Walk Reformulation}
+\section{The Residue Walk}
 \label{sec:walk}
 %% =========================================================================
 
-The central idea is to replace a global number-theoretic question
-(``does prime~$q$ eventually appear?'') with a local algebraic one
-(``does a certain walk on a finite group hit a specific element?'').
-We begin with the definitions, then explain why this reformulation
-is powerful.
-
-\subsection{Definitions}
-
-Let $\minFac(m)$ denote the smallest prime factor of a natural number
-$m \geq 2$. We define two sequences $\seq, \Prod : \NN \to \NN$ by
-mutual recursion:
+We define two sequences by mutual recursion:
 \begin{alignat}{2}
   \seq(0) &\coloneqq 2, &\qquad
   \Prod(0) &\coloneqq 2, \label{eq:base}\\
@@ -447,198 +353,202 @@ mutual recursion:
 \end{alignat}
 
 \begin{theorem}[\lean{EM/MullinDefs.lean}{seq\_isPrime, seq\_injective}]\label{thm:seq-props}
-\leavevmode
-\begin{enumerate}[nosep]
-\item \textup{(Primality)} For every $n \in \NN$, $\seq(n)$ is prime.
-\item \textup{(Injectivity)} $\seq(i) = \seq(j)$
-  implies $i = j$.  No prime appears twice.
-\end{enumerate}
+Every $\seq(n)$ is prime, and the sequence is injective: no prime
+appears twice.
 \end{theorem}
 
 \begin{definition}[\defname{Walk} and \defname{Multiplier}]\label{def:walk-mult}
-Let $q$ be a prime with $\seq(n) \neq q$ for all~$n$
-(a \emph{missing prime}).
-\begin{align}
-  \walkZ(q, n) &\coloneqq \Prod(n) \bmod q \;\;\in (\ZZ/q\ZZ)^\times, \label{eq:walk}\\
-  \multZ(q, n) &\coloneqq \seq(n\!+\!1) \bmod q \;\;\in (\ZZ/q\ZZ)^\times. \label{eq:mult}
-\end{align}
+For any prime~$q$, define the \textbf{residue walk} and the \textbf{multiplier} by projecting the accumulator and the next prime onto $\ZZ/q\ZZ$:
+
+$$\begin{aligned}\label{eq:walk}
+  &\walkZ{q}{n} \coloneqq \Prod(n) \bmod q \\
+  &\multZ{q}{n} \coloneqq \seq(n{+}1) \bmod q
+\end{aligned}$$
 \end{definition}
 
-The restriction to missing primes is essential, not merely
-conventional.  If $q = \seq(k)$ for some~$k$, then $q \mid \Prod(n)$
-for every $n > k$, so $\Prod(n) \bmod q = 0$, which is \emph{not} a
-unit in~$\ZZ/q\ZZ$; the walk and multiplier would not be
-well-defined.  When~$q$ is missing, it never divides any sequence term
-(by injectivity) and never divides the running product (which is a
-product of primes~$\neq q$), so both residues land in~$(\ZZ/q\ZZ)^\times$.
-
-Mullin's Conjecture asserts that no prime is missing.  The entire
-framework therefore works by reduction: \emph{assuming}~$q$ is missing,
-we build a walk that is well-defined, and then show it must hit~$-1$,
-which forces~$q$ to appear---a contradiction.  Every quantifier ``for
-every missing prime~$q$'' in the sequel should be read in this light.
-
 \begin{proposition}[\defname{Walk recurrence} --- \lean{EM/MullinGroupCore.lean}{walkZ\_succ}]\label{prop:recurrence}
-$\walkZ(q, n\!+\!1) = \walkZ(q, n) \cdot \multZ(q, n)$ in
-$(\ZZ/q\ZZ)^\times$.
-The walk is a multiplicative walk on the cyclic group
-$(\ZZ/q\ZZ)^\times$: at each step, the position is multiplied by the
-next EM prime reduced mod~$q$.
+$\walkZ{q}{n\!+\!1} = \walkZ{q}{n} \cdot \multZ{q}{n}$ in
+$\ZZ/q\ZZ$.
 \end{proposition}
 
-\begin{example}[The walk for $q = 41$]\label{ex:walk-41}
-The prime $41$ has not appeared in the first 51~known terms of the
-sequence, so we may form its walk.  The table below shows the first
-ten steps.  At each step, $\walkZ(41, n)$ is updated by multiplying
-by $\multZ(41, n) = \seq(n\!+\!1) \bmod 41$:
+\noindent The walk can be in one of two regimes:
 
-\medskip
-\begin{center}
-\begin{tabular}{r r r r l}
-\toprule
-$n$ & $\seq(n)$ & $\seq(n) \bmod 41$ & $\walkZ(41,n)$ & \\
-\midrule
- 0 &       $2$ &  $2$ &  $2$ & \\
- 1 &       $3$ &  $3$ &  $6$ & \\
- 2 &       $7$ &  $7$ &  $1$ & \\
- 3 &      $43$ &  $2$ &  $2$ & \\
- 4 &      $13$ & $13$ & $26$ & \\
- 5 &      $53$ & $12$ & $25$ & \\
- 6 &       $5$ &  $5$ &  $2$ & \\
- 7 & $6221671$ &  $3$ &  $6$ & \raisebox{0pt}[0pt][0pt]{$\leftarrow$ pattern repeats} \\
- 8 & $38709183810571$ &  $7$ &  $1$ & \\
- 9 &     $139$ & $16$ & $16$ & \\
-\bottomrule
-\end{tabular}
-\end{center}
-\medskip
+\
 
-For $41$ to appear in the sequence at step~$n\!+\!1$, we need
-$41 \mid \Prod(n)+1$, i.e.\ $\walkZ(41, n) = 40 \equiv -1 \pmod{41}$.
-Over all 51~known terms, the walk takes values
+\begin{enumerate}[nosep]
+\item \textbf{Living regime.}  If $q$ has not yet appeared in the
+  sequence up to step~$n$, then $q \nmid \Prod(n)$ (since $\Prod(n)$
+  is a product of the primes $\seq(0), \ldots, \seq(n)$, none equal
+  to~$q$).  So $\walkZ{q}{n} \in (\ZZ/q\ZZ)^\times$---the walk lives
+  in the group of units.
+
+\item \textbf{Dead regime.}  If $q = \seq(k)$ for some $k \leq n$,
+  then $q \mid \Prod(n)$, so $\walkZ{q}{n} = 0$.  From this point on,
+  $q \mid \Prod(m)$ for all $m \geq k$, so $\walkZ{q}{m} = 0$
+  forever.  The walk has \emph{collapsed to zero}
+  (\lean{EM/EquidistBootstrap.lean}{walkZ\_capture\_then\_collapse}).
+\end{enumerate}
+
+\
+
+The transition from living to dead can happen only through $-1$:
+
+\begin{theorem}[\defname{Walk--Divisibility Bridge} --- \lean{EM/MullinGroupCore.lean}{walkZ\_eq\_neg\_one\_iff}]\label{thm:bridge}
+For any prime~$q$ and any~$n$ such that $\walkZ{q}{n} \in
+(\ZZ/q\ZZ)^\times$:
 \[
-  2,\; 6,\; 1,\; 2,\; 26,\; 25,\; 2,\; 6,\; 1,\; 16,\;
-  3,\; 33,\; 28,\; 12,\; 24,\; 7,\; 20,\; 2,\; 38,\; 7,\; \ldots
-\]
-and \emph{never reaches~$40$}.  The group $(\ZZ/41\ZZ)^\times$ has
-$40$~elements; the walk wanders through them but has not yet found its
-target.  Can we prove it eventually will?  That is the content of
-Mullin's Conjecture for~$q = 41$.
-\end{example}
-
-\paragraph{Why the reformulation is powerful.}
-The walk--multiplier framework is not merely cosmetic: it makes the
-problem amenable to tools from group theory, harmonic analysis, and
-ergodic theory, and it cleanly separates two independent components:
-\begin{itemize}[nosep]
-\item \textbf{Algebraic structure}: which subgroups of
-  $(\ZZ/q\ZZ)^\times$ do the multipliers $\multZ(q, n)$ generate?  If
-  a proper subgroup traps all multipliers, the walk is permanently
-  confined and may never reach~$-1$.
-\item \textbf{Dynamical content}: given that the multipliers generate
-  the full group, does the walk actually visit every element?  This is
-  a question about the \emph{ordering} of multipliers, not just their
-  \emph{set}.
-\end{itemize}
-The bootstrap (Section~\ref{sec:bootstrap}) will show that the
-algebraic component is free; the dynamical component is the sole
-remaining content of MC.
-
-\subsection{The Walk--Divisibility Bridge}
-
-The walk and multiplier become useful only when connected back to the
-original number-theoretic problem.  The following theorem is the
-linchpin of the entire reduction: it converts divisibility (a
-number-theoretic condition) into a walk event (a group-theoretic
-condition), enabling all subsequent algebraic and harmonic-analytic
-arguments.  Every route to MC in this paper---DH, CCSB, MMCSB, the
-large sieve, the spectral energy approach---passes through this bridge.
-
-\begin{theorem}[\lean{EM/MullinGroupCore.lean}{walkZ\_eq\_neg\_one\_iff}]\label{thm:bridge}
-For every missing prime~$q$ and every $n \in \NN$:
-\[
-  \walkZ(q, n) = -1 \;\;\text{in } (\ZZ/q\ZZ)^\times
+  \walkZ{q}{n} = -1
   \quad\Longleftrightarrow\quad
   q \mid \bigl(\Prod(n) + 1\bigr).
 \]
 \end{theorem}
 
-This is the key translation: the group-theoretic event ``the walk
-reaches $-1$'' is the number-theoretic event ``$q$ divides
-$\Prod(n)+1$.''  If $q$ divides $\Prod(n)+1$, then $q$ could be a
-factor---and the $\minFac$ selection has a chance of picking~$q$.
+Hitting $-1$ is a \emph{necessary} condition for the walk to die (for
+$q$ to enter the sequence): if $q \mid \Prod(n)+1$, then
+$\walkZ{q}{n} = -1$.  But it is not sufficient by itself.  When
+$\walkZ{q}{n} = -1$, the walk dies only if $q = \minFac(\Prod(n)+1)$,
+i.e.\ no smaller prime divides $\Prod(n)+1$.  If a smaller prime~$p$
+also divides $\Prod(n)+1$, then $\minFac(\Prod(n)+1) \leq p < q$
+and $q$ is \emph{not} selected---the walk \emph{bounces off}~$-1$ and continues living.
+The walk may therefore hit~$-1$ multiple times without dying.  Death
+occurs only at a hit where $q$ is the smallest available factor:
+\[
+  \cdots \to \underbrace{\walkZ{q}{n} = -1}_{\text{bounce}}
+  \to (\ZZ/q\ZZ)^\times \to \cdots \to
+  \underbrace{\walkZ{q}{n_0} = -1}_{\substack{\text{lethal hit:}\\
+    q = \minFac}}
+  \to \underbrace{\walkZ{q}{n_0{+}1} = 0}_{\text{dead}}
+  \to 0 \to \cdots
+\]
 
-The bridge is formally verified because it is used in \emph{every}
-reduction chain: DH~$\Rightarrow$~MC, CCSB~$\Rightarrow$~MC,
-MMCSB~$\Rightarrow$~MC, and all sieve routes.  An error here would
-invalidate the entire project.
+What determines whether a hit on~$-1$ is a bounce or a lethal hit?
+The answer depends on which other primes divide $\Prod(n)+1$.  This
+is controlled by the \emph{sieve gap}.
 
-\subsection{SubgroupEscape and the Confinement Theorem}
-
-Before asking whether the walk reaches~$-1$, we must ask whether it
-\emph{can}.  The key observation is that the walk is
-\emph{multiplicative}: $\walkZ(q, n{+}1) = \walkZ(q, n) \cdot
-\multZ(q, n)$.  Each step multiplies the current position by a new
-multiplier.  This multiplicative structure is what makes
-\emph{subgroups}---rather than arbitrary subsets---the natural
-obstruction.
-
-To see why, suppose all the multipliers happen to land in some subset
-$S \subset (\ZZ/q\ZZ)^\times$.  If $S$ is merely a subset with no
-algebraic structure, this tells us very little: multiplying elements of
-$S$ together can produce anything, so the walk might still wander
-freely across the whole group.  But if $S$ happens to be a
-\emph{subgroup}~$H$, the situation changes dramatically.  Products of
-elements of~$H$ stay in~$H$ (by closure), so $\walkZ(q, n)$ is trapped
-in the coset $\walkZ(q, 0) \cdot H$ forever.  The walk visits at most
-$|H|$ of the $q - 1$ residues and may never reach~$-1$.
-
-This is not a theoretical curiosity.  For instance, if every EM prime
-happened to be a quadratic residue mod~$q$, then every multiplier would
-lie in the index-2 subgroup of squares, and the walk would be
-permanently confined to a coset of that subgroup---potentially one that
-does not contain~$-1$.
-
-Because $(\ZZ/q\ZZ)^\times$ is cyclic of order~$q - 1$, its subgroup
-structure is particularly simple: there is exactly one subgroup of
-order~$d$ for each $d \mid q - 1$, and the maximal proper subgroups are
-the index-$\ell$ subgroups for each prime~$\ell \mid q - 1$.  There are
-relatively few of these (at most $\omega(q-1)$, the number of distinct
-prime factors of~$q - 1$), which is what makes SubgroupEscape a
-checkable condition.
-
-\begin{definition}[\defname{SubgroupEscape} (\abbr{SE})]\label{def:se}
-For every missing prime~$q$ and every proper subgroup $H \lneq
-(\ZZ/q\ZZ)^\times$:
-$\exists\, n,\; \multZ(q, n) \notin H$.
+\begin{definition}[\defname{$\MC({<}\,q)$}]\label{def:mc-below}
+For a prime~$q$, write $\MC({<}\,q)$ for the statement that every
+prime smaller than~$q$ appears in the EM sequence:
+$\forall\, p < q,\; p \text{ prime} \;\Rightarrow\; \exists\, k,\;
+\seq(k) = p$.
 \end{definition}
 
-In other words, SE says that no proper subgroup contains all
-multipliers---equivalently, the multipliers \emph{generate} the full
-group~$(\ZZ/q\ZZ)^\times$.  The following theorem makes precise why SE
-is necessary.
+\noindent When $\MC({<}\,q)$ holds, every prime $p < q$ has entered the sequence
+at some stage~$k_p$, so $p \mid \Prod(n)$ for all $n \geq k_p$.
+Past a uniform stage $N_0 = \max_p k_p$, every prime $p < q$ divides
+$\Prod(n)$, and therefore cannot divide $\Prod(n)+1$ (since
+$\gcd(\Prod(n), \Prod(n)+1) = 1$).  This is the \textbf{sieve gap}:
+past~$N_0$, the only primes that can divide $\Prod(n)+1$ are
+$\geq q$.
+
+\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_implies\_seq\_ge}]\label{thm:roughness}
+If $\MC({<}\,q)$ holds, then $\exists\, N_0$ such that
+$\seq(n{+}1) \geq q$ for all $n \geq N_0$.
+\end{theorem}
+
+\noindent The sieve gap transforms hitting~$-1$ from a necessary condition into
+a sufficient one:
+
+\begin{theorem}[\defname{Lethal hit} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_hit\_is\_lethal}]\label{thm:lethal-hit}
+If $\MC({<}\,q)$ holds and $\walkZ{q}{n} = -1$ for some $n$ past the
+sieve gap, then $\seq(n{+}1) = q$.
+\end{theorem}
+
+\begin{proof}
+Since $n$ is past the sieve gap, no prime $< q$ divides
+$\Prod(n)+1$ (Theorem~\ref{thm:roughness}).  But $\walkZ{q}{n} = -1$
+gives $q \mid \Prod(n)+1$, so $q = \minFac(\Prod(n)+1)$, and
+$\seq(n{+}1) = q$.
+\end{proof}
+
+\begin{definition}[Missing prime]\label{def:missing}
+A prime~$q$ is \textbf{missing} if $\seq(n) \neq q$ for all~$n$.
+\end{definition}
+
+\noindent Mullin's Conjecture asserts that no prime is missing.
+Under $\MC({<}\,q)$, the first hit on~$-1$ past the sieve gap is
+lethal.  This immediately constrains missing primes:
+
+\begin{theorem}[\lean{EM/EquidistThreshold.lean}{mc\_below\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
+If $\MC({<}\,q)$ holds and $q$ is missing, then the walk \emph{never}
+hits~$-1$ past the sieve gap: $\exists\, N_0$ such that
+$\walkZ{q}{n} \neq -1$ for all $n \geq N_0$.
+\end{theorem}
+
+\begin{proof}
+Any hit past the sieve gap would give $\seq(n{+}1) = q$
+(Theorem~\ref{thm:lethal-hit}), contradicting $q$ missing.
+\end{proof}
+
+\noindent For the first missing prime~$q$, the hypothesis $\MC({<}\,q)$ holds
+by definition.  So its walk avoids~$-1$ permanently past the sieve
+gap, the walk $\walkZ{q}{\cdot}$ is infinite: it stays
+in~$(\ZZ/q\ZZ)^\times$ forever, never collapsing to zero.
+
+\subsection{The forbidden multiplier and the death channel}
+
+Suppose the walk is at position $c \in (\ZZ/q\ZZ)^\times$ at step~$n$.
+The walk would hit $-1$ at step $n{+}1$ if and only if
+\[
+  \walkZ{q}{n} \cdot \multZ{q}{n} = -1,
+  \quad\text{i.e.,}\quad
+  \multZ{q}{n} = -c^{-1}.
+\]
+
+\noindent So at every step, there is exactly \textbf{one forbidden multiplier}
+$f(n) = -\walkZ{q}{n}^{-1}$---the unique residue class that would
+send the walk to~$-1$.  This is $1$~element out of $q-1$ possible
+unit residues.
+
+\begin{definition}[\defname{Death channel}]\label{def:death-channel}
+The \textbf{death channel} at position $c$ is the residue class
+$b(c) = -c^{-1} \bmod q$.
+\end{definition}
+
+\noindent When the walk is at~$c$, the death channel is the set of primes
+$p \equiv -c^{-1} \pmod{q}$, which by Dirichlet's theorem has density $1/(q-1)$ among all primes.
+The death channel \emph{moves} with the walk: as $c$ changes from step
+to step, the forbidden class changes with it.  The map $c \mapsto
+-c^{-1}$ is a bijection on $(\ZZ/q\ZZ)^\times$ (it is the composition
+of inversion and negation).
+
+\begin{theorem}[\lean{EM/EquidistSieve.lean}{walk\_hits\_neg\_one\_iff\_mult\_eq\_forbidden}]\label{thm:forbidden}
+For any step~$n$ with $\walkZ{q}{n} \in (\ZZ/q\ZZ)^\times$:
+\[
+  \walkZ{q}{n{+}1} = -1
+  \quad\Longleftrightarrow\quad
+  \multZ{q}{n} = -\walkZ{q}{n}^{-1}.
+\]
+\end{theorem}
+
+\noindent The statement ``$q$ is missing'' is therefore equivalent to:
+\[
+  \text{For all } n: \quad \multZ{q}{n} \neq -\walkZ{q}{n}^{-1}.
+\]
+In words: the multiplier avoids the death channel at every step, forever.
+This brings us to discuss multipliers.
+
+\subsection{The Confinement Theorem and SubgroupEscape}
+
+Before asking whether the walk hits~$-1$, we must ask whether it
+\emph{can}.  The walk is multiplicative:
+$\walkZ{q}{n} = \walkZ{q}{0} \cdot \prod_{k < n} \multZ{q}{k}$.
+The reachable set is the coset
+$\walkZ{q}{0} \cdot \langle \text{multipliers} \rangle$.
 
 \begin{theorem}[\defname{Confinement} --- \lean{EM/MullinGroupCore.lean}{confinement\_forward}]\label{thm:confinement}
 If every multiplier lies in a subgroup $H \leq (\ZZ/q\ZZ)^\times$,
-then the walk is confined to the coset $\walkZ(q,0) \cdot H$.
-In particular, if $-1 \notin \walkZ(q,0) \cdot H$, the walk
+then the walk is confined to the coset $\walkZ{q}{0} \cdot H$.
+In particular, if $-1 \notin \walkZ{q}{0} \cdot H$, the walk
 \emph{never} hits~$-1$.
 \end{theorem}
 
-The proof is immediate from the multiplicative recurrence: if
-$\multZ(q,n) \in H$ for all~$n$, then $\walkZ(q, n) = \walkZ(q,0)
-\cdot \multZ(q,0) \cdot \multZ(q,1) \cdots \multZ(q,n{-}1) \in
-\walkZ(q,0) \cdot H$.  The walk cannot leave this coset, and if $-1$
-is not in it, the walk is geometrically prevented from ever reaching
-$-1$---no amount of time will help.
+\noindent This motivates:
 
-SE eliminates this obstruction: once the multipliers generate the full
-group, the walk is not confined to any proper coset, and the
-possibility of hitting~$-1$ is restored.  SE does not by itself
-\emph{guarantee} the walk reaches~$-1$---that is a separate dynamical
-question---but without SE, the walk may be permanently locked out.
-Every route to MC must therefore either assume SE or prove it.
-(The bootstrap of Section~\ref{sec:bootstrap} will prove it for free.)
+\begin{definition}[\defname{SubgroupEscape} (\abbr{SE})]\label{def:se}
+For a prime~$q$: no proper subgroup $H < (\ZZ/q\ZZ)^\times$ contains
+all multipliers.  Equivalently,
+$\langle \multZ{q}{n} : n \in \NN \rangle = (\ZZ/q\ZZ)^\times$.
+\end{definition}
 
 \begin{theorem}[\lean{EM/MullinGroupEscape.lean}{se\_of\_maximal\_escape}]
 SE holds iff multipliers escape every \emph{maximal} proper subgroup.
@@ -646,199 +556,65 @@ Since $(\ZZ/q\ZZ)^\times$ is cyclic, the maximal subgroups are the
 index-$\ell$ subgroups for prime $\ell \mid q\!-\!1$.
 \end{theorem}
 
+\noindent When SE holds, the walk is not confined to any proper coset: every
+element of $(\ZZ/q\ZZ)^\times$, including~$-1$, is \emph{reachable}.
+But reachability does not imply hitting---that is a dynamical question.
+
+\subsection{The first missing prime}
+
+We now assemble the key argument.  Suppose, toward contradiction, that
+Mullin's Conjecture is false.  Then there exists a \textbf{first
+missing prime}: the smallest prime~$q$ that never appears in the EM
+sequence. For this~$q$:
+
+\begin{enumerate}[label=(\alph*),nosep]
+\item $\MC({<}\,q)$ holds---by definition, every prime smaller than~$q$
+  is in the sequence.
+\item The walk $\walkZ{q}{\cdot}$ is infinite---since $q$ is missing,
+  $\walkZ{q}{n} \in (\ZZ/q\ZZ)^\times$ for all~$n$.
+\item Past the sieve gap, the walk never hits~$-1$.  Here is why.
+  Eventually (say for $n \geq N_0$), all primes $< q$ have entered
+  the sequence and divide $\Prod(n)$.  For $n \geq N_0$, no prime
+  $< q$ can divide $\Prod(n)+1$ (since it divides $\Prod(n)$ and
+  $\gcd(\Prod(n), \Prod(n)+1) = 1$).  So if $\walkZ{q}{n} = -1$ for
+  some $n \geq N_0$, then $q \mid \Prod(n)+1$, and $q$ is the smallest
+  prime factor of $\Prod(n)+1$ (all smaller primes are excluded).
+  Then $\seq(n{+}1) = q$, contradicting $q$ being missing.
+\end{enumerate}
+
+\
+
+\noindent Therefore: \textbf{for the first missing prime~$q$, the walk is an
+infinite trajectory on $(\ZZ/q\ZZ)^\times$ that avoids the death
+channel at every step past the sieve gap.} Equivalently: $\multZ{q}{n} \neq -\walkZ{q}{n}^{-1}$ for all $n \geq N_0$.
+
 %% =========================================================================
 \section{The Inductive Bootstrap}
 \label{sec:bootstrap}
 %% =========================================================================
 
-The walk--divisibility bridge (Theorem~\ref{thm:bridge}) tells us
-\emph{when} a missing prime~$q$ appears: it appears at step~$n\!+\!1$
-if and only if $\walkZ(q,n) = -1$ and $q$ is the smallest prime factor
-of $\Prod(n)+1$.  SubgroupEscape (Section~\ref{sec:walk}) tells us when
-this is \emph{possible}: the walk can reach~$-1$ only if the multipliers
-generate the full group.  What remains is the dynamical question: does
-the walk actually reach~$-1$?
+With the first missing prime's situation established (\S\ref{sec:walk}), we now show that the algebraic precondition---SubgroupEscape---comes for free, and that a single hit on~$-1$ past the sieve gap suffices for MC\@.
 
-The Hitting Hypothesis asserts that it does---not just once, but
-cofinally (infinitely often).  Cofinality is needed because a single
-event $q \mid \Prod(n)+1$ does not guarantee $\seq(n\!+\!1) = q$: a
-smaller prime might divide $\Prod(n)+1$ as well.  By asking for
-infinitely many hits, we ensure that eventually all smaller primes
-have already been selected, and $q$ is the smallest factor available.
+The walk avoids~$-1$ forever.  Can it at least \emph{reach}~$-1$?
+That is: does SE hold?
 
-\begin{definition}[\defname{HittingHypothesis} (\abbr{HH})]\label{def:hh}
-For every missing prime~$q$:
-$\forall\, N,\; \exists\, n \geq N,\; q \mid (\Prod(n) + 1)$.
-Equivalently: the walk reaches $-1$ cofinally.
-\end{definition}
-
-\begin{theorem}[\lean{EM/MullinConjectures.lean}{hh\_implies\_mullin}]
-$\HH \Rightarrow \MC$.
-\end{theorem}
-
-\begin{proof}[Proof sketch]
-By strong induction on~$p$.  Suppose every prime $< p$ is in the
-sequence (the IH), and assume $p$ is missing.  $\HH$ provides a cofinal
-sequence of indices where $p \mid \Prod(n)+1$.  At each such~$n$,
-$\seq(n\!+\!1) = \minFac(\Prod(n)+1) \leq p$.  If
-$\seq(n\!+\!1) < p$, that prime is also missing---contradicting the IH.
-So $\seq(n\!+\!1) = p$.
-\end{proof}
-
-Proving MC therefore requires two things for each missing prime~$q$:
-(i)~SE, so the walk \emph{can} reach~$-1$, and (ii)~HH, so the walk
-\emph{does} reach~$-1$ cofinally.  Without further machinery, these
-are two independent open problems for every prime.
-
-\medskip\noindent\textbf{Original contribution.}\enspace
-This section presents the paper's main new result: an elementary
-proof that SE is ``free'' at every step of the induction, eliminating
-one of the two problems entirely.  Given $\MC({<}\,p)$ (the inductive
-hypothesis), SE at~$p$ follows from a single, purely algebraic lemma
-(PrimeResidueEscape).  This reduces the entire conjecture to the
-dynamical question: does a walk with a generating set of multipliers
-hit every element cofinally?
-
-The proof of PRE uses no analytic number theory, no Chebotarev density
-theorem, no character sums---only modular arithmetic.  This makes the
-bootstrap both logically clean and Lean-friendly: the proof is short
-(${\sim}100$~lines) and depends on minimal Mathlib infrastructure.
-
-\subsection{PrimeResidueEscape}
-
-\begin{definition}[\defname{PrimeResidueEscape} (\abbr{PRE})]
+\begin{theorem}[\defname{PrimeResidueEscape} (\abbr{PRE});
+  \lean{EM/EquidistBootstrap.lean}{prime\_residue\_escape}]\label{thm:pre}
 For every prime $p \geq 5$ and every proper subgroup
 $H < (\ZZ/p\ZZ)^\times$, some odd prime $r < p$ has residue
 $r \bmod p \notin H$.
-\end{definition}
-
-\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{prime\_residue\_escape}]\label{thm:pre}
-PrimeResidueEscape holds.
 \end{theorem}
 
 \begin{proof}
 Suppose every odd prime $r \in [3, p)$ satisfies $r \bmod p \in H$.
 Since $H$ is a subgroup, every \emph{product} of such primes is
 in~$H$.  Every odd number in~$[1, p)$ factors into odd primes $< p$,
-so every odd number in~$[1, p)$ maps into~$H$.  In particular:
-\begin{itemize}[nosep]
-\item $p - 2 \equiv -2 \pmod{p}$ is in $H$ (since $p - 2$ is odd and $< p$).
-\item $p - 4 \equiv -4 \pmod{p}$ is in $H$ (since $p - 4$ is odd and $< p$, for $p \geq 5$).
-\end{itemize}
-Then $2 = (-4)(-2)^{-1} \in H$.  Now every integer in $[1, p)$ is
-in~$H$: even numbers are $2^k \cdot (\text{odd})$, both factors
-in~$H$.  So $H = (\ZZ/p\ZZ)^\times$---contradicting $H$ proper.
+so every odd number in~$[1, p)$ maps into~$H$.  In particular,
+$p - 2 \equiv -2$ and $p - 4 \equiv -4$ are both in~$H$ (both odd
+and $< p$ for $p \geq 5$).  Then $2 = (-4)(-2)^{-1} \in H$, so every
+even number in $[1, p)$ is in~$H$ as well.  Hence
+$H = (\ZZ/p\ZZ)^\times$, contradicting $H$ proper.
 \end{proof}
-
-The identity $2 = (-4)(-2)^{-1}$ is the only non-trivial step.
-No analytic number theory, no Chebotarev density theorem, no
-character sums---just modular arithmetic.
-
-\begin{remark}[Why PRE is not trivial]\label{rem:pre-discussion}
-The problem PRE solves---showing that the natural primes below~$p$
-cannot all land in a proper subgroup---looks like it should be easy
-but is surprisingly resistant to direct attack.
-
-The obvious approach would be: use Dirichlet's theorem (infinitely
-many primes in each residue class), or Chebotarev (primes are
-equidistributed across cosets of any subgroup), or Linnik's theorem
-(the least prime in each progression is bounded).  All of these
-work---but they are nuclear weapons for a problem that \emph{feels}
-elementary.  Worse, they are all absent from Mathlib, so they cannot
-be formalized.  And they give much more than needed: one does not care
-about the \emph{distribution} of primes across cosets, just that at
-least one prime misses~$H$.
-
-The other natural approach: argue directly about small primes.  The
-first few EM primes are $2, 3, 5, 7, 13, 43, 53$---can one not just
-check that these escape any subgroup?  One can for specific~$q$
-(that is what the 30~SE instances for $q \leq 157$ do), but not
-universally.  A proper subgroup of $(\ZZ/p\ZZ)^\times$ can have
-index~2 and contain nearly half the elements---there is no reason a
-fixed finite set of primes could not all be quadratic residues
-mod some large~$p$.  The QR obstruction analysis shows this happens
-for at most $1.6\%$ of primes, but ``at most $1.6\%$'' is not
-``never.''
-
-So one is stuck: the heavy theorems are not available, and direct
-checking does not generalize.  PRE needs something else.
-
-\medskip\noindent\textbf{Why the identity is delightful.}\enspace
-The key move is: \emph{do not try to get any specific prime out
-of~$H$.  Get~$2$ out of~$H$.}
-
-If one can show $2 \in H$, one is done---because $H$ already contains
-all odd numbers less than~$p$ (by the closure argument), so adding~$2$
-gives all even numbers too, and $H = \top$.
-
-But $2$ is not odd, so the closure argument for odd numbers does not
-apply to~$2$ directly.  One cannot factor~$2$ as a product of odd
-primes.  Seems like a dead end.
-
-The trick: one does not need~$2$ to \emph{be} an odd number.  One
-needs~$2$ to be \emph{expressible using elements already known to be
-in~$H$}.  And $H$ is a subgroup---closed under multiplication
-\emph{and inversion}.
-\begin{align*}
-p - 2 &\equiv -2 \pmod{p} \;\in H
-  &&\text{($p{-}2$ is odd and $< p$)}, \\
-p - 4 &\equiv -4 \pmod{p} \;\in H
-  &&\text{($p{-}4$ is odd and $< p$, since $p \geq 5$)}.
-\end{align*}
-Therefore $(-4)\cdot(-2)^{-1} = 2 \in H$.  One division in the group.
-The argument uses the specific arithmetic fact that $p-2$ and $p-4$
-are both odd (which requires $p \geq 5$, hence the case split for
-small primes), the subgroup property (closure under products and
-inverses), and nothing else.  No analytic number theory, no character
-theory, no sieve methods.
-
-The delight is in the economy.  One is trying to show that primes
-mod~$p$ escape every proper subgroup, and the proof does not mention
-primes at all after the first two sentences.  It works entirely with
-odd numbers, uses only that~$H$ is a subgroup, and extracts~$2$ from
-the pair $(-2, -4)$ by a single division.  The entire argument is five
-lines.
-
-\medskip\noindent\textbf{Why PRE matters for the project.}\enspace
-PRE is the engine of the inductive bootstrap.  Without it, the
-$\DH \Rightarrow \MC$ reduction would need SE as a separate
-hypothesis---a two-hypothesis reduction instead of a single-hypothesis
-one.  The conjecture would be: ``if the multipliers generate the full
-group \emph{and} the walk hits $-1$ cofinally, then MC holds.''  That
-is weaker and less clean.
-
-With PRE, SE becomes free.  The inductive hypothesis $\MC({<}\,p)$
-says all primes below~$p$ are in the sequence.  PRE says some odd
-prime $r < p$ escapes any proper subgroup $H < (\ZZ/p\ZZ)^\times$.
-Since~$r$ is in the sequence (by the IH), its residue mod~$p$ appears
-as a multiplier, and that multiplier escapes~$H$.  So the multipliers
-generate the full group---automatically, at every step, with no
-additional assumption.
-
-This is what makes $\DH \Rightarrow \MC$ a \emph{genuine reduction}
-rather than a \emph{reformulation}.  Without PRE, saying ``DH implies
-MC'' would be like saying ``if the hard parts are true, the conjecture
-follows''---technically correct but not illuminating.  With PRE, the
-algebraic part (generation) is proved for free, and the entire content
-of MC is concentrated in one dynamical question: does the walk
-hit~$-1$ when the multipliers generate everything?  The simplicity of
-the PRE proof---five lines, no analytic number theory---makes the
-reduction sharp: the hard part of MC is \emph{purely dynamical}, not
-algebraic.
-
-There is also a methodological point.  The project explored
-Chebotarev, Linnik, Kummer theory, effective density theorems---all of
-which could prove SE but none of which are in Mathlib.  PRE bypasses
-all of them with an argument that depends on nothing beyond the
-definition of a subgroup and the fact that $p-2$ and $p-4$ are odd.
-This is the kind of argument that makes formalization worthwhile: it is
-short enough to verify by hand, but subtle enough that one would not
-find it without specifically looking for a Mathlib-minimal proof of
-subgroup escape.  The constraint of working within Lean forced a better
-proof.
-\end{remark}
-
-\subsection{The Bootstrap Mechanism}
 
 \begin{theorem}[\lean{EM/EquidistBootstrap.lean}{mc\_below\_pre\_implies\_se}]
 \label{thm:bootstrap}
@@ -848,72 +624,273 @@ $\MC({<}\,p) + \PRE \;\Longrightarrow\; \SE(p)$.
 \begin{proof}[Proof sketch]
 Let $H < (\ZZ/p\ZZ)^\times$ be proper.  By PRE, some odd prime
 $r < p$ has $r \bmod p \notin H$.  By $\MC({<}\,p)$, the prime~$r$
-appears as $\seq(k)$ for some~$k$.  Then $\multZ(p, k{-}1) \equiv r
-\pmod{p} \notin H$.  So the multipliers escape~$H$.
+appears as $\seq(k)$ for some~$k$.  Then $\multZ{p}{k{-}1} \equiv r
+\pmod{p} \notin H$.
 \end{proof}
 
-The payoff of this mechanism---the full reduction from
-DynamicalHitting to MC---is assembled in
-Section~\ref{sec:dh-reduction}, after we establish the supporting
-infrastructure.
+\begin{corollary}\label{cor:fmp-se}
+For the first missing prime~$q$: the multipliers generate all of
+$(\ZZ/q\ZZ)^\times$.  SubgroupEscape holds, and $-1$ is reachable.
+\end{corollary}
 
-\subsection{The Threshold Approach}
+The one-prime gap (Theorem~\ref{thm:one-prime-gap}) shows that
+$\MC({<}\,q)$ plus a single divisibility event $q \mid \Prod(n)+1$
+past the sieve gap gives $\MC(q)$.  The bootstrap
+(Theorem~\ref{thm:bootstrap}) shows that $\MC({<}\,q)$ gives $\SE(q)$
+for free.  These two facts compose into the primary reduction of
+Mullin's Conjecture.
 
-The threshold mechanism combines finite computation with the abstract
-bootstrap.  If one can handle all primes below some bound~$B$ by
-direct verification, then MC reduces to DH for primes~$\geq B$ only.
-This is formalized because it interfaces with the large sieve route
-(Section~\ref{sec:character}): MultiModularCSB gives DH for all
-primes above its threshold parameter~$Q_0$, and the gap below~$Q_0$
-is closed by threshold verification.
+\begin{definition}[\defname{SingleHitHypothesis} (\abbr{SHH})]\label{def:shh}
+For every prime~$q$: if $\MC({<}\,q)$ and $\SE(q)$ hold and $q$ is
+missing, then there exists~$n$ past the sieve gap with
+$q \mid \Prod(n)+1$.
 
-\begin{definition}[\defname{ThresholdHitting}]
-$\mathrm{ThresholdHitting}(B)$: DH restricted to primes $q \geq B$.
+\
+
+\noindent Equivalently: for every prime~$q$, if $\MC({<}\,q)$ and $\SE(q)$
+hold, then either $q$ already appears in the sequence, or there
+exists $n \geq N_0(q)$ with $\walkZ{q}{n} = -1$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/EquidistThreshold.lean}{threshold\_11\_implies\_mullin'}]
-\label{thm:threshold-11}
-$\mathrm{ThresholdHitting}(11) \;\Longrightarrow\; \MC$.
+\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/EquidistBootstrap.lean}{single\_hit\_implies\_mc}]
+\label{thm:single-hit}
+$\mathrm{SingleHitHypothesis} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
-The computed values $\seq(0) = 2$, $\seq(1) = 3$, $\seq(2) = 7$,
-$\seq(6) = 5$ prove $\MC$ for every prime $< 11$.  For $q \geq 11$,
-the IH + PRE give SE, and ThresholdHitting gives HH.
+\begin{proof}
+By strong induction on~$p$.  Assume $\MC({<}\,p)$.
 
-\subsection{The Sieve Gap}
+\
 
-The inductive structure of the proof does more than provide SE: it also
-resolves the selectability problem described in Section~\ref{sec:intro}.
-Once all primes below~$q$ are in the sequence, they divide the running
-product and hence \emph{cannot} divide any future Euclid number.  This
-``sieve gap'' means that past a computable stage, every prime factor
-of~$\Prod(n)+1$ is~$\geq q$, so $q$ is the \emph{smallest} available
-factor whenever it divides the Euclid number.  The $\minFac$ rule,
-which seemed like the source of difficulty, becomes an \emph{ally}:
-it \emph{must} select~$q$ the next time $q$ divides an Euclid number.
+\begin{enumerate}[nosep]
+\item \textbf{Bootstrap gives SE\@.}
+    $\MC({<}\,p) + \PRE \Rightarrow \SE(p)$ (Theorem~\ref{thm:bootstrap}).
+    Since PRE is proved unconditionally (Theorem~\ref{thm:pre}), we
+    obtain $\SE(p)$.
 
-This converts MC from ``$q$ divides $\Prod(n)+1$ \emph{and} is the
-smallest such factor'' (hard) to simply ``$q$ divides $\Prod(n)+1$
-cofinally'' (the walk hits $-1$ cofinally)---which is exactly what
-DynamicalHitting asserts.
+\item \textbf{SHH gives a hit.}
+    Since $\MC({<}\,p)$ and $\SE(p)$ hold, SHH provides
+    $n \geq N_0$ (past the sieve gap) with $p \mid \Prod(n)+1$.
 
-\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_implies\_seq\_ge}]
-If $\MC({<}\,q)$ holds, then $\exists\, N$ such that $\forall\, n \geq N$,
-$\seq(n\!+\!1) \geq q$.
+\item \textbf{The sieve gap closes.}
+    Past $N_0$, all primes $< p$ divide $\Prod(n)$ and hence cannot
+    divide $\Prod(n)+1$.  So $p = \minFac(\Prod(n)+1)$, giving
+    $\seq(n{+}1) = p$.
+\end{enumerate}
+\end{proof}
+
+\subsection{The death channel avoidance paradox}
+
+We now have a precise and sharp picture of the first missing prime~$q$:
+
+\
+
+\begin{enumerate}[nosep]
+\item The walk lives in $(\ZZ/q\ZZ)^\times$ forever.
+\item The multipliers generate the full group---$-1$ is reachable.
+\item The walk never reaches $-1$---the death channel is avoided at
+  every step past the sieve gap.
+\item At each step, the death channel is a single residue class out
+  of $q - 1$---a ``target'' of density $1/(q-1)$.
+\end{enumerate}
+
+\
+
+\noindent Mullin's Conjecture is therefore equivalent to: \textbf{this situation
+is impossible.}  The open problem is now:
+
+\begin{center}
+\emph{Does the multiplicative walk on $(\ZZ/q\ZZ)^\times$ defined by
+the EM sequence, whose multipliers generate the full group, hit~$-1$
+at least once past the sieve gap?}
+\end{center}
+
+``At least once past the sieve gap'' is the precise requirement.  Not
+cofinally, not equidistributed---once.
+The intuition for impossibility rests on an information-theoretic
+asymmetry.  At step~$n$, the death channel
+$f(n) = -\walkZ{q}{n}^{-1}$ is determined by the walk position
+$\walkZ{q}{n} = \Prod(n) \bmod q$, which carries $O(\log q)$ bits of
+information.  The multiplier
+$\multZ{q}{n} = \minFac(\Prod(n)+1) \bmod q$ is determined by the
+full integer $\Prod(n)+1$, which has $\sim 2^n$ bits.  The factoring
+operation $\minFac$ extracts global arithmetic information from all
+$\sim 2^n$ bits; the death channel is determined by $O(\log q)$ bits.
+For the multiplier to systematically avoid the death channel, the
+$O(\log q)$-bit residue would have to predict the outcome of an
+operation on a $2^n$-bit integer---a ``prediction'' whose information
+content vanishes exponentially.
+
+More precisely: for a generic $q$-rough integer $N \equiv a \pmod{q}$,
+the conditional distribution of $\minFac(N) \bmod q$ is
+asymptotically uniform over $(\ZZ/q\ZZ)^\times$, by CRT\@.  Knowing
+$N \bmod q$ does not constrain $N \bmod p$ for any other prime~$p$,
+so it does not constrain which primes $\leq N^{1/2}$ divide~$N$.  The
+density of the death channel among all primes is $1/(q-1)$, and the
+conditional probability that $\minFac(N)$ falls in the death channel
+is $1/(q-1) + o(1)$ as $N \to \infty$, \emph{independently of the
+residue class~$a$}.
+
+For the EM sequence, $\Prod(n)+1$ grows super-exponentially
+($\Prod(n)+1 \geq 2^{2^n}$), so the $o(1)$ error at each step
+shrinks exponentially fast.  The ``probability'' of avoiding the death
+channel for~$N$ consecutive steps is heuristically
+$(1 - 1/(q-1))^N \to 0$.  Converting this heuristic into a proof is
+the content of the conjecture.
+
+\subsection{Sufficient conditions for the single hit}
+\label{sec:sufficient-conditions}
+
+Several formally verified strategies produce the required single hit
+past the sieve gap.  Each implies MC via the Single Hit Theorem.
+
+\begin{definition}[\defname{DynamicalHitting} (\abbr{DH})]\label{def:dh}\label{def:hh}
+For every missing prime~$q$: $\SE(q) \Rightarrow \HH(q)$, where
+$\HH(q)$ (\defname{HittingHypothesis}) asks for cofinal hitting:
+$\forall\, N,\; \exists\, n \geq N,\; q \mid (\Prod(n) + 1)$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\label{thm:dh-mc}
+$\DH \;\Longrightarrow\; \MC$.
 \end{theorem}
+
+DH is stronger than SHH: it does not assume $\MC({<}\,q)$ and asks for
+infinitely many hits rather than one.  But the extra strength is
+convenient---DH interfaces cleanly with character sum methods.
+In the death channel language, DH asserts: if the multipliers generate
+$(\ZZ/q\ZZ)^\times$, then the multiplier cannot avoid the forbidden
+residue $-\walkZ{q}{n}^{-1}$ forever.  Equivalently: there is no
+infinite walk on a cyclic group, with a generating set of multipliers,
+that dodges a single moving target of density $1/(q-1)$ at every step.
+
+The key structural point: SHH is \textbf{strictly weaker} than
+DynamicalHitting in two ways.
+First, SHH assumes $\MC({<}\,q)$, which DH does not (DH only assumes SE).
+Second, SHH asks for one hit past the sieve gap, while DH asks for
+cofinal hitting.  Both extra assumptions are harmless in the inductive
+proof---$\MC({<}\,q)$ is always available at the inductive step, and
+one hit is all the Single Hit Theorem needs---but they make SHH
+genuinely easier to satisfy as a mathematical statement.
+
+\begin{remark}\label{rem:shh-vs-dh}
+The logical relationships among the hitting hypotheses are:
+\[
+  \HH \;\Longrightarrow\; \DH \;\Longrightarrow\; \mathrm{SHH},
+\]
+where $\HH$ on its own denotes the \emph{unconditional} version of
+$\HH(q)$ from Definition~\ref{def:dh}: cofinal hitting asserted for
+every missing~$q$ without assuming $\SE(q)$.
+DH conditions cofinal hitting on SE, and SHH asks for a
+single hit past the sieve gap given both $\MC({<}\,q)$ and SE\@.
+All three imply MC\@.  SHH is the weakest: it assumes the most
+($\MC({<}\,q)$ and SE, both provided free by the inductive bootstrap)
+and demands the least (one hit, not infinitely many).
+The converses need not hold.
+\end{remark}
+
+\begin{definition}[\defname{ComplexCharSumBound} (\abbr{CCSB})]\label{def:ccsb-intro}
+For every missing prime~$q$ and every non-trivial character~$\chi$:
+$\|S_\chi(N)\| = o(N)$, where
+$S_\chi(N) = \sum_{n<N}\chi(\walkZ{q}{n})$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
+\label{thm:ccsb-mc-intro}
+$\mathrm{CCSB} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+CCSB produces the hit via Fourier inversion: if all non-trivial
+character sums are $o(N)$, the hit count at~$-1$ is
+$N/(q{-}1) + o(N)$, which is eventually positive.  One hit past
+the sieve gap is lethal (Section~\ref{sec:character}).
+
+\begin{definition}[\defname{ConditionalMultiplierEquidist} (\abbr{CME})]\label{def:cme-intro}
+For every missing prime~$q$, every non-trivial~$\chi$, and every walk
+position~$c$: the multiplier characters
+$\chi(\multZ{q}{n})$ conditioned on $\walkZ{q}{n} = c$ are equidistributed
+(their partial sums are $o(N)$).
+\end{definition}
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
+\label{thm:cme-mc-intro}
+$\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
+\end{theorem}
+
+CME is the sharpest hypothesis: it asserts that the factoring
+operation destroys correlation between consecutive multiplier residues
+conditioned on the walk position.  It implies CCSB for all character
+orders, bypassing the $d \geq 3$ barrier that blocks the
+BRE route.
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{vcb\_ped\_implies\_mc}]
+\label{thm:vcb-ped-mc-intro}
+$\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+VCB (Vanishing Conditional Bias) is a weakening of CME that permits
+fiber sums to be proportional to visit counts rather than small;
+combined with PED (Positive Escape Density), it reaches CCSB\@.
+
+Each of these strategies produces at least one hit past the sieve gap,
+which the Single Hit Theorem (Theorem~\ref{thm:single-hit}) converts
+into MC\@.
+
+\paragraph{Why it's hard: the walk controls nothing}
+
+The difficulty is entirely in the coupling between walk position and
+multiplier.  At step~$n$:
+
+\begin{itemize}[nosep]
+\item The \textbf{walk position} $\walkZ{q}{n} = \Prod(n) \bmod q$
+  determines the death channel $f(n) = -\walkZ{q}{n}^{-1}$.
+\item The \textbf{multiplier}
+  $\multZ{q}{n} = \minFac(\Prod(n)+1) \bmod q$ is what must fall
+  into the death channel.
+\item Both depend on $\Prod(n)$: the walk position depends on
+  $\Prod(n) \bmod q$, and the multiplier depends on $\Prod(n)+1$ as
+  a full integer.
+\end{itemize}
+
+The walk position sees $O(\log q)$ bits; the multiplier sees all
+$\sim 2^n$ bits.  But they share the same underlying object
+$\Prod(n)$.  The question is whether this shared dependence creates a
+correlation strong enough for the multiplier to systematically avoid
+one residue class out of $q-1$.
+
+For a \emph{random} sequence of multipliers drawn uniformly from
+$(\ZZ/q\ZZ)^\times$, the probability of avoiding the death channel
+for $N$ steps is $(1 - 1/(q-1))^N \to 0$.  The EM walk is not
+random---it is deterministic---but the factoring operation that
+determines each multiplier is, heuristically, a decorrelating ``hash.''
+This is the \textbf{factorization independence heuristic}: the
+function $\minFac$, applied to a $2^n$-bit integer, produces an
+output that is effectively uncorrelated with the $O(\log q)$-bit
+residue class of the input.
+
+Every open hypothesis in this paper---DH, CCSB, CME---is a precise
+formalization of this heuristic.
+
+\subsection{Supporting Infrastructure}
+
+The remainder of this section collects the supporting results that
+flesh out the bootstrap: the one-prime gap, the sieve gap, and the power residue decomposition.
+
+\paragraph{The Sieve Gap and the One-Prime Gap}
+
+The $q$-roughness theorem (Theorem~\ref{thm:roughness}) resolves the
+selectability problem described in Section~\ref{sec:intro}: past the
+sieve gap, $q$ is the smallest available factor whenever it divides
+the Euclid number.  This gives the one-prime gap:
 
 \begin{theorem}[\defname{One-prime gap} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_cofinal\_hit\_implies\_mc\_at}]
 \label{thm:one-prime-gap}
-$\MC({<}\,q)$ plus a single cofinal hitting event
-$(\forall\, N,\, \exists\, n \geq N,\, q \mid \Prod(n)+1)$
+$\MC({<}\,q)$ plus a single hitting event
+$q \mid \Prod(n)+1$ for some $n$ past the sieve gap
 implies $\MC(q)$.
 \end{theorem}
 
-This is the \textbf{formal sieve gap}: the sieve at level $q\!-\!1$
-is free from the IH, and extending it by one prime requires exactly one
-cofinal divisibility event---which is what DynamicalHitting asserts.
-
-\subsection{The Power Residue Decomposition}
+\paragraph{The Power Residue Decomposition}
 
 Since $(\ZZ/q\ZZ)^\times$ is cyclic of order $q\!-\!1$, its subgroup
 lattice is determined by the prime factorization of $q\!-\!1$.  A
@@ -923,7 +900,7 @@ divisors $\ell$ of~$q\!-\!1$.  This decomposition converts SE into
 independent conditions, one per prime~$\ell \mid q\!-\!1$.
 
 \begin{definition}[\defname{PowerResidueEscape} ($\abbr{PRE}_\ell$)]
-$\exists\, n : \multZ(q,n)^{(q-1)/\ell} \neq 1$ in $(\ZZ/q\ZZ)^\times$.
+$\exists\, n : \multZ{q}{n}^{(q-1)/\ell} \neq 1$ in $(\ZZ/q\ZZ)^\times$.
 \end{definition}
 
 \begin{theorem}[\abbr{PRE} $\Leftrightarrow$ \abbr{SE} --- \lean{EM/EquidistCharPRE.lean}{pre\_iff\_se}]
@@ -932,166 +909,51 @@ The forward direction uses only Lagrange's theorem; the reverse uses
 cyclicity of $(\ZZ/q\ZZ)^\times$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/EquidistCharPRE.lean}{eight\_elts\_escape\_order\_le\_seven}]
-For $q \geq 59$ and $(q{-}1)/\ell \leq 7$, $\PRE_\ell(q)$ holds
-automatically: the 8~known elements
-$\{1, 3, 5, 7, 13, 43, 53, 21\}$ cannot fit in any subgroup of
-order~$\leq 7$.
-\end{theorem}
-
-\subsection{Quadratic Reciprocity Obstruction}
+\paragraph{Quadratic Reciprocity Obstruction}
 
 The power residue decomposition raises a natural question: for how many
-primes~$q$ could SE actually \emph{fail}?  The hardest case is the
-index-2 subgroup (quadratic residues), since it is the largest maximal
-subgroup.  Quadratic reciprocity gives a definitive answer:
-
-\begin{theorem}[\defname{QR Obstruction} ---
-  \lean{EM/MullinGroupQR.lean}{se\_qr\_obstruction}]
-If all six multiplier primes $\{3,5,7,13,43,53\}$ are quadratic
-residues mod~$q > 53$, then $q$ satisfies simultaneous Legendre
-symbol conditions.  By CRT on
-$\mathrm{lcm}(12,5,28,13,43,53) = 12{,}443{,}340$,
-at most $1.6\%$ of primes satisfy all conditions.  For over
-$98\%$ of primes, SE holds for the index-2 subgroup automatically.
-\end{theorem}
-
-This means that even without the bootstrap, SE fails for at most a
-very sparse set of primes.  With the bootstrap, SE holds for
-\emph{all} primes---but the QR obstruction analysis illustrates
-why: the EM multiplier primes are arithmetically diverse enough to
-escape any single subgroup.
-
-\subsection{Concrete Verification}
-
-\begin{theorem}[\lean{EM/MullinGroupSEInstances.lean}{se\_at\_11}]
-SubgroupEscape holds for all 30~primes $q \leq 157$ not in the
-sequence, verified via power checks.  For 29 of them, one of the
-first six multipliers is a primitive root.  The exception is
-$q = 131$, where the seventh multiplier
-$\seq(7) = 6221671 \equiv 88 \pmod{131}$ has full order~130.
-\end{theorem}
-
-\subsection{The Reduction to DynamicalHitting}
-\label{sec:dh-reduction}
-
-We now have all the ingredients to assemble the main reduction.  The
-goal is to identify the \emph{minimal} hypothesis that, combined with
-the proved infrastructure, yields Mullin's Conjecture.
-
-The Hitting Hypothesis (Definition~\ref{def:hh}) and its implication
-$\HH \Rightarrow \MC$ show that cofinal hitting suffices---but HH is
-a strong hypothesis, asserting cofinal hitting for \emph{every} missing
-prime without any algebraic precondition.  Can we weaken it?
-
-\subsubsection*{Conditioning on SubgroupEscape}
-
-The confinement theorem (Theorem~\ref{thm:confinement}) tells us that
-if SE fails at~$q$---meaning the multipliers are trapped in a proper
-subgroup~$H$---then the walk is permanently confined to a coset of~$H$.
-In this case, asking whether the walk hits~$-1$ may be the wrong
-question: the walk might be structurally unable to reach~$-1$, and no
-amount of dynamical analysis will help.
-
-Conversely, when SE holds, the multipliers generate the full group
-$(\ZZ/q\ZZ)^\times$, the walk is not confined to any proper coset, and
-the question of whether it hits~$-1$ is a genuine dynamical question
-about the walk's long-term behavior.
-
-DynamicalHitting captures exactly this: it asks for HH only when the
-algebraic precondition (SE) is satisfied.
-
-\begin{definition}[\defname{DynamicalHitting} (\abbr{DH})]\label{def:dh}
-For every missing prime~$q$: $\SE(q) \Rightarrow \HH(q)$.
-\end{definition}
-
-DH is \emph{strictly weaker} than HH: it makes no claim about primes
-where SE fails.  And DH is strictly weaker than MC: MC implies
-\emph{every} prime appears, while DH only promises appearance
-\emph{conditional} on SE.  The remarkable fact is that DH is
-nevertheless \emph{sufficient} for MC, because the bootstrap provides
-SE for free.
-
-\subsubsection*{The Full Reduction}
-
-\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
-\label{thm:dh-mc}
-$\DH \;\Longrightarrow\; \MC$.
-\end{theorem}
-
-\begin{proof}
-By strong induction on~$p$.  Assume $\MC({<}\,p)$ (every prime below~$p$
-is in the sequence).  We must show $p$ appears.
-
-\begin{enumerate}[nosep]
-\item \textbf{SE is free.}
-    Theorem~\ref{thm:bootstrap} gives
-    $\MC({<}\,p) + \PRE \Rightarrow \SE(p)$.
-    Since PRE is proved unconditionally (Theorem~\ref{thm:pre}), we
-    obtain $\SE(p)$.
-
-\item \textbf{DH gives HH.}
-    Apply DH at the prime~$p$: since $\SE(p)$ holds, DH yields $\HH(p)$
-    ---the walk $\walkZ(p, \cdot)$ reaches~$-1$ cofinally.
-
-\item \textbf{The sieve gap closes.}
-    By Theorem~\ref{thm:one-prime-gap}, $\MC({<}\,p)$ combined with
-    cofinal hitting implies $\MC(p)$: once all primes below~$p$ are in
-    the sequence, the $\minFac$ rule \emph{must} select~$p$ the next
-    time it divides an Euclid number.
-\end{enumerate}
-\end{proof}
-
-\subsubsection*{The Reduction Chain}
-
-Assembling all the reductions proved in this paper, we obtain the
-following chain.  Each arrow is a formally verified implication in Lean:
-
-\[
-\DH
-\;\xrightarrow{\text{bootstrap}}\;
-\SE \text{ (free)}
-\;\xrightarrow{\DH}\;
-\HH
-\;\xrightarrow{\text{sieve gap}}\;
-\MC
-\]
-
-The entire conjecture has been reduced to a single, cleanly stated
-dynamical hypothesis: \emph{if the multipliers generate the full group,
-then the walk hits every element cofinally}.  No algebraic hypothesis
-remains open; the PRE lemma and the bootstrap mechanism have eliminated
-SE completely.
-
-The threshold variant (Theorem~\ref{thm:threshold-11}) offers a further
-refinement: $\mathrm{ThresholdHitting}(11) \Rightarrow \MC$.  This
-combines finite computation (MC for primes $< 11$, from the known
-sequence values) with the abstract bootstrap, restricting DH to primes
-$q \geq 11$ only.
+primes~$q$ could SE actually \emph{fail}?  Since each PRE$_\ell$
+condition asks only that \emph{one} multiplier among infinitely many
+escapes the $\ell$-th power subgroup, SE failure requires all
+multipliers to be $\ell$-th power residues for some $\ell \mid q{-}1$.
+By CRT and quadratic reciprocity, the density of primes~$q$ for which
+the first~$k$ multiplier primes all fail to escape the index-2
+subgroup is at most $O(2^{-k})$.  Extending this to a rigorous
+density-zero statement for SE failure would require controlling all
+prime divisors $\ell \mid q{-}1$ simultaneously, which remains open.
 
 %% =========================================================================
 \section{The Character Sum Reduction}
 \label{sec:character}
 %% =========================================================================
 
-The algebraic reduction (DH~$\Rightarrow$~MC) leaves the dynamical
-content of DH untouched: \emph{does} the walk hit~$-1$ when the
-multipliers generate the full group?  This section develops a parallel,
-character-analytic approach that precisely characterizes what is needed.
+Sections~\ref{sec:walk}--\ref{sec:bootstrap} established the picture: for the first
+missing prime~$q$, the walk lives in $(\ZZ/q\ZZ)^\times$ forever, the
+multipliers generate the full group, yet the walk avoids~$-1$
+permanently past the sieve gap.  The death channel
+$f(n) = -\walkZ{q}{n}^{-1}$ is dodged at every step.  The Single Hit
+Theorem (\S\ref{sec:single-hit}) reduces MC to producing one hit
+on~$-1$ past the sieve gap at each prime.
+
+The question is not ``does the walk equidistribute?''---that is far
+stronger than needed.  The question is: \emph{can the walk really
+avoid one class out of~$q{-}1$ forever?}  This section develops the
+harmonic-analytic tools to show it cannot: character sums detect the
+anomaly that permanent avoidance would create, and bounding them rules
+it out.
 
 \paragraph{Why character sums?}
-The algebraic route (DH~$\Rightarrow$~MC) asks: does the walk hit a
-\emph{single} element~($-1$)?  Character sums answer a stronger
-question: does the walk visit \emph{every} element with equal
-frequency?  Dirichlet characters $\chi : (\ZZ/q\ZZ)^\times \to
-\mathbb{C}^\times$ are the Fourier basis of the cyclic group; they detect
-imbalances in distribution.  By character orthogonality, the number of
-times the walk visits a particular element~$t$ equals
-$N/(q{-}1)$ (the uniform share) plus correction terms involving
-character sums.  If all non-trivial character sums are
-$o(N)$---negligible compared to the main term---the correction
-terms vanish asymptotically, and the walk is equidistributed; in
-particular, it visits~$-1$ cofinally, giving HH.
+Permanent avoidance of~$-1$ means the hit count
+$|\{n < N : \walkZ{q}{n} = -1\}|$ stays at zero past the sieve gap.
+Character orthogonality decomposes this count into a uniform share
+$N/(q{-}1)$ plus correction terms built from non-trivial character
+sums $S_\chi(N) = \sum_{n<N}\chi(\walkZ{q}{n})$.  The uniform share
+grows linearly; for the hit count to remain zero, the correction terms
+must cancel this growth.  That requires at least one non-trivial
+character sum to be $\Omega(N/(q{-}1))$---a sustained asymmetry in
+the character spectrum.  The hypothesis CCSB (all $|S_\chi(N)| =
+o(N)$) rules this out: it forces the hit count to be eventually
+positive, contradicting permanent avoidance.
 
 \medskip\noindent\textbf{What is new vs.\ what is infrastructure.}\enspace
 The CCSB~$\Rightarrow$~MC reduction (Definition~\ref{thm:ccsb-mc}),
@@ -1106,17 +968,19 @@ between classical tools and the EM orbit, which is itself a
 contribution (see \S\ref{sec:large-sieve}).
 
 The formalization develops this Fourier-analytic reduction because
-it provides the cleanest interface between MC and the toolkit of
-analytic number theory: the Bombieri--Vinogradov theorem, the large
-sieve inequality, and Gauss sum inversion all produce character sum
-bounds, and the formalization shows exactly how each connects to~MC.
+character sums provide the cleanest interface between the
+death-channel avoidance problem and the toolkit of analytic number
+theory: the Bombieri--Vinogradov theorem, the large sieve inequality,
+and Gauss sum inversion all produce character sum bounds, and the
+formalization shows exactly how each connects to ruling out permanent
+avoidance.
 
-\subsection{Character Sums and Walk Equidistribution}
+\subsection{Character Sums and Permanent Avoidance}
 
 For a Dirichlet character $\chi : (\ZZ/q\ZZ)^\times \to \mathbb{C}^\times$,
 the \emph{walk character sum} is
 \[
-  S_\chi(N) \;=\; \sum_{n < N} \chi\bigl(\walkZ(q, n)\bigr).
+  S_\chi(N) \;=\; \sum_{n < N} \chi\bigl(\walkZ{q}{n}\bigr).
 \]
 
 \begin{definition}[\defname{ComplexCharSumBound} (\abbr{CCSB})]
@@ -1127,10 +991,10 @@ $N \geq N_0$:
   \|S_\chi(N)\| \;\leq\; \varepsilon \cdot N.
 \]
 In other words, the walk character sums are $o(N)$---they grow
-strictly slower than linearly.  The intuition: if $\chi$ is a
-non-trivial character and the walk visits every group element equally
-often, the sum $S_\chi(N)$ cancels out (positive and negative
-contributions balance).  CCSB asks for exactly this cancellation.
+strictly slower than linearly.  The contrapositive: if the walk
+permanently avoids~$-1$, some non-trivial character sum must be
+$\Omega(N)$ (to cancel the uniform share in the Fourier bridge).
+CCSB rules this out.
 \end{definition}
 
 \begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
@@ -1143,18 +1007,20 @@ The proof composes three bridges:
 
 \begin{enumerate}[nosep]
 \item \textbf{Fourier inversion} (\lean{EM/EquidistFourier.lean}{complex\_csb\_implies\_hit\_count\_lb\_proved}):
-  CCSB implies that the walk visits every unit class with positive
-  lower density.  This follows from the character orthogonality
-  formula (Theorem~\ref{thm:fourier-step} below): the number of hits
-  to any target~$t$ equals $N/(q{-}1)$ plus correction terms of
-  size~$o(N)$, so the count is eventually positive.
+  CCSB implies that the hit count at~$-1$ satisfies
+  $|\{n < N : \walkZ{q}{n} = -1\}| = N/(q{-}1) + o(N)$,
+  which is eventually positive.  This directly contradicts permanent
+  avoidance past the sieve gap (the character orthogonality formula,
+  Theorem~\ref{thm:fourier-step}, gives this for any target~$t$;
+  specializing to $t = -1$ is what matters).
 
-\item \textbf{Walk equidistribution implies DH}
-  (\lean{EM/EquidistOrbitAnalysis.lean}{walk\_equidist\_mc}):
-  if the walk visits every unit class cofinally, it visits~$-1$
-  cofinally, giving HH.  SE is not needed as a separate hypothesis:
-  equidistribution already implies the multipliers generate the full
-  group (a walk confined to a proper coset cannot be equidistributed).
+\item \textbf{Cofinal hitting gives HH}
+  (\lean{EM/EquidistFourier.lean}{walk\_equidist\_mc}):
+  the eventually-positive hit count at~$-1$ gives cofinal hitting,
+  hence HH\@.  (In fact, the Fourier bridge yields equidistribution
+  across all classes, but only the $t = -1$ case is needed.  SE is a
+  side effect: a walk visiting~$-1$ cannot be confined to a proper
+  coset.)
 
 \item \textbf{DH implies MC} (Theorem~\ref{thm:dh-mc}): via the
   inductive bootstrap.
@@ -1170,69 +1036,87 @@ count lower bounds, and hence into MC.
 \label{thm:fourier-step}
 For any target $t \in (\ZZ/q\ZZ)^\times$:
 \[
-  \bigl|\{n < N : \walkZ(q,n) = t\}\bigr|
+  \bigl|\{n < N : \walkZ{q}{n} = t\}\bigr|
   \;=\; \frac{1}{q-1}\sum_{\chi} \overline{\chi(t)}\, S_\chi(N),
 \]
 where the sum is over all Dirichlet characters mod~$q$.
 \end{theorem}
 
 This is a standard Fourier inversion formula on the finite group
-$(\ZZ/q\ZZ)^\times$.  To understand it, split the sum into the
-contribution from the trivial character $\chi_0$ (which satisfies
-$\chi_0(a) = 1$ for all~$a$) and the remaining non-trivial characters:
+$(\ZZ/q\ZZ)^\times$, stated for all~$t$.  Specializing to $t = -1$
+and splitting the trivial character $\chi_0$ (with $\chi_0(a) = 1$
+for all~$a$) from the non-trivial ones:
 \[
-  \bigl|\{n < N : \walkZ(q,n) = t\}\bigr|
+  \bigl|\{n < N : \walkZ{q}{n} = -1\}\bigr|
   \;=\; \underbrace{\frac{N}{q-1}}_{\text{uniform share}}
   \;+\; \underbrace{\frac{1}{q-1}\sum_{\chi \neq \chi_0}
-    \overline{\chi(t)}\, S_\chi(N)}_{\text{correction}}.
+    \overline{\chi(-1)}\, S_\chi(N)}_{\text{correction}}.
 \]
-The first term is the ``fair share'' count: if the walk were perfectly
-equidistributed among the $q{-}1$ units, each would be visited
-$N/(q{-}1)$ times.  The correction term measures the deviation from
-uniformity.  Since $|\overline{\chi(t)}| = 1$, each summand in the
-correction is bounded by $|S_\chi(N)|$, and there are $q{-}2$
-non-trivial characters.  If CCSB holds---all $|S_\chi(N)| = o(N)$---the
-correction is $o(N)$, and the hit count is $N/(q{-}1) + o(N)$, which is
-eventually positive for every target~$t$, including~$t = -1$.
+The first term grows linearly.  The correction term is bounded by
+$\tfrac{1}{q-1}\sum_{\chi \neq \chi_0} |S_\chi(N)|$, since
+$|\overline{\chi(-1)}| = 1$.  If CCSB holds---all
+$|S_\chi(N)| = o(N)$---the correction is $o(N)$, and the hit count
+is $N/(q{-}1) + o(N)$, which is eventually positive.
 
-Returning to our running example ($q = 41$): the group
-$(\ZZ/41\ZZ)^\times$ has 40~elements and 40~characters.  The Fourier
-bridge says the number of times the walk reaches $\walkZ(41,n) = 40$
-(i.e.\ $-1 \bmod 41$) in the first $N$ steps equals $N/40$ plus a
-correction bounded by the 39~non-trivial character sums.  Proving CCSB
-for $q = 41$ would establish that 41~eventually appears.
+\paragraph{The contrapositive.}
+Section~\ref{sec:bootstrap} showed that for the first missing
+prime~$q$, the hit count at~$-1$ is exactly~0 past the sieve gap.
+By the Fourier bridge, this forces the correction terms to
+cancel the entire main term $N/(q{-}1)$.  Since there are only
+$q{-}2$ non-trivial characters, at least one must satisfy
+$|S_\chi(N)| = \Omega(N/(q{-}1)^2)$---a sustained linear-scale
+bias in the character spectrum.  CCSB ($= o(N)$) rules this out.
+The Fourier bridge thus converts the geometric statement ``the walk
+avoids~$-1$ permanently'' into the spectral statement ``some character
+sum has sustained bias,'' and CCSB negates the latter.
+
+Returning to our running example ($q = 41$): the walk must accumulate
+a deficit of $\sim N/40$ hits at~$-1$ compared to uniform, which
+requires sustained character sum bias across the 39~non-trivial
+characters.  Proving CCSB for $q = 41$ would rule out this bias and
+establish that 41~eventually appears.
 
 \subsection{The Decorrelation--PED--CCSB Chain}
 \label{sec:dec-chain}
 
-CCSB is a statement about the \emph{walk} character sums $S_\chi(N) =
-\sum_{n<N} \chi(\walkZ(q,n))$.  But the walk is built from the
-\emph{multipliers}: $\walkZ(q,n{+}1) = \walkZ(q,n) \cdot
-\multZ(q,n)$.  Can we reduce walk equidistribution to a simpler
-property of the multiplier sequence?  This subsection formalizes a
-chain of progressively weaker hypotheses about the multipliers, each
-implying the next via proved bridges, to identify exactly where the
-irreducible difficulty lies.
+CCSB rules out permanent avoidance of~$-1$.  But the walk is built
+from \emph{multipliers}: $\walkZ{q}{n{+}1} = \walkZ{q}{n} \cdot
+\multZ{q}{n}$.  Since $\chi$ is a group homomorphism,
+$\chi(\walkZ{q}{n}) = \chi(\walkZ{q}{0}) \cdot \prod_{k<n}
+\chi(\multZ{q}{k})$: the walk character sum is a sum of
+\emph{partial products} of the multiplier characters.  The question
+becomes: what properties of the multiplier sequence would prevent
+the walk from permanently dodging the death channel?
+
+This subsection formalizes a chain of progressively weaker hypotheses
+about the multipliers, each implying the next via proved bridges.
+The goal is to decompose CCSB into sharper conditions on the multiplier
+sequence, and to identify exactly where the irreducible difficulty
+lies.
 
 \begin{definition}[\defname{PositiveEscapeDensity} (\abbr{PED})]
 For every missing prime~$q$ and non-trivial~$\chi$, there exist
 $\delta > 0$ and $N_0$ such that for $N \geq N_0$:
-$|\{k < N : \chi(\multZ(q,k)) \neq 1\}| \geq \delta N$.
+$|\{k < N : \chi(\multZ{q}{k}) \neq 1\}| \geq \delta N$.
 \end{definition}
 
 The name ``escape'' comes from the SubgroupEscape perspective: the
 kernel $\ker(\chi)$ is a proper subgroup of $(\ZZ/q\ZZ)^\times$, and
-$\chi(\multZ(q,k)) \neq 1$ means the $k$-th multiplier ``escapes''
+$\chi(\multZ{q}{k}) \neq 1$ means the $k$-th multiplier ``escapes''
 from $\ker(\chi)$.  PED asks that a positive fraction of multipliers
 escape \emph{every} proper subgroup, not just occasionally but with
-positive density.  This is a weak condition---it says nothing about
-cancellation or equidistribution, only that the multipliers are not
-asymptotically trapped in any subgroup.
+positive density.  The connection to the death channel: since the
+death channel is a single class and multipliers that escape
+$\ker(\chi)$ ``rotate'' the walk character value $\chi(\walkZ{q}{n})$
+by a non-trivial amount, enough escapes should prevent the systematic
+avoidance needed for permanent death-channel dodging.  PED is a weak
+condition---it says nothing about cancellation, only that the
+multipliers are not asymptotically trapped in any subgroup.
 
 \begin{definition}[\defname{DecorrelationHypothesis}]
 For every missing prime~$q$ and non-trivial~$\chi$, the multiplier
 character sums are $o(N)$:
-$\|\sum_{n<N} \chi(\multZ(q,n))\| \leq \varepsilon N$ for large~$N$.
+$\|\sum_{n<N} \chi(\multZ{q}{n})\| \leq \varepsilon N$ for large~$N$.
 \end{definition}
 
 Decorrelation is stronger than PED: it asks not merely that many
@@ -1262,30 +1146,46 @@ BRE is the bridge between the multiplier-level conditions
 (PED/Decorrelation) and the walk-level condition (CCSB).  It says:
 given that multipliers escape with positive density, the walk
 character sums must cancel.  The intuition is that each escape event
-``rotates'' the walk character value $\chi(\walkZ(q,n))$ by a
+``rotates'' the walk character value $\chi(\walkZ{q}{n})$ by a
 non-trivial amount, and sufficiently many such rotations produce
 cancellation in the sum.  BRE is the sole unproved bridge in the PED
 route.
 
+The hypotheses above---PED, Decorrelation, NoLongRuns---all treat
+the multiplier sequence as a single stream, ignoring what the walk is
+doing at the moment.  But permanent death-channel avoidance is a
+statement about the \emph{coupling} between walk position and
+multiplier: the death channel $-\walkZ{q}{n}^{-1}$ is a function of
+walk position, so avoiding it means the multiplier distribution at
+each walk position is biased away from one class.  A more refined
+hypothesis should address this coupling head-on.
+
 \begin{definition}[\defname{ConditionalMultiplierEquidist} (\abbr{CME})]
-\label{sec:cme}%
+\label{def:cme}%
 For every missing prime~$q$, non-trivial~$\chi$, $\varepsilon > 0$,
 there exists~$N_0$ such that for $N \geq N_0$ and every walk
 position~$c \in (\ZZ/q\ZZ)^\times$:
-$\|\sum_{\substack{n < N \\ \walkZ(q,n) = c}} \chi(\multZ(q,n))\|
+$\|\sum_{\substack{n < N \\ \walkZ{q}{n} = c}} \chi(\multZ{q}{n})\|
 \leq \varepsilon N$.
 \end{definition}
 
-CME is strictly stronger than Decorrelation: it asks for multiplier
-character sum cancellation \emph{conditioned on walk position}.
-Decorrelation bounds the global sum
-$\sum_{n<N} \chi(\multZ(q,n)) = o(N)$; CME bounds the fiber sums
-$\sum_{\substack{n<N \\ \walkZ(q,n) = c}} \chi(\multZ(q,n)) = o(N)$
-separately for each~$c$.  Since the global sum is the sum of the
-fiber sums, CME implies Decorrelation by the triangle inequality
-(\lean{EM/LargeSieveAnalytic.lean\#L2481}{cme\_implies\_dec}).
+CME says the multiplier distribution is the same at every walk
+position.  Since the death channel is a function of walk position,
+CME implies the death channel has no special status---the multiplier
+is no more likely to avoid the forbidden class than any other.
+Formally, CME is strictly stronger than Decorrelation: it bounds the
+fiber sums
+$\sum_{\substack{n<N \\ \walkZ{q}{n} = c}} \chi(\multZ{q}{n}) = o(N)$
+separately for each position~$c$, not just the global sum.
+Since the global sum is the sum of the fiber sums, CME implies
+Decorrelation by the triangle inequality
+(\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_dec}).
 The significance of CME is that it also implies CCSB
-\emph{directly}, bypassing PED and BRE entirely.
+\emph{directly}, bypassing PED and BRE entirely: the fiber
+decomposition and the telescoping identity together convert
+conditional multiplier cancellation into walk character sum
+cancellation, for \emph{all} character orders, without needing the
+intermediate PED $\to$ BRE $\to$ CCSB chain.
 
 \begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{decorrelation\_implies\_ped}]
 Decorrelation $\Rightarrow$ PED.
@@ -1328,7 +1228,7 @@ density into walk character sum cancellation.
 
 However, the PED route is not the only path.  CME implies CCSB
 \emph{directly}, bypassing PED and BRE entirely
-(\lean{EM/LargeSieveAnalytic.lean\#L2567}{cme\_implies\_ccsb}):
+(\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}):
 \[
 \mathrm{CME}
 \;\xrightarrow{\text{proved}}\;
@@ -1342,13 +1242,106 @@ factorization for characters of order $\geq 3$, but CME $\to$ CCSB
 works for \emph{all} character orders, using only the telescoping
 identity and fiber decomposition.
 
+\subsection{Vanishing Conditional Bias}
+\label{sec:vcb}
+
+CME is a strong hypothesis: it asks that \emph{every} fiber character
+sum $F(c, \chi) = \sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ be
+$o(N)$---in other words, that $\mu = 0$ in the proportionality
+$F(c, \chi) \approx \mu \cdot V_N(c)$.  But the telescoping route to
+CCSB does not need~$\mu = 0$; it needs only that $\mu \neq 1$.  This
+observation motivates a strictly weaker hypothesis.
+
+\begin{definition}[\defname{VanishingConditionalBias} (\abbr{VCB})]
+\label{def:vcb}%
+For every missing prime~$q$, non-trivial~$\chi$, and $\varepsilon > 0$,
+there exists~$N_0$ such that for $N \geq N_0$ there is a complex
+number~$\mu = \mu(N, \chi)$ with $|\mu| \leq 1$ satisfying, for all
+$c \in (\ZZ/q\ZZ)^\times$:
+\[
+  \left\|\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))
+    \;-\; \mu \cdot V_N(c)\right\|
+  \;\leq\; \varepsilon \cdot N,
+\]
+where $V_N(c) = |\{n < N : w(n) = c\}|$ is the visit count.
+\end{definition}
+
+In words: the factoring channel treats all walk positions
+proportionally (the formal content of the factoring channel analogy
+from \S\ref{sec:intro})---the character statistics of multipliers are
+the same at every position, up to a common constant~$\mu$ (which may vary
+with~$N$ and~$\chi$ but must be common across all positions~$c$).
+Combined with PED (enough multipliers escape), the proportionality
+constant cannot equal~1; the telescope then forces the walk character
+sum to be $o(N)$, ruling out the sustained bias needed for permanent
+avoidance.
+
+\begin{proposition}[\lean{EM/LargeSieveSpectral.lean\#L1997}{cme\_implies\_vcb}]
+$\mathrm{CME} \Rightarrow \mathrm{VCB}$ with $\mu = 0$.
+Conversely, $\mathrm{VCB} + \mathrm{Dec} \Rightarrow \mathrm{CME}$.
+Thus CME decomposes as $\mathrm{CME} = \mathrm{VCB} + \mathrm{Dec}$.
+VCB alone is strictly weaker than CME: it permits the fiber sums to
+be $\Theta(N)$, provided they are proportional to the visit counts.
+\end{proposition}
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2049}{vcbPedImpliesCcsb}]
+\label{thm:vcb-ped-ccsb}
+$\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \mathrm{CCSB}$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+From VCB, the telescope identity gives
+$(\mu - 1) \cdot S_N = O(1) + O(\varepsilon N (q{-}1))$.
+If $|1 - \mu|$ is bounded away from zero, then
+$S_N = O(\varepsilon N / |1{-}\mu|) = o(N)$.
+
+To show $|1 - \mu| \geq c_0 > 0$, PED provides $\delta > 0$ such
+that at least $\delta N$ multipliers escape $\ker(\chi)$.  For each
+escaping multiplier, $\chi(m(n))$ is a non-trivial $d$-th root of
+unity, satisfying $\mathrm{Re}(\chi(m(n))) \leq 1 - \eta_0^2/2$
+where $\eta_0 = \min_{\zeta \in \mu_d \setminus \{1\}} |\zeta - 1| > 0$
+(\lean{EM/LargeSieveSpectral.lean\#L2014}{norm\_sub\_one\_sq\_eq},
+\lean{EM/LargeSieveSpectral.lean\#L2027}{unit\_norm\_re\_le\_of\_dist}).
+This real-part defect accumulates over $\delta N$ escaping steps,
+forcing $|\sum \chi(m(n)) - N| \geq c_0 N$ for
+$c_0 = \delta \eta_0^2 / 2$.  Combined with VCB's control
+$|\sum \chi(m(n)) - \mu N| \leq C \varepsilon N$, the reverse
+triangle inequality gives $|1 - \mu| \geq c_0/2$ for small
+$\varepsilon$.
+\end{proof}
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2343}{vcb\_ped\_implies\_mc}]
+$\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+This decomposition splits the monolithic CME hypothesis into two
+independently attackable pieces:
+\begin{itemize}[nosep]
+\item \textbf{VCB} (``the factoring channel preserves proportionality''):
+  the character distribution of multipliers is the same at every walk
+  position, up to a common rate.  This captures the ``factorization
+  independence'' intuition---that the factoring operation destroys the
+  correlation between walk position and multiplier residue.
+\item \textbf{PED} (``enough multipliers escape every character kernel''):
+  a positive fraction of multiplier residues fall outside any proper
+  subgroup.
+\end{itemize}
+VCB is a recent contribution of the formalization.
+
 \subsection{Walk Telescoping Identities}
 \label{sec:telescope}
 
-The following identities are formalized not because they solve CCSB,
-but because they reveal \emph{structural constraints} that any proof
-of CCSB must navigate.  They are ``no-go'' results that rule out
-certain proof strategies.
+The hypotheses above attack CCSB by decomposing it into conditions on
+the multiplier sequence.  Before proceeding to the large sieve route,
+we pause to examine what the walk recurrence
+$\chi(w(n{+}1)) = \chi(w(n)) \cdot \chi(m(n))$ itself forces.  This
+multiplicative structure is the \emph{only} algebraic relation
+connecting walk and multiplier character values, and it constrains
+any possible proof of CCSB\@.  The following identities make these
+constraints explicit.  They are formalized not because they solve
+CCSB, but because they reveal the structural landscape: they show
+which proof strategies are compatible with the walk's algebra and
+which are ruled out.
 
 \begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_telescope\_identity}]
 \label{thm:telescope}
@@ -1369,13 +1362,16 @@ The telescoping sum has norm $\leq 2$ (triangle inequality on
 unit-norm terms).
 \end{theorem}
 
-The $\leq 2$ bound looks innocent, but it has a sharp consequence.
-If we write $S_N = \sum_{n<N} \chi(w(n))$ for the walk character sum,
-the telescope identity links $S_N$ to the multiplier character sum
-$M_N = \sum_{n<N} \chi(m(n))$.  Specifically, splitting the product
-in Theorem~\ref{thm:telescope} gives $S_N \cdot \overline{M_N/N} -
-S_N = O(1)$ (after normalization), tightly coupling the walk and
-multiplier sums.
+The $\leq 2$ bound looks innocent, but it constrains how the walk
+can respond to the death channel.  Each summand
+$\chi(w(n))\cdot(\chi(m(n)) - 1)$ is non-zero exactly when
+$\chi(m(n)) \neq 1$---i.e., when the multiplier escapes
+$\ker(\chi)$, ``rotating'' the character value.  The $\leq 2$ bound
+means the net rotation over all $N$ steps is negligible, tightly
+coupling the walk character sum $S_N = \sum_{n<N} \chi(w(n))$ to the
+multiplier character sum $M_N = \sum_{n<N} \chi(m(n))$.  Splitting
+the product in Theorem~\ref{thm:telescope} gives
+$S_N \cdot \overline{M_N/N} - S_N = O(1)$ (after normalization).
 
 \begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_shift\_one\_correlation}]
 \label{thm:shift-one}
@@ -1398,12 +1394,19 @@ first.
 \subsection{The Large Sieve Route}
 \label{sec:large-sieve}
 
-Sessions~24--36 developed an extensive large sieve infrastructure
-across three files (\code{LargeSieve.lean},
-\code{Large\-Sieve\-Harmonic.lean},
-\code{Large\-Sieve\-Analytic.lean}) totaling ${\sim}5{,}870$~lines.
-This route connects classical analytic number theory to MC via a
-multi-modular character sum bound.
+The preceding subsections attacked the question ``can the walk avoid
+$-1$ permanently?'' for a single modulus~$q$.  A different strategy
+works with \emph{many moduli simultaneously}: classical analytic
+number theory produces character sum estimates averaged over all
+moduli $q \leq Q$, and such averaged results are often easier to
+prove than pointwise ones.  The large sieve inequality and the
+Bombieri--Vinogradov theorem are the two central tools for this.
+
+The formalization develops this multi-modular route across three files
+(\code{LargeSieve.lean}, \code{Large\-Sieve\-Harmonic.lean},
+\code{Large\-Sieve\-Analytic.lean}) totaling ${\sim}5{,}870$~lines,
+connecting classical analytic number theory to MC via a multi-modular
+character sum bound.
 
 \paragraph{Why formalize the large sieve?}
 The analytic large sieve inequality and the Bombieri--Vinogradov theorem
@@ -1434,32 +1437,33 @@ $\|S_\chi(N)\| \leq \varepsilon N$.
 MultiModularCSB is weaker than CCSB in that it allows finitely many
 exceptional primes below~$Q_0$.  This weakening is crucial because
 averaged results like BV naturally produce bounds that fail for
-finitely many moduli; the threshold mechanism handles those exceptions.
+finitely many moduli.
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L1054}{mmcsb\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L320}{mmcsb\_implies\_mc}]
 \label{thm:mmcsb-mc}
 $\mathrm{MultiModularCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
-The proof composes the per-prime Fourier bridge (Theorem~\ref{thm:fourier-step})
-with the threshold mechanism (Theorem~\ref{thm:threshold-11}): for
-$q \geq Q_0$, MultiModularCSB gives walk equidistribution and hence
-HH; for $q < Q_0$, we verify MC directly.  This result was previously
-an open hypothesis in \S36; proving it (Session~24) was a key milestone
-that unified the large sieve and character sum approaches.
+The proof composes the per-prime Fourier bridge
+(Theorem~\ref{thm:fourier-step}) with the inductive bootstrap: for
+$q \geq Q_0$, MMCSB gives hit count $\sim N/(q{-}1) > 0$ at~$-1$,
+contradicting permanent avoidance; for the finitely many primes
+$q < Q_0$, the bootstrap (Section~\ref{sec:bootstrap}) handles
+them---once MC holds for all primes below~$q$, the sieve gap and
+one-prime gap (Theorem~\ref{thm:one-prime-gap}) reduce MC($q$) to a
+single hitting event.
 
 Three parallel routes to MultiModularCSB are formalized:
 
 \paragraph{Bombieri--Vinogradov route.}
-The Bombieri--Vinogradov theorem is one of the most powerful results in
-analytic number theory.  Roughly, it says that primes are equidistributed
-among arithmetic progressions ``on average over moduli'': for most
-moduli $q \leq Q = \sqrt{x}/(\log x)^A$, the count of primes $\leq x$
-in any progression $a \bmod q$ is close to the expected $\pi(x)/\phi(q)$.
-If we could apply this to the EM walk, where the multipliers are primes,
-we would get MMCSB and hence MC.
+BV says primes are equidistributed among arithmetic progressions ``on
+average over moduli'': for most $q \leq Q = \sqrt{x}/(\log x)^A$, the
+count of primes $\leq x$ in any progression $a \bmod q$ is close to
+the expected $\pi(x)/\phi(q)$.  If this applies to the EM multipliers,
+the death channel---a single progression---gets its fair share of
+multipliers, breaking the avoidance.
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L1145}{bv\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L379}{bv\_chain\_mc}]
 $\mathrm{BV} + \mathrm{BVImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 The transfer hypothesis BVImpliesMMCSB is a \textbf{genuine frontier}:
@@ -1494,13 +1498,13 @@ makes this obstruction precise: the $h\!=\!1$ autocorrelation equals
 the multiplier character sum, so van der Corput with a single shift
 gives only~$O(N)$, not~$o(N)$.
 This is why the CME bypass (fiber decomposition $+$ telescoping,
-Section~\ref{sec:cme}) is essential: it goes directly from
+Definition~\ref{def:cme}) is essential: it goes directly from
 conditional multiplier equidistribution to CCSB without ever
 requiring the walk bridge.
 
 \paragraph{Additional sieve routes.}
 Two further routes are formalized---the arithmetic large sieve
-(ArithLS~$\Rightarrow$~MC, a dead end per Session~35) and the analytic
+(ArithLS~$\Rightarrow$~MC, a dead end) and the analytic
 large sieve (ALS~$\Rightarrow$~PrimeArithLS~$\Rightarrow$~MC), where
 the ALS-to-PrimeArithLS bridge via Gauss sum inversion is fully proved
 across eight internal lemmas.  In both cases, the genuine open content
@@ -1621,7 +1625,7 @@ $\mathrm{EuclidMinFacEscape}(q) \Leftrightarrow \mathrm{TailSE}(q)$.
 Even perfect per-position equidistribution of multipliers is consistent
 with HH failure.  DH is a \emph{joint} statement---the
 (position, multiplier) pair must hit the \emph{death curve}
-$\multZ(q,n) = -\walkZ(q,n)^{-1}$---and no marginal statement can
+$\multZ{q}{n} = -\walkZ{q}{n}^{-1}$---and no marginal statement can
 force this.
 
 \paragraph{The orbit chain gap.}
@@ -1659,14 +1663,14 @@ rotations.  The $\mathrm{PED} \Rightarrow \mathrm{BRE} \Rightarrow
 \mathrm{CCSB}$ factorization is invalid for $d \geq 3$.
 
 This barrier is specific to the PED route.  The CME $\to$ CCSB
-reduction (\lean{EM/LargeSieveAnalytic.lean\#L2567}{cme\_implies\_ccsb})
+reduction (\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb})
 bypasses PED and BRE entirely, working for all character orders $d$
 via the telescoping identity.  The $d \geq 3$ problem is therefore
 not a barrier for the \emph{reduction}---only for the particular
 factorization through PED.
 \end{remark}
 
-\subsection{The Van der Corput Barrier}
+\paragraph{The Van der Corput Barrier}
 
 The van der Corput inequality (Theorem~\ref{thm:vdc}, now fully proved
 in the formalization) converts character sum bounds into autocorrelation
@@ -1680,7 +1684,7 @@ for $h \geq 2$, which requires HigherOrderDecorrelation
 The telescoping identity $\sum_n \chi(w(n))(\chi(m(n))-1) = O(1)$
 is a precise structural constraint.
 
-\subsection{The Walk Bridge Falsity}
+\paragraph{The Walk Bridge Falsity}
 \label{sec:walk-bridge-false}
 
 The BV route decomposes into two stages: sieve transfer
@@ -1701,16 +1705,102 @@ not~$o(N)$.  Cancellation of sums does not imply cancellation
 of cumulative products.
 
 This negative result explains why the CME bypass
-(Section~\ref{sec:cme}) is essential.  CME uses fiber
+(Definition~\ref{def:cme}) is essential.  CME uses fiber
 decomposition and telescoping to go directly from conditional
 multiplier equidistribution to CCSB, circumventing the walk bridge
 entirely.
 
+\subsection{The Factorization Independence Heuristic}
+\label{sec:hash-heuristic}
+
+The preceding barriers explain why MC is hard to \emph{prove}.  This
+subsection explains why it should be \emph{true}---and why the
+formalization's sole remaining hypothesis (CME) is the precise
+mathematical content of a natural intuition about factorization.
+
+\paragraph{The information bottleneck.}
+The information bottleneck of \S\ref{sec:sufficient-conditions}---$O(\log q)$
+bits visible to the walk versus ${\sim}2^n$ bits determining the
+multiplier---means the mutual information vanishes exponentially.
+This is directly analogous to the pseudorandomness of iterated hash
+functions: if~$H$ is a cryptographic hash, the sequence
+$x, H(x), H(H(x)), \ldots$ is deterministic but statistically
+indistinguishable from random, because the hash destroys recoverable
+correlations.  For the EM sequence, integer factorization plays the
+role of the hash function.  Both processes are fully deterministic
+(given the seed, every term is uniquely determined), one-way
+(computing forward is trivial; extracting structure from the output
+is computationally hard), and \emph{de facto} uncorrelated
+(consecutive terms pass every reasonable test for independence).
+
+The analogy is heuristic, not rigorous.  SHA-256 is \emph{designed}
+for pseudorandomness; $\minFac$ is not designed for anything.  We do
+not claim that computational hardness of factoring implies MC---what
+MC requires is a number-theoretic statement (CME), not a
+complexity-theoretic one.  But the analogy explains the structure of
+the problem: proving pseudorandomness of a deterministic process
+requires showing that \emph{no exploitable structure exists}, which is
+harder than finding structure.  This is why the conjecture resists
+proof despite overwhelming heuristic evidence.
+
+\paragraph{Negative analogies: why the selection rule matters.}
+The factorization independence heuristic explains why the EM sequence
+($\minFac$ variant) should contain all primes, while related sequences
+do not.
+
+\begin{itemize}[nosep]
+\item The \textbf{Sylvester sequence} $s(n{+}1) = s(0) \cdots s(n) + 1$
+  has density-zero prime divisors~\cite{Odoni1985}.  Its terms grow
+  doubly exponentially, giving each prime only $O(1)$ chances to appear
+  as a factor.  The ``hash chain'' runs too fast.
+
+\item \textbf{Fermat numbers} $F_n = 2^{2^n} + 1$ have the even stronger
+  property that $\sum 1/p$ converges over their prime divisors.  Again,
+  doubly exponential growth limits opportunities.
+
+\item The \textbf{second EM sequence} ($\mathrm{maxFac}$ variant)
+  provably omits infinitely many primes~\cite{CoxVdP1968,
+  PollackTrevino2014}.  Here the ``hash function'' ($\mathrm{maxFac}$
+  instead of $\minFac$) produces large multipliers, causing the product
+  to grow rapidly---analogous to using a hash function that amplifies
+  rather than compresses.
+
+\item The \textbf{first EM sequence} ($\minFac$ variant) keeps the
+  product growing slowly---heuristically as $\exp(n^2/2)$
+  (see~\S\ref{sec:lean}).  This is analogous to a hash function that
+  compresses, giving exponentially many iterations within any fixed
+  modulus.  The conjecture is that this compression ensures coverage.
+\end{itemize}
+
+\paragraph{What the formalization adds.}
+The formalization identifies three equivalent formulations of the
+factoring channel's decorrelation:
+\begin{enumerate}[nosep]
+\item \textbf{Conditional Multiplier Equidistribution (CME)}:
+  the distribution of $\minFac(\Prod(n)+1) \bmod q$, conditioned on
+  $\Prod(n) \equiv c \pmod{q}$, is asymptotically independent of~$c$
+  (Definition~\ref{def:cme}).
+\item \textbf{Decorrelation Hypothesis}: the character sum
+  $\sum \chi(\multZ{q}{n}) = o(N)$ for nontrivial~$\chi$---the
+  multiplier residues have cancelling character sums, as independent
+  random variables would.
+\item \textbf{ComplexCharSumBound (CCSB)}: the walk character sums
+  $\sum \chi(\walkZ{q}{n}) = o(N)$ for nontrivial~$\chi$---ruling out
+  permanent avoidance of any residue class.
+\end{enumerate}
+These are related by proved implications
+($\mathrm{CME} \Rightarrow \mathrm{Dec} \Rightarrow \mathrm{PED}$)
+and direct bypass ($\mathrm{CME} \Rightarrow \mathrm{CCSB}$).
+Each implies MC through the verified reduction chain.  The irreducible
+mathematical content is: does the factoring operation destroy enough
+correlation for character sums to cancel?
+
 \subsection{Dead Ends as a Roadmap}
 
-Across 22~formalization sessions, dozens of potential approaches were
-explored and found to be dead ends.  Each elimination is informative:
-it narrows the space of viable strategies.  A selection of twelve,
+Over a hundred potential approaches
+were explored and found to be dead ends (catalogued in full in the
+project's \code{dead\_ends.md}).  Each elimination is informative:
+it narrows the space of viable strategies.  A representative selection,
 grouped by the type of obstruction:
 
 \smallskip
@@ -1765,29 +1855,65 @@ Multi-modular approaches
 Death set coupling across moduli
   & Death sets $\{m : \minFac(m) \equiv -c^{-1}\}$ vary per step;
     no uniform coupling bound exists. \\
+Spectral gap (deterministic walk)
+  & Spectral gap theory applies to probability measures on groups
+    (convergence of random sampling); the EM walk is a single
+    deterministic path. \\
+Information-theoretic bounds
+  & Category error: entropy/mutual-information tools assume a
+    random variable; the EM sequence is deterministic with zero
+    entropy. \\
 \bottomrule
 \end{tabular}
 \renewcommand{\arraystretch}{1.0}
 \end{center}
 
+\paragraph{The Four-Way Blocker.}
+The majority of the 105~dead ends reduce to a single meta-obstacle:
+every known technique for proving equidistribution of sequences on
+finite groups requires at least \emph{one} of (1)~independence of
+steps, (2)~multiplicativity of the generating function,
+(3)~algebraic-geometric structure (parameter families, monodromy),
+or (4)~ergodic stationarity.  The EM walk satisfies \emph{none} of
+these: the steps are deterministic and mutually dependent, the walk
+is not a multiplicative function, the multipliers have no known
+algebraic-geometric parametrization, and the non-autonomous dynamics
+(a different multiplier at each step) rule out stationarity.  This
+explains why classical tools---random-walk mixing, Hal\'asz's theorem,
+Katz monodromy, Birkhoff averages---all fail.
+
+\paragraph{The telescope exhausts the algebra.}
+The telescoping identity $\chi(w(n{+}1)) = \chi(w(n)) \cdot
+\chi(m(n))$ is the \emph{complete} algebraic content of the walk.
+Only two decomposition strategies for the character sum $S_N =
+\sum_{n<N} \chi(w(n))$ exist: grouping by \emph{value} (fiber
+decomposition $\to$ CME) and grouping by \emph{lag} (autocorrelation
+$\to$ HOD).  Every other rearrangement---Abel summation, M\"obius
+inversion, Dirichlet series, block decomposition---either reduces to
+one of these two or fails outright (Abel gives $O(N^2)$ remainder in
+the wrong direction; M\"obius/Dirichlet require multiplicativity).
+There is no third algebraic route to CCSB\@.
+
 \smallskip\noindent
 The pattern: every approach that avoids the specific EM orbit's
 joint distribution either reduces to CCSB or fails.  Since CME
-implies CCSB (proved), the sharpest target is now CME:
-conditional equidistribution of multipliers given walk position.
+implies CCSB (proved), and CME decomposes as VCB~$+$~Dec
+(\S\ref{sec:vcb}), the sharpest targets are now VCB~$+$~PED or CME:
+conditional equidistribution of multipliers given walk position, or
+the weaker proportionality condition combined with escape density.
 CME is strictly weaker than CCSB and is the \emph{irreducible
 analytic content}.
 
-\subsection{The Mathematical Landscape}
+\paragraph{The Mathematical Landscape}
 
 We need to prove one of these equivalent statements for every missing
 prime~$q$:
 \begin{itemize}[nosep]
 \item \textbf{DH}: If the multipliers generate $(\ZZ/q\ZZ)^\times$,
-  the walk $\walkZ(q,n) = \Prod(n) \bmod q$ hits $-1$ cofinally.
+  the walk $\walkZ{q}{n} = \Prod(n) \bmod q$ hits $-1$ cofinally.
 \item \textbf{CCSB}: For every non-trivial character
   $\chi \colon (\ZZ/q\ZZ)^\times \to \mathbb{C}^\times$, the sum
-  $\sum_{n < N} \chi(\walkZ(q,n)) = o(N)$.
+  $\sum_{n < N} \chi(\walkZ{q}{n}) = o(N)$.
 \item \textbf{$d{=}2$ special case} (as a stepping stone): For every
   quadratic character~$\chi$, the $\pm 1$-valued walk character sum is
   $o(N)$.
@@ -1796,7 +1922,7 @@ The formalization has conclusively shown that every tool requiring
 independence, classical multiplicativity, or ensemble averaging fails.
 So we need ideas that exploit what the EM walk specifically has.
 
-\subsection{Structural Features of the EM Walk}
+\paragraph{Structural Features of the EM Walk}
 
 The dead ends above show what does not work.  Complementarily, the EM
 walk has four structural features---all proved or formalized---that no
@@ -1826,10 +1952,10 @@ by the construction.
 
 \medskip\noindent\textbf{Feature~3: The multiplier is the smallest
 prime factor.}\enspace  This is the key constraint that everyone
-mentions but nobody has quantified.  If $\walkZ(q,n) \neq -1$ (so
+mentions but nobody has quantified.  If $\walkZ{q}{n} \neq -1$ (so
 that $q$ does not divide $\Prod(n)+1$ as the smallest factor), then
-the multiplier $\multZ(q,n) = \minFac(\Prod(n)+1)$ satisfies
-$\multZ(q,n) \leq (\Prod(n)+1)^{1/2}$.  For a number of size
+the multiplier $\multZ{q}{n} = \minFac(\Prod(n)+1)$ satisfies
+$\multZ{q}{n} \leq (\Prod(n)+1)^{1/2}$.  For a number of size
 ${\sim}2^n$, this smallest factor could be as small as~$3$ or as
 large as~${\sim}2^{n/2}$.  The $\minFac$ rule creates a deterministic
 coupling between walk position and multiplier: the multiplier at
@@ -1838,7 +1964,7 @@ residue.
 
 \medskip\noindent\textbf{Feature~4: Self-correcting feedback.}\enspace
 If the walk concentrates on certain residues mod~$q$---say
-$\walkZ(q,n) \equiv a \pmod{q}$ for many~$n$---then
+$\walkZ{q}{n} \equiv a \pmod{q}$ for many~$n$---then
 $\Prod(n)+1 \equiv a+1 \pmod{q}$ for many~$n$.  The smallest prime
 factor of numbers $\equiv a+1 \pmod{q}$ depends on~$a+1$, creating a
 feedback loop: concentration in one residue class biases the
@@ -1847,6 +1973,8 @@ class.  This self-correcting mechanism has been formalized
 (\code{EquidistSelfCorrecting.lean}), but all paths from it lead to
 \textsc{SieveTransfer}---the open hypothesis that generic
 $\minFac$~equidistribution transfers to the specific EM orbit.
+We return to this feature in our assessment of whether DH is true
+(\S\ref{sec:open}).
 
 \medskip
 These four features---growth, coprimality, the $\minFac$ selection
@@ -1861,10 +1989,14 @@ specific arithmetic of the EM construction.
 \label{sec:lean}
 %% =========================================================================
 
-\subsection{Codebase Structure}
+Having developed the mathematical reduction and identified the
+structural obstacles, we describe the Lean~4 formalization that
+certifies these results.
 
-The formalization uses Lean~4 with Mathlib~v4.27.0 across 32~files
-totaling ${\sim}22{,}400$~lines.  The dependency chain is linear, with
+\paragraph{Codebase Structure}
+
+The formalization uses Lean~4 with Mathlib~v4.27.0 across 35~files
+totaling ${\sim}26{,}900$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \begin{center}
@@ -1873,39 +2005,42 @@ three leaf modules:
 \toprule
 \textbf{File} & \textbf{Content} & \textbf{Lines} \\
 \midrule
-\code{Euclid.lean} & Constructive Euclid's theorem & 425 \\
+\code{Euclid.lean} & Constructive Euclid's theorem & 422 \\
 \code{MullinDefs.lean} & \code{seq}, \code{prod}, \code{aux}, identities & 527 \\
-\code{MullinConjectures.lean} & MC, Conjecture A (FALSE), HH & 494 \\
-\code{MullinDWH.lean} & DivisorWalkHypothesis (leaf) & 551 \\
-\code{MullinResidueWalk.lean} & WalkCoverage, residue walk, concrete MC & 605 \\
+\code{MullinConjectures.lean} & MC, Conjecture A (FALSE), HH & 490 \\
+\code{MullinDWH.lean} & DivisorWalkHypothesis (leaf) & 547 \\
+\code{MullinResidueWalk.lean} & WalkCoverage, residue walk, concrete MC & 603 \\
 \code{MullinGroupCore.lean} & walkZ, multZ, confinement, SE & 422 \\
 \code{MullinGroupEscape.lean} & Escape lemmas, 8-element argument & 673 \\
-\code{MullinGroupSEInstances.lean} & 30 concrete SE instances ($q \leq 157$) & 364 \\
+\code{MullinGroupSEInstances.lean} & 29 concrete SE instances ($q \leq 157$) & 364 \\
 \code{MullinGroupPumping.lean} & Gordon sequenceability (leaf) & 343 \\
 \code{MullinGroupQR.lean} & QR obstruction ($\leq 1.6\%$) (leaf) & 683 \\
+\code{MullinCRT.lean} & CRT multiplier invariance, walk recurrence & 160 \\
+\code{MullinDepartureGraph.lean} & Departure graph, infinite recurrence, safe prime lattice & 393 \\
 \code{RotorRouter.lean} & Scheduled walk coverage (standalone) & 421 \\
 \code{MullinRotorBridge.lean} & EMPR + SE $\Rightarrow$ MC bridge & 87 \\
 \code{EquidistPreamble.lean} & PE $\Rightarrow$ MC, bootstrapping & 234 \\
-\code{EquidistSieve.lean} & Sieve, WHP $\Leftrightarrow$ HH & 297 \\
+\code{EquidistSieve.lean} & Sieve, WHP $\Leftrightarrow$ HH, forbidden multiplier, M\"obius death & 755 \\
 \code{EquidistSelfAvoidance.lean} & Self-avoidance, periodicity & 450 \\
 \code{EquidistCharPRE.lean} & Character non-vanishing, PRE $\Leftrightarrow$ SE & 811 \\
-\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC & 522 \\
-\code{EquidistThreshold.lean} & ThresholdHitting(11) $\Rightarrow$ MC & 299 \\
+\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 617 \\
+\code{EquidistThreshold.lean} & Sieve gap, one-prime gap, cofinal pair avoidance & 325 \\
 \code{EquidistOrbitAnalysis.lean} & Cofinal orbits, quotient walk, sieve, selectability & 1441 \\
 \code{EquidistFourier.lean} & Character sums, Fourier bridge & 1298 \\
-\code{EquidistSelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel (\S31--\S37, \S72) & 1114 \\
-\code{EquidistSieveTransfer.lean} & Prime density, sieve transfer, walk decomp (\S38--\S78) & 1319 \\
+\code{EquidistSelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel (\S31--\S37, \S72) & 1163 \\
+\code{EquidistSieveTransfer.lean} & Sieve transfer, coprimality, neg-inv involution (\S38--\S78) & 1457 \\
+\code{CMEVariants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 113 \\
 \code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, sieve bridge (\S41--\S52, \S79) & 1812 \\
 \code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel (\S53--\S55) & 892 \\
-\code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT (\S56--\S65) & 1438 \\
-\code{LargeSieveSpectral.lean} & Walk energy, HOD, VdC, CME, SVE (\S66--\S78) & 1685 \\
+\code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT, dead ends (\S56--\S65, \S81--\S82) & 1683 \\
+\code{LargeSieveSpectral.lean} & Walk energy, HOD, VdC, CME, VCB, SVE, transition matrix (\S66--\S86) & 2670 \\
 \midrule
 \code{IKCh1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 437 \\
 \code{IKCh2.lean} & Iwaniec--Kowalski Ch.\,2: summation formulas & 270 \\
 \code{IKCh3.lean} & Iwaniec--Kowalski Ch.\,3: combinatorial sieve & 557 \\
 \code{IKCh4.lean} & Iwaniec--Kowalski Ch.\,4: summation formulas & 593 \\
 \code{IKCh5.lean} & Iwaniec--Kowalski Ch.\,5: Kloosterman sums & 877 \\
-\code{IKCh7.lean} & Iwaniec--Kowalski Ch.\,7: bilinear forms, large sieve & 455 \\
+\code{IKCh7.lean} & Iwaniec--Kowalski Ch.\,7: bilinear forms, duality, Gram, MLS, sieve & 2269 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1953,19 +2088,15 @@ The formalization draws on several Mathlib libraries:
   groups, trigonometric exponentials, geometric series identities.
 \end{itemize}
 
-\subsection{Verification Statistics}
-
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}22{,}400$ \\
-Files & 32 \\
-Theorems/lemmas & ${\sim}770$ \\
+Lines of Lean code & ${\sim}26{,}900$ \\
+Files & 35 \\
+Theorems/lemmas & ${\sim}910$ \\
 Definitions & ${\sim}460$ \\
 \code{sorry} occurrences & \textbf{0} \\
 Open hypotheses (stated as \code{def}) & ${\sim}26$ \\
-Concrete SE instances & 30 \\
-Computed sequence terms & 8 \\
 Mathlib version & v4.27.0 \\
 \bottomrule
 \end{tabular}
@@ -1976,19 +2107,25 @@ Mathlib version & v4.27.0 \\
 \label{sec:open}
 %% =========================================================================
 
+The formalization certifies the reductions above and pinpoints the
+frontier.  This section identifies the open problems whose resolution
+would close Mullin's Conjecture.
+
 \subsection{CCSB as the Precise Frontier}
 
 The formalization identifies \textbf{ComplexCharSumBound} as the
 irreducible analytic content.  The question:
 
 \begin{center}
-\emph{Are the walk character sums $\sum_{n<N} \chi(\walkZ(q,n))$ bounded
+\emph{Are the walk character sums $\sum_{n<N} \chi(\walkZ{q}{n})$ bounded
 $o(N)$ for every non-trivial $\chi$?}
 \end{center}
 
 CCSB is a single hypothesis that implies MC with no additional
-conditions.  It is equivalent to walk equidistribution mod~$q$, which
-is the strongest ``uniform'' version of DH.
+conditions.  As shown in Section~\ref{sec:character}, CCSB rules out
+permanent avoidance of~$-1$: the Fourier bridge forces the hit count
+at~$-1$ to be $N/(q{-}1) + o(N)$, contradicting the zero hits that
+the first missing prime's walk must achieve past the sieve gap.
 
 The walk telescoping identities (Section~\ref{sec:character}) provide
 precise structural constraints.  The identity
@@ -2007,10 +2144,10 @@ A Bombieri--Vinogradov type result for EM walk residues would give:
   - \frac{N}{q-1} \Bigr|
 \;\ll\; \frac{NQ}{(\log N)^A}.
 \]
-For non-exceptional primes, the walk equidistributes; exceptional
-primes (finitely many) are handled by FiniteMCBelow.  Combining with
-$\mathrm{ThresholdHitting}(11) \Rightarrow \MC$ would close the
-conjecture.
+For non-exceptional primes, the hit count at~$-1$ would be
+$\sim N/(q{-}1) > 0$, contradicting permanent avoidance; the finitely
+many exceptional primes below~$Q_0$ are handled by the inductive
+bootstrap (\S\ref{sec:bootstrap}), closing the conjecture.
 
 The difficulty is that BV applies to the set of \emph{all} primes,
 not to a specific subsequence.  The EM walk is deterministic and
@@ -2034,7 +2171,8 @@ Combined with finite verification for the remaining~$q$, this would
 prove PRE and hence SE unconditionally---but SE is
 \emph{already} proved unconditionally via the elementary PRE.
 The Chebotarev approach would give a stronger \emph{effective}
-bound on how quickly SE kicks in.
+bound on how quickly SE kicks in, refining the density argument of
+\S\ref{sec:bootstrap}.
 
 \subsection{The Sieve-Theoretic Approach}
 
@@ -2053,8 +2191,8 @@ $\mathrm{MertensEscape} + \mathrm{SieveAmplification}
 \mathrm{CofinalEscape} \xrightarrow{\text{proved}}
 \mathrm{QuotientDH}$.
 
-Sessions~19--22 articulated a richer sieve infrastructure in two parallel
-routes (\S38--\S39 of \code{EquidistSelfCorrecting.lean}):
+The formalization articulates a richer sieve infrastructure in two parallel
+routes:
 
 \paragraph{Cumulative route.}
 \begin{gather*}
@@ -2091,11 +2229,11 @@ formally proved.
 \xrightarrow{\text{proved}}
 \mathrm{MC}.
 \]
-StrongSieveEquidist asserts window equidistribution of EM multipliers
+StrongSieveEquidist asserts that EM multipliers are equidistributed
 within sliding windows; NoLongRunsAt and PEDAt are per-prime variants
 proved by pigeonhole and block-counting respectively
-(\lean{EM/EquidistSelfCorrecting.lean\#L1123}{strongSieveEquidist\_noLongRunsAt},
-\lean{EM/EquidistSelfCorrecting.lean\#L1192}{noLongRunsAt\_ped}).
+(\lean{EM/EquidistSieveTransfer.lean\#L185}{strongSieveEquidist\_noLongRunsAt},
+\lean{EM/EquidistSieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
 
 \paragraph{The genuine frontier.}
 \textbf{SieveTransfer} is the critical open hypothesis: does the
@@ -2104,10 +2242,12 @@ to the specific EM orbit?  Everything above SieveTransfer is known
 mathematics; everything below it is proved.  SieveTransfer is where
 ``known but not formalized'' meets ``genuinely open.''
 
-The difficulty: this applies to \emph{generic} integers whose
-$\minFac$ residues are equidistributed (by CRT + Mertens), not to
-the specific EM orbit.  Transferring from ensemble to specific orbit
-is the open step.
+The difficulty: for \emph{generic} $q$-rough integers,
+$\minFac$ residues are equidistributed (by CRT + Mertens)---the
+death channel gets its fair share of multipliers.  But the EM
+Euclid numbers are not generic: each is determined by the entire
+walk history.  Transferring the generic equidistribution to this
+specific orbit is the open step.
 
 \paragraph{Sieve-to-harmonic convergence.}
 The sieve hierarchy (\S36--\S39 of \code{EquidistSelfCorrecting.lean})
@@ -2126,14 +2266,14 @@ DecorrelationHypothesis as output.  The full chain
 \]
 is formalized, with the first two arrows machine-verified
 (\lean{EM/LargeSieve.lean\#L1634}{sieve\_equidist\_implies\_decorrelation},
-\lean{EM/EquidistSelfCorrecting.lean\#L143}{decorrelation\_implies\_ped}).
+\lean{EM/EquidistSelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
 The sieve route achieves SieveEquidist~$\Rightarrow$~Dec via a
 counting-to-character-sum bridge: SieveEquidistribution produces
 \code{EMMultCharSumBound} with $Q_0 = 0$, meaning multiplier character
 sums cancel for \emph{all} primes~$q$, which is exactly
 DecorrelationHypothesis.  The sole remaining gap on this route is
 \textbf{PEDImpliesComplexCSB}
-(\lean{EM/EquidistSelfCorrecting.lean\#L113}{PEDImpliesComplexCSB}):
+(\lean{EM/EquidistSelfCorrecting.lean\#L109}{PEDImpliesComplexCSB}):
 does positive escape density for all primes imply walk character sum
 cancellation?  Any proof of SieveEquidistribution (e.g., from PNT
 in APs $+$ Alladi's theorem) would immediately yield Dec and PED
@@ -2147,19 +2287,22 @@ The cleanest paths to MC:
   character sum $\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ is
   $o(N)$ for each walk position~$c$.  CME is strictly weaker than
   CCSB, and $\mathrm{CME} \Rightarrow \mathrm{CCSB}$ is proved
-  (\lean{EM/LargeSieveAnalytic.lean\#L2567}{cme\_implies\_ccsb}).
+  (\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}).
   CME asks only about the \emph{conditional} distribution of
   multipliers given walk state---it does not require controlling the
   walk character sum itself.  This bypasses the $d \geq 3$ barrier
   entirely.
 
-\item \textbf{Prove CCSB directly}: show that the deterministic
-  product walk cannot maintain character-sum bias $\Theta(N)$.  The
-  self-correcting sieve (concentration of EM primes in a residue class
-  is exponentially self-limiting) is the strongest heuristic argument.
+\item \textbf{Prove CCSB directly}: show that no non-trivial
+  character sum can sustain the $\Omega(N)$ bias that permanent
+  avoidance of~$-1$ would require.  The self-correcting sieve
+  (concentration of EM primes in a residue class is exponentially
+  self-limiting) is the strongest heuristic argument.
 
-\item \textbf{Prove a BV-type estimate}: even an averaged version
-  over~$q$ would suffice, combined with ThresholdHitting(11).
+\item \textbf{Prove a BV-type estimate}: even an averaged bound
+  over~$q$ would suffice---for $q \geq Q_0$ it rules out permanent
+  avoidance, and the finitely many $q < Q_0$ are handled by the
+  inductive bootstrap (\S\ref{sec:bootstrap}).
 
 \item \textbf{Close the orbit chain gap}: show that at each cofinally
   visited walk position, at least two distinct multiplier classes
@@ -2180,33 +2323,35 @@ The cleanest paths to MC:
 \item \textbf{Prove BVImpliesMMCSB or PrimeArithLSImpliesMMCSB}: the
   large sieve route (\S41--\S65) reduces MC to a transfer hypothesis.
   Given Bombieri--Vinogradov or the analytic large sieve, the remaining
-  open step is transferring the averaged or generic equidistribution to
-  the specific EM walk.  This is the same orbit-specificity gap as
-  SieveTransfer, approached from a different mathematical toolkit.
+  open step is showing that the EM orbit's multipliers receive their
+  fair share of each residue class---in particular, that the death
+  channel is not systematically avoided.  This is the same
+  orbit-specificity gap as SieveTransfer, approached from a different
+  mathematical toolkit.
 \end{enumerate}
 
-\subsection{Is DynamicalHitting True?}
+\subsection{Does the Walk Hit $-1$?}
 
-The formalization proves $\mathrm{DH} \Rightarrow \mathrm{MC}$ but
-says nothing about whether DH itself holds.  Intellectual honesty
-requires a frank assessment.
+The irreducible open question is not whether DH holds (cofinal
+hitting is a convenient sufficient condition) but whether the walk
+hits~$-1$ \emph{at least once} past the sieve gap.  The Single Hit
+Theorem (Theorem~\ref{thm:single-hit}) shows that a single hit at
+each prime suffices for MC; DH, CCSB, and CME are strategies for
+producing that hit.
 
 \paragraph{Evidence for.}
-Three independent lines of evidence suggest DH is true.
-(1)~\emph{Computation}: every prime below 41 has been verified to
-appear in the EM sequence (51~terms computed), and the walk hits
-$-1 \pmod{q}$ for all tested primes $q$ with no counterexample.
-(2)~\emph{Self-correcting feedback}: the formalized sieve analysis
+Two independent lines of evidence suggest the walk does hit~$-1$.
+(1)~\emph{Self-correcting feedback}: the formalized sieve analysis
 (\code{EquidistSelfCorrecting.lean}) shows that concentration of EM
 primes in a residue class is exponentially self-limiting---a walk
 biased toward missing $-1$ automatically biases the multiplier
 distribution toward correcting that miss.
-(3)~\emph{Analogy with Artin's conjecture}: Artin's conjecture
+(2)~\emph{Analogy with Artin's conjecture}: Artin's conjecture
 (that every non-square integer is a primitive root for infinitely
 many primes) has the same orbit-specificity structure and is believed
-true; Hooley~\cite{Hooley1967} proved it conditional on GRH.  DH is the analogous
-statement for the EM walk and would follow from an analogous
-uniformity hypothesis.
+true; Hooley~\cite{Hooley1967} proved it conditional on GRH.  The
+walk-hitting question is the analogous statement for the EM walk
+and would follow from an analogous uniformity hypothesis.
 
 \paragraph{Evidence against.}
 Two features of the EM sequence give pause.
@@ -2218,21 +2363,21 @@ rule.  This fragility means heuristic arguments
 (``it should work because Euclid numbers have many factors'') are
 not reliable.
 (2)~\emph{The $d \geq 3$ barrier}: the formalization proves that
-the most natural route from multiplier equidistribution to walk
-equidistribution (PED~$\Rightarrow$~BRE~$\Rightarrow$~CCSB) is
+the most natural route from multiplier escape density to walk
+character sum cancellation (PED~$\Rightarrow$~BRE~$\Rightarrow$~CCSB) is
 \emph{impossible} for character orders $d \geq 3$.  This is not
-evidence that DH is false, but it shows that the truth of DH, if
-it holds, requires mechanisms beyond the simplest equidistribution
+evidence against the hit, but it shows that producing one
+requires mechanisms beyond the simplest equidistribution
 framework.  The CME bypass sidesteps this barrier, but the barrier's
 existence means any proof must be genuinely subtle.
 
 \paragraph{Assessment.}
-We believe DH is very likely true, primarily because the
-self-correcting sieve mechanism provides a concrete dynamical
+We believe the walk does hit~$-1$ at every prime, primarily because
+the self-correcting sieve mechanism provides a concrete dynamical
 reason (not merely a probabilistic heuristic) for the walk to
-equidistribute.  The strongest form of this belief: CME should hold
-because the EM multipliers, conditioned on walk position, have no
-arithmetic reason to correlate with characters of $(\ZZ/q\ZZ)^\times$.
+eventually hit~$-1$.  The strongest form of this belief: CME should
+hold because the EM multipliers, conditioned on walk position, have
+no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this, and
 the $d \geq 3$ barrier shows that the proof, when found, will need
 to exploit the specific structure of the EM walk in ways that
@@ -2262,11 +2407,10 @@ current analytic number theory does not.
 \multicolumn{3}{l}{\emph{Sequence foundations}} \\
 \quad Every $\seq(n)$ is prime & Proved & \code{seq\_isPrime} \\
 \quad No prime repeats & Proved & \code{seq\_injective} \\
-\quad $\seq(0\text{--}7)$ computed & Proved & \code{seq\_zero..seq\_seven} \\
 \midrule
 \multicolumn{3}{l}{\emph{Main reductions to MC}} \\
-\quad \textbf{DH $\Rightarrow$ MC} (irreducible core) & Proved & \code{dynamical\_hitting\_implies\_mullin} \\
-\quad \textbf{ThHit(11) $\Rightarrow$ MC} & Proved & \code{threshold\_11\_implies\_mullin'} \\
+\quad \textbf{SHH $\Rightarrow$ MC} (Single Hit Theorem) & Proved & \code{single\_hit\_implies\_mc} \\
+\quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting route) & Proved & \code{dynamical\_hitting\_implies\_mullin} \\
 \quad \textbf{CCSB $\Rightarrow$ MC} (single hypothesis) & Proved & \code{complex\_csb\_mc'} \\
 \quad PE $\Rightarrow$ MC & Proved & \code{pe\_implies\_mullin} \\
 \quad HH $\Rightarrow$ MC & Proved & \code{hh\_implies\_mullin} \\
@@ -2286,8 +2430,7 @@ current analytic number theory does not.
 \quad SE $\Leftrightarrow$ character detection & Proved & \code{se\_iff\_char\_detection} \\
 \quad Maximal subgroup reduction & Proved & \code{se\_of\_maximal\_escape} \\
 \quad WHP $\Leftrightarrow$ HH & Proved & \code{whp\_iff\_hh} \\
-\quad QR obstruction ($\leq 1.6\%$) & Proved & \code{se\_qr\_obstruction} \\
-\quad SE for 30 primes ($q \leq 157$) & Proved & \code{se\_at\_11..se\_at\_157} \\
+\quad SE density argument (CRT + QR) & Proved & \code{se\_qr\_obstruction} \\
 \midrule
 \multicolumn{3}{l}{\emph{Character sum chain}} \\
 \quad Fourier bridge: CCSB $\Rightarrow$ hit count lb & Proved & \code{complex\_csb\_implies\_hit\_count\_lb\_proved} \\
@@ -2346,6 +2489,7 @@ current analytic number theory does not.
 \quad All 8 GCT internal lemmas (\S56--\S62) & Proved & \code{gct\_nontrivial\_char\_sum\_le} \\
 \midrule
 \multicolumn{3}{l}{\emph{Open hypotheses --- live targets}} \\
+\quad \textbf{SingleHitHypothesis} (weakest sufficient) & \textbf{Open} & \code{SingleHitHypothesis} \\
 \quad \textbf{DynamicalHitting} & \textbf{Open} & \code{DynamicalHitting} \\
 \quad \textbf{ComplexCharSumBound} & \textbf{Open} & \code{ComplexCharSumBound} \\
 \quad \textbf{MultiModularCSB} & \textbf{Open} & \code{MultiModularCSB} \\
@@ -2372,7 +2516,7 @@ current analytic number theory does not.
 \midrule
 \multicolumn{3}{l}{\emph{Dead ends --- false or blocked}} \\
 \quad MultCSBImpliesMMCSB (false in general, \S\ref{sec:walk-bridge-false}) & \textbf{Dead} & \code{MultCSBImpliesMMCSB} \\
-\quad BlockRotationEstimate (impossible for $d \geq 3$, \S\ref{rem:bre-impossible}) & \textbf{Dead} & \code{BlockRotationEstimate} \\
+\quad BlockRotationEstimate (impossible for $d \geq 3$, Remark~\ref{rem:bre-impossible}) & \textbf{Dead} & \code{BlockRotationEstimate} \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
 \normalsize
@@ -2380,6 +2524,205 @@ current analytic number theory does not.
 %% =========================================================================
 \appendix
 
+\section{History and Computational Status}
+\label{app:history}
+%% =========================================================================
+
+Mullin posed the conjecture in 1963~\cite{Mullin1963}.  In over sixty
+years, no proof has been found, and no theoretical approach has come
+close.  The problem sits in an unusual position: it is elementary to
+state, each individual step is deterministic, yet the global behavior
+of the sequence appears completely intractable.
+
+\paragraph{The largest-factor variant.}
+Cox and van der Poorten~\cite{CoxVdP1968} showed that the related sequence using
+the \emph{largest} prime factor---where each term is
+$\operatorname{gpf}(\Prod(n) + 1)$ instead of $\minFac$---provably
+misses infinitely many primes (for instance,~$5$ never appears).  By
+always jumping to the largest factor of $\Prod(n) + 1$, the sequence
+leaps past small primes and can never return to them, since each Euclid
+number is coprime to every earlier term.  This refuted the natural
+strengthening that surjectivity holds regardless of the factor-selection
+rule, and showed that the $\minFac$ rule is essential to the conjecture.
+
+The two selection rules are also structurally different.  The largest
+prime factor $P^+(n) = \operatorname{gpf}(n)$ has rich algebraic
+structure: the sets $\{n : P^+(n) \leq y\}$ (smooth numbers) are
+controlled by the Dickman function, and for polynomial sequences
+$f(n) = \Prod(n)+1$ one can sometimes exploit algebraic curves and
+Hasse--Weil bounds.  In contrast, the smallest prime factor
+$P^-(n) = \minFac(n)$ is purely a \emph{sieve} object: controlling
+$P^-(n)$ requires excluding small prime divisors one at a time (CRT
+$+$ Mertens), and no algebraic-geometric handle exists.  This
+$\operatorname{gpf}$/$\minFac$ asymmetry is one reason the largest-factor
+variant admits a short proof while the smallest-factor conjecture
+remains open.
+
+\paragraph{Variants and surveys.}
+Booker~\cite{BoSa2012} showed that a carefully chosen variant of the
+Euclid--Mullin sequence \emph{does} contain every prime: by selecting a
+specific (not necessarily smallest) prime factor at each step, one can
+steer the sequence to hit every prime.  This demonstrates that the
+conjecture is \emph{delicate}: the surjectivity depends on the precise
+rule, not just the Euclidean structure.  Pollack and
+Trevi\~{n}o~\cite{PollackTrevino2014} surveyed the problem's place in
+the broader landscape of Euclid-inspired sequences, and studied
+distributional properties of primes ``forgotten'' by Euclid-type
+constructions.
+
+\paragraph{Computational status.}
+The sequence has been extended through a series of large-scale
+factoring efforts:
+\begin{itemize}[nosep]
+\item Wagstaff~(1993) computed through the 43rd term.
+\item In 2010, the 180-digit number $\Prod(43) + 1$ was factored via
+  GNFS (General Number Field Sieve), yielding a 68-digit prime as
+  $a(44)$.  Terms $a(45)$--$a(47)$ followed.
+\item In 2012, Propper factored the 256-digit number $\Prod(47)+1$ by
+  ECM (Elliptic Curve Method), discovering a 75-digit factor and
+  extending the sequence to 51~terms
+  (Booker--Irvine~\cite{BoIr2016}).
+\item Finding $a(52)$ requires factoring a 335-digit number.  No
+  factorization is known as of 2025.
+\end{itemize}
+After 51~terms, the smallest primes not yet observed are $41$ and $47$.
+Note that $31$---a smaller prime---does not appear until position~$50$.
+
+\paragraph{Why computation cannot resolve the conjecture.}
+Even heroic computation is fundamentally unable to address the
+conjecture.  Each new term requires factoring a number whose digit
+count grows roughly linearly with the number of terms, quickly
+exceeding the reach of any known factoring algorithm.  But even if we
+could compute millions of terms, this would prove nothing: the
+conjecture is a $\forall$-statement over all primes, and no finite
+computation can rule out the possibility that some prime first appears
+at an astronomically large index.
+
+More fundamentally, the sequence exhibits a sensitive dependence on its
+full history.  Each term $a(n+1) = \minFac(\Prod(n)+1)$ depends on the
+\emph{complete factorization} of a number that encodes all previous
+terms.  Changing a single early term alters every subsequent one.  This
+global coupling is what makes the sequence appear random despite being
+deterministic, and it means that local or statistical reasoning
+about ``typical'' behavior is unreliable.  There are no known density
+arguments, probabilistic heuristics, or sieve-theoretic bounds that
+bear on the conjecture.  The problem requires a structural argument
+about the sequence's long-term dynamics---which is precisely what the
+formalization in the body of this paper provides.
+
+%% =========================================================================
+\section{Analogies and Context}
+\label{app:analogies}
+%% =========================================================================
+
+Mullin's Conjecture has no known applications: if proved tomorrow, no
+other theorem in number theory would follow from it.  The value of the
+problem lies instead in what it \emph{is an instance of}---and in the
+methods its resolution would require.  The orbit-specificity barrier
+identified by this formalization appears, in recognizable form, across
+several active areas of mathematics.
+
+\paragraph{Artin's conjecture and the orbit-specificity gap.}
+The closest structural analogue to MC is Artin's conjecture on
+primitive roots~\cite{Artin1927}: for any integer $a \neq -1$ that is not a
+perfect square, the group $(\ZZ/p\ZZ)^\times$ is generated by~$a$ for
+infinitely many primes~$p$.  The parallel is precise:
+\begin{itemize}[nosep]
+\item \textbf{Artin} asks whether the orbit of a fixed generator~$a$
+  under repeated multiplication fills $(\ZZ/p\ZZ)^\times$.
+\item \textbf{Mullin} asks whether the orbit of~$2$ under
+  multiplication by successive EM primes in $(\ZZ/q\ZZ)^\times$ hits
+  the single element~$-1$.
+\end{itemize}
+Both conjectures are blocked by the same fundamental obstacle:
+transferring \emph{averaged} equidistribution results (which hold for
+most moduli or most generators) to \emph{one specific deterministic
+orbit}.  Hooley~\cite{Hooley1967} proved Artin's conjecture conditional on GRH
+for Dedekind zeta functions of Kummer extensions---because GRH
+provides the uniformity across individual characters needed to control
+a single orbit.  In our setting, this uniformity is exactly what CCSB
+demands.
+
+The analogy is not merely structural.  The Kummer extensions
+$\mathbb{Q}(\zeta_\ell, a^{1/\ell})$ that appear in Hooley's proof
+are the same extensions that arise in the EffectiveKummerEscape
+approach to SubgroupEscape (Section~\ref{sec:open}).  The elementary
+PRE lemma (Theorem~\ref{thm:pre}) sidesteps this Chebotarev machinery
+entirely for the algebraic component, but the dynamical
+component---does the walk \emph{hit}~$-1$, not merely \emph{generate}
+the full group?---remains exactly the orbit-specificity gap that GRH
+closes for Artin and that no known tool closes for Mullin.
+
+\paragraph{Multiplicative walks on finite groups.}
+The walk reformulation (Section~\ref{sec:walk}) places MC in the
+framework of random walks on finite groups, studied systematically by
+Diaconis and others since the
+1980s~\cite{ChungDiaconisGraham1987}.  The Diaconis--Shahshahani upper
+bound lemma~\cite{DiaconisShahshahani1981} shows that a random walk on a finite group~$G$
+driven by i.i.d.\ multipliers from a conjugation-invariant
+distribution mixes in $O(\log |G|)$ steps, with mixing measured by
+character sums.
+
+The EM walk has the same algebraic structure---a multiplicative walk
+on the cyclic group $(\ZZ/q\ZZ)^\times$---but violates every
+assumption of the classical mixing theory.  The multipliers are
+deterministic, not random; they are not identically distributed; and
+most critically, the multiplier at step~$n$ depends on the walk
+position at step~$n$, creating exactly the position-multiplier
+correlation that the Diaconis--Shahshahani framework assumes away.
+CCSB is the precise derandomization of the mixing-time bound: it asks
+that the Fourier coefficients of the walk's occupation measure tend to
+zero for every non-trivial character.
+
+\paragraph{Smallest prime factor distribution.}
+The SieveTransfer hypothesis (Section~\ref{sec:open}) connects MC to
+the distribution of the smallest prime factor function
+$P^-(n) = \min\{p : p \mid n\}$, studied by Alladi~\cite{Alladi1977},
+Hildebrand~\cite{Hildebrand1986}, and others.  For generic integers in an arithmetic
+progression $n \equiv a \pmod{q}$, the distribution of $P^-(n)$ is
+controlled by the Dickman function and CRT-based equidistribution
+results.  MC asks whether this equidistribution transfers from generic
+integers to the specific subsequence $\{\Prod(n)+1\}_{n \geq 0}$.
+The same orbit-specificity transfer problem arises for Mersenne
+numbers $2^p - 1$, Fibonacci numbers, and polynomial iterates
+$f^{\circ n}(a)$ in arithmetic dynamics.
+
+\paragraph{The marginal/joint barrier and Sarnak's conjecture.}
+The formalization identifies a precise meta-obstacle
+(Section~\ref{sec:hard}): \emph{marginal} equidistribution of the
+multiplier residues is provable (the EM primes are equidistributed in
+residue classes, by Dirichlet's theorem); what MC requires is
+\emph{joint} equidistribution of the pair (walk position, multiplier),
+conditioned on the walk's history.  This barrier is an instance of a
+broader phenomenon.  Sarnak's conjecture~\cite{Sarnak2010} asserts that the
+M\"obius function $\mu(n)$ is orthogonal to every bounded
+deterministic sequence:
+$\frac{1}{N} \sum_{n \leq N} \mu(n) \, a_n \to 0$.
+CCSB is a M\"obius-orthogonality-type statement for the EM sequence,
+placing MC squarely within the Sarnak program's conceptual framework,
+even though the EM sequence falls outside the technical scope of
+existing results (which require zero topological entropy).
+
+\paragraph{Greedy sieves and orbit-hitting.}
+MC is the simplest nontrivial instance of a broader question: does a
+greedy, deterministic prime-selection process eventually cover all
+primes?  The Cox--van der Poorten result~\cite{CoxVdP1968} shows that this
+determinism is fragile: choosing the \emph{largest} factor instead
+provably misses primes.  More generally, MC belongs to the family of
+\emph{orbit-hitting problems} in arithmetic dynamics: given a map~$T$
+on a space~$X$ and a target set $S \subset X$, does the orbit
+eventually enter~$S$?  Unlike Artin (where the map $x \mapsto ax$ is
+the same at every step) or Collatz (where the map depends only on the
+current state), the EM map varies at each step, determined by the
+factorization of a number that depends on the entire orbit history.
+This is the accumulator coupling of Section~\ref{sec:intro}: the
+running product $\Prod(n)$ is a cumulative digest of the full orbit,
+and the walk--multiplier framework makes it precise.  The
+formalization shows it is the sole source of difficulty: once the
+coupling is controlled (via CCSB or CME), MC follows by
+machine-checked deduction.
+
+%% =========================================================================
 \section{Additional Sieve and Spectral Routes}
 \label{app:routes}
 %% =========================================================================
@@ -2389,18 +2732,18 @@ complement the three principal reductions (DH, CCSB, BV) presented in
 the body.  All reduction arrows are machine-verified; the sole open
 content in each route is the orbit-specificity transfer.
 
-\subsection{Arithmetic Large Sieve Route}
+\subsection*{Arithmetic Large Sieve Route}
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L1183}{arith\_ls\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L420}{arith\_ls\_chain\_mc}]
 $\mathrm{ArithLS} + \mathrm{ArithLSImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 The arithmetic large sieve gives character sum bounds for Dirichlet
 characters (a known result, not in Mathlib).  The transfer
-ArithLSImpliesMMCSB is open; Session~35 showed it is a \textbf{dead
-end}---universal coefficient bounds cannot distinguish equidistributed
+ArithLSImpliesMMCSB is open and is in fact a \textbf{dead
+end}: universal coefficient bounds cannot distinguish equidistributed
 walks from clumped walks.
 
-\subsection{Analytic Large Sieve Route}
+\subsection*{Analytic Large Sieve Route}
 
 The most developed route connects the analytic large sieve to MC via
 Gauss sum inversion.
@@ -2414,7 +2757,7 @@ with $\min_{r \neq s} \|\alpha_r - \alpha_s\| \geq \delta$:
 \]
 \end{definition}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L876}{weak\_als\_from\_card\_bound}]
+\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L490}{weak\_als\_from\_card\_bound}]
 \label{thm:weak-als}
 A \emph{weak} version with constant $N \cdot (\delta^{-1} + 1)$ is
 proved (the optimal constant is $N - 1 + \delta^{-1}$, but the
@@ -2426,7 +2769,7 @@ $\tau(\chi) = \sum_{a} \chi(a)\, e(a/p)$ intertwines multiplication
 and addition on~$\ZZ/p\ZZ$, converting character sums to exponential
 sums.
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L688}{char\_sum\_to\_exp\_sum}]
+\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L304}{char\_sum\_to\_exp\_sum}]
 \label{thm:gauss-inversion}
 For a non-trivial character~$\chi$ mod~$p$ prime:
 $\sum_n f(n)\, \chi(n)
@@ -2436,12 +2779,12 @@ $\sum_n f(n)\, \chi(n)
 The GaussConductorTransfer composes eight internal lemmas (all proved,
 \S56--\S62) into the bridge from ALS to the prime arithmetic large sieve:
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1259}{als\_implies\_prime\_arith\_ls}]
+\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1358}{als\_implies\_prime\_arith\_ls}]
 \label{thm:als-prime}
 $\mathrm{AnalyticLargeSieve} \;\Longrightarrow\; \mathrm{PrimeArithLS}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1422}{als\_prime\_arith\_ls\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1535}{als\_prime\_arith\_ls\_chain\_mc}]
 $\mathrm{ALS} + \mathrm{PrimeArithLSImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
@@ -2449,14 +2792,14 @@ The remaining open content is PrimeArithLSImpliesMMCSB: transferring
 prime-modulus arithmetic large sieve bounds to multi-modular character
 sum bounds for the specific EM orbit.
 
-\subsection{The Spectral Energy Route}
+\subsection*{The Spectral Energy Route}
 \label{sec:sve}
 
 Instead of individual character sums, this route examines the
 \emph{total energy} of the walk occupation measure
-$V_N(a) = |\{n < N : \walkZ(q,n) = a\}|$.
+$V_N(a) = |\{n < N : \walkZ{q}{n} = a\}|$.
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1503}{walk\_energy\_parseval}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L89}{walk\_energy\_parseval}]
 \label{thm:walk-energy}
 $\sum_\chi \|S_\chi(N)\|^2 = (q{-}1) \sum_{a \in (\ZZ/q\ZZ)^\times} V_N(a)^2$
 \quad (Parseval).
@@ -2471,7 +2814,7 @@ For every missing prime~$q$ and $\varepsilon > 0$, there exists
 $N_0$ such that for $N \geq N_0$: $E(N) \leq \varepsilon N^2$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1654}{sve\_implies\_mmcsb}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L240}{sve\_implies\_mmcsb}]
 \label{thm:sve-mc}
 $\mathrm{SVE} \Longrightarrow \mathrm{MMCSB} \Longrightarrow \MC$.
 \end{theorem}
@@ -2479,7 +2822,7 @@ $\mathrm{SVE} \Longrightarrow \mathrm{MMCSB} \Longrightarrow \MC$.
 \paragraph{Van der Corput and higher-order decorrelation.}
 The van der Corput inequality bounds $|\sum z_n|$ via autocorrelations:
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L2005}{vanDerCorputBound}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L591}{vanDerCorputBound}]
 \label{thm:vdc}
 $\left\|\sum_{n \leq N} z_n\right\|^2
 \leq \frac{N + H}{H+1}\bigl(N + 2\sum_{h=1}^{H}
@@ -2498,7 +2841,7 @@ $N \geq N_0$ and all $1 \leq h \leq H$:
 $\|R_h(N)\| \leq \varepsilon N$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L2428}{hod\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L1014}{hod\_implies\_ccsb}]
 \label{thm:hod-mc}
 $\mathrm{HOD} \Longrightarrow \mathrm{CCSB} \Longrightarrow \MC$.
 \end{theorem}
@@ -2512,11 +2855,11 @@ $c \in (\ZZ/q\ZZ)^\times$:
 $\|\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))\| \leq \varepsilon N$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L2481}{cme\_implies\_dec}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_dec}]
 $\mathrm{CME} \Longrightarrow \mathrm{DecorrelationHypothesis}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L2567}{cme\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}]
 \label{thm:cme-ccsb}
 $\mathrm{CME} \Longrightarrow \mathrm{CCSB}$.
 \end{theorem}
@@ -2536,7 +2879,7 @@ barrier.  The proof works for all character orders because it uses
 only the fiber decomposition and telescoping---no block rotation
 estimate is needed.
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L2671}{cme\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
 $\mathrm{CME} \Longrightarrow \MC$.
 \end{theorem}
 
@@ -2544,7 +2887,7 @@ $\mathrm{CME} \Longrightarrow \MC$.
 Compose \texttt{cme\_implies\_ccsb} with \texttt{complex\_csb\_mc'}.
 \end{proof}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L2678}{cme\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_chain\_mc}]
 $\mathrm{CME} + \mathrm{PEDImpliesCSB} \Longrightarrow \MC$.
 \end{theorem}
 
@@ -2552,7 +2895,7 @@ This older route through the Dec $\to$ PED $\to$ CCSB chain is
 superseded by the direct CME $\to$ CCSB reduction above, which
 requires no additional hypotheses.
 
-\subsection{The Complete Hypothesis Hierarchy}
+\subsection*{The Complete Hypothesis Hierarchy}
 
 \[
 \mathrm{PED} \;<\; \mathrm{Dec} \;<\; \mathrm{CME}
@@ -2579,7 +2922,7 @@ to imply MC.
 %% =========================================================================
 
 This work was produced through a sustained collaboration between a
-human author and an AI system (Claude, Anthropic) across 43+~sessions.
+human author and an AI system (Claude, Anthropic) across 72+~sessions.
 The human author directed the mathematical strategy---proof
 architecture, dead-end identification, and editorial control---while
 the AI system handled Lean~4 formalization, Mathlib API search,
@@ -2622,7 +2965,7 @@ The division of labor between human and AI was sharp:
   strategies, and drafting of this paper.
 \end{itemize}
 
-The human author guided the proof effort across 43+~sessions, suggesting
+The human author guided the proof effort across 72+~sessions, suggesting
 attack vectors (algebraic, analytic, combinatorial, sieve-theoretic),
 identifying when an approach had reached a dead end, and pushing toward
 the sharpest possible reductions.  The AI agents wrote all Lean code,
@@ -2663,7 +3006,7 @@ where each is defined.
 
 \multicolumn{4}{l}{\emph{Core sequence and walk}} \\
 --- & Walk / Multiplier
-    & $\walkZ(q,n) = \Prod(n) \bmod q$;\; $\multZ(q,n) = \seq(n\!+\!1) \bmod q$
+    & $\walkZ{q}{n} = \Prod(n) \bmod q$;\; $\multZ{q}{n} = \seq(n\!+\!1) \bmod q$
     & Def.~\ref{def:walk-mult} \\
 \abbr{MC} & MullinConjecture
     & Every prime appears in the Euclid--Mullin sequence
@@ -2680,6 +3023,10 @@ where each is defined.
 \abbr{DH} & DynamicalHitting
     & $\SE(q) \Rightarrow \HH(q)$ for every missing prime~$q$
     & Def.~\ref{def:dh} \\
+\abbr{SHH} & SingleHitHypothesis
+    & $\MC({<}\,q) + \SE(q) + q$ missing $\Rightarrow$ $\exists\, n \geq N_0$
+      with $q \mid \Prod(n)+1$
+    & Def.~\ref{def:shh} \\
 \abbr{PRE} & PrimeResidueEscape
     & Every proper subgroup of $(\ZZ/p\ZZ)^\times$ is escaped by some odd prime $< p$
     & Thm.~\ref{thm:pre} \\
@@ -2688,7 +3035,7 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & \S\ref{sec:bootstrap} \\
 --- & ThresholdHitting
     & DH restricted to primes $q \geq B$
-    & \S\ref{sec:bootstrap} \\
+    & \S\ref{sec:large-sieve} \\
 \midrule
 
 \multicolumn{4}{l}{\emph{Character-analytic hypotheses (\S\ref{sec:character})}} \\
@@ -2702,16 +3049,16 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & Large sieve inequality adapted to EM walk
     & \S\ref{sec:character} \\
 \abbr{PED} & PositiveEscapeDensity
-    & Positive density of $n$ with $\multZ(q,n) \notin H$, for every proper $H$
+    & Positive density of $n$ with $\multZ{q}{n} \notin H$, for every proper $H$
     & \S\ref{sec:character} \\
 --- & DecorrelationHypothesis
-    & $\multZ(q,n)$ and $\multZ(q,n{+}1)$ are asymptotically independent
+    & $\multZ{q}{n}$ and $\multZ{q}{n{+}1}$ are asymptotically independent
     & \S\ref{sec:character} \\
 \abbr{BRE} & BlockRotationEstimate
     & Cancellation in block sums of characters applied to walk
     & \S\ref{sec:character} \\
 \abbr{SVE} & SubquadraticVisitEnergy
-    & $\sum_{a} |\{n \leq N : \walkZ(q,n)=a\}|^2 = o(N^2/(q{-}1))$
+    & $\sum_{a} |\{n \leq N : \walkZ{q}{n}=a\}|^2 = o(N^2/(q{-}1))$
     & \S\ref{sec:character} \\
 \abbr{HOD} & HigherOrderDecorrelation
     & Higher-order correlation bounds for walk increments
@@ -2726,13 +3073,13 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & If SE fails, the walk is confined to a proper coset
     & Thm.~\ref{thm:confinement} \\
 --- & Walk--Divisibility Bridge
-    & $\walkZ(q,n) = -1 \Leftrightarrow q \mid \Prod(n)+1$
+    & $\walkZ{q}{n} = -1 \Leftrightarrow q \mid \Prod(n)+1$
     & Thm.~\ref{thm:bridge} \\
 --- & One-prime gap
     & $\MC({<}\,q)$ + cofinal hit $\Rightarrow$ $\MC(q)$
     & Thm.~\ref{thm:one-prime-gap} \\
 --- & QR Obstruction
-    & SE fails for at most $1.6\%$ of primes (index-2 subgroup)
+    & SE failure has density $O(2^{-k})$ by CRT + quadratic reciprocity
     & \S\ref{sec:bootstrap} \\
 --- & Gauss sum inversion
     & Character sums $\leftrightarrow$ exponential sums via Gauss sums
@@ -2742,7 +3089,7 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
 \normalsize
 
 %% =========================================================================
-
+\newpage
 \begin{thebibliography}{99}
 
 \bibitem{Mullin1963}
@@ -2828,6 +3175,11 @@ P.~Sarnak.
 E.~Artin.
 \newblock Beweis des allgemeinen {R}eziprozit\"atsgesetzes.
 \newblock \emph{Abh.\ Math.\ Semin.\ Univ.\ Hambg.}, 5:353--363, 1927.
+
+\bibitem{Odoni1985}
+R.\,W.\,K.~Odoni.
+\newblock On the prime divisors of the sequence $w_{n+1} = 1 + w_1 \cdots w_n$.
+\newblock \emph{J.\ London Math.\ Soc.~(2)}, 32(1):1--11, 1985.
 
 \end{thebibliography}
 

@@ -505,6 +505,118 @@ theorem weak_als_from_card_bound
         exact mul_nonneg (Nat.cast_nonneg N) (Finset.sum_nonneg (fun n _ => by positivity))
     _ = ↑N * (δ⁻¹ + 1) * ∑ n : Fin N, ‖a n‖ ^ 2 := by ring
 
+/-! ### Gram matrix estimates
+
+The Gram matrix `G_{r,s} = ∑_{k=0}^{N-1} e(k · (α_r - α_s))` has diagonal equal to N
+and off-diagonal entries bounded in norm by `1/(2δ)` for δ-separated points.
+These follow directly from `eAN_zero` and `norm_eAN_geom_sum_le_inv`. -/
+
+/-- The Gram matrix diagonal: `G_{r,r} = ∑_{k < N} e(k · 0) = N`. -/
+theorem gram_diag_eq (N R : ℕ) (α : Fin R → ℝ) (r : Fin R) :
+    ∑ k ∈ Finset.range N, eAN (↑k * (α r - α r)) = ↑N := by
+  simp [sub_self, mul_zero, eAN_zero]
+
+/-- The Gram matrix off-diagonal bound: for δ-separated `α` and `r ≠ s`,
+    `‖G_{r,s}‖ = ‖∑_{k < N} e(k · (α_r - α_s))‖ ≤ 1/(2δ)`. -/
+theorem gram_off_diag_bound (N R : ℕ) (α : Fin R → ℝ) (δ : ℝ) (hδ : 0 < δ)
+    (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|)
+    (r s : Fin R) (hrs : r ≠ s) :
+    ‖∑ k ∈ Finset.range N, eAN (↑k * (α r - α s))‖ ≤ 1 / (2 * δ) :=
+  norm_eAN_geom_sum_le_inv N (α r - α s) δ hδ (hsep r s hrs)
+
+/-- **Trigonometric kernel L2 bound**: for δ-separated points,
+    `∑_{k ∈ range N} ‖K(k)‖² ≤ N · R + R · (R - 1) / (2 · δ)`.
+
+    Proof: `‖K(k)‖²` expands as `Re(∑_{r,s} e(k(α_s - α_r)))`. Swap sums,
+    then diagonal (r=s) contributes `N` each, and off-diagonal geometric
+    sums are bounded by `1/(2δ)` via `norm_eAN_geom_sum_le_inv`. -/
+theorem trigKernel_l2_upper_bound (N R : ℕ) (α : Fin R → ℝ) (δ : ℝ) (hδ : 0 < δ)
+    (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|) :
+    ∑ k ∈ Finset.range N, ‖trigKernel R α ↑k‖ ^ 2 ≤
+    ↑N * ↑R + ↑R * (↑R - 1) / (2 * δ) := by
+  -- Step 1: Expand ‖K(k)‖² into double sum over Fin R
+  have hkey : ∀ k : ℕ, ‖trigKernel R α ↑k‖ ^ 2 =
+      (∑ s : Fin R, ∑ r : Fin R, eAN (↑k * α s) * starRingEnd ℂ (eAN (↑k * α r))).re := by
+    intro k
+    rw [complex_norm_sq_eq_re_mul_conj]
+    simp only [trigKernel]
+    rw [map_sum, Finset.sum_mul]
+    congr 1
+    congr 1; ext s
+    exact Finset.mul_sum _ _ _
+  -- Step 2: Simplify each term: e(kα_s) * conj(e(kα_r)) = e(k(α_s - α_r))
+  have hterm : ∀ (k : ℕ) (r s : Fin R),
+      eAN (↑k * α s) * starRingEnd ℂ (eAN (↑k * α r)) = eAN (↑k * (α s - α r)) := by
+    intro k r s
+    rw [conj_eAN, show ↑k * (α s - α r) = ↑k * α s + (-(↑k * α r)) from by ring, eAN_add]
+  -- Step 3: Combine steps 1-2 and push Re through sums
+  have hexpand : ∀ k : ℕ, ‖trigKernel R α ↑k‖ ^ 2 =
+      ∑ s : Fin R, ∑ r : Fin R, (eAN (↑k * (α s - α r))).re := by
+    intro k
+    rw [hkey]
+    simp_rw [hterm]
+    rw [Complex.re_sum]; congr 1; ext s; exact Complex.re_sum _ _
+  simp_rw [hexpand]
+  -- Step 4: Swap sums: ∑_{k} ∑_s ∑_r → ∑_s ∑_r ∑_k
+  have hswap : ∀ (f : Fin R → Fin R → ℕ → ℝ),
+      ∑ k ∈ Finset.range N, ∑ s : Fin R, ∑ r : Fin R, f s r k =
+      ∑ s : Fin R, ∑ r : Fin R, ∑ k ∈ Finset.range N, f s r k := by
+    intro f; rw [Finset.sum_comm]; congr 1; ext s; rw [Finset.sum_comm]
+  rw [hswap]
+  -- Goal: ∑_s ∑_r (∑_k Re(e(k(α_s - α_r)))) ≤ N·R + R·(R-1)/(2δ)
+  -- Step 5: Diagonal bound (s = r): each inner sum = N
+  have hdiag : ∀ s : Fin R,
+      ∑ k ∈ Finset.range N, (eAN (↑k * (α s - α s))).re = ↑N := by
+    intro s; simp [sub_self, mul_zero, eAN_zero, Complex.one_re]
+  -- Step 6: Off-diagonal bound (s ≠ r): each inner sum ≤ 1/(2δ)
+  have hoffdiag : ∀ s r : Fin R, s ≠ r →
+      ∑ k ∈ Finset.range N, (eAN (↑k * (α s - α r))).re ≤ 1 / (2 * δ) := by
+    intro s r hsr
+    calc ∑ k ∈ Finset.range N, (eAN (↑k * (α s - α r))).re
+        = (∑ k ∈ Finset.range N, eAN (↑k * (α s - α r))).re :=
+          (Complex.re_sum (Finset.range N) _).symm
+      _ ≤ ‖∑ k ∈ Finset.range N, eAN (↑k * (α s - α r))‖ := Complex.re_le_norm _
+      _ ≤ 1 / (2 * δ) := norm_eAN_geom_sum_le_inv N _ δ hδ (hsep s r hsr)
+  -- Step 7: Split double sum into diagonal + off-diagonal and bound
+  -- We bound: ∑_s ∑_r f(s,r) ≤ ∑_s f(s,s) + ∑_s ∑_{r≠s} |f(s,r)|
+  -- where f(s,r) = ∑_k Re(e(k(α_s-α_r)))
+  -- Step 7: Bound each ∑_r ∑_k by splitting diagonal from off-diagonal
+  -- For each s, bound ∑_r (∑_k Re(e(k(α_s - α_r))))
+  have hbound_s : ∀ s : Fin R,
+      ∑ r : Fin R, ∑ k ∈ Finset.range N, (eAN (↑k * (α s - α r))).re ≤
+      ↑N + (↑R - 1) / (2 * δ) := by
+    intro s
+    -- Split sum into r=s and r≠s using erase
+    rw [← Finset.add_sum_erase Finset.univ _ (Finset.mem_univ s)]
+    -- Diagonal: ∑_k Re(e(0)) = N
+    -- Off-diagonal: ∑_{r ∈ univ \ {s}} (∑_k Re(...)) ≤ ∑_{r ∈ univ \ {s}} 1/(2δ)
+    have hdiag_s := hdiag s
+    have hoff_bound : ∑ r ∈ Finset.univ.erase s,
+        ∑ k ∈ Finset.range N, (eAN (↑k * (α s - α r))).re ≤
+        (↑R - 1) / (2 * δ) := by
+      calc ∑ r ∈ Finset.univ.erase s,
+            ∑ k ∈ Finset.range N, (eAN (↑k * (α s - α r))).re
+          ≤ ∑ _r ∈ Finset.univ.erase s, (1 / (2 * δ) : ℝ) := by
+            apply Finset.sum_le_sum
+            intro r hr
+            exact hoffdiag s r (Ne.symm (Finset.ne_of_mem_erase hr))
+        _ = (Finset.univ.erase s).card • (1 / (2 * δ) : ℝ) := by
+            rw [Finset.sum_const]
+        _ = ↑(Finset.univ.erase s).card * (1 / (2 * δ)) := by
+            rw [nsmul_eq_mul]
+        _ = (↑R - 1) / (2 * δ) := by
+            rw [Finset.card_erase_of_mem (Finset.mem_univ s),
+                Finset.card_univ, Fintype.card_fin]
+            rw [Nat.cast_sub (Fin.pos s)]; ring
+    linarith
+  calc ∑ s : Fin R, ∑ r : Fin R,
+        ∑ k ∈ Finset.range N, (eAN (↑k * (α s - α r))).re
+      ≤ ∑ _s : Fin R, (↑N + (↑R - 1) / (2 * δ)) := by
+        gcongr with s; exact hbound_s s
+    _ = ↑R * (↑N + (↑R - 1) / (2 * δ)) := by
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+    _ = ↑N * ↑R + ↑R * (↑R - 1) / (2 * δ) := by ring
+
 end WellSepInfra
 
 /-! ## S59. Character Sum Norm Squared via Gauss Expansion
@@ -1058,7 +1170,7 @@ private instance neZeroP64 : NeZero p := ⟨hp.out.ne_zero⟩
 
     Proof: both sides are equal to `eAN(val(b * ↑n) / p)` via `stdAddChar_val_eq_eAN`,
     and `val(b * ↑n) / p` and `val(b) * n / p` differ by an integer (ℤ-periodicity). -/
-private lemma stdAddChar_mul_intCast_eq_eAN (b : ZMod p) (n : ℤ) :
+lemma stdAddChar_mul_intCast_eq_eAN (b : ZMod p) (n : ℤ) :
     (ZMod.stdAddChar (N := p) (b * (n : ZMod p)) : ℂ) =
     eAN ((n : ℝ) * (ZMod.val b : ℝ) / (p : ℝ)) := by
   rw [stdAddChar_val_eq_eAN]
@@ -1097,7 +1209,7 @@ private lemma stdAddChar_mul_intCast_eq_eAN (b : ZMod p) (n : ℤ) :
     `∑_{n:Fin N} a(n) χ(↑n) = τ⁻¹ ∑_b χ̄(b) ∑_n a(n) ψ(b·↑n)`
 
     where τ = gaussSum χ⁻¹ ψ. -/
-private lemma char_sum_gauss_expansion (N : ℕ) (a : Fin N → ℂ)
+lemma char_sum_gauss_expansion (N : ℕ) (a : Fin N → ℂ)
     (χ : MulChar (ZMod p) ℂ) (hχ : χ ≠ 1) :
     ∑ n : Fin N, a n * χ ((↑(↑n : ℤ) : ZMod p)) =
     (gaussSum χ⁻¹ (ZMod.stdAddChar (N := p)))⁻¹ *

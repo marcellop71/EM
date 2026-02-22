@@ -182,6 +182,32 @@ theorem mc_below_hit_captures {q : Nat} (hq : IsPrime q)
   captures_target hq hdvd (fun p hpq hp => hlate p (IsPrime.toNatPrime hp) hpq)
 
 open Classical in
+/-- **Lethal hit**: MC(<q) + walkZ(q,n) = -1 past the sieve gap implies seq(n+1) = q.
+    Under MC(<q), every hit on -1 past the sieve gap is lethal: q is the smallest
+    prime factor of Prod(n)+1, so the minFac selection must pick q. -/
+theorem mc_below_hit_is_lethal {q : Nat} [Fact (Nat.Prime q)]
+    (hq : IsPrime q)
+    {N₀ : Nat} (hN₀ : ∀ p, p < q → IsPrime p → ∃ m, m ≤ N₀ ∧ seq m = p)
+    {n : Nat} (hn : N₀ ≤ n) (hwalk : walkZ q n = -1) :
+    seq (n + 1) = q := by
+  have hdvd := (walkZ_eq_neg_one_iff n).mp hwalk
+  exact mc_below_hit_captures hq hdvd (fun p hp hpq => by
+    obtain ⟨m, hm, hseqm⟩ := hN₀ p hpq hp.toIsPrime
+    exact ⟨m, by omega, hseqm⟩)
+
+open Classical in
+/-- **Walk avoids -1 past sieve gap for a missing prime**: MC(<q) + q missing
+    implies walkZ(q,n) ≠ -1 for all n past the sieve gap.
+    Immediate from `mc_below_hit_is_lethal`: any hit would give seq(n+1) = q,
+    contradicting q missing. -/
+theorem mc_below_missing_walk_ne_neg_one {q : Nat} [Fact (Nat.Prime q)]
+    (hq : IsPrime q) (hmc : mc_below q) (hmiss : ∀ k, seq k ≠ q) :
+    ∃ N₀, ∀ n, N₀ ≤ n → walkZ q n ≠ -1 := by
+  obtain ⟨N₀, hN₀⟩ := exists_bound q (fun p hpq hp => hmc p (IsPrime.toNatPrime hp) hpq)
+  exact ⟨N₀, fun n hn hwalk =>
+    hmiss (n + 1) (mc_below_hit_is_lethal hq hN₀ hn hwalk)⟩
+
+open Classical in
 /-- **The one-prime gap theorem**: MC(<q) + cofinal q-hitting → MC(q).
     The sieve at level q−1 is free from MC(<q). Extending by one prime
     requires exactly one cofinal divisibility event q ∣ Prod(n)+1 —

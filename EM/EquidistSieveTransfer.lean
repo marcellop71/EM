@@ -1317,3 +1317,141 @@ theorem kernel_sum_between_escapes {q : Nat} [Fact (Nat.Prime q)]
   rw [hflip]
 
 end EscapeAlternation
+
+/-! ## §39. Coprimality Refreshing and Death Rate Infrastructure
+
+This section establishes three classes of auxiliary results:
+
+1. **Coprimality refreshing**: the identity `d ∣ (E-1)*R + 1 ↔ d ∣ R - 1` when `d ∣ E`,
+   which governs how coprimality evolves along the Euclid-Mullin recursion
+   `P(n+1) = P(n) · seq(n+1) = P(n) · minFac(P(n) + 1)`.
+
+2. **No safe cycle / death rate bound**: given a lower bound `μ_min > 0` on per-state
+   "death rates" `δ`, the survival probability over a set decays as `(1 - μ_min)^|C|`.
+
+3. **Neg-inv involution**: on `(ZMod q)ˣ` with `q` prime and `q ≥ 3`, the map `w ↦ -w⁻¹`
+   is an involution (hence bijection), corresponding to the walk bridge `walkZ = -1`.
+-/
+
+section CoprimRefresh
+
+/-- **Coprimality refreshing (divisibility form)**: if `d ∣ E` then
+    `d ∣ (E - 1) * R + 1 ↔ d ∣ R - 1`.
+
+    This follows from the ring identity `(E - 1) * R + 1 = E * R - (R - 1)`:
+    since `d ∣ E * R`, the two divisibility conditions are equivalent. -/
+theorem coprimality_refreshing_int (E R d : ℤ) (hd : d ∣ E) :
+    d ∣ (E - 1) * R + 1 ↔ d ∣ R - 1 := by
+  have hkey : (E - 1) * R + 1 = E * R - (R - 1) := by ring
+  rw [hkey]
+  have hdER : d ∣ E * R := hd.mul_right R
+  constructor
+  · intro h
+    -- d ∣ E*R and d ∣ E*R - (R-1), so d ∣ (E*R) - (E*R - (R-1)) = R-1
+    have : d ∣ E * R - (E * R - (R - 1)) := dvd_sub hdER h
+    rwa [sub_sub_cancel] at this
+  · intro h
+    exact dvd_sub hdER h
+
+/-- **Coprimality refreshing (non-divisibility)**: if `d ∣ E` and `d ∤ (R - 1)`,
+    then `d ∤ (E - 1) * R + 1`. Contrapositive of the forward direction of
+    `coprimality_refreshing_int`. -/
+theorem coprimality_refreshing_ndvd (E R d : ℤ) (hdvd : d ∣ E)
+    (hndvd : ¬ d ∣ R - 1) : ¬ d ∣ (E - 1) * R + 1 :=
+  fun h => hndvd ((coprimality_refreshing_int E R d hdvd).mp h)
+
+end CoprimRefresh
+
+section NoSafeCycle
+
+/-- **No safe cycle bound**: if every element of `C` has a "death rate" at least `μ_min`
+    (i.e., `δ x ≥ μ_min` for all `x ∈ C`), and `0 ≤ δ x ≤ 1` for all `x ∈ C`, then
+    the product `∏ c ∈ C, (1 - δ c) ≤ (1 - μ_min) ^ C.card`.
+
+    This models survival probability: if each state independently kills the walk with
+    probability at least `μ_min`, the probability of surviving the entire cycle `C`
+    decays exponentially. -/
+theorem no_safe_cycle {α : Type*} (C : Finset α) (δ : α → ℝ) (μ_min : ℝ)
+    (hδ_lower : ∀ c ∈ C, μ_min ≤ δ c)
+    (hδ_upper : ∀ c ∈ C, δ c ≤ 1) :
+    ∏ c ∈ C, (1 - δ c) ≤ (1 - μ_min) ^ C.card := by
+  rw [← Finset.prod_const]
+  apply Finset.prod_le_prod
+  · intro i hi
+    linarith [hδ_upper i hi]
+  · intro i hi
+    linarith [hδ_lower i hi]
+
+/-- **Bijection preserves sum**: if `σ` is a bijection on a `Fintype`, then
+    `∑ x, f (σ x) = ∑ x, f x`. This is a direct wrapper around `Equiv.sum_comp`. -/
+theorem sum_equiv_eq {α : Type*} [Fintype α] (σ : α ≃ α) (f : α → ℝ) :
+    ∑ x, f (σ x) = ∑ x, f x :=
+  σ.sum_comp f
+
+end NoSafeCycle
+
+section NegInvInvolution
+
+/-- **Neg-inv is an involution on `(ZMod q)ˣ`**: the map `w ↦ -w⁻¹` satisfies
+    `(-(-w⁻¹)⁻¹) = w`. This is because `(-w⁻¹)⁻¹ = (-1)⁻¹ · w = -w`, so
+    `-(-w) = w`.
+
+    This map arises naturally from the walk bridge: `walkZ(q,n) = -1` iff
+    `q ∣ prod(n) + 1`, and the action of multiplication by `seq(n+1)` on
+    `walkZ(q,n) = -1` sends the position to `-walkZ(q,n)⁻¹ · seq(n+1)`. -/
+theorem neg_inv_involutive (q : ℕ) [Fact (Nat.Prime q)] :
+    Function.Involutive (fun w : (ZMod q)ˣ => -w⁻¹) := by
+  intro w
+  simp [inv_neg, inv_inv]
+
+/-- **Neg-inv is a bijection on `(ZMod q)ˣ`**. -/
+theorem neg_inv_bijective (q : ℕ) [Fact (Nat.Prime q)] :
+    Function.Bijective (fun w : (ZMod q)ˣ => -w⁻¹) :=
+  (neg_inv_involutive q).bijective
+
+/-- **Neg-inv as an equivalence on `(ZMod q)ˣ`**. -/
+noncomputable def negInvEquiv (q : ℕ) [Fact (Nat.Prime q)] : (ZMod q)ˣ ≃ (ZMod q)ˣ :=
+  Equiv.ofBijective _ (neg_inv_bijective q)
+
+end NegInvInvolution
+
+section WalkTelescope
+
+/-- **Walk product telescope**: if positions satisfy `w (n + 1) = w n * m n` for all `n`,
+    then `w (n + k) = w n * ∏ i ∈ Finset.range k, m (n + i)`.
+
+    This is a direct induction on `k`, giving the standard multiplicative telescope
+    for random walks on groups. -/
+theorem walk_product_telescope {G : Type*} [CommGroup G]
+    (w : ℕ → G) (m : ℕ → G) (hstep : ∀ n, w (n + 1) = w n * m n)
+    (n k : ℕ) :
+    w (n + k) = w n * ∏ i ∈ Finset.range k, m (n + i) := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [Finset.prod_range_succ, ← mul_assoc, ← ih]
+    rw [show n + (k + 1) = (n + k) + 1 from by omega]
+    exact hstep (n + k)
+
+/-- **Character ratio from walk step**: if `w (n + 1) = w n * m n` for a group `G`,
+    and `χ : G →* H` is a group homomorphism to a commutative group, then
+    `χ (m n) = χ (w n)⁻¹ * χ (w (n + 1))`. -/
+theorem char_ratio_of_walk_step {G H : Type*} [Group G] [CommGroup H]
+    (w : ℕ → G) (m : ℕ → G) (hstep : ∀ n, w (n + 1) = w n * m n)
+    (χ : G →* H) (n : ℕ) :
+    χ (m n) = (χ (w n))⁻¹ * χ (w (n + 1)) := by
+  rw [hstep n, map_mul]
+  group
+
+/-- **Coprimality refreshing (natural number form)**: for natural numbers `E, R`
+    with `E ≥ 2` and `R ≥ 1`, and a prime `p` dividing `E`:
+    `p ∣ (E - 1) * R + 1 ↔ p ∣ R - 1`, where arithmetic is in `ℤ`.
+
+    This is a specialization of `coprimality_refreshing_int` to the case
+    where `E` and `R` are natural numbers lifted to `ℤ`. -/
+theorem coprimality_refreshing_nat (E R p : ℕ)
+    (hp : (p : ℤ) ∣ (E : ℤ)) :
+    (p : ℤ) ∣ ((E : ℤ) - 1) * (R : ℤ) + 1 ↔ (p : ℤ) ∣ ((R : ℤ) - 1) :=
+  coprimality_refreshing_int (E : ℤ) (R : ℤ) (p : ℤ) hp
+
+end WalkTelescope

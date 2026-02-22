@@ -1,10 +1,13 @@
-# Formalizing the Mullin's Conjecture
+# A formalized reduction of the Mullin's Conjecture
 
 A Lean 4 formalization (Mathlib v4.27.0) with ~22,400 lines of Lean across 32 files.
 
 ## The Euclid–Mullin Sequence
 
-Euclid's proof that there are infinitely many primes shows that for any finite set of primes, their product plus one has a prime factor outside the set — but does not specify *which* factor. The [Euclid–Mullin sequence](https://oeis.org/A000945) (Mullin, 1963) makes a definite choice: always take the *smallest* prime factor.
+Euclid’s proposition IX.20 of the Elements shows that for any finite set of primes, each prime
+factor of their product plus one is outside the set: to grow your set of primes, you can pick any
+of them.
+The [Euclid–Mullin sequence](https://oeis.org/A000945) (Mullin, 1963) makes a definite choice: always take the *smallest* prime factor.
 
 ```
 a(0) = 2,    a(n+1) = smallest prime factor of (a(0) · a(1) · ··· · a(n) + 1)
