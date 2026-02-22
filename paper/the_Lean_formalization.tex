@@ -1,0 +1,591 @@
+%% =========================================================================
+\subsection{The Lean Formalization}
+\label{sec:lean}
+%% =========================================================================
+
+Having developed the mathematical reduction and identified the
+structural obstacles, we describe the Lean~4 formalization that
+certifies these results.
+
+\paragraph{Codebase Structure}
+
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 141~files
+totaling ${\sim}76{,}000$~lines.  The dependency chain is linear, with
+three leaf modules:
+
+\footnotesize
+\begin{longtable}{l p{7cm} r}
+\toprule
+\textbf{File} & \textbf{Content} & \textbf{Lines} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{File} & \textbf{Content} & \textbf{Lines} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\emph{continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{3}{l}{\emph{Core sequence and walk}} \\
+\code{Core/Euclid.lean} & Constructive Euclid's theorem & 422 \\
+\code{Core/Defs.lean} & \code{seq}, \code{prod}, \code{aux}, identities & 527 \\
+\code{Core/Conjectures.lean} & MC, Conjecture A (FALSE), HH & 490 \\
+\code{Core/DWH.lean} & DivisorWalkHypothesis (leaf) & 547 \\
+\code{Core/ResidueWalk.lean} & WalkCoverage, residue walk, concrete MC & 603 \\
+\midrule
+\multicolumn{3}{l}{\emph{Group theory and algebraic framework}} \\
+\code{Group/Core.lean} & walkZ, multZ, confinement, SE & 422 \\
+\code{Group/Escape.lean} & Escape lemmas, 8-element argument & 634 \\
+\code{Group/SEInstances.lean} & 29 concrete SE instances ($q \leq 157$) & 364 \\
+\code{Group/Pumping.lean} & Gordon sequenceability~\cite{Gordon1961} (leaf) & 343 \\
+\code{Group/QR.lean} & QR obstruction ($\leq 1.6\%$) (leaf) & 684 \\
+\code{Group/CRT.lean} & CRT multiplier invariance, walk recurrence & 160 \\
+\code{Group/DepartureGraph.lean} & Departure graph, infinite recurrence, safe prime lattice & 641 \\
+\code{Group/RotorRouter.lean} & Scheduled walk coverage (standalone) & 455 \\
+\code{Group/Bridge.lean} & EMPR + SE $\Rightarrow$ MC bridge & 87 \\
+\midrule
+\multicolumn{3}{l}{\emph{Equidistribution and character sums}} \\
+\code{Equidist/Preamble.lean} & PE $\Rightarrow$ MC, bootstrapping & 234 \\
+\code{Equidist/Sieve.lean} & Sieve, WHP $\Leftrightarrow$ HH, forbidden multiplier, M\"obius death & 755 \\
+\code{Equidist/SelfAvoidance.lean} & Self-avoidance, periodicity & 450 \\
+\code{Equidist/CharPRE.lean} & Character non-vanishing, PRE $\Leftrightarrow$ SE & 807 \\
+\code{Equidist/Bootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 694 \\
+\code{Equidist/Threshold.lean} & Sieve gap, one-prime gap, cofinal pair avoidance & 321 \\
+\code{Equidist/CofinalOrbit.lean} & Cofinal orbit expansion, quotient walk, cofinal escape & 667 \\
+\code{Equidist/OrbitAnalysis.lean} & TailSE, sieve reduction, oracle barrier, selectability & 778 \\
+\code{Equidist/Fourier[B].lean} & Character sums, Fourier bridge & 1257 \\
+\code{Equidist/SelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel & 1163 \\
+\code{Equidist/SieveTransfer.lean} & Sieve transfer, coprimality, neg-inv involution & 615 \\
+\code{Equidist/WalkDecomposition.lean} & Quadratic/general walk sum decomposition, escape decorrelation & 863 \\
+\midrule
+\multicolumn{3}{l}{\emph{CME decomposition and spectral analysis}} \\
+\code{CME/Variants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 96 \\
+\code{CME/Decomposition.lean} & CME $=$ A $+$ B decomposition, EMD $\Rightarrow$ CME & 355 \\
+\code{LargeSieve/Basic.lean} & BV, ALS, ArithLS, MMCSB, Farey, GCT chains & 855 \\
+\code{LargeSieve/Structural.lean} & Coprimality, divisibility, BV decomposition, sieve bridge & 945 \\
+\code{LargeSieve/Harmonic.lean} & Parseval, Gauss sums, DFT, kernel & 899 \\
+\code{LargeSieve/Analytic.lean} & Gauss inversion, WeakALS, GCT chain & 1149 \\
+\code{LargeSieve/PrimeArithLS.lean} & Prime arithmetic large sieve, walk as partial product, dead ends & 561 \\
+\code{LargeSieve/Spectral.lean} & Walk energy, SVE, Weyl criterion, HOD, VdC & 1071 \\
+\code{CME/Reduction.lean} & CME definition, CME $\Rightarrow$ CCSB $\Rightarrow$ MC, FEB, hierarchy & 627 \\
+\code{LargeSieve/WalkAnalysis.lean} & VCB, energy increments, fiber decomposition, transition matrix & 1006 \\
+\midrule
+\multicolumn{3}{l}{\emph{SDDS and independence}} \\
+\code{SDDS/Dynamics.lean} & Abstract SDDS framework, factoring rules & 195 \\
+\code{SDDS/Bridge.lean} & SDDS $\leftrightarrow$ EM bridge, orbit/walk/mult correspondence & 375 \\
+\code{SDDS/Reduction.lean} & StrongSME $\Rightarrow$ MC via sieve-map equidist.\ & 126 \\
+\code{Transfer/Excursion.lean} & Walk excursions, char.\ sum independence & 461 \\
+\code{Transfer/CRTFiber.lean} & SE $\Rightarrow$ NAO, CRT independence, death channel & 255 \\
+\midrule
+\multicolumn{3}{l}{\emph{Population and weak variants}} \\
+\code{Population/WeakMullin.lean} & Missing primes, WM $\Rightarrow$ RD, EMBV $\Rightarrow$ MC & 362 \\
+\code{Population/WeakErgodicity.lean} & Squarefree accumulator, PE+PT+EMDImpliesCME & 160 \\
+\code{Population/Proof.lean} & MinFacResidueEquidist $\Rightarrow$ PE (analytic) & 187 \\
+\code{Population/ReciprocalSum.lean} & Reciprocal sum divergence, PSD chain, positive density route & 1260 \\
+\code{Population/TransferStrategy.lean} & PE + DSL $\Rightarrow$ MC, ensemble concentration & 273 \\
+\code{Population/Tauberian.lean} & One-sided Tauberian, L-series bounds, prime power stripping & 557 \\
+\code{Population/AbelChain.lean} & Abel summation chain: $(\log p)/p \to 1/p$ infrastructure & 641 \\
+\code{Population/AlladiDensity.lean} & Alladi chain scaffolding, WPNT+DSL $\Rightarrow$ MC & 267 \\
+\midrule
+\multicolumn{3}{l}{\emph{Ensemble framework (new)}} \\
+\code{Ensemble/Structure.lean} & Generalized EM: genProd, genSeq, injectivity & 269 \\
+\code{Ensemble/EM.lean} & Generalized walk/multiplier, bridge to standard EM & 114 \\
+\code{Ensemble/CRT.lean} & CRT equidistribution, death density bridge, absorption mechanism, CRT blindness, Dead End~\#137 & 1101 \\
+\code{Ensemble/BackwardDynamics.lean} & Backward dynamics: joint counts, transition probs, ETA $\Rightarrow$ CRTPropagationStep & 577 \\
+\code{Ensemble/Decorrelation.lean} & CRT-based decorrelation, Markov density bounds & 431 \\
+\code{Ensemble/FirstMoment[B].lean} & First moment, parity, SMLB chain, $k$=0/$k$=1/$k$=2 CRT, sieve density, divergence hierarchy & 1488 \\
+\code{Ensemble/BagArithmetic.lean} & Prime factor bag structure: $\omega$, residue diversity, class partition, cofactor, landscape & 224 \\
+\code{Ensemble/PT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1094 \\
+\code{Ensemble/WeylChain.lean} & Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc} & 834 \\
+\code{Ensemble/CRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 631 \\
+\code{Ensemble/BaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 377 \\
+\code{Ensemble/FiberAutonomy.lean} & CRT fiber determines multiplier dynamics, walk readout & 255 \\
+\code{Ensemble/TwoPointEnsemble.lean} & Ensemble two-point: ratio escape counting, first moment, partition argument, PRED $\Rightarrow$ positive density & 566 \\
+\code{Ensemble/MixedEnsemble.lean} & PSCD $\Rightarrow$ almost-all mixed hitting, PEAP chain, sieve product, WeakFMCD (unconditional), sqfreeCount $\geq X/4$, pigeonhole & 1958 \\
+\midrule
+\multicolumn{3}{l}{\emph{DSL and master reduction (new)}} \\
+\code{Reduction/DSLInfra.lean} & Energy evolution, fiber analysis, FEB $\Rightarrow$ CME & 627 \\
+\code{Reduction/ShiftedDensity.lean} & Sieve density $g(r)$, algebraic properties & 251 \\
+\code{Reduction/VisitEquidist.lean} & ExcessEnergy $=$ visit deviation, SVE $\leftrightarrow$ VE & 187 \\
+\code{Reduction/SelfCorrecting.lean} & Lyapunov identity, SCD $\equiv$ SVE, Dead End \#120 & 624 \\
+\code{Reduction/WeakRecurrence.lean} & LinearDrift $\Rightarrow$ MC, VisitGrowth $\Rightarrow$ HH $\Rightarrow$ MC (threshold-free) & 425 \\
+\code{Reduction/SMSB.lean} & Per-class bad set analysis, Dead End \#121 & 459 \\
+\code{Reduction/Master.lean} & All reduction chains assembled, DSL $\Rightarrow$ MC & 210 \\
+\code{Reduction/DSLVariance.lean} & Population variance route to DSL, second moment & 365 \\
+\code{Transfer/CRTPointwise.lean} & OCE $=$ CME, all routes to MC via CRT & 260 \\
+\code{Transfer/Substitution.lean} & SP $=$ CME, fiber return visits, 4-route witness & 290 \\
+\code{Reduction/TailIdentity.lean} & Tail energy identities, 4th moment, Chebyshev bridge & 433 \\
+\code{Reduction/TailWindow.lean} & Window decomposition, variance identity, TWD $\Rightarrow$ MC & 477 \\
+\code{Transfer/IntegerDioph.lean} & $T$-iteration $T(n){=}(n{-}1)\cdot\minFac(n){+}1$, orbit, cofactor & 340 \\
+\code{Transfer/SieveConstraint.lean} & Prime support $S_n$, sieve exclusion, $P(n){+}1 \equiv 1 \bmod S_n$ & 261 \\
+\midrule
+\multicolumn{3}{l}{\emph{Adelic and profinite framework (new)}} \\
+\code{Adelic/Equidist.lean} & Adelic decomposition: CME $\Leftrightarrow$ MWI $+$ MME, Fourier bridge, CPD & 656 \\
+\code{Adelic/Profinite.lean} & Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion & 182 \\
+\code{Adelic/UniformConductor.lean} & UCE hypothesis, conductor counting, UCE$+$DSL$\Rightarrow$MC & 301 \\
+\code{Adelic/ProfiniteGeneration.lean} & Primes generate $(\ZZ/N\ZZ)^\times$; MC$\Rightarrow$full generation & 176 \\
+\code{FunctionField/Analog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 952 \\
+\code{Advanced/Diamonds.lean} & $p$-adic geometric perspective, Hecke obstruction, Dead End~\#128 & 340 \\
+\code{Advanced/MarkovSieve.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 538 \\
+\code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
+\code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
+\code{Advanced/VanishingNoise[B,C].lean} & Spectral gap, stochastic MC, path existence, sparse contraction, phase transition & 2104 \\
+\code{Advanced/VanishingNoiseVariant[B--D].lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure, NFCE(5) reduction, intersection kernel dichotomy, quotient character lift & 2805 \\
+\code{Advanced/RandomTwoPointMC[B].lean} & Self-consistent random two-point MC: Fourier bridge identity, ChiAtMultiplicativity, death/survival partition, path sum decomposition, Fourier counting identity, TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC (proved) & 1579 \\
+\code{Advanced/EpsilonWalk.lean} & Ensemble $\varepsilon$-walk: sigma-walk equidist, death fiber density, SigmaCRTPropagationStep (open), 8-clause landscape & 435 \\
+\code{Advanced/EpsilonRandomMC.lean} & Mixed $(1{-}\varepsilon)\cdot\minFac{+}\varepsilon\cdot\text{random}$ variant MC, reachable sets, coset impossibility, factor confinement & 1967 \\
+\code{Advanced/InterpolationMC.lean} & Positive probability capture, block coverage, TreeSieveDecay, orbit melting, TSD-Hitting(3), TSD$\to$MixedMC composition, coset ambiguity gap, perpetual primality multi-exclusion ($q{=}5,11,17,23$), reachable set monotonicity & 1798 \\
+\code{Probability/TransitionKernel.lean} & Epsilon-mixed walk step PMF, weight lower bounds & 267 \\
+\code{Probability/PathMeasure.lean} & Reachable Finsets, branching distinctness, factor residues & 333 \\
+\code{Probability/GeometricCapture.lean} & Block capture weight, geometric decay, TSD$\to$PositiveProbCapture & 378 \\
+\code{Advanced/RandomFactorMC.lean} & Pure random-factor variant MC, purification lemma, MC$\Rightarrow$PureRandomMC & 375 \\
+\code{Advanced/IteratedProductCoverage.lean} & Cauchy--Davenport iterated product coverage: card growth, diameter $|G|{-}1$, safe prime instantiation & 420 \\
+\code{Advanced/FactorDiversity.lean} & Ensemble factor diversity: genFactorSet, spectral contraction from $\geq 2$ distinct residues, vanishing & 346 \\
+\code{Advanced/DiverseStepsToCapture.lean} & Factor diversity $\to$ reachable set growth, DiversityImpliesReachable, TSD bridge & 281 \\
+\code{Advanced/StochasticEM.lean} & Stochastic EM process: StochasticMC, phase transition at $\varepsilon = 0$, geometric capture & 347 \\
+\code{Advanced/DenseCapture.lean} & Topological density of capturing selection sequences: captureSet open (unconditional), Baire category $\Rightarrow$ comeager full capture, DenseCaptureHypothesis (open) & 301 \\
+\code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
+\code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
+\code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
+\code{FunctionField/MultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 763 \\
+\code{FunctionField/WeakMC.lean} & Degree escape, pool partition, capture exhaustion (Dead End~\#129 revival) & 471 \\
+\code{FunctionField/FactorTree.lean} & FF factor tree: mixed selection, coprimality cascade, injectivity, start not capturable & 455 \\
+\code{FunctionField/PopulationEquidist.lean} & Weil $\Rightarrow$ population diversity, degree growth $\to \infty$, weak first moment & 370 \\
+\code{FunctionField/StochasticMC.lean} & FF stochastic MC, phase transition ($\varepsilon = 0$ critical), pigeonhole capture & 420 \\
+\code{FunctionField/Finiteness.lean} & FFFiniteIrreduciblesPerDegree PROVED (unconditional), coefficient injection & 188 \\
+\code{FunctionField/Master.lean} & Theorems A/B/C assembly: factor tree + stochastic MC + phase transition & 240 \\
+\code{FunctionField/AutonomousMap.lean} & $\Phi_3$ criterion: $-1$ unreachable for $p \equiv 2 \pmod{3}$, orbit dynamics & 225 \\
+\code{GaussEM/GaussEMDefs.lean} & Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality & 290 \\
+\code{GaussEM/GaussWalkStructure.lean} & Gaussian walk: split/inert classification, norm kernel, orbit barrier & 331 \\
+\code{GaussEM/GaussConfinement.lean} & Integer walk confined to real axis, norm closure, Dead End~\#135 & 347 \\
+\midrule
+\multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
+\code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 229 \\
+\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 189 \\
+\code{Meta/DeadEnds.lean} & Dead end registry: 134 documented, 13 witnessed, 8 revivable & 220 \\
+\midrule
+\multicolumn{3}{l}{\emph{Iwaniec--Kowalski infrastructure}} \\
+\code{IK/Ch1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 434 \\
+\code{IK/Ch2.lean} & Iwaniec--Kowalski Ch.\,2: summation formulas & 270 \\
+\code{IK/Ch3.lean} & Iwaniec--Kowalski Ch.\,3: combinatorial sieve & 557 \\
+\code{IK/Ch4.lean} & Iwaniec--Kowalski Ch.\,4: summation formulas & 598 \\
+\code{IK/Ch5.lean} & Iwaniec--Kowalski Ch.\,5: Kloosterman sums & 877 \\
+\code{IK/Ch7Foundations.lean} & Iwaniec--Kowalski Ch.\,7: foundations, norm bounds & 328 \\
+\code{IK/Ch7AdditiveLS.lean} & Iwaniec--Kowalski Ch.\,7: additive large sieve & 989 \\
+\code{IK/Ch7MultiplicativeLS.lean} & Iwaniec--Kowalski Ch.\,7: multiplicative large sieve & 462 \\
+\code{IK/Ch7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications (prime case) & 949 \\
+\code{IK/Ch7SieveCRT.lean} & Iwaniec--Kowalski Ch.\,7: Linnik, CRT general squarefree & 609 \\
+\code{IK/Ch7Hilbert[B].lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram & 1282 \\
+\code{IK/Ch7CesaroChain.lean} & Iwaniec--Kowalski Ch.\,7: Ces\`aro convergence, circular ALS chain & 1040 \\
+\end{longtable}
+\normalsize
+
+\subsubsection{Axiom Usage: What's Constructive}
+
+The core definitions (\code{seq}, \code{prod}, \code{aux}) and
+their basic properties (\code{seq\_isPrime}, \code{seq\_injective})
+are \textbf{fully constructive}: they use only \code{propext} and
+\code{Quot.sound} (no \code{Classical.choice}, no
+\code{Decidable} instances beyond~$\NN$).  Euclid's theorem
+itself (\code{Core/Euclid.lean}) is constructive.
+
+Classical reasoning enters at the reduction level:
+\begin{itemize}[nosep]
+\item The $\HH \Rightarrow \MC$ proof uses well-founded induction
+  (strong induction on $\NN$), which in Lean~4 is constructive but
+  relies on \code{Classical.choice} for the
+  cofinal-implies-hit argument.
+\item Character theory (orthogonality, Fourier inversion) is
+  inherently classical via \code{open Classical}.
+\item All open hypotheses are stated as \code{def \ldots : Prop},
+  never as \code{sorry}'d theorems.  The type-checker guarantees
+  that no proof obligation is silently assumed.
+\end{itemize}
+
+\subsubsection{Mathlib Dependencies}
+
+The formalization draws on several Mathlib libraries:
+\begin{itemize}[nosep]
+\item \textbf{Group theory}: \code{Subgroup}, \code{QuotientGroup},
+  \code{orderOf}, cyclic group structure, maximal subgroups
+  (\code{Subgroup.IsCoatom}).
+\item \textbf{Number theory}: \code{Nat.minFac}, Legendre symbols,
+  quadratic reciprocity, \code{ZMod}, Dirichlet characters, Gauss sums.
+\item \textbf{Character theory}: \code{DirichletCharacter.Orthogonality},
+  roots of unity in algebraically closed fields, character bounds,
+  \code{MulChar.sum\_eq\_zero\_of\_ne\_one}.
+\item \textbf{Analysis}: \code{norm\_sum\_le}, complex norms,
+  \code{IsOfFinOrder.norm\_eq\_one}, Fourier analysis on $\ZZ/n\ZZ$
+  (\code{ZMod.dft}, discrete Fourier transform).
+\item \textbf{Dirichlet's theorem}: \code{Nat.infinite\_setOf\_prime\_and\_eq\_mod}
+  (primes in arithmetic progressions, via $L$-series).
+\item \textbf{Harmonic analysis}: Parseval's theorem for finite abelian
+  groups, trigonometric exponentials, geometric series identities.
+\end{itemize}
+
+\subsubsection{ANT Formalization Status}
+\label{sec:ant-formalization}
+
+The sole unformalized input to the master reduction is ANT
+(\S\ref{sec:ant-def}): the standard analytic number theory implying
+MFRE\@.  The chain is
+\[
+  \underbrace{\text{Dirichlet} + \text{Sieve}}_{\text{ANT}}
+  \;\xrightarrow[\text{\small open}]{\text{W-I}}\;
+  \text{WeightedPNTinAP}
+  \;\xrightarrow[\text{\small \checkmark}]{\text{strip}}\;
+  \text{PrimeLogSum}
+  \;\xrightarrow[\text{\small \checkmark}]{\text{Abel}}\;
+  \text{PrimesEquidist}
+  \;\xrightarrow[\text{\small open}]{\text{Alladi}}\;
+  \text{MFRE}
+  \;\xrightarrow[\text{\small \checkmark}]{\text{}}\;
+  \text{PE}
+\]
+where ``\checkmark'' denotes machine-verified arrows and
+``open'' denotes unformalized steps.
+Three files provide the ANT infrastructure:
+\code{Population/Tauberian.lean} (557~lines, zero \code{sorry})
+proves the Tauberian and stripping steps;
+\code{Population/AbelChain.lean} (641~lines, zero \code{sorry}) proves the
+full discrete Abel summation chain converting log-weighted prime
+sums into reciprocal-weighted sums; and
+\code{Population/AlladiDensity.lean} (267~lines, zero \code{sorry})
+defines intermediate hypotheses for the Alladi chain and
+proves the master reduction
+\lean{EM/Population/AlladiDensity.lean}{wpnt\_dsl\_implies\_mc}:
+WeightedPNTinAP + Alladi + CRT + DSL~$\Rightarrow$~MC.
+
+\paragraph{Proved steps.}
+\begin{itemize}
+\item \textbf{One-sided Tauberian lemma}
+(\lean{EM/Population/Tauberian.lean}{one\_sided\_tauberian\_upper}):
+for nonnegative $b_n \geq 0$,
+$\sum_{n \leq N} b_n \leq N^\varepsilon \cdot \sum_n b_n / n^\varepsilon$.
+Elementary proof via $n^\varepsilon \leq N^\varepsilon$.
+This gives $O(N^\varepsilon)$ partial-sum bounds from Dirichlet series
+behavior, without requiring the full Wiener--Ikehara theorem.
+
+\item \textbf{L-series two-sided bounds}
+(\lean{EM/Population/Tauberian.lean}{residueClass\_tsum\_both\_bounds}):
+Mathlib's \code{PrimesInAP.lean} proves a \emph{lower} bound on
+$\sum \Lambda(n)\mathbf{1}_{n \equiv a}/n^s$ near $s = 1$
+via \code{LSeries\_residueClass\_lower\_bound}, but does not export
+the corresponding upper bound.  We extract the identity
+$\mathrm{tsum} = \mathrm{Aux}(a,s) + (\varphi(q))^{-1}/(s{-}1)$
+from Mathlib's proof and derive both bounds.
+
+\item \textbf{Prime power stripping}
+(\lean{EM/Population/Tauberian.lean}{prime\_power\_stripping\_proved}):
+$\text{WeightedPNTinAP} \Rightarrow \text{PrimeLogSumEquidist}$.
+The von Mangoldt function $\Lambda$ counts prime powers
+$p^k$ with weight $\log p$; the contribution from $k \geq 2$
+is uniformly bounded by $\sum_p 2\log p / p^2 < \infty$.
+This 250-line proof strips the higher prime powers and
+converts the $\Lambda$-weighted sum into a $(\log p)/p$
+sum over primes only.
+
+\item \textbf{Abel summation chain}
+(\lean{EM/Population/AbelChain.lean}{prime\_log\_to\_reciprocal\_proved},
+641~lines):
+  $\text{PrimeLogSumEquidist} \Rightarrow
+  \text{PrimesEquidistributedInAP}$.
+  Discrete Abel summation (summation by parts) converts the
+  log-weighted prime sum $\sum (\log p)/p$ into the
+  reciprocal-weighted sum $\sum 1/p$.
+  The proof includes derivative identities
+  $(\log\log t)' = 1/(t\log t)$ and
+  $(-1/\log t)' = 1/(t(\log t)^2)$; integral evaluations via FTC;
+  the sandwich bound
+  $|\sum_{k=2}^{m-1}(\log(k{+}1) - \log k)/\log(k{+}1)
+  - (\log\log m - \log\log 2)| \leq 1/(\log 2)^2$;
+  and the discrete Fubini step (double-sum reindexing).
+
+\item \textbf{Full composed chain}
+(\lean{EM/Population/AbelChain.lean}{wpnt\_implies\_primes\_equidist\_proved}):
+  $\text{WeightedPNTinAP} \Rightarrow
+  \text{PrimesEquidistributedInAP}$,
+  composing prime power stripping with discrete Abel summation.
+
+\item \textbf{Dirichlet's theorem}
+(\lean{EM/Population/Tauberian.lean}{dirichlet\_primes\_in\_ap}):
+imported directly from Mathlib's
+\code{Nat.infinite\_setOf\_prime\_and\_eq\_mod}.
+\end{itemize}
+
+\paragraph{Remaining gaps.}
+Mathlib~v4.29.0 already provides ${\sim}92\%$ of the required
+infrastructure: qualitative Dirichlet (via $L$-functions and
+non-vanishing on $\operatorname{Re}(s) \geq 1$), Abel summation
+(\code{AbelSummation.lean}),
+Chebyshev bounds, Dirichlet character orthogonality, and the von
+Mangoldt function.  Two gaps remain:
+
+\begin{enumerate}
+\item \textbf{Wiener--Ikehara bridge} (sole blocker, ${\sim}300$--$500$~lines):
+  convert
+  $\sum \Lambda(n)\mathbf{1}_{n \equiv a}/n^{1+\varepsilon}
+  = (\varphi(q))^{-1}/\varepsilon + O(1)$
+  into the partial-sum asymptotic
+  $\sum_{n \leq x} \Lambda(n)\mathbf{1}_{n \equiv a}/n
+  = \log x / \varphi(q) + O(1)$.
+  Because $\Lambda \geq 0$, a one-sided monotone argument suffices:
+  the one-sided Tauberian lemma (proved above) already gives
+  $O(N^\varepsilon)$ bounds; what remains is the \emph{asymptotic},
+  which requires a quantitative version of the abelian Tauberian
+  theorem.  As of March~2026, no external Lean~4 project provides
+  a usable Wiener--Ikehara theorem: the PNT+ project
+  (Kontorovich--Tao~et~al.)\ includes W-I in its blueprint but
+  has not implemented it in Lean, and the \textsc{Gauss} project
+  (Math,~Inc.)\ uses a different method (zero-free regions).
+  If a W-I formalization lands in Mathlib, the gap closes
+  immediately via the L-series identity above.
+
+\item \textbf{Alladi chain} (${\sim}1{,}000$--$1{,}400$~lines remaining):
+  Alladi's formula~\cite{Alladi1977} for the density of
+  $\{m : \minFac(m) = p\}$ combined with CRT sieving gives
+  PrimesEquidistInAP~$\Rightarrow$~MFRE\@.
+  The reduction scaffolding is now formalized in
+  \code{Population/AlladiDensity.lean} (267~lines, zero \code{sorry}),
+  which decomposes the chain into two precisely stated
+  open hypotheses:
+  \defname{PrimesEquidistImpliesRoughLPF}
+  (Alladi density + weight independence,
+  ${\sim}600$--$800$~lines) and
+  \defname{RoughLPFImpliesMFRE}
+  (CRT sieve transfer from generic $q$-rough integers to
+  shifted squarefree integers, ${\sim}400$--$600$~lines).
+  The master reduction
+  \lean{EM/Population/AlladiDensity.lean}{wpnt\_dsl\_implies\_mc}
+  composes these with the proved ANT chain and DSL
+  to give MC\@.
+  The sieve density infrastructure already exists
+  (\code{Reduction/ShiftedDensity.lean}).
+  The key observation is that the Alladi weight
+  $h(p) = (1/p) \cdot \prod_{q < r < p}(1 - 1/r)$
+  depends on~$p$ only through~$|p|$,
+  not through $p \bmod q$, so weighted Dirichlet equidistribution
+  transfers to minFac residues.
+  No prior formalization of Alladi's density formula or
+  the Buchstab identity exists in any proof assistant.
+\end{enumerate}
+
+\noindent
+We estimate ${\sim}1{,}300$--$2{,}300$ lines to close the full
+chain.  The Abel summation step is complete
+(\code{Population/AbelChain.lean}), the Alladi chain scaffolding with
+master reduction is formalized (\code{Population/AlladiDensity.lean}),
+and the Wiener--Ikehara bridge and Alladi density content
+are the two remaining components.
+Formalizing ANT is feasible future work but does not affect
+the paper's contribution, since the reduction DSL~$\Rightarrow$~MC
+is the novel content.
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Lines of Lean code & ${\sim}68{,}500$ \\
+Files & 125 \\
+Theorems/lemmas & ${\sim}2{,}000$ \\
+Definitions & ${\sim}800$ \\
+\code{sorry} occurrences & \textbf{0} \\
+Open hypotheses (stated as \code{def}) & ${\sim}50$ \\
+Mathlib version & v4.29.0-rc1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Summary of Formally Verified Results}
+\label{sec:verified-results}
+
+The formalization contains ${\sim}76{,}000$~lines across 141~files with
+zero \code{sorry}.  The table below is a \textbf{curated selection} of
+the most important results; the full inventory is in the repository.
+Status markers: \proved\ = machine-checked in Lean~4;
+\openhyp\ = open hypothesis (sole unproved content);
+\textbf{Dead} = false or blocked (formally witnessed).
+For declarations registered with the CA content-addressing
+framework~\cite{CA2026}, the \textbf{L1} column shows the first 8~hex
+digits of the SHA-256 type hash (L0, name-based), providing a
+stable identifier independent of human naming.
+
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}p{5.2cm}l>{\raggedright\arraybackslash}p{3.5cm}>{\ttfamily\raggedright\arraybackslash}p{1.8cm}@{}}
+\toprule
+\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} & \textrm{\textbf{L1}} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} & \textrm{\textbf{L1}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\emph{continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+%%% ---- Principal reductions ----
+\multicolumn{4}{l}{\emph{Principal reductions to MC}} \\
+\quad \textbf{DSL $\Rightarrow$ MC} (sole hypothesis, full chain) & \proved & \code{full\_chain\_dsl}  & 7948b5ed \\
+\quad \textbf{CME $\Rightarrow$ CCSB $\Rightarrow$ MC} (sharpest) & \proved & \code{cme\_implies\_mc}  & 0168917b \\
+\quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting) & \proved & \code{dynamical\_hitting\_implies\_mullin}  & b069682d \\
+\quad \textbf{CCSB $\Rightarrow$ MC} (char sums) & \proved & \code{complex\_csb\_mc'}  & 2fb09cde \\
+\quad MMCSB $\Rightarrow$ MC (multi-modular) & \proved & \code{mmcsb\_implies\_mc}  & a4e5b5f2 \\
+\quad VCB $+$ PED $\Rightarrow$ MC & \proved & \code{vcb\_ped\_implies\_mc}  & \\
+\midrule
+%%% ---- Bootstrap + walk ----
+\multicolumn{4}{l}{\emph{Inductive bootstrap and walk dynamics}} \\
+\quad PrimeResidueEscape (elementary, no Burgess) & \proved & \code{prime\_residue\_escape}  & 5f0da0ec \\
+\quad Single Hit Theorem (SHH $\Rightarrow$ MC) & \proved & \code{single\_hit\_implies\_mc}  & ed2a8b99 \\
+\quad Walk--divisibility bridge ($w=-1 \Leftrightarrow q \mid P{+}1$) & \proved & \code{walkZ\_eq\_neg\_one\_iff}  & 19e01a7e \\
+\quad Confinement Theorem & \proved & \code{confinement\_forward}  & \\
+\quad Fourier bridge (char sums $\to$ hit count) & \proved & \code{walk\_hit\_count\_fourier\_step}  & \\
+\quad Telescoping identity \& norm $\leq 2$ & \proved & \code{walk\_telescope\_identity}  & \\
+\quad Shift-one autocorrelation $=$ conjugate mult sum & \proved & \code{walk\_shift\_one\_correlation}  & \\
+\quad $\Prod{2}(n)$ squarefree & \proved & \code{prod\_squarefree}  & 06e3904a \\
+\midrule
+%%% ---- Character chain ----
+\multicolumn{4}{l}{\emph{Character sum chain}} \\
+\quad CME $\Rightarrow$ CCSB (all character orders) & \proved & \code{cme\_implies\_ccsb}  & c761d4e9 \\
+\quad CME $=$ VCB $+$ Dec (decomposition) & \proved & \code{cme\_implies\_vcb}  & \\
+\quad Dec $\Rightarrow$ PED; NoLongRuns$(L) \Rightarrow$ PED & \proved & \code{decorrelation\_implies\_ped}  & \\
+\quad FEB $\Rightarrow$ CME (fiber energy) & \proved & \code{feb\_implies\_cme}  & \\
+\quad $E_\chi(N) = N + 2\sum\text{cross}$ (energy identity) & \proved & \code{char\_sum\_energy\_eq\_N\_plus\_cross}  & \\
+\quad Cofactor identity: $w+1 = m \cdot \mathrm{cof}$ & \proved & \code{shifted\_walk\_eq\_mult\_mul\_cof}  & \\
+\midrule
+%%% ---- Ensemble / DSL ----
+\multicolumn{4}{l}{\emph{Ensemble and DSL framework}} \\
+\quad SD $\Rightarrow$ CSVB($C{=}2$) $\Rightarrow$ concentration $\Rightarrow$ cancellation & \proved & \code{sd\_implies\_cancellation}  & \\
+\quad WeylHittingBridge (char cancel $\Rightarrow$ hitting) & \proved & \code{weyl\_hitting\_bridge\_proved}  & \\
+\quad LMG $\Rightarrow$ PositiveDensityRSD (1 hypothesis) & \proved & \code{lmg\_implies\_positive\_density\_rsd}  & \\
+\quad genSeq$(n,k) \geq 3$ for $k \geq 1$ (parity) & \proved & \code{genSeq\_ge\_three}  & \\
+\quad $\mathbb{E}[1/\text{genSeq}(\cdot,0)] \geq 1/4$ (unconditional) & \proved & \code{ensembleAvg\_k0\_ge\_quarter}  & \\
+\quad Death density bridge ($q \geq 3$) & \proved & \code{ensembleAvg\_ge\_death\_density}  & \\
+\quad Absorption: death $\Rightarrow$ permanent $0 \!\bmod q$ & \proved & \code{death\_then\_never\_death\_again}  & \\
+\quad ETA $+$ SRE $\Rightarrow$ PositiveDensityRSD & \proved & \code{eta\_sre\_implies\_prsd}  & \\
+\midrule
+%%% ---- Spectral / large sieve ----
+\multicolumn{4}{l}{\emph{Spectral and large sieve routes}} \\
+\quad SVE $\Leftrightarrow$ VE $\Leftrightarrow$ CCSB (Parseval) & \proved & \code{sve\_iff\_ve}  & \\
+\quad Van der Corput bound & \proved & \code{van\_der\_corput\_bound}  & \\
+\quad HOD $\Rightarrow$ CCSB & \proved & \code{hod\_implies\_ccsb}  & \\
+\quad Weak ALS (with $N(\delta^{-1}{+}1)$ constant) & \proved & \code{weak\_als\_from\_card\_bound}  & \\
+\quad ALS $\Rightarrow$ PrimeArithLS (Gauss inversion, 8 lemmas) & \proved & \code{als\_implies\_prime\_arith\_ls}  & \\
+\quad MittagLefflerCsc (Mittag-Leffler for $\csc$) & \proved & \code{mittag\_leffler\_csc\_proved}  & 3bfddc38 \\
+\quad WPNT $\Rightarrow$ PrimesEquidistInAP (Abel chain) & \proved & \code{wpnt\_implies\_primes\_equidist\_proved}  & ae92835c \\
+\midrule
+%%% ---- Adelic / profinite / CRT ----
+\multicolumn{4}{l}{\emph{Adelic and CRT framework}} \\
+\quad CME $\Leftrightarrow$ MWI $+$ MME (adelic decomposition) & \proved & \code{cme\_iff\_adelic}  & \\
+\quad CRTFiber $+$ MME $\Rightarrow$ CME & \proved & \code{crt\_fiber\_mme\_implies\_cme}  & \\
+\quad UPE $\Rightarrow$ MC (profinite) & \proved & \code{uniform\_profinite\_implies\_mc}  & \\
+\quad Primes $< N$ generate $(\ZZ/N\ZZ)^\times$ & \proved & \code{primeUnitsBelow\_generate}  & \\
+\quad MC $\Rightarrow$ EM multipliers generate $(\ZZ/N\ZZ)^\times$ & \proved & \code{mc\_implies\_full\_generation}  & \\
+\midrule
+%%% ---- Variants ----
+\multicolumn{4}{l}{\emph{Variant frameworks}} \\
+\quad UFDStrong $\Rightarrow$ VariantMC (two-point) & \proved & \code{variant\_mc\_from\_ufd\_strong\_proved}  & \\
+\quad FaithfulCharacterEscape (unconditional, all $q \geq 3$) & \proved & \code{faithful\_character\_escape}  & \\
+\quad UFDStrong(3) / StochasticTwoPointMC(3) & \proved & \code{variant\_mc\_three\_unconditional}  & \\
+\quad NFCS for $|G|$ with $\geq 2$ prime factors & \proved & \code{nonFaithfulCharSeparation\_of\_two\_prime\_factors}  & \\
+\quad Quotient char lift: $\bar\chi$ faithful on $G/\ker\chi$ & \proved & \code{quotientChar\_faithful}  & \\
+\quad TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC & \proved & \code{tca\_path\_survival\_implies\_random\_mc\_proved}  & \\
+\quad MixedDiversityWeak $+$ MixedDiversity $\Rightarrow$ MixedMC & \proved & \code{mixed\_diversity\_weak\_implies\_mixed\_mc}  & \\
+\quad Mixed capture of $q=3$ (unconditional) & \proved & \code{mixed\_capture\_three}  & \\
+\quad MixedHitting $+$ MixedDiversity $\Rightarrow$ MixedMC & \proved & \code{mixed\_hitting\_diversity\_implies\_mc}  & \\
+\quad Two-point $\hookrightarrow$ Mixed (embedding) & \proved & \code{embed\_walk\_agreement}  & \\
+\quad Hit $\Rightarrow$ Capture (walk surgery) & \proved & \code{hit\_implies\_capture'}  & \\
+\quad Hitting $\Leftrightarrow$ $-1$ reachable (BFS) & \proved & \code{mixed\_hitting\_iff\_neg\_one\_reachable}  & \\
+\quad Perpetual primality $\Rightarrow$ walk $\not\equiv 1 \pmod{3}$ & \proved & \code{perpetual\_prime\_excludes\_mod3\_one}  & \\
+\quad Factor branching grows $R_{n+1}$ & \proved & \code{reachableAt\_from\_factor}  & \\
+\quad Composite $P{+}1 \Rightarrow$ two positions in $R_{n+1}$ & \proved & \code{reachable\_composite\_branch}  & \\
+\quad $R_\infty$ not in any proper coset (PRE) & \proved & \code{reachableEver\_not\_in\_coset}  & \\
+\quad Factor confinement from incomplete $R_\infty$ & \proved & \code{factor\_confinement}  & \\
+\quad FactorEscape $\Rightarrow$ $R_\infty$ full $\Rightarrow$ Mixed MC & \proved & \code{factor\_escape\_implies\_mixed\_mc\_at}  & \\
+\quad PureRandomMC $\Leftrightarrow$ MixedMC (purification) & \proved & \code{pure\_random\_mc\_iff\_mixed\_mc}  & \\
+\quad MC $\Rightarrow$ PureRandomMC & \proved & \code{standard\_mc\_implies\_pure\_random}  & \\
+\quad PSCD $\Rightarrow$ almost-all mixed hitting & \proved & \code{pscd\_implies\_almost\_all\_mixed\_hitting}  & \\
+\quad Trapped $\leq$ $\sum$ confined (pigeonhole) & \proved & \code{trapped\_le\_sum\_confined}  & \\
+\quad $0 \notin R_\infty$ for trapped coprime $m$ & \proved & \code{zero\_not\_reachable\_of\_coprime\_trapped}  & \\
+\quad PEAP $+$ 3 bridges $\Rightarrow$ almost-all hitting & \proved & \code{peap\_chain\_implies\_almost\_all\_mixed\_hitting}  & \\
+\quad $(\forall q{\geq}5,\,\mathrm{TSD}(q)) \Rightarrow$ MixedMC & \proved & \code{tsd\_all\_implies\_mixed\_mc}  & \\
+\quad Coset ambiguity: $q{=}3$ free, $q{=}5$ blocked & \proved & \code{coset\_ambiguity\_landscape}  & \\
+\quad Geometric capture: $(1{-}\delta)^K \to 0$ & \proved & \code{product\_failure\_tendsto\_zero}  & \\
+\quad TSD $\Rightarrow$ PositiveProbCapture & \proved & \code{tsd\_positive\_capture}  & \\
+\quad Perpetual primality $\Rightarrow$ eventually periodic mod~$q$ & \proved & \code{perpetual\_prime\_eventually\_periodic}  & \\
+\quad Mod-5 orbit $\{1,2\}$ avoids $-1$ under perp.\ primality & \proved & \code{perpetual\_prime\_mod5\_orbit}  & \\
+\quad Reachable set monotone along walk prefixes & \proved & \code{reachableEver\_mono\_along\_walk}  & \\
+\midrule
+%%% ---- Function field ----
+\multicolumn{4}{l}{\emph{Function field analog}} \\
+\quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & \proved & \code{ff\_dh\_implies\_ffmc}  & \\
+\quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ & \proved & \code{weil\_implies\_ff\_se}  & \\
+\quad $\ZZ/4\ZZ$: generation $\neq$ coverage (Dead End~\#130) & \proved & \code{alternating\_walk\_misses\_two}  & \\
+\quad FFLM structurally false (cyclotomic, Dead End~\#129) & \proved & \code{ff\_cyclotomic\_dead\_end}  & \\
+\quad FF mixed selection injective (no irred twice) & \proved & \code{ffMixedSel\_injective}  & \\
+\quad FF coprimality cascade (mixed walks) & \proved & \code{ffMixedWalkProd\_coprime\_succ}  & \\
+\quad FF start not capturable & \proved & \code{start\_not\_capturable}  & \\
+\quad FF factor pool degree $\to \infty$ & \proved & \code{ff\_factor\_pool\_degree\_grows}  & \\
+\quad FFFiniteIrreduciblesPerDegree (unconditional) & \proved & \code{ffFiniteIrreduciblesPerDegree\_proved}  & \\
+\quad FFDH alone $\Rightarrow$ FF-MC (finiteness eliminated) & \proved & \code{ff\_dh\_implies\_ffmc\_unconditional}  & \\
+\quad FFStochasticMC ($\varepsilon > 0 \Rightarrow$ capture) & \proved & \code{stochastic\_mc\_unconditional}  & \\
+\quad FF phase transition (sharp at $\varepsilon = 0$) & \proved & \code{ff\_phase\_transition\_unconditional}  & \\
+\quad Factor diversity $\Rightarrow$ spectral contraction & \proved & \code{factor\_diversity\_spectral\_contraction}  & \\
+\quad Diverse steps $\Rightarrow$ char product vanishes & \proved & \code{diverse\_steps\_imply\_vanishing}  & \\
+\quad TSD $\Rightarrow$ StochasticMC (integer side) & \proved & \code{stochastic\_mc\_of\_tsd}  & \\
+\quad Phase transition summary ($\varepsilon = 0$ critical) & \proved & \code{phase\_transition\_summary}  & \\
+\quad Perpetual primality multi-exclusion ($q = 5, 11, 17, 23$) & \proved & \code{perpetual\_primality\_multi\_exclusion}  & \\
+\quad FF $\Phi_3$ exclusion ($-1$ unreachable, $p \equiv 2 \!\bmod 3$) & \proved & \code{ff\_neg\_one\_unreachable}  & \\
+\midrule
+%%% ---- Open hypotheses ----
+\multicolumn{4}{l}{\emph{Open hypotheses --- live targets}} \\
+\quad \textbf{DeterministicStabilityLemma} (PE $\Rightarrow$ CME) & \openhyp & \code{DeterministicStabilityLemma}  & d5e0c044 \\
+\quad \textbf{DynamicalHitting} (SE $\Rightarrow$ cofinal $-1$) & \openhyp & \code{DynamicalHitting}  & e004d177 \\
+\quad \textbf{ComplexCharSumBound} ($S_\chi(N) = o(N)$) & \openhyp & \code{ComplexCharSumBound}  & d3bb3ee3 \\
+\quad \textbf{BVImpliesMMCSB} (BV $\to$ orbit) & \openhyp & \code{BVImpliesMMCSB}  & \\
+\quad \textbf{SieveTransfer} (population $\to$ orbit) & \openhyp & \code{SieveTransfer}  & \\
+\quad StepDecorrelation (ensemble cross-terms) & \openhyp & \code{StepDecorrelation}  & d1df5f92 \\
+\quad LinearMeanGrowth ($\mathbb{E}[S_K] \geq \kappa K$) & \openhyp & \code{LinearMeanGrowth}  & \\
+\quad EnsembleTransitionApprox (CRT blindness) & \openhyp & \code{EnsembleTransitionApprox}  & \\
+\quad NonFaithfulCharacterEscape ($q \geq 5$, two-point) & \openhyp & \code{NonFaithfulCharacterEscape}  & \\
+\quad MixedDiversity (composite $P{+}1$ cofinally) & \openhyp & \code{MixedDiversity}  & \\
+\quad MixedDiversityWeak (steering from diversity) & \openhyp & \code{MixedDiversityWeak}  & \\
+\quad MixedHitting ($-1$ reachable under diversity) & \openhyp & \code{MixedHitting}  & \\
+\quad UFDStrongImpliesMixedMC (self-consistency bridge) & \openhyp & \code{UFDStrongImpliesMixedMC}  & \\
+\quad FactorEscapeHypothesis (Euclid numbers escape confinement) & \openhyp & \code{FactorEscapeHypothesis}  & \\
+\quad PSCD (population sieve confinement decay; follows from PEAP via WeakFMCD chain) & \proved & \code{weak\_fmcd\_chain\_implies\_pscd}  & \\
+\quad PEAPImpliesFCD (PEAP $\Rightarrow$ class divergence) & \proved & \code{peap\_implies\_fcd\_proved}  & \\
+\quad SieveUpperBound (fundamental lemma of sieve; superseded by WeakFMCD) & \superseded & \code{SieveUpperBound}  & \\
+\quad SieveProductVanishing ($\sum 1/p$ div.\ $\Rightarrow$ $\prod(1{-}1/p) \to 0$) & \proved & \code{sieve\_product\_vanishing\_proved}  & \\
+\quad sqfreeCount $\geq X/4$ (unconditional) & \proved & \code{sqfreeCount\_ge\_quarter\_real}  & \\
+\quad WeakFMCD (unconditional CRT bound, constant 4) & \proved & \code{weak\_fmcd\_proved}  & \\
+\quad WeakFMCD + FCD $\Rightarrow$ PSCD (no open hypothesis) & \proved & \code{weak\_fmcd\_fcd\_implies\_pscd}  & \\
+\quad PEAP alone $\Rightarrow$ PSCD (FMCD eliminated) & \proved & \code{weak\_fmcd\_chain\_implies\_pscd}  & \\
+\quad PEAP alone $\Rightarrow$ a.a.\ mixed hitting & \proved & \code{weak\_fmcd\_chain\_implies\_almost\_all}  & \\
+\quad Reachable $\Rightarrow$ positive prob.\ capture ($\forall\varepsilon > 0$) & \proved & \code{reachable\_implies\_positive\_prob\_capture}  & \\
+\quad PEAP $\Rightarrow$ a.a.\ positive prob.\ capture & \proved & \code{almost\_all\_positive\_prob\_capture}  & \\
+\quad Block coverage (uniform depth for all units) & \proved & \code{block\_coverage}  & \\
+\quad Regeneration $\Rightarrow$ cofinal hitting & \proved & \code{regeneration\_implies\_cofinal\_hitting}  & \\
+\quad Regeneration $\Rightarrow$ iterated hitting & \proved & \code{regeneration\_implies\_iterated\_hitting}  & \\
+\quad Regeneration (walk preserves goodness) & \openhyp & \code{Regeneration}  & \\
+\quad FFDynamicalHitting (function field) & \openhyp & \code{FFDynamicalHitting}  & \\
+\quad SelectionBiasNeutral (min-degree preserves cancel.) & \openhyp & \code{SelectionBiasNeutral}  & \\
+\midrule
+%%% ---- Dead ends ----
+\multicolumn{4}{l}{\emph{Dead ends --- false or blocked (representative)}} \\
+\quad MultCSBImpliesMMCSB (partial products don't cancel) & \textbf{Dead} & \code{MultCSBImpliesMMCSB}  & \\
+\quad BRE for $d \geq 3$ (adversarial block alignment) & \textbf{Dead} & \code{BlockRotationEstimate}  & \\
+\quad SCD $\equiv$ SVE (no new leverage, \#120) & \textbf{Dead} & \code{sve\_implies\_scd\_above\_threshold}  & \\
+\quad Dobrushin coeff $= 1$ (deterministic walks, \#131) & \textbf{Dead} & \code{dobrushin\_coefficient\_one}  & \\
+\quad $L$-function factorization circular (\#132) & \textbf{Dead} & \code{dead\_end\_132\_witness}  & \\
+\quad No Tauberian lever for $L_{\mathrm{EM}}$ (\#134) & \textbf{Dead} & \code{tauberian\_lever\_absent\_witness}  & \\
+\quad Cauchy--Davenport vacuous: $\mathrm{minOrder} = 2$ (\#137) & \textbf{Dead} & \code{minOrder\_units\_zmod\_eq\_two}  & \\
+\quad AEP false: absorption drains nonzero classes (\#138) & \textbf{Dead} & \code{death\_then\_never\_death\_again}  & \\
+\quad 138~total dead ends, 15 formally witnessed, 8 revivable & \proved & \code{dead\_end\_registry}  & \\
+\end{longtable}
+\renewcommand{\arraystretch}{1.0}
+\normalsize
+

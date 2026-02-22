@@ -1,0 +1,2318 @@
+%% =========================================================================
+\section{Variants of the Conjecture}
+\label{sec:variants}
+%% =========================================================================
+
+The Euclid--Mullin construction makes sense with any factor-selection
+rule: at each step, $\Prod{2}(n)+1$ has a non-empty set of prime
+factors, and the rule picks one.  Mullin's Conjecture is specific to
+the $\minFac$ rule.  This section collects the known variants---some
+easy, some provably incomplete, one almost closed---and uses them to
+locate standard MC within a broader landscape.
+
+\begin{roadmap}
+\begin{enumerate}[nosep,leftmargin=*]
+\item[\S\ref{sec:random-variant}] Random-factor variant --- MC by mixing; independence vs.\ selection trade-off.
+\item[\S\ref{sec:factor-tree}] Factor tree and GenMixedMC --- nondeterministic access to all prime factors.
+\item[\S\ref{sec:almost-all-mixed}] Almost all GenMixedMC --- density-$1$ result: PEAP alone suffices (no open hypothesis).
+\item[\S\ref{sec:minfac-secondminfac}] $\{\minFac,\operatorname{secondMinFac}\}$ variant --- two-point spectral contraction, UFDStrong.
+\item[\S\ref{sec:ensemble-variant}] Ensemble MC --- almost every starting point, backward dynamics.
+\item[\S\ref{sec:weak-mullin}] Weak Mullin --- analytic weakenings, partial results.
+\item[\S\ref{sec:function-field}] Function field analog --- $\FF_p[t]$, Weil bound, orbit-specificity barrier.
+\end{enumerate}
+\end{roadmap}
+
+\paragraph{The Selection Rule Landscape}
+\label{sec:selection-landscape}
+
+Fix an initial prime $p_0 = 2$.  Given a \emph{selection rule}
+$\sigma$ that, for any integer $N \geq 2$, chooses a prime factor
+$\sigma(N) \mid N$, define:
+\begin{align}
+  P_\sigma(0) &= 2, &
+  P_\sigma(n{+}1) &= P_\sigma(n) \cdot \sigma(P_\sigma(n)+1).
+\end{align}
+The selection rule determines the sequence; the running product
+$P_\sigma(n)$ determines the sequence history.
+Five rules are studied in the formalization:
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+\textbf{Selection rule} $\sigma$ & \textbf{MC status} & \textbf{Key property} \\
+\midrule
+Random (uniform) & Easy (mixing) & Independence \\
+$\minFac$ (standard EM) & \textbf{Open} (DSL) & Deterministic, lethal \\
+$\{\minFac, \operatorname{secondMinFac}\}$ & \textbf{Open} (UFDStrong) & Two-point diversity \\
+$(1{-}\varepsilon)\,\minFac + \varepsilon\,$random & a.a.\ (PEAP) & Full factor access \\
+Steered (Booker~\cite{BoSa2012}) & True (by construction) & Adversarial \\
+$\mathrm{maxFac}$ (Cox--vdP~\cite{CoxVdP1968}) & False & Misses primes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The landscape reveals a tension: the random rule is the easiest to
+analyze (mixing theory) but the worst at selection (probability
+$1/|F|$ per hit); $\minFac$ is the best at selection (lethal hits)
+but the hardest to analyze (deterministic, no independence); the
+$\{\minFac, \operatorname{secondMinFac}\}$ variant sits between them,
+offering a two-point spectral contraction that is provably sufficient
+under a single open hypothesis; and the factor tree framework
+(\S\ref{sec:factor-tree}) generalizes all three by allowing access
+to the full factor set at every step, reducing GenMixedMC to sieve
+theory for almost all starting points.
+
+\subsection{The Random-Factor Variant}
+\label{sec:random-variant}
+
+Consider a variant where, instead of the smallest prime factor, one
+picks a \emph{random} prime factor of~$\Prod{2}(n)+1$ at each step.
+MC follows from classical mixing theory.  For any target prime~$p$,
+the residue $r_n = \Prod{2}(n) \bmod p$ performs a multiplicative walk
+on $(\ZZ/p\ZZ)^\times$.  Each multiplier is a random element of the
+group; once the multipliers generate the full group (which PRE
+guarantees, Theorem~\ref{thm:pre}), the walk is a genuine random walk
+with full support.  By Diaconis--Shahshahani equidistribution, the walk
+mixes in $O(\log p)$ steps: $r_n = -1$ occurs with frequency
+$\to 1/(p{-}1)$---infinitely often with probability~1.  When $p$
+divides the Euclid number, the random rule selects~$p$ with probability
+$1/|F(S_n)|$, but cofinal hitting provides infinitely many chances,
+so~$p$ is eventually selected.
+
+\paragraph{Comparison with $\minFac$.}
+The actual EM sequence uses
+$\seq{2}(n{+}1) = \minFac(\Prod{2}(n){+}1)$, a \emph{deterministic}
+function of the walk position.  Compared to the random-factor variant,
+$\minFac$ is strictly better in every measurable dimension:
+
+\smallskip
+\begin{center}
+\begin{tabular}{l@{\quad}l@{\quad}l}
+\toprule
+ & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
+\midrule
+\textbf{Selection when $q \mid P(n){+}1$}
+  & Probability $1/|F(S_n)|$ & Probability~1 \\
+\textbf{Accumulator growth}
+  & Faster (random $\geq \minFac$) & Slowest possible \\
+\textbf{Hits on $-1$ needed}
+  & Infinitely many & \textbf{One} (lethal hit) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+\emph{Selection efficiency.}\enspace Past the sieve gap, 0-accessibility
+guarantees: if $q \mid \Prod{2}(n)+1$ then
+$q = \minFac(\Prod{2}(n)+1)$---selection is certain, not
+probabilistic.  \emph{Growth rate.}\enspace Since
+$\minFac(N) \leq p$ for any factor~$p$ of~$N$, the accumulator
+$\Prod{2}(n)$ grows minimally under the $\minFac$ rule, giving
+exponentially more steps before it becomes astronomically large---more
+chances for~$q$ to divide.  \emph{Lethality.}\enspace The inductive
+bootstrap shows one single hit suffices: $\MC({<}\,q)$ ensures~$q$
+is minimal whenever it divides, so hitting $-1$ once means~$q$
+enters the sequence.  The random variant requires infinitely many
+hits to overcome low per-hit selection probability.
+
+\emph{MinFac is strictly better in every measurable dimension.
+So why can't we prove it works?}
+
+\paragraph{The independence trade-off.}
+The answer is surgical: the random variant possesses a single property
+that $\minFac$ lacks, and that property is the \emph{only thing the
+proof uses}.
+
+The property is \textbf{independence of multiplier from walk
+position}.  In the random-factor variant, the multiplier at step~$n$
+is selected independently of which residue class
+$\Prod{2}(n) \bmod q$ occupies.  Walk position and multiplier are
+independent random variables, and independence is the engine that
+drives mixing.  Diaconis--Shahshahani's theorem applies whenever the
+multipliers are i.i.d.\ from a distribution whose support generates
+the group.
+
+In the $\minFac$ variant, the multiplier is
+$\minFac(\Prod{2}(n){+}1) \bmod q$---a deterministic function of the
+full integer~$\Prod{2}(n)+1$.  The CRT multiplier invariance
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}) shows
+that the outcome is independent of $\Prod{2}(n) \bmod q$ at the
+\emph{population} level: for generic integers, knowing the mod-$q$
+residue does not predict $\minFac$.  But for the specific orbit~$n=2$,
+the multiplier is a deterministic value, and mixing theorems for
+deterministic sequences cannot be invoked.
+
+The random variant thus sacrifices selection efficiency (it may
+miss~$q$ even when $q$ divides) in exchange for statistical
+independence.  The $\minFac$ variant has perfect selection but no
+independence:
+
+\smallskip
+\begin{center}
+\begin{tabular}{l@{\quad}l@{\quad}l}
+\toprule
+ & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
+\midrule
+Selection & Bad ($1/k$ chance) & Perfect \\
+Mixing & Random walk theorem & Unproved \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The random variant's proof: mixing $\to$ cofinal hitting $\to$
+infinitely many chances compensate for low per-hit probability.
+The $\minFac$ variant needs only one hit---absurdly less than the
+random variant achieves---but has no way to produce even that one
+without mixing.
+
+\paragraph{The stochastic domination failure.}
+\label{sec:stoch-dom}
+The natural instinct is to argue by \emph{stochastic domination}:
+if the random walk visits~$-1$ cofinally, and $\minFac$ is ``better
+in every way,'' then $\minFac$ should also visit~$-1$.  This argument
+fails because the two processes \emph{diverge after one step}.
+
+At step~$n$, both processes face the same Euclid number
+$\Prod{2}(n)+1$ with factor set~$F(S_n)$.  The random variant picks a
+uniformly random element of~$F(S_n)$; the $\minFac$ variant picks the
+minimum.  After this step, the two processes have different
+accumulators (they multiplied by different primes), so they face
+different Euclid numbers at the next step.  The processes explore
+completely different trajectories.  Domination fails because the
+two walks live on different probability spaces after step~1; we
+cannot compare them step-by-step.
+
+A subtler comparison uses \emph{visit measures}.  Define
+$\mu_{\mathrm{rand}}(a) = \lim_{N} \frac{1}{N}|\{n < N :
+w_q^{\mathrm{rand}}(n) = a\}|$ and analogously
+$\mu_{\min}(a)$ for the $\minFac$ walk.  For the random variant,
+$\mu_{\mathrm{rand}} = $ uniform on $(\ZZ/q\ZZ)^\times$ by mixing.
+For $\minFac$, CME/CCSB asserts $\mu_{\min} \approx$ uniform, and
+DSL asserts this follows from PE\@.  The comparison
+$\mu_{\min}(-1) \geq 1/(q{-}1)$ is precisely what needs proof, and is
+the content of DSL\@.
+
+%% =========================================================================
+\subsection{The Factor Tree and GenMixedMC}
+\label{sec:factor-tree}
+%% =========================================================================
+
+The random variant's provability motivates a broader framework:
+instead of fixing a single selection rule, consider the
+\textbf{factor tree} $\mathcal{T}(m)$ rooted at starting point~$m$.
+The root holds accumulator~$m$; each node with accumulator~$P$ has
+one child $P \cdot p$ for every prime $p \mid P{+}1$.
+The leftmost path (always choosing $\minFac$) recovers the standard EM
+walk; every other path corresponds to a different selection.
+All nodes of $\mathcal{T}(m)$ share the same structural properties:
+each factor is prime, divides $P{+}1$, and is coprime to~$P$; the
+accumulator is strictly increasing along every branch.
+
+\begin{definition}[GenMixedMC]
+\label{def:gen-mixed-mc}
+$\mathrm{GenMixedMC}(m)$: for every prime~$q$, some node of
+$\mathcal{T}(m)$ has $q$ dividing its Euclid number $P{+}1$.
+Equivalently, every prime appears somewhere in the factor tree.
+\end{definition}
+
+\noindent
+The standard Mullin Conjecture is the special case where the
+leftmost path alone captures every prime; GenMixedMC relaxes this to
+any path.  Formally, $\mathrm{MC} \Longrightarrow
+\mathrm{GenMixedMC}(2)$, since the standard walk is one particular
+path through $\mathcal{T}(2)$.
+
+\begin{remark}[The Euclid--Mullin graph]
+\label{rem:em-graph}
+The factor tree $\mathcal{T}(m)$ is exactly the \emph{Euclid--Mullin
+graph}~$G_m$ of Booker and Irvine~\cite{BoIr2016}.  In their
+framework, vertices are accumulated products and edges are labelled by
+primes dividing $P{+}1$; GenMixedMC$(m)$ asks whether every prime
+labels some edge.  Computationally, every prime below~$10^9$ occurs as
+an edge in~$G_1$ (hence in~$G_2$).
+
+Booker~\cite{BoSa2012} proved that for any finite set~$P$ of primes,
+there exists a path through $\mathcal{T}(\prod P)$ containing every
+prime.  His proof uses three ingredients that connect directly to the
+formalization's infrastructure:
+\begin{enumerate}[nosep]
+\item \emph{Squarefree smooth density}:
+  the set~$S_q$ of residues mod~$q$ attained by squarefree
+  $(q{-}1)$-smooth integers satisfies $|S_q| > (q{-}1)/2$
+  (via Schnirelmann density $\geq 53/88$)---the same population
+  equidistribution that DSL seeks to transfer to a single orbit.
+\item \emph{Weil--Hasse bounds} for the curves $y^2 = x(x^2+a)$
+  and $y^2 = x^6+a$---the same character-sum cancellation exploited
+  by the function field analog (\S\ref{sec:function-field}).
+\item \emph{Subgroup growth}: the subgroup of $(\ZZ/q\ZZ)^\times$
+  generated by the reachable primes has index dividing~$6$---an
+  analogue of SubgroupEscape (Theorem~\ref{thm:pre}), which guarantees
+  full generation for the standard walk.
+\end{enumerate}
+Booker's proof works because choosing subsets at each step provides
+enough freedom to steer residues mod~$q$.  The standard EM sequence
+($\minFac$, always using the full product) has no such freedom: the
+accumulator is deterministic, and the gap between population
+equidistribution (Booker's Lemma~2) and orbit-specific
+equidistribution (CME) is exactly what DSL addresses.
+\end{remark}
+
+\begin{remark}[Quantifier structure]
+\label{rem:quantifier}
+GenMixedMC$(m)$ asserts: for each prime~$q$, \emph{some} path
+through $\mathcal{T}(m)$ reaches a node where $q$ divides the Euclid
+number.  Different primes may require different paths.  The quantifier
+order is $\forall q\;\exists\,\text{path}$, \textbf{not}
+$\exists\,\text{path}\;\forall q$.  The stronger statement---a single
+path capturing all primes simultaneously---remains open even for
+almost all starting points.
+\end{remark}
+
+\paragraph{Lean encoding: MixedSelection.}
+The formalization encodes paths through $\mathcal{T}(m)$ via a
+\texttt{MixedSelection}
+$\sigma : \NN \to \mathrm{Option}\;\NN$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{MixedSelection}):
+$\mathrm{none}$ at step~$k$ means follow the leftmost child
+($\minFac$); $\mathrm{some}\;p$ means branch to child~$p$.
+A selection is \defname{valid}
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{ValidMixedSelection})
+if every $\mathrm{some}\;p$ step has $p$ prime and $p \mid P_\sigma(k){+}1$.
+The accumulator along a path is
+$P_\sigma(0) = m$,
+$P_\sigma(n{+}1) = P_\sigma(n) \cdot f_\sigma(n)$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkProd}).
+
+\paragraph{The reachable set: tree projection.}
+Define $R_n(q, m)$ as the set of positions
+$P_\sigma(n) \bmod q$ over all valid paths~$\sigma$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{reachableAt})---the
+projection of depth-$n$ nodes of $\mathcal{T}(m)$ onto
+$(\ZZ/q\ZZ)^\times$.  The cumulative set
+$R_\infty = \bigcup_n R_n$ collects all residues attained by
+any node.  Hitting is equivalent to reachability:
+\[
+  q \text{ appears in } \mathcal{T}(m)
+  \;\Longleftrightarrow\;
+  {-}1 \in R_\infty(q, m)
+\]
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixed\_hitting\_iff\_neg\_one\_reachable}
+{\color{leanink}$\checkmark$}).
+This reformulates GenMixedMC as a BFS reachability problem
+in $(\ZZ/q\ZZ)^\times$.
+The reachable set is monotone along walk prefixes:
+any position reachable from a descendant $P_\sigma(n)$ is also
+reachable from the original accumulator~$m$
+(\lean{EM/Advanced/InterpolationMC.lean}{reachableEver\_mono\_along\_walk}
+{\color{leanink}$\checkmark$}),
+via concatenation of walk segments.
+
+\paragraph{Reachable set growth.}
+The core growth mechanism: at any node with accumulator~$P$,
+\emph{every} prime~$p$ dividing $P{+}1$ produces a child at position
+$P \cdot p \bmod q$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{reachableAt\_from\_factor}
+{\color{leanink}$\checkmark$}).
+When $P{+}1$ is composite, it has $\geq 2$ prime divisors,
+giving $\geq 2$ children
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{reachable\_composite\_branch}
+{\color{leanink}$\checkmark$}).
+When these are distinct mod~$q$, $|R_{n+1}| > |R_n|$ along this branch.
+
+\paragraph{The purification lemma.}
+The probabilistic argument for the random variant requires
+Diaconis--Shahshahani mixing theory and Borel--Cantelli, neither
+available in Lean.  The formalization instead proves that the
+nondeterministic framework captures everything:
+
+\smallskip\noindent
+\textbf{Purification Lemma}
+(\lean{EM/Advanced/RandomFactorMC.lean}{pure\_random\_mc\_iff\_mixed\_mc}
+{\color{leanink}$\checkmark$}).
+\emph{PureRandomMC$(q)$ $\Leftrightarrow$ MixedMC$(q)$.}
+
+\smallskip\noindent
+The proof constructs, from any path through $\mathcal{T}(m)$ (which
+may follow the leftmost child at some steps), a
+\emph{purified} path that always branches explicitly and follows the
+exact same trajectory
+(\lean{EM/Advanced/RandomFactorMC.lean}{purify\_walk\_eq}
+{\color{leanink}$\checkmark$}).
+This works because $\minFac(P{+}1)$ is itself a prime dividing~$P{+}1$,
+so replacing every ``follow leftmost'' with ``branch to
+$\minFac(P{+}1)$'' produces a valid explicit path.
+The distinction between ``$\minFac$-first'' and
+``all-random'' is thus illusory at the nondeterministic level.
+Standard~MC implies GenMixedMC$(2)$ (the leftmost path is one
+particular branch,
+\lean{EM/Advanced/RandomFactorMC.lean}{standard\_mc\_implies\_pure\_random}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Variant hierarchy.}
+The factor tree framework unifies the prior variants in a strict
+hierarchy:
+\[
+  \text{deterministic } (\text{leftmost path})
+  \;\subset\;
+  \text{two-point } (\S\ref{sec:minfac-secondminfac})
+  \;\subset\;
+  \mathcal{T}(m)
+  \;\subset\;
+  \text{full random.}
+\]
+The two-point walk (\S\ref{sec:minfac-secondminfac}) restricts
+branching to the two smallest factors; the full random walk
+corresponds to sampling a uniformly random branch at each node.
+Any capture by the two-point walk gives a capture in $\mathcal{T}(m)$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{two\_point\_capture\_implies\_mixed\_capture}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Basic properties.}
+Under validity and $m \geq 2$, the formalization proves:
+every factor is prime
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkFactor\_prime}
+{\color{leanink}$\checkmark$});
+every factor divides $P{+}1$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkFactor\_dvd}
+{\color{leanink}$\checkmark$});
+the accumulator stays $\geq 2$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkProd\_ge\_two}
+{\color{leanink}$\checkmark$});
+the accumulator is strictly increasing
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkProd\_strict\_mono}
+{\color{leanink}$\checkmark$});
+each factor is coprime to the accumulator
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkFactor\_not\_dvd\_prod}
+{\color{leanink}$\checkmark$});
+prefix dependence: $P_\sigma(k)$ depends only on $\sigma(0),\ldots,\sigma(k{-}1)$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkProd\_depends\_on\_prefix}
+{\color{leanink}$\checkmark$});
+tail restart: the subtree from step~$K$ is a fresh tree from~$P_\sigma(K)$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkProd\_tail\_restart}
+{\color{leanink}$\checkmark$}).
+
+\begin{theorem}[Mixed walk structure]
+\label{thm:mixed-walk-structure}
+For any valid selection~$\sigma$ from a starting point $m \geq 2$:
+\begin{enumerate}[nosep]
+\item \textbf{Exponential growth}
+  (\lean{EM/Advanced/InterpolationMC.lean}{mixedWalkProd\_exp\_growth}
+  {\color{leanink}$\checkmark$}):
+  $P_\sigma(k) \geq m \cdot 2^k$ for all~$k$.
+\item \textbf{Squarefree preservation}
+  (\lean{EM/Advanced/InterpolationMC.lean}{mixedWalkProd\_squarefree}
+  {\color{leanink}$\checkmark$}):
+  if $m$ is squarefree, so is $P_\sigma(k)$ for all~$k$.
+\item \textbf{Coprimality from no death}
+  (\lean{EM/Advanced/InterpolationMC.lean}{mixedWalkProd\_coprime\_of\_no\_death}
+  {\color{leanink}$\checkmark$}):
+  if the walk never hits $-1 \bmod q$, then $\gcd(P_\sigma(k), q) = 1$ for all~$k$.
+\item \textbf{Strict monotonicity}
+  (\lean{EM/Advanced/EpsilonRandomMC.lean}{mixedWalkProd\_strict\_mono}
+  {\color{leanink}$\checkmark$}):
+  $P_\sigma$ is strictly increasing.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{Unconditional capture of $q = 3$.}
+From $m = 2$, the root has $P{+}1 = 3$.  Since $3$ is prime, every
+branch at depth~1 selects factor~$3$---there is no other choice.
+Thus $3$ appears in $\mathcal{T}(2)$ unconditionally
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixed\_capture\_three}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{The diversity hypothesis.}
+The tree has branching $> 1$ at a node when $P{+}1$ is composite.
+\defname{MixedDiversity}
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{MixedDiversity}):
+along the leftmost path, $P(n){+}1$ is composite cofinally often.
+Under MixedDiversity, the tree has genuine branching at infinitely
+many levels, and PRE (Theorem~\ref{thm:pre}) guarantees the factors
+generate the full unit group $(\ZZ/q\ZZ)^\times$.
+Since $P(n)$ grows super-exponentially, $P(n){+}1$ is composite for
+all known $n \geq 1$, so MixedDiversity is empirically unchallenged.
+The conditional reduction gives:
+
+\begin{theorem}[Diversity implies MixedMC ---
+\lean{EM/Advanced/EpsilonRandomMC.lean}{mixed\_diversity\_weak\_implies\_mixed\_mc}
+{\color{leanink}$\checkmark$}]
+\label{thm:diversity-mixed-mc}
+$\mathrm{MixedDiversityWeak} + \mathrm{MixedDiversity}
+\;\Longrightarrow\; \mathrm{MixedMullinConjecture}$.
+The proof is by strong induction on~$q$: MixedDiversityWeak provides
+branching at each level, MixedDiversity ensures enough branching
+to generate the full unit group, and PRE converts generation to hitting.
+\end{theorem}
+
+\paragraph{The perpetual primality obstruction.}
+If $P(n){+}1$ were prime for all $n \geq N$, the recurrence
+would collapse to $P(n{+}1)+1 = \Phi_3(P(n))$ (the third cyclotomic
+polynomial,
+\lean{EM/Advanced/EpsilonRandomMC.lean}{perpetual\_prime\_cyclotomic}
+{\color{leanink}$\checkmark$}),
+and $P(n) \equiv 1 \pmod{3}$ would force $3 \mid \Phi_3(P(n))$,
+making $P(n){+}1$ composite---a contradiction.  More precisely,
+perpetual primality confines the walk to $\{0,2\} \bmod 3$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{perpetual\_prime\_excludes\_mod3\_one}
+{\color{leanink}$\checkmark$}).
+More generally, under perpetual primality the walk mod~$q$ follows
+the autonomous map $w \mapsto w(w{+}1)$ on $\ZZ/q\ZZ$
+(\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_autonomous\_mod}
+{\color{leanink}$\checkmark$}),
+and by pigeonhole is eventually periodic
+(\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_eventually\_periodic}
+{\color{leanink}$\checkmark$}).
+For $q = 5$, if the walk enters~$\{1,2\}$, the autonomous orbit
+alternates between $1$ and $2$ forever (since $1 \cdot 2 = 2$ and
+$2 \cdot 3 = 1$ in~$\ZZ/5\ZZ$), never reaching $-1 = 4$
+(\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_mod5\_orbit}
+{\color{leanink}$\checkmark$}).
+These results combine into a clean structural statement:
+
+\begin{theorem}[Perpetual primality periodicity]
+\label{thm:perpetual-periodicity}
+Suppose $P(n)+1$ is prime for all $n \geq N$.  Then for every prime~$q$:
+\begin{enumerate}[nosep]
+\item The walk mod~$q$ satisfies the autonomous recurrence
+  $w(n{+}1) = w(n) \cdot (w(n){+}1)$
+  (\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_autonomous\_mod}
+  {\color{leanink}$\checkmark$}).
+\item The walk is eventually periodic mod~$q$ with period $T \leq q$
+  (\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_eventually\_periodic}
+  {\color{leanink}$\checkmark$}).
+\item For $q = 3$: the walk avoids $1 \bmod 3$, confined to $\{0, 2\}$
+  (\lean{EM/Advanced/EpsilonRandomMC.lean}{perpetual\_prime\_excludes\_mod3\_one}
+  {\color{leanink}$\checkmark$}).
+\item For $q = 5$: the orbit from $\{1, 2\}$ is a $2$-cycle, never reaching
+  $-1 = 4$
+  (\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_mod5\_orbit}
+  {\color{leanink}$\checkmark$}).
+\item For $q = 11$: the orbit from $\{2, 6, 9\}$ is a $3$-cycle, never
+  reaching $-1 = 10$
+  (\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_mod11\_orbit}
+  {\color{leanink}$\checkmark$}).
+\item For $q = 17$: the orbit from $\{2, 3, 4, 6, 8, 12\}$ is a closed
+  set (tail~$+$ $2$-cycle $\{3, 12\}$), never reaching $-1 = 16$
+  (\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_mod17\_orbit}
+  {\color{leanink}$\checkmark$}).
+\item For $q = 23$: the orbit from $\{2, 6, 12, 18, 19, 20\}$ is a closed
+  set (tail~$+$ $5$-cycle), never reaching $-1 = 22$
+  (\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_prime\_mod23\_orbit}
+  {\color{leanink}$\checkmark$}).
+\end{enumerate}
+The four-prime orbit exclusion
+(\lean{EM/Advanced/InterpolationMC.lean}{perpetual\_primality\_multi\_exclusion}
+{\color{leanink}$\checkmark$})
+shows that under perpetual primality, primes $5, 11, 17, 23$ are
+simultaneously blocked from entering the sequence.
+\end{theorem}
+
+%% =========================================================================
+\paragraph{Factor Confinement}
+\label{sec:factor-confinement}
+%% =========================================================================
+
+The reachable set $R_\infty(q, m) = \bigcup_n R_n(q, m)$ cannot be
+confined to any proper coset $g \cdot H$ of $(\ZZ/q\ZZ)^\times$:
+if $R_\infty \subseteq g \cdot H$, then all multiplier residues lie
+in~$H$, contradicting PrimeResidueEscape
+(\lean{EM/Equidist/Bootstrap.lean}{prime\_residue\_escape}
+{\color{leanink}$\checkmark$}).
+
+\begin{theorem}[\lean{EM/Advanced/EpsilonRandomMC.lean}{reachableEver\_not\_in\_coset}
+{\color{leanink}$\checkmark$}]
+\label{thm:coset-impossibility}
+For $q \geq 3$ prime and any proper subgroup $H < (\ZZ/q\ZZ)^\times$,
+$R_\infty(q, 2) \not\subseteq g \cdot H$ for every~$g$.
+\end{theorem}
+
+\noindent
+Coset impossibility constrains the geometry of $R_\infty$ but does
+not force $R_\infty = (\ZZ/q\ZZ)^\times$.  A complementary approach
+attacks the \emph{factor} side: if $R_\infty \subsetneq
+(\ZZ/q\ZZ)^\times$, then the prime factors of every Euclid number
+$P(n){+}1$ along \emph{every} path are confined to a ``forbidden''
+set determined by~$R_\infty$
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{factor\_confinement}
+{\color{leanink}$\checkmark$}).
+
+\begin{property}[FactorEscapeHypothesis ---
+\lean{EM/Advanced/EpsilonRandomMC.lean}{FactorEscapeHypothesis}]
+\label{prop:factor-escape}
+For every prime $q \geq 3$, the Euclid numbers of $\mathcal{T}(2)$
+eventually have a prime factor outside the forbidden set induced by any
+proper $R \subsetneq (\ZZ/q\ZZ)^\times$.
+\end{property}
+
+\begin{theorem}[\lean{EM/Advanced/EpsilonRandomMC.lean}{factor\_escape\_implies\_mixed\_mc\_at}
+{\color{leanink}$\checkmark$}]
+$\mathrm{FactorEscapeHypothesis}(q) \;\Longrightarrow\;
+R_\infty(q, 2) = (\ZZ/q\ZZ)^\times
+\;\Longrightarrow\;$ every prime~$q$ appears in $\mathcal{T}(2)$.
+\end{theorem}
+
+\noindent
+The comparison between the standard walk and the factor tree is stark:
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}c@{\quad}c@{}}
+\toprule
+ & \textbf{Standard walk} & \textbf{Factor tree} $\mathcal{T}(m)$ \\
+\midrule
+Factors used per step & $1$ ($\minFac$) & All $\omega(P{+}1)$ \\
+Confinement forces & $\minFac \in F$ & Every factor $\in F$ \\
+Population analogy & DSL (orbit transfer) & PSCD (sieve theory) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+For the standard walk, avoiding~$-1$ confines only one factor per
+step; for the tree, it confines \emph{all} $\omega(P{+}1)$ factors
+simultaneously---a much stronger sieve constraint that can be
+attacked with population methods.
+
+%% =========================================================================
+\subsection{Almost All GenMixedMC: A Density-1 Result}
+\label{sec:almost-all-mixed}
+%% =========================================================================
+
+The factor confinement of \S\ref{sec:factor-confinement} connects
+the hitting question to sieve theory over the population of starting
+points.  For a squarefree $m$ coprime to~$q$, if
+$-1 \notin R_\infty(q,m)$, then $R_\infty$ misses a
+\emph{nonzero} element of $\ZZ/q\ZZ$.  Moreover, the walk stays in
+units (each multiplier is prime and $\neq q$, since $q \mid P{+}1$
+would place~$-1$ in~$R_\infty$), so
+$0 \notin R_\infty$ as well
+(\lean{EM/Ensemble/MixedEnsemble.lean}{zero\_not\_reachable\_of\_coprime\_trapped}
+{\color{leanink}$\checkmark$}).
+At the root, all prime factors of $m{+}1$ have residues in the
+allowed factor set determined by~$R_\infty$
+(\lean{EM/Ensemble/MixedEnsemble.lean}{unconditional\_confinement}
+{\color{leanink}$\checkmark$}).
+By pigeonhole over the finitely many proper finsets~$R$, the
+``trapped'' count is bounded by the sum of confined counts
+(\lean{EM/Ensemble/MixedEnsemble.lean}{trapped\_le\_sum\_confined}
+{\color{leanink}$\checkmark$}).
+
+The open hypothesis \defname{PSCD}
+(\emph{Population Sieve Confinement Decay}) asserts that among
+squarefree integers, the fraction confined to any finset~$R$ missing
+a nonzero element of $\ZZ/q\ZZ$ tends to zero.
+The restriction to $R$ missing a
+\emph{nonzero} element is essential---$R =
+(\ZZ/q\ZZ)^\times$ is proper as a subset of $\ZZ/q\ZZ$
+but confinement to it merely means $q \nmid m{+}1$,
+which has density $(q{-}1)/q > 0$.
+
+\begin{theorem}[\lean{EM/Ensemble/MixedEnsemble.lean}{pscd\_implies\_almost\_all\_mixed\_hitting}
+{\color{leanink}$\checkmark$}]
+\label{thm:almost-all-mixed}
+$\mathrm{PSCD}(q)$ implies: for a density-$1$ set of squarefree~$m$
+coprime to~$q$, every prime~$q$ appears in $\mathcal{T}(m)$.
+\end{theorem}
+
+\paragraph{Reduction to analytic number theory.}
+PSCD reduces to standard analytic number theory via two routes.
+
+\smallskip\noindent
+\emph{Route~1 (original, one open bridge).}\enspace
+Three intermediate steps:
+\begin{enumerate}[nosep]
+\item {\color{leanink}$\checkmark$}\enspace
+  PrimesEquidistributedInAP $\Rightarrow$ $\sum_{p \equiv a} 1/p$ diverges
+  for every coprime class~$a$
+  (\lean{EM/Ensemble/MixedEnsemble.lean}{peap\_implies\_fcd\_proved}).
+\item \defname{SieveUpperBound}: confined count $\leq$ $C \cdot
+  \text{sqfreeCount} \cdot \prod_{p \in F} (1 - 1/p)$
+  (fundamental lemma of sieve).
+\item {\color{leanink}$\checkmark$}\enspace
+  Divergent $\sum 1/p$ implies sieve product $\to 0$
+  (\lean{EM/Ensemble/MixedEnsemble.lean}{sieve\_product\_vanishing\_proved}).
+\end{enumerate}
+SieveUpperBound---the fundamental lemma of sieve theory---is open.
+
+\smallskip\noindent
+\emph{Route~2 (WeakFMCD, unconditional).}\enspace
+The key insight is that FMCD's exact constant is unnecessary:
+the sieve product $\prod_{p \in F}(1-1/p) \to 0$ absorbs any
+finite multiplicative constant.  Define \defname{WeakFMCD}
+(\lean{EM/Ensemble/MixedEnsemble.lean}{weak\_fmcd\_proved}
+{\color{leanink}$\checkmark$}):
+for any fixed finite set of primes~$S$,
+\[
+  \operatorname{sqfreeSievedCount}(S,X) \;\leq\;
+  \Bigl(4\prod_{p \in S}(1 - 1/p) + \varepsilon\Bigr)
+  \cdot \operatorname{sqfreeCount}(X).
+\]
+The constant~$4$ comes from the unconditional bound
+$\operatorname{sqfreeCount}(X) \geq X/4$
+(\lean{EM/Ensemble/MixedEnsemble.lean}{sqfreeCount\_ge\_quarter\_real}
+{\color{leanink}$\checkmark$}), proved via $\sum_{d=2}^{D}1/d^2 < 3/4$.
+WeakFMCD is then immediate from CRT residue class counting
+(each class has $\leq X/N + 2$ elements) and Euler's product
+$\varphi(\prod S)/\prod S = \prod(1-1/p)$.
+
+The central theorem
+(\lean{EM/Ensemble/MixedEnsemble.lean}{weak\_fmcd\_fcd\_implies\_pscd}
+{\color{leanink}$\checkmark$})
+proves ForbiddenClassDivergent alone $\Rightarrow$ PSCD\@.  The proof
+decomposes the confined count over residue classes mod~$q$ as before,
+but with $\varepsilon/(8q)$ for the sieve target and $\varepsilon/(2q)$
+for the WeakFMCD tolerance, so $4 \cdot \varepsilon/(8q) + \varepsilon/(2q)
+= \varepsilon/q$; summing over $q{-}1$ classes gives $< \varepsilon$.
+\begin{keyresult}
+The composed chain
+(\lean{EM/Ensemble/MixedEnsemble.lean}{weak\_fmcd\_chain\_implies\_pscd}
+{\color{leanink}$\checkmark$}):
+\[
+  \text{PrimesEquidistInAP}
+  \;\xRightarrow{\text{\color{leanink}$\checkmark$}}\;
+  \text{PSCD}(q)
+  \;\xRightarrow{\text{\color{leanink}$\checkmark$}}\;
+  \text{a.a.\ GenMixedMC}.
+\]
+Every arrow is machine-checked.  \textbf{No open hypothesis remains}:
+PEAP (Wiener--Ikehara) is the sole input, and the CRT bound is
+unconditional.
+\end{keyresult}
+
+\begin{deadend}[title={Dead End \#117: MultCancelToWalkCancel}]
+The standard ensemble approach
+(\S\ref{sec:ensemble-variant}) proves almost-all
+\emph{multiplier cancellation} for the deterministic walk, but
+transferring this to walk \emph{hitting} is blocked by
+Dead End~\#117 (MultCancelToWalkCancel).  The factor tree approach
+bypasses~\#117 entirely:
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+ & \textbf{Standard ensemble} & \textbf{Factor tree ensemble} \\
+\midrule
+Population result & a.a.\ char cancel & a.a.\ GenMixedMC \\
+Transfer gap & \#117 (cancel $\not\Rightarrow$ hitting) & None \\
+Selection used & $\minFac$ only & All factors of $P{+}1$ \\
+Open hypothesis & StepDecorrelation & None (PEAP only) \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{deadend}
+
+\smallskip\noindent
+This is the strongest density result in the formalization: under
+PrimesEquidistributedInAP alone (no additional open hypothesis),
+for a density-$1$ set of squarefree
+starting points, \emph{every prime appears in the factor tree}.
+
+\paragraph{Interpolation: tree reachability implies positive probability capture.}
+The density-$1$ tree result bridges to the $(1{-}\varepsilon)\,\minFac
++ \varepsilon\,$random process.  Assign to each factor choice at
+accumulator~$P$ the weight $\varepsilon / \omega(P{+}1)$---a lower
+bound on the probability of that choice under the interpolated process
+(where $\omega$ counts distinct prime factors).  A finite path
+$\sigma$ of length~$n$ has weight
+$\prod_{k<n} \varepsilon / \omega(P_\sigma(k){+}1) > 0$
+(\lean{EM/Advanced/InterpolationMC.lean}{pathWeightLB\_pos}
+{\color{leanink}$\checkmark$}).
+
+If $-1 \in R_\infty(q,m)$ (tree reachability), a capturing path
+exists, and that path has positive weight under the
+$(1{-}\varepsilon)$ process for \emph{any} $\varepsilon > 0$
+(\lean{EM/Advanced/InterpolationMC.lean}{reachable\_implies\_positive\_prob\_capture}
+{\color{leanink}$\checkmark$}).
+Under PEAP, almost all squarefree~$m$ have $-1$ reachable
+(WeakFMCD chain), so almost all have positive probability
+capture
+(\lean{EM/Advanced/InterpolationMC.lean}{almost\_all\_positive\_prob\_capture}
+{\color{leanink}$\checkmark$}).
+No additional open hypothesis beyond PEAP is needed.
+
+\paragraph{Layer 2: cofinal and iterated hitting via regeneration.}
+Layer~1 proves a \emph{single} hit with positive weight.  Stronger
+conclusions require \defname{Regeneration}
+(\lean{EM/Advanced/InterpolationMC.lean}{Regeneration}): every
+accumulator encountered along any valid walk from~$m$ is \emph{good},
+i.e., every unit of~$(\ZZ/q\ZZ)^\times$ remains reachable.  The
+evidence is strong: accumulators grow super-exponentially and are
+squarefree, so by CRT blindness they should behave generically mod~$q$.
+
+Under Regeneration, the formalization proves:
+\begin{itemize}
+\item \textbf{Block coverage}
+(\lean{EM/Advanced/InterpolationMC.lean}{block\_coverage}
+{\color{leanink}$\checkmark$}):
+from a good accumulator, there is a uniform depth bound~$N_0$ such
+that every unit can be reached within~$N_0$ steps.
+\item \textbf{Cofinal hitting}
+(\lean{EM/Advanced/InterpolationMC.lean}{regeneration\_implies\_cofinal\_hitting}
+{\color{leanink}$\checkmark$}):
+for every threshold~$K$, there exists a valid path that hits
+$-1\bmod q$ at some step~$n \geq K$, with positive weight.
+\item \textbf{Iterated hitting}
+(\lean{EM/Advanced/InterpolationMC.lean}{regeneration\_implies\_iterated\_hitting}
+{\color{leanink}$\checkmark$}):
+for every target number of $-1$ hits, there exists a valid path
+achieving at least that many hits, each with positive weight.
+The proof proceeds by induction on the target, concatenating walks
+via \code{concatMixedSelection} and using Regeneration to obtain
+fresh good accumulators past each existing hit.
+\end{itemize}
+Regeneration is the sole open hypothesis in this layer; it is
+strictly weaker than DSL (which implies MC outright) and concerns
+the persistence of a qualitative property (full reachability) along
+the walk, not a quantitative equidistribution statement.
+
+\paragraph{TreeSieveDecay: the sieve-theoretic bridge.}
+Regeneration asks that \emph{every} intermediate accumulator is good.
+A weaker, sieve-flavored variant is \defname{TreeSieveDecay}
+(\lean{EM/Advanced/InterpolationMC.lean}{TreeSieveDecay}):
+there exists a threshold~$P_0$ such that every squarefree~$P \geq P_0$
+coprime to~$q$ is a good accumulator.
+TSD is a ``large-$P$'' hypothesis: all sufficiently generic starting
+points support full reachability.
+The coprimality condition is necessary: when $q \mid P$, absorption
+traps the walk at~$0$ permanently, so no unit is reachable.
+TSD bypasses Regeneration entirely---for a single hit (which suffices
+for MC), a cleaner dichotomy argument works.
+The formalization proves two bridges:
+\begin{itemize}
+\item \textbf{Squarefree propagation}
+(\lean{EM/Advanced/InterpolationMC.lean}{mixedWalkProd\_squarefree}
+{\color{leanink}$\checkmark$}):
+if the starting point is squarefree, every intermediate accumulator
+is squarefree (induction, using coprimality of factors).
+\item \textbf{Coprimality from no death}
+(\lean{EM/Advanced/InterpolationMC.lean}{mixedWalkProd\_coprime\_of\_no\_death}
+{\color{leanink}$\checkmark$}):
+if the walk never hits $-1 \bmod q$, all intermediate accumulators
+stay coprime to~$q$ (if the factor equaled~$q$, then
+$q \mid P{+}1$, so the walk position would be~$-1$---contradiction).
+\end{itemize}
+Together: under TSD, from any sufficiently large squarefree~$m$,
+the walk either hits~$-1$ (done) or stays coprime to~$q$, in which
+case TSD applies to each intermediate accumulator directly
+(\lean{EM/Advanced/InterpolationMC.lean}{tsd\_implies\_neg\_one\_reachable}
+{\color{leanink}$\checkmark$}).
+
+A weaker variant \defname{TreeSieveDecayHitting}
+(\lean{EM/Advanced/InterpolationMC.lean}{TreeSieveDecayHitting})
+requires only that $-1$ is reachable (not all units).
+TSD implies TSDH
+(\lean{EM/Advanced/InterpolationMC.lean}{tsd\_implies\_tsdh}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Orbit melting: backward propagation.}
+Two squarefree positive integers with the same prime factor set are
+equal
+(\lean{EM/Advanced/InterpolationMC.lean}{eq\_of\_same\_primeFactors\_squarefree}
+{\color{leanink}$\checkmark$}).
+This ``orbit melting'' identity means the accumulator carries no
+hidden state beyond its prime factorization:
+same accumulator $\Rightarrow$ same reachable set
+(\lean{EM/Advanced/InterpolationMC.lean}{same\_accumulator\_same\_future}
+{\color{leanink}$\checkmark$}).
+More importantly, a good accumulator at \emph{any} intermediate step
+propagates backward: if $P_\sigma(K)$ supports full reachability,
+then $-1$ is reachable from the starting point~$m$ by concatenating
+the prefix path with the witnessing path
+(\lean{EM/Advanced/InterpolationMC.lean}{good\_accumulator\_propagates\_to\_start}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{TSD-Hitting(3): unconditional.}
+For $q = 3$, TreeSieveDecayHitting holds \textbf{unconditionally}---no
+open hypothesis at all.  The argument is a mod-$3$ dichotomy on any
+squarefree~$P$ coprime to~$3$:
+\begin{itemize}
+\item If $P \equiv 2 \pmod{3}$: then $(P : \ZZ/3\ZZ) = -1$, so the
+  walk is already at~$-1$ at step~$0$.
+\item If $P \equiv 1 \pmod{3}$: then $P{+}1 \equiv 2 \pmod{3}$.
+  A number $\geq 2$ that is $\equiv 2 \bmod 3$ and not divisible by~$3$
+  must have a prime factor $p \equiv 2 \pmod{3}$
+  (\lean{EM/Advanced/InterpolationMC.lean}{exists\_factor\_of\_succ\_mod3}
+  {\color{leanink}$\checkmark$},
+  by strong induction: if $\minFac \equiv 1$, divide out and recurse).
+  Selecting that factor gives $P \cdot p \equiv 1 \cdot 2 = -1 \pmod{3}$
+  at step~$1$.
+\end{itemize}
+\begin{keyresult}
+\begin{theorem}[\lean{EM/Advanced/InterpolationMC.lean}{tsd\_hitting\_three\_unconditional}]
+$\mathrm{TreeSieveDecayHitting}(3)$ holds unconditionally: for every
+squarefree $P \geq 2$ coprime to~$3$, there exists a valid path in
+the factor tree that reaches $-1 \bmod 3$ within one step.
+\end{theorem}
+\end{keyresult}
+
+\begin{leancode}
+-- The hypothesis: -1 reachable from all large squarefree coprime P
+def TreeSieveDecayHitting (q : Nat) : Prop :=
+  exists P_0, forall P, P_0 <= P -> Squarefree P -> Nat.Coprime P q ->
+    (-1 : ZMod q) in reachableEver q P
+
+-- UNCONDITIONAL for q = 3 (zero open hypotheses)
+theorem tsd_hitting_three_unconditional : TreeSieveDecayHitting 3 := by
+  -- mod-3 dichotomy: P == 2 -> already at -1;
+  -- P == 1 -> P+1 == 2, so some prime factor p == 2 mod 3 exists
+  ...
+\end{leancode}
+
+\noindent
+This is the first unconditional \emph{tree-level} hitting result beyond the
+trivial $q = 3$ capture of \S\ref{sec:factor-confinement}.
+The previous $q{=}3$ result
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{mixed\_capture\_three}
+{\color{leanink}$\checkmark$})
+showed that $3$ appears in $\mathcal{T}(2)$ from the fixed root~$m{=}2$;
+TSD-Hitting(3) proves that $-1$ is reachable from \emph{every}
+coprime squarefree accumulator---a uniform statement that applies at
+any intermediate point of the walk.
+
+\paragraph{TSD $\Rightarrow$ MixedMC: composition.}
+The threshold condition in TSD (accumulator $P$ must exceed
+a bound~$P_0$) is eliminated by the exponential growth of the mixed
+walk: the accumulator $P_\sigma(k)$ satisfies
+$P_\sigma(k) \geq m \cdot 2^k$
+(\lean{EM/Advanced/InterpolationMC.lean}{mixedWalkProd\_exp\_growth}
+{\color{leanink}$\checkmark$}),
+since each multiplier is a prime $\geq 2$.  For any starting
+accumulator $m \geq 2$, the walk eventually exceeds~$P_0$; a
+death/no-death dichotomy then applies: either the walk already hit
+$-1$ (done), or all accumulators remain coprime to~$q$ and
+squarefree, so TSD applies at the first step past the threshold, and
+tail reachability (Part~9) propagates $-1$ back to the root.  This
+gives the full chain:
+
+\begin{theorem}[TSD reduction chain]
+\label{thm:tsd-chain}
+For each prime $q \geq 5$:
+\[
+  \mathrm{TSD}(q)
+  \;\Longrightarrow\;
+  \forall\, m \geq 2 \text{ sqfree, } \gcd(m,q)=1 \colon
+  {-}1 \in R_\infty(q, m)
+  \;\Longrightarrow\;
+  \mathrm{MixedMC}(q).
+\]
+The first arrow uses exponential growth
+(Theorem~\textup{\ref{thm:mixed-walk-structure}})
+to exceed the TSD threshold
+(\lean{EM/Advanced/InterpolationMC.lean}{tsd\_implies\_reachable\_from\_any}
+{\color{leanink}$\checkmark$});
+the second uses hit-implies-capture
+(\lean{EM/Advanced/EpsilonRandomMC.lean}{hit\_implies\_capture'}
+{\color{leanink}$\checkmark$}).
+Consequently
+(\lean{EM/Advanced/InterpolationMC.lean}{tsd\_all\_implies\_mixed\_mc}
+{\color{leanink}$\checkmark$}):
+\[
+  (\forall q \geq 5,\; \mathrm{TSD}(q))
+  \;\Longrightarrow\; \mathrm{MixedMullinConjecture}.
+\]
+\end{theorem}
+
+\noindent Small primes $q \in \{2, 3\}$ are handled by their existing
+unconditional results (\code{mixed\_mc\_two}, \code{mixed\_mc\_three}).
+
+\paragraph{Coset ambiguity: why TSD-Hitting(3) is free but $q \geq 5$ is not.}
+The structural reason that TSD-Hitting($q$) closes unconditionally
+for $q = 3$ but requires a hypothesis for $q \geq 5$ is \emph{coset
+ambiguity}.  For $q = 3$, the group $(\ZZ/3\ZZ)^\times = \{1, 2\}$
+has a single non-identity element, which \emph{is} $-1 = 2$: any
+prime factor escaping the trivial coset $\{1\}$ automatically
+lands on~$-1$
+(\lean{EM/Advanced/InterpolationMC.lean}{single\_coset\_implies\_immediate\_hit}
+{\color{leanink}$\checkmark$}).
+For $q = 5$, the group $(\ZZ/5\ZZ)^\times = \{1,2,3,4\}$ has the
+subgroup $\{1, 4\} = \{1, -1\}$ and two other cosets $\{2\}$, $\{3\}$,
+neither equal to~$-1$.  A concrete counterexample:
+$P = 2$, $P{+}1 = 3$, $(3 \bmod 5) = 3 \neq 4 = -1$---the only
+available factor misses~$-1$
+(\lean{EM/Advanced/InterpolationMC.lean}{coset\_ambiguity\_counterexample}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Ensemble factor diversity and the stochastic EM process.}
+The ensemble-level structure of the prime factor sets
+$\text{primeFactors}(\Prod{n}(k)+1)$ is formalized in
+\code{Advanced/FactorDiversity.lean} (346~lines, zero \code{sorry}).
+
+\begin{theorem}[Spectral contraction from factor diversity ---
+\lean{EM/Advanced/FactorDiversity.lean}{factor\_diversity\_spectral\_contraction}
+{\color{leanink}$\checkmark$}]
+\label{thm:factor-diversity-contraction}
+If the prime factor set of $\Prod{n}(k)+1$ contains $\geq 2$ distinct
+residue classes mod~$q$, then the mean character value over the factor
+set satisfies $\|\bar\chi(F)\| < 1$ for every nontrivial~$\chi$.
+If such diverse steps occur infinitely often with a uniform gap
+$\delta > 0$, the averaged character product tends to zero
+(\lean{EM/Advanced/FactorDiversity.lean}{diverse\_steps\_imply\_vanishing}
+{\color{leanink}$\checkmark$}).
+\end{theorem}
+
+\noindent
+The bridge from diversity to stochastic capture
+(\code{Advanced/DiverseStepsToCapture.lean}, 281~lines) shows each
+prime factor of $\Prod{2}(k)+1$ produces a distinct element of the
+reachable set $R_\infty(q, 2)$
+(\lean{EM/Advanced/DiverseStepsToCapture.lean}{genFactor\_in\_reachableEver}
+{\color{leanink}$\checkmark$}).
+
+\begin{theorem}[Integer stochastic MC ---
+\lean{EM/Advanced/StochasticEM.lean}{stochastic\_mc\_of\_tsd}
+{\color{leanink}$\checkmark$}]
+\label{thm:integer-stochastic-mc}
+$\mathrm{TSD}(q) \;\Longrightarrow\; \mathrm{StochasticMC}(q)$ for all
+$\varepsilon > 0$.  The phase transition is sharp at $\varepsilon = 0$
+(\lean{EM/Advanced/StochasticEM.lean}{phase\_transition\_summary}
+{\color{leanink}$\checkmark$}):
+character norms are exactly~$1$ (no contraction) for the deterministic
+walk, but strictly~$< 1$ under any stochastic perturbation.
+\end{theorem}
+
+\paragraph{Probabilistic infrastructure.}
+The TSD$\to$MixedMC chain is supported by three infrastructure
+modules.  \code{Probability/TransitionKernel.lean} defines the
+epsilon-mixed walk's step PMF and proves the weight lower bound
+$\varepsilon/\omega(P{+}1)$ bridges to InterpolationMC's
+\code{stepWeightLB}.  \code{Probability/PathMeasure.lean} converts
+set-theoretic reachable sets to computable Finsets and formalizes
+branching distinctness: when $P$ is a unit mod~$q$ and $P{+}1$ has
+distinct factor residues, each gives a distinct next walk position.
+\code{Probability/GeometricCapture.lean} provides the block-geometric
+engine: per-block positive capture weight decays non-capture
+probability as $(1{-}\delta)^K \to 0$, turning TSD into asymptotic
+capture certainty.
+
+\subsection{The $\{\minFac, \operatorname{secondMinFac}\}$ Variant}
+\label{sec:minfac-secondminfac}
+
+The two-point variant interpolates between the random and deterministic
+extremes.  At each step, instead of a single deterministic choice or a
+fully random one, two specific factors are available:
+$\minFac(\Prod{2}(n)+1)$ and $\operatorname{secondMinFac}(\Prod{2}(n)+1)$.
+A decision sequence $\sigma : \NN \to \mathrm{Bool}$ selects between
+them; the all-true sequence recovers the standard EM walk.
+
+\paragraph{The $\varepsilon$-walk.}
+The formalization defines a
+\textbf{self-consistent $\varepsilon$-walk}
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{epsWalkProd})
+in which the chosen factor---either $\minFac(P(n){+}1)$ or
+$\operatorname{secondMinFac}(P(n){+}1)$---becomes the actual multiplier,
+updating the accumulator and producing a new Euclid number at the next
+step.
+The function $\operatorname{secondMinFac}(n)$ (second-smallest prime
+factor) is defined and proved prime, divisor of~$n$, and
+$\geq \minFac(n)$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{secondMinFac\_prime},
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{secondMinFac\_dvd},
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{minFac\_le\_secondMinFac}).
+
+This self-consistent walk generates a \emph{binary branching tree}
+of depth~$N$ with $2^N$ leaves, where each internal node has its own
+path-dependent factor set.  The \emph{tree character sum}
+(\lean{EM/Advanced/VanishingNoise.lean}{treeCharSum}),
+a weighted sum of $\chi(\text{leaf position})$ over all leaves, is proved
+$\leq 1$ in norm.  Unlike the product multiset of the stochastic MC, this sum
+does \textbf{not} factorize as $\prod_k \bar\chi(S_k)$: the left and
+right subtrees start from different accumulators, so their character sums
+differ.  The open hypothesis
+\defname{TreeContractionHypothesis}
+asserts that the tree character sum tends to zero for all nontrivial~$\chi$;
+it is strictly weaker than DSL but strictly stronger than the product approximation.
+
+\paragraph{Non-self-consistent variant MC.}
+An independent route bypasses the tree contraction problem entirely.
+At each EM step~$n$, form the two-element unit set
+$\{\minFac(P(n){+}1),\, \operatorname{secondMinFac}(P(n){+}1)\} \bmod q$
+in $(\ZZ/q\ZZ)^\times$.  When one factor equals~$q$
+(a non-unit), fall back to $\operatorname{Finset.univ}$, whose
+mean character value is~$0$ by orthogonality---giving perfect contraction
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{meanCharValue\_univ\_eq\_zero}).
+Under \defname{UFDStrong}---spectral gaps of the padded unit sets
+are non-summable for every nontrivial~$\chi$---the
+sparse product contraction machinery gives vanishing averaged
+products, and the Fourier counting argument yields
+path existence.  Concretely:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_from\_ufd\_strong\_proved}]
+\label{thm:variant-mc}
+For every prime $q \geq 3$, if $\mathrm{UFDStrong}(q)$ holds, then
+every element of $(\ZZ/q\ZZ)^\times$ is representable as a product
+of selections from $\{\minFac,\operatorname{secondMinFac}\}$ of
+consecutive Euclid numbers.  In particular, some selection path
+hits~$-1$.
+\end{theorem}
+
+The verified chain is:
+\[
+  \mathrm{UFDStrong}(q)
+  \;\Longrightarrow\;
+  \text{vanishing products}
+  \;\Longrightarrow\;
+  \text{path existence}
+  \;\Longrightarrow\;
+  \text{VariantMC}.
+\]
+Every arrow is machine-checked with zero \code{sorry}.
+
+\paragraph{The gap: UFDStrong.}
+\defname{UFDStrong}$(q)$ asserts: for each nontrivial character
+$\chi$ on $(\ZZ/q\ZZ)^\times$, the spectral gaps
+$1 - \|\bar\chi(\text{paddedUnitSet}_n)\|$ are non-summable.
+The hypothesis splits into two cases:
+\begin{enumerate}[nosep]
+\item \emph{Fallback case}: if infinitely many steps have
+  $\minFac \equiv \operatorname{secondMinFac} \pmod{q}$ (or one
+  equals~$q$), the padded set falls back to the full group, giving
+  perfect contraction (gap~$= 1$) at each such step.
+  Non-summability is immediate.
+  \textbf{Proved}:
+  \lean{EM/Advanced/VanishingNoiseVariant.lean}{ufd\_fallback\_not\_summable}.
+\item \emph{Diversity case}: if cofinitely many steps have two
+  distinct units mod~$q$, one needs the character values at those
+  units to differ infinitely often---i.e., the ratio
+  $\minFac/\operatorname{secondMinFac}$ does not persistently lie in
+  $\ker(\chi)$.  This is a genuine number-theoretic question about
+  Euclid number factorizations.  \textbf{Open}:
+  \code{UFDImpliesUFDStrong}.
+\end{enumerate}
+
+\paragraph{Variant MC does not imply standard MC.}
+The selection~$\sigma$ that achieves hitting may differ per
+prime~$q$, and the virtual accumulator
+$\prod_k \text{factor}_{\sigma(k)}$ is not the EM accumulator
+$P(n)$.  The gap is the same orbit-specificity barrier
+(Dead End~\#130,
+\lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}):
+generation does not imply coverage for deterministic walks.
+
+\paragraph{Three routes to UFDStrong.}
+The formalization identifies a hierarchy of progressively weaker
+sufficient conditions for UFDStrong$(q)$:
+
+\begin{enumerate}[nosep]
+\item \textbf{Quantitative escape} (\defname{MinFacRatioEscape}):
+  for each nontrivial~$\chi$, there exists $\delta > 0$ such that
+  infinitely many steps have spectral gap $\geq \delta$.
+  Since a non-summable sequence with a positive lower bound infinitely
+  often is non-summable, this implies UFDStrong directly
+  (\lean{EM/Advanced/VanishingNoiseVariant.lean}{ratio\_escape\_implies\_ufdStrong}).
+
+\item \textbf{Qualitative escape} (\defname{MinFacRatioEscapeQual}):
+  for each nontrivial~$\chi$, infinitely many steps have
+  $\operatorname{card}(\text{rawTwoPointUnitSet}) \geq 2$ \emph{and}
+  $\chi(\minFac) \neq \chi(\operatorname{secondMinFac})$.
+  This implies quantitative escape via a finite-group pigeonhole
+  argument: on a finite group, the gap function takes finitely many
+  values, so being positive infinitely often gives a uniform positive
+  lower bound
+  (\lean{EM/Advanced/VanishingNoiseVariant.lean}{qual\_implies\_quant}).
+
+\item \textbf{Orbit-level minFac equidistribution} (\defname{OrbitMFRE}):
+  the residues $\minFac(\Prod{2}(n){+}1) \bmod q$ are equidistributed
+  among the units of $(\ZZ/q\ZZ)^\times$ in Cesàro density.
+  This is the weakest condition in the hierarchy: equidistributed
+  residues prevent persistent chi-degeneracy.  The bridge
+  OrbitMFRE $\Rightarrow$ MinFacRatioEscapeQual is \textbf{open}
+  (\code{OrbitMFREImpliesEscapeQual}).
+\end{enumerate}
+
+The assembled chain is:
+\[
+  \underbrace{\mathrm{OrbitMFRE}}_{\text{open}}
+  \;\xRightarrow{\text{open bridge}}\;
+  \mathrm{EscapeQual}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{EscapeQuant}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{UFDStrong}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{VariantMC}.
+\]
+Every arrow except the first is machine-checked with zero \code{sorry}.
+The most concrete attack target is MinFacRatioEscapeQual: one needs to
+show that $\minFac$ and $\operatorname{secondMinFac}$ do not
+persistently agree modulo every character.  OrbitMFRE faces the same
+orbit-specificity barrier as DSL for standard MC.
+
+\paragraph{Stochastic Two-Point MC.}
+The non-self-consistent machinery yields a clean quantitative statement.
+Define the \defname{StochasticTwoPointMC} problem: under UFDStrong$(q)$
+with $q \geq 3$, does every element of $(\ZZ/q\ZZ)^\times$ appear with
+positive count in the product multiset of padded unit sets?
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{stochastic\_two\_point\_mc\_proved}]
+\label{thm:stochastic-two-point}
+$\mathrm{UFDStrong}(q) \;\Longrightarrow\; \mathrm{StochasticTwoPointMC}(q)$.
+\end{theorem}
+
+\noindent The product multiset grows exponentially
+($\geq 2^N$ paths for $q \geq 3$,
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{productMultiset\_card\_ge\_two\_pow}).
+A \defname{fairCoin} schedule ($\varepsilon = 1/2$ at every step) gives
+the \defname{fairTreeCharSum}---the tree character sum at constant
+$1/2$---which is bounded by~$1$ in norm
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{fairTreeCharSum\_norm\_le\_one}).
+TreeContractionHypothesis implies the weaker
+\defname{TreeContractionAtHalf}
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{treeContraction\_of\_hypothesis}),
+and at $\varepsilon = 0$ the tree degenerates to the deterministic
+$\minFac$ path
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{treeCharSum\_at\_zero\_step}).
+
+The gap between the non-self-consistent result (proved) and a
+\emph{self-consistent} stochastic MC is the \textbf{selection coherence}
+problem: the non-self-consistent product multiset uses factor sets from
+the actual EM walk (which always picks $\minFac$), so the factor sets
+are fixed and the product factorizes; in the self-consistent tree,
+picking $\operatorname{secondMinFac}$ at step~$n$ changes the
+accumulator, hence the factor set at step~$n{+}1$, preventing
+factorization.
+
+\paragraph{Faithful character escape.}
+A character $\chi$ on $(\ZZ/q\ZZ)^\times$ is \defname{faithful} if it
+is injective (equivalently, $\ker(\chi) = \{1\}$).  For faithful
+characters, whenever the raw two-point unit set has two distinct
+elements, their $\chi$-values are automatically distinct---giving a
+positive spectral gap at every non-fallback step, with no
+number-theoretic hypothesis.  Combined with the fallback case (gap $= 1$
+at fallback steps, already proved), this yields unconditional
+non-summability:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{faithful\_character\_escape}]
+\label{thm:faithful-escape}
+For every prime $q \geq 3$ and every faithful nontrivial character
+$\chi$ on $(\ZZ/q\ZZ)^\times$:
+\[
+  \sum_n \bigl(1 - \|\bar\chi(\text{paddedUnitSet}_n)\|\bigr)
+  = +\infty.
+\]
+Unconditional---zero open hypotheses.
+\end{theorem}
+
+\noindent For groups of prime order, every nontrivial character is
+faithful (by Lagrange: the kernel is a subgroup of a prime-order group,
+hence trivial or the whole group;
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{prime\_order\_nontrivial\_is\_faithful}).
+Since $|(\ZZ/3\ZZ)^\times| = 2$ is prime, UFDStrong$(3)$ holds
+\emph{unconditionally}
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{ufdStrong\_three}), and
+the full chain closes:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_three\_unconditional}]
+\label{thm:variant-mc-3}
+$\mathrm{StochasticTwoPointMC}(3)$ holds with zero open hypotheses:
+every element of $(\ZZ/3\ZZ)^\times$ appears with positive count
+in the product multiset.
+\end{theorem}
+
+\noindent For primes $q \geq 5$ where $|(\ZZ/q\ZZ)^\times| = q{-}1$ is
+composite, non-faithful nontrivial characters exist, and the sole
+remaining open hypothesis is
+\defname{NonFaithfulCharacterEscape}---spectral gap non-summability
+for characters with nontrivial kernel.  The faithful/non-faithful
+decomposition is clean:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{nfce\_implies\_ufdStrong}]
+\label{thm:nfce-ufdstrong}
+$\mathrm{NonFaithfulCharacterEscape}(q)
+\;\Longrightarrow\; \mathrm{UFDStrong}(q)$
+for all primes $q \geq 3$.
+\end{theorem}
+
+\noindent The faithful half is free; only the non-faithful half
+remains open.
+
+\paragraph{NFCE infrastructure.}
+The formalization develops a precise characterization of what NFCE
+requires.  Define the \defname{factorRatio} at step~$n$ as
+$\mathrm{liftToUnit}(\minFac) \cdot
+\mathrm{liftToUnit}(\operatorname{secondMinFac})^{-1}$
+in~$(\ZZ/q\ZZ)^\times$.
+At non-fallback steps (raw card $\geq 2$), the spectral gap is zero
+if and only if this ratio lies in~$\ker(\chi)$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{gap\_zero\_iff\_ratio\_in\_ker}).
+NFCE thus reduces to: for each non-faithful nontrivial~$\chi$, the
+factor ratio does not eventually stay in~$\ker(\chi)$.
+
+If NFCE fails for a specific~$\chi$, the gaps are summable,
+which forces \defname{KernelConfinement}: the ratio is eventually
+confined to~$\ker(\chi)$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{summable\_implies\_ratio\_confined}).
+Since $\ker(\chi)$ has index $\geq 2$ for nontrivial~$\chi$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{ker\_index\_ge\_two}),
+kernel confinement is a strong arithmetic constraint:
+$\minFac / \operatorname{secondMinFac} \bmod q$ eventually lies in a
+proper subgroup of the unit group.
+
+\paragraph{NFCE(5): reduction to a single quadratic escape.}
+For $q = 5$, the unit group $(\ZZ/5\ZZ)^\times$ has order~$4$
+(cyclic, $\cong \ZZ/4\ZZ$).  Its characters partition as: the trivial
+character, two faithful characters (order~$4$, handled unconditionally
+by FaithfulCharacterEscape), and one non-faithful nontrivial character
+(order~$2$, the unique quadratic character).  Thus NFCE(5) reduces to a
+single escape condition: the factor ratio
+$\minFac / \operatorname{secondMinFac} \bmod 5$ must leave the unique
+index-2 subgroup of $(\ZZ/5\ZZ)^\times$ infinitely often.
+The formalization proves that this
+\defname{RatioKernelEscape} condition suffices for the full chain
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_five\_of\_ratio\_escape}
+{\color{leanink}$\checkmark$}:
+RatioKernelEscape $\Rightarrow$ NFCE(5) $\Rightarrow$ UFDStrong(5)
+$\Rightarrow$ StochasticTwoPointMC(5).
+
+\paragraph{Intersection kernel dichotomy.}
+When NFCE fails for \emph{all} non-faithful nontrivial characters
+simultaneously (\defname{TotalNFCEFailure}), the factor ratio is
+eventually confined to every non-faithful kernel (from the
+summability-to-confinement lemma of Part~25).
+The intersection of these kernels is constrained by a group-theoretic
+fact: in a finite group whose order has $\geq 2$ distinct prime
+factors, there exist subgroups of coprime orders whose intersection is
+trivial
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{coprime\_order\_zpowers\_inf\_bot}
+{\color{leanink}$\checkmark$}).  Combined with Cauchy's theorem, this
+yields \defname{NonFaithfulCharSeparation}~(NFCS): for every
+$g \neq 1$, some non-faithful nontrivial character has $\chi(g) \neq 1$.
+NFCS is
+\textbf{proved} for all groups whose order has $\geq 2$ distinct prime
+factors
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{nonFaithfulCharSeparation\_of\_two\_prime\_factors}
+{\color{leanink}$\checkmark$}), which for $(\ZZ/q\ZZ)^\times$ covers
+all primes except $q = 2, 3, 5$ and Fermat primes (where $q - 1$ is a
+power of~$2$).
+Under NFCS, TotalNFCEFailure forces
+$\minFac / \operatorname{secondMinFac} \equiv 1 \pmod{q}$ eventually
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{total\_confinement\_implies\_ratio\_one}
+{\color{leanink}$\checkmark$}).
+This yields:
+
+\begin{theorem}[Intersection kernel dichotomy]
+\label{thm:kernel-dichotomy}
+Let $q$ be prime with $q - 1$ having $\geq 2$ distinct prime factors.
+Then exactly one of the following holds:
+\begin{enumerate}[nosep]
+\item $\mathrm{NFCE}(q)$ holds, giving
+  $\mathrm{UFDStrong}(q)$ and $\mathrm{StochasticTwoPointMC}(q)$; or
+\item $\minFac(\Prod{2}(n)+1) \equiv \operatorname{secondMinFac}(\Prod{2}(n)+1) \pmod{q}$
+  for all sufficiently large~$n$.
+\end{enumerate}
+The second alternative is a strong arithmetic rigidity: the two
+smallest prime factors of each Euclid number are eventually
+indistinguishable mod~$q$.
+\end{theorem}
+
+\noindent
+The proof combines NonFaithfulCharSeparation
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{nonFaithfulCharSeparation\_of\_two\_prime\_factors}
+{\color{leanink}$\checkmark$})
+with the summability-to-confinement lemma
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{total\_confinement\_implies\_ratio\_one}
+{\color{leanink}$\checkmark$}).
+The condition ``$q{-}1$ has $\geq 2$ distinct prime factors'' covers
+all primes except $q = 2, 3, 5$ and Fermat primes (where $q{-}1$ is a
+power of~$2$).
+
+\paragraph{Quotient character lift.}
+The quotient character infrastructure, formalized in Part~28 of
+\code{VanishingNoiseVariantD.lean} (173~lines),
+provides a structural reduction of NFCE\@.
+For a non-faithful nontrivial character~$\chi$, the kernel
+$\ker(\chi)$ is a proper nontrivial subgroup; by the universal
+property, $\chi$ factors as
+$\chi = \bar\chi \circ \pi$
+where $\pi \colon G \to G/\ker(\chi)$ is the quotient map.
+The induced character~$\bar\chi$ on the quotient group is
+\textbf{faithful} (injective)
+(\lean{EM/Advanced/VanishingNoiseVariantD.lean}{quotientChar\_faithful}
+{\color{leanink}$\checkmark$}),
+the quotient has order $\geq 2$
+(\lean{EM/Advanced/VanishingNoiseVariantD.lean}{quotient\_card\_ge\_two}
+{\color{leanink}$\checkmark$}),
+and KernelConfinement is equivalent to the quotient projection
+of the factor ratio being eventually trivial
+(\lean{EM/Advanced/VanishingNoiseVariantD.lean}{kernelConfinement\_iff\_quotient\_eventually\_one}
+{\color{leanink}$\checkmark$}).
+\begin{theorem}[Quotient character lift]
+\label{thm:quotient-lift}
+For any non-faithful nontrivial character~$\chi$ on~$(\ZZ/q\ZZ)^\times$:
+\begin{enumerate}[nosep]
+\item $\chi = \bar\chi \circ \pi$ where $\bar\chi$ is faithful
+  on $G/\ker(\chi)$ and $|G/\ker(\chi)| \geq 2$.
+\item $\mathrm{KernelConfinement}(\chi) \;\Longleftrightarrow\;$
+  the quotient projection of the factor ratio is eventually trivial.
+\item $\mathrm{RatioKernelEscape}(\chi) \;\Longleftrightarrow\;$
+  the quotient projection is nontrivial infinitely often.
+\end{enumerate}
+\end{theorem}
+
+\noindent This reduces NFCE to: the image of factorRatio in each quotient
+$G/\ker(\chi)$ escapes~$\{1\}$ infinitely often.
+Since $\bar\chi$ is faithful on the (smaller) quotient group, the
+unconditional FaithfulCharacterEscape result
+(Theorem~\ref{thm:faithful-escape}) applies to $G/\ker(\chi)$,
+connecting the non-faithful case to the faithful framework.
+
+\paragraph{Comparison of open hypotheses.}
+Standard MC requires DSL (population-to-orbit transfer for $\minFac$
+residues).  The $\{\minFac, \operatorname{secondMinFac}\}$ variant
+requires UFDStrong (spectral diversity of two-point factor sets), and
+for $q = 3$ this is now \textbf{unconditional}; for $q \geq 5$ the
+residual hypothesis is NonFaithfulCharacterEscape.
+Neither DSL nor UFDStrong implies the other: DSL is about the
+\emph{selected} factor's equidistribution; UFDStrong is about the
+\emph{pair}'s spectral gap.
+But both are instances of the same meta-question: does the deterministic
+EM construction produce enough diversity in its factorizations to
+prevent persistent alignment with any fixed character?
+
+\paragraph{Ensemble two-point: population-level reduction.}
+The ensemble framework of Section~\ref{sec:ensemble} can also be
+applied to the two-point variant.  For generalized EM starting from
+squarefree~$n$, the \defname{genFactorRatio} at step~$k$ is the ratio
+$\minFac / \operatorname{secondMinFac} \bmod q$ in
+$(\ZZ/q\ZZ)^\times$.  For a nontrivial character~$\chi$, a step
+``escapes'' if this ratio lies outside~$\ker(\chi)$---producing a
+spectral gap.  The formalization
+(\code{Ensemble/TwoPointEnsemble.lean}, 566~lines, zero \code{sorry})
+develops the full first-moment chain:
+\[
+  \text{PRED}
+  \;\xrightarrow[\text{Fubini}]{\checkmark}\;
+  \text{linear first moment}
+  \;\xrightarrow[\text{partition}]{\checkmark}\;
+  \text{positive density of high escapers.}
+\]
+Here \textbf{PopulationRatioEscapeDensity}~(PRED) asserts that for
+each nontrivial~$\chi$ and each step $k \geq 1$, a positive
+density~$\delta > 0$ of squarefree starting points have factor ratio
+outside~$\ker(\chi)$.  Under PRED, the ensemble average of cumulative
+escape counts grows linearly
+(\lean{EM/Ensemble/TwoPointEnsemble.lean}{escape\_first\_moment\_linear}
+{\color{leanink}$\checkmark$}), and the partition argument gives
+\lean{EM/Ensemble/TwoPointEnsemble.lean}{positive\_density\_high\_escape}
+{\color{leanink}$\checkmark$}: for each threshold~$M$, a positive
+density of starting points achieve $\geq M$ cumulative escapes
+within~$K$ steps.  PRED itself is open; it should follow from
+MFRE (MinFacResidueEquidist) via CRT independence of the two
+smallest factors.
+
+\paragraph{Self-consistent random walk: the Fourier bridge.}
+The stochastic two-point variant above fixes the factor sets
+$\{p_1(n), p_2(n)\}$ from the \emph{actual} EM walk and randomizes
+the selection.  A stronger variant makes the construction
+\emph{self-consistent}: at each step, the accumulator determines the
+available factors, and the fair-coin choice feeds back into the next
+accumulator.  Formally, define
+$\mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, 0) = \mathrm{acc}$,
+$\mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, n{+}1)
+= P_n \cdot (\text{if } \sigma(n) \text{ then } \minFac(P_n{+}1)
+\text{ else } \operatorname{secondMinFac}(P_n{+}1))$
+where $P_n = \mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, n)$.
+The decision sequence $\sigma : \NN \to \mathrm{Bool}$ replaces the
+deterministic $\minFac$ rule with a random binary choice.
+
+The central result is the \textbf{Fourier bridge identity}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{fourier\_bridge\_identity\_proved}
+{\color{leanink}$\checkmark$}): for any accumulator $\mathrm{acc} \geq 2$,
+\[
+  \mathrm{treeCharSum}(q, \chi, N, \mathrm{acc}, \tfrac{1}{2})
+  \;=\;
+  \frac{1}{2^N}
+  \sum_{\sigma \in \{0,1\}^N}
+  \prod_{k < N} \mathrm{chiAt}(q, \chi,
+    \mathrm{epsWalkFactorFrom}(\mathrm{acc}, \sigma, k)).
+\]
+The proof is by induction on~$N$: at each step, the $2^N$ paths split
+by first bit into two halves corresponding to the left and right
+subtrees of the tree recursion; shift lemmas
+(\code{epsWalkProdFrom\_shift}, \code{epsWalkFactorFrom\_shift})
+connect the concatenated walk to the shifted walk at the new
+accumulator; the $\tfrac{1}{2}$ weights combine to match the tree
+recurrence.  Specializing to $\mathrm{acc} = 2$ gives the
+unconditional identity
+$\mathrm{fairTreeCharSum} = \mathrm{pathCharSum}$
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{fairTreeCharSum\_eq\_pathCharSum}
+{\color{leanink}$\checkmark$}).
+
+\defname{RandomTwoPointMC}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{RandomTwoPointMC})
+asks: for $q \geq 3$ and every unit $a \in (\ZZ/q\ZZ)^\times$, does
+some binary decision sequence of finite length produce a walk from
+$\mathrm{acc} = 2$ landing in residue class~$a$?  This is the
+self-consistent analog of StochasticTwoPointMC.
+The Fourier bridge connects the tree to the path character sum.
+To connect path character sums to reached residue classes, one needs
+\defname{ChiAtMultiplicativity}: that $\mathrm{chiAt}(\mathrm{acc})
+\cdot \prod_k \mathrm{chiAt}(\text{factor}_k)
+= \mathrm{chiAt}(\text{endpoint})$, provided $q$ does not divide the
+endpoint.  This is \textbf{proved}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{chiAt\_multiplicativity\_proved}
+{\color{leanink}$\checkmark$})
+by induction on~$N$ with backward non-divisibility propagation:
+if $q \nmid P_N$, then $q \nmid P_k$ for all $k \leq N$
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{not\_dvd\_epsWalkProdFrom\_of\_le}
+{\color{leanink}$\checkmark$}),
+so every factor is coprime to~$q$ and $\mathrm{chiAt}$ is
+multiplicative.
+
+A full Fourier counting infrastructure is built on top: character
+orthogonality on $(\ZZ/q\ZZ)^\times$, death/survival partition
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{survival\_plus\_death}
+{\color{leanink}$\checkmark$}:
+$\mathrm{survivalCount} + \mathrm{deathCount} = 2^N$),
+the Fourier indicator formula
+$|G| \cdot \mathrm{pathCount}(a)
+= \sum_\chi \overline{\chi(a)} \cdot U(\chi, N)$,
+and norm bounds for the unit endpoint character sum.
+The chain is:
+\[
+  \mathrm{TCA}
+  \;\xRightarrow{\checkmark}\;
+  \text{vanishing pathCharSum}
+  \;\xRightarrow{\text{ChiAtMult}\ \checkmark}\;
+  \text{Fourier counting}
+  \;\xRightarrow{?}\;
+  \text{RandomTwoPointMC}.
+\]
+The remaining gap is \defname{PathSurvival}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{PathSurvival}):
+the ratio $\mathrm{survivalCount}(N) / \mathrm{deathCount}(N)$
+grows without bound.  Without positive survival at the same~$N$
+where pathCharSum is small, the Fourier inversion gives no
+information about unit classes.
+
+For $q = 3$, the analysis reveals a structural obstruction.
+Since $\mathrm{acc} = 2$ and $\minFac(3) = \operatorname{secondMinFac}(3) = 3$,
+the walk immediately dies: $3 \mid P_1 = 6$ on \emph{all} paths,
+and absorption is permanent.
+Thus PathSurvival(3) is false---but
+$\mathrm{TreeContractionAtHalf}(3)$ is \emph{also} false (the tree
+character sum is identically~$1$ at every depth, because all
+post-death factors are $\equiv 1 \pmod{3}$), making
+$\mathrm{TreeContractionImpliesRandomMC}(3)$ vacuously true.
+
+For $q = 3$, the \textbf{zero-mean property} gives maximal per-step
+contraction
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{mean\_char\_zero\_at\_diverse\_step\_three}
+{\color{leanink}$\checkmark$}):
+$(1/2)\chi(a) + (1/2)\chi(b) = 0$ whenever $\chi(a) \neq \chi(b)$
+for a nontrivial character on $(\ZZ/3\ZZ)^\times$ (order~$2$, so
+$\chi$ maps to $\{1, -1\}$).  Although this property is proved,
+the immediate death at $q = 3$ means the zero-mean steps are
+never reached from the standard starting point.
+
+\paragraph{TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC.}
+The conditional implication is now \textbf{proved}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{tca\_path\_survival\_implies\_random\_mc\_proved}
+{\color{leanink}$\checkmark$}).
+The proof~(${\sim}400$~lines) builds the full Fourier counting
+infrastructure on $(\ZZ/q\ZZ)^\times$:
+\begin{enumerate}[nosep]
+\item \textbf{Path sum decomposition}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{path\_sum\_decomp}
+  {\color{leanink}$\checkmark$}):
+  the unscaled path sum
+  $2^N \cdot \mathrm{pathCharSum}$ splits as
+  $\mathrm{chiAt}(2)^{-1}\cdot U(\chi,N) + E(\chi,N)$,
+  where $U$ sums over surviving paths via ChiAtMultiplicativity and
+  $E$ sums over death paths.
+
+\item \textbf{Death error bound}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{death\_error\_norm\_le}
+  {\color{leanink}$\checkmark$}):
+  $\|E(\chi,N)\| \leq \mathrm{deathCount}(N)$
+  (each death term has norm $\leq 1$).
+
+\item \textbf{Unit endpoint bound}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{uecsi\_norm\_le}
+  {\color{leanink}$\checkmark$}):
+  $\|U(\chi,N)\| \leq 2^N\|\mathrm{pathCharSum}\| + \mathrm{deathCount}$.
+
+\item \textbf{Fourier counting identity}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{fourier\_counting\_identity}
+  {\color{leanink}$\checkmark$}):
+  $\sum_\chi \overline{\chi(a)} \cdot U(\chi,N)
+  = |G| \cdot \mathrm{pathCount}(a,N)$.
+
+\item \textbf{Fourier lower bound}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{fourier\_lower\_bound}
+  {\color{leanink}$\checkmark$}):
+  $(q{-}1)\cdot\mathrm{pathCount}(a) \geq
+  \mathrm{survivalCount} - (q{-}2)\cdot B$
+  where $B$ is the uniform bound on nontrivial $\|U(\chi)\|$.
+\end{enumerate}
+Combining: TCA gives $\|\mathrm{pathCharSum}\| < 1/(2q)$ for
+$N \geq N_0$; PathSurvival gives
+$\mathrm{survivalCount} > 2q^2 \cdot \mathrm{deathCount}$ for
+$N \geq N_1$.  At $N = \max(N_0,N_1)$, the Fourier lower bound yields
+$\mathrm{pathCount}(a) > 0$ for every unit~$a$, via the algebraic
+identity $2q^3 + 2q^2 + 3q + 2 > 0$ (true for all $q \geq 5$).
+For $q = 3$, TCA is vacuously false, so the implication holds trivially.
+The self-consistent RandomTwoPointMC thus reduces to exactly two open
+hypotheses: TreeContractionAtHalf and PathSurvival.
+
+\paragraph{Ensemble $\varepsilon$-walk.}
+The formalization
+(\code{Advanced/EpsilonWalk.lean}, 458~lines, zero \code{sorry})
+develops an ensemble version: instead of fixing $\mathrm{acc} = 2$,
+parametrize the $\varepsilon$-walk by squarefree starting point~$n$.
+The \defname{SigmaCRTPropagationStep} hypothesis (open) asserts that
+CRT equidistribution propagates across steps for $\sigma$-walks,
+mirroring CRTPropagationStep for deterministic walks.
+Under SRE $+$ SigmaCRTPropagationStep, the death density (fraction of
+squarefree~$n$ with $q \mid \mathrm{epsWalkProdFrom}(n,\sigma,k)+1$)
+converges to~$1/(q{-}1)$ for every fixed~$k$ and~$\sigma$
+(\lean{EM/Advanced/EpsilonWalk.lean}{sigma\_death\_density\_tendsto}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Deterministic coverage via Cauchy--Davenport.}
+An independent, purely group-theoretic route to coverage is formalized in
+\code{Advanced/IteratedProductCoverage.lean} (293~lines, zero \code{sorry}).
+Given a sequence $S_0, S_1, \ldots$ of subsets of a finite commutative
+group~$G$ with $\mathrm{minOrder}(G) = |G|$ (true when $|G|$ is prime),
+the \defname{iterated product} $P_n = P_{n-1} \cdot S_{n-1}$ starting
+from $P_0 = \{1\}$ satisfies
+\[
+  |P_n| \;\geq\; \min\Bigl(|G|,\; 1 + \sum_{k<n}(|S_k| - 1)\Bigr)
+\]
+by iterated application of the Cauchy--Davenport theorem
+(\lean{EM/Advanced/IteratedProductCoverage.lean}{iteratedMulFinset\_card\_growth}
+{\color{leanink}$\checkmark$}).
+If every $|S_k| \geq 2$, then after $|G| - 1$ steps the product is
+$\mathrm{Finset.univ}$
+(\lean{EM/Advanced/IteratedProductCoverage.lean}{iteratedMulFinset\_eq\_univ}
+{\color{leanink}$\checkmark$}).
+For $(\ZZ/p\ZZ)^\times$ with $p{-}1$ prime (safe primes: $p = 5, 7, 11, 23, \ldots$),
+$\mathrm{minOrder} = p{-}1 = |G|$, and the coverage bound gives diameter
+$p - 2$
+(\lean{EM/Advanced/IteratedProductCoverage.lean}{safe\_prime\_coverage}
+{\color{leanink}$\checkmark$}).
+This complements the probabilistic Fourier approach: if the
+$\varepsilon$-walk factor sets have $|S_k| \geq 2$ at every step (the
+diversity condition), then Cauchy--Davenport gives deterministic coverage
+in finitely many steps---no spectral hypothesis needed.  The gap is
+ensuring diversity: when $\minFac \equiv \operatorname{secondMinFac}
+\pmod{q}$, the factor set has size~$1$, and the Cauchy--Davenport
+step gives no progress.
+
+\paragraph{Dense capture and Baire category.}
+A topological perspective on the two-point variant is developed in
+\code{Advanced/DenseCapture.lean} (301~lines, zero \code{sorry}).
+The space of binary selection sequences $\sigma : \NN \to \mathrm{Bool}$
+carries the product topology (Cantor space), which is compact Hausdorff
+and hence a Baire space.  The \defname{captureSet}$(q, \mathrm{acc})$---the
+set of selection sequences that capture prime~$q$ starting from
+accumulator~$\mathrm{acc}$---is \emph{open}, unconditionally
+(\lean{EM/Advanced/DenseCapture.lean}{captureSet\_isOpen}
+{\color{leanink}$\checkmark$}):
+it equals $\bigcup_k \{\sigma \mid \mathrm{factor}(k) = q\}$,
+and each level set is open because the factor at step~$k$
+depends only on $\sigma(0), \ldots, \sigma(k)$ (finitary dependence,
+\lean{EM/Advanced/DenseCapture.lean}{epsWalkFactorFrom\_depends\_on\_prefix}
+{\color{leanink}$\checkmark$}).
+
+The sole open hypothesis is \defname{DenseCaptureHypothesis}: for
+$\mathrm{acc} \geq 2$, captureSet$(q, \mathrm{acc})$ is \emph{dense}.
+Under this hypothesis, the Baire category theorem gives that the
+intersection $\bigcap_{q\;\text{prime}} \mathrm{captureSet}(q, \mathrm{acc})$
+is \emph{comeager} (residual): a generic selection sequence captures
+every prime
+(\lean{EM/Advanced/DenseCapture.lean}{fullCapture\_residual}
+{\color{leanink}$\checkmark$}).
+In particular, such a sequence exists
+(\lean{EM/Advanced/DenseCapture.lean}{fullCapture\_nonempty}
+{\color{leanink}$\checkmark$}).
+A tail restart identity
+(\lean{EM/Advanced/DenseCapture.lean}{epsWalkProdFrom\_tail\_restart}
+{\color{leanink}$\checkmark$})
+shows the walk from step~$K$ onward is a fresh walk from the
+accumulator at step~$K$, connecting the density hypothesis to
+the ensemble framework.
+
+%%% The Mixed (1-eps)minFac + eps Random section has been subsumed by
+%%% §6.2 (Factor Tree), §6.3 (Factor Confinement), §6.4 (Almost All GenMixedMC).
+
+\subsection{Ensemble MC: Almost Every Starting Point}
+\label{sec:ensemble-variant}
+
+The variants above change the \emph{selection rule}; here we change the
+\emph{starting point}.  The generalized EM construction
+(Section~\ref{sec:ensemble}) parametrizes the sequence by its initial
+value~$n$: $\Prod{n}(0) = n$,
+$\seq{n}(k) = \minFac(\Prod{n}(k)+1)$,
+$\Prod{n}(k{+}1) = \Prod{n}(k)\cdot\seq{n}(k)$.
+The standard orbit is $n = 2$.
+
+\begin{definition}[\lean{EM/Ensemble/WeylChain.lean}{GenMullinConjecture}]
+$\mathrm{GenMC}(n)$: every prime appears in the generalized EM
+sequence from~$n$, i.e.\ $\forall q$ prime, $\exists k$,
+$\seq{n}(k) = q$.
+\end{definition}
+
+The reduction
+\lean{EM/Ensemble/WeylChain.lean}{gen\_hitting\_implies\_gen\_mc\_proved}
+{\color{leanink}$\checkmark$} proves that cofinal walk hitting
+implies~$\mathrm{GenMC}(n)$ for every squarefree~$n$, mirroring the
+standard inductive bootstrap.  And
+\lean{EM/Ensemble/WeylChain.lean}{gen\_mc\_two\_implies\_mc}
+{\color{leanink}$\checkmark$} shows $\mathrm{GenMC}(2) \Rightarrow
+\mathrm{MC}$, so the generalized conjecture specializes to the
+standard one.
+
+\paragraph{Bag arithmetic.}
+At each step~$k$, the Euclid number $\Prod{n}(k)+1$ has a ``bag'' of
+prime factors; the selected prime $\seq{n}(k)$ is the minimum of this
+bag.  The formalization
+(\code{Ensemble/BagArithmetic.lean}, 224~lines, zero \code{sorry})
+develops the bag-level quantities:
+\defname{genEuclidOmega}~$\omega(n,k) = |\text{primeFactors}(\Prod{n}(k)+1)|$
+(at least~1,
+\lean{EM/Ensemble/BagArithmetic.lean}{genEuclidOmega\_pos}
+{\color{leanink}$\checkmark$}),
+\defname{genBagDiversity} (number of distinct residue classes mod~$q$
+among the factors, $\leq \omega$ and $\leq q$),
+\defname{genFactorsInClass}~$F_a$ (factors in class~$a$, with the
+partition identity
+$\sum_a |F_a| = \omega$,
+\lean{EM/Ensemble/BagArithmetic.lean}{genFactorsInClass\_card\_sum}
+{\color{leanink}$\checkmark$}),
+and \defname{genEuclidCofactor} (the quotient
+$(\Prod{n}(k)+1)/\seq{n}(k)$, whose prime factors are a subset of
+the bag,
+\lean{EM/Ensemble/BagArithmetic.lean}{cofactor\_primeFactors\_subset}
+{\color{leanink}$\checkmark$}).
+For $k \geq 1$, all bag elements are $\geq 3$
+(\lean{EM/Ensemble/BagArithmetic.lean}{primeFactors\_ge\_three\_of\_pos}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Density variants.}
+Instead of proving $\mathrm{GenMC}(n)$ for the single orbit $n = 2$,
+one can ask how many starting points satisfy it.  Two density levels
+are formalized:
+
+\begin{itemize}
+\item \textbf{PositiveDensityRSD}
+  (\lean{EM/Population/ReciprocalSum.lean}{PositiveDensityRSD}):
+  a positive density~$\delta > 0$ of squarefree~$n$ have divergent
+  reciprocal sums $\sum_k 1/\seq{n}(k) = \infty$.
+
+\item \textbf{AlmostAllSquarefreeRSD}
+  (\lean{EM/Population/ReciprocalSum.lean}{AlmostAllSquarefreeRSD}):
+  density~$1$ of squarefree~$n$ have divergent reciprocal sums.
+\end{itemize}
+
+\noindent
+The reciprocal sum is a natural proxy: if $\sum 1/\seq{n}(k)$
+diverges, then the primes appearing in the sequence from~$n$ cannot be
+confined to a thin set; although divergence alone does not formally
+imply~$\mathrm{GenMC}(n)$, it rules out the worst obstruction (a
+bounded sequence of captured primes).
+
+\paragraph{The one-hypothesis route: LMG.}
+The proved chain
+\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}
+{\color{leanink}$\checkmark$} shows:
+\[
+  \mathrm{LMG} \;\Longrightarrow\; \mathrm{PositiveDensityRSD},
+\]
+where \textbf{LinearMeanGrowth}~(LMG) asks that
+$\mathbb{E}_n[S_K(n)] \geq \kappa K$ for some $\kappa > 0$ and all
+$K$ large enough (here $S_K(n) = \sum_{k<K} 1/\seq{n}(k)$ is the
+partial reciprocal sum, averaged over squarefree~$n$).
+LMG is a \emph{population-level} statement: it involves no specific
+orbit, bypassing the orbit-specificity barrier that obstructs DSL\@.
+
+With the additional hypothesis PairwiseStepDecorrelation~(PSD)---that
+$\operatorname{Cov}[1/\seq{n}(j),\, 1/\seq{n}(k)] \to 0$ for
+$j \neq k$---the stronger conclusion follows:
+$\mathrm{PSD} + \mathrm{LMG} \Rightarrow \mathrm{AlmostAllSquarefreeRSD}$
+(\lean{EM/Population/ReciprocalSum.lean}{dead\_end\_125\_pairwise\_revival}
+{\color{leanink}$\checkmark$}).
+The bridges are all machine-verified:
+$\mathrm{IVB}(1/4)$ {\color{leanink}$\checkmark$},
+$\mathrm{PSD} + \mathrm{IVB} \Rightarrow$ variance bound
+{\color{leanink}$\checkmark$},
+Chebyshev concentration {\color{leanink}$\checkmark$}.
+
+\paragraph{CRT propagation and the first moment.}
+LMG follows from
+\textbf{FirstMomentStep}~(FMS):
+$\mathbb{E}_n[1/\seq{n}(k)] \to \kappa$ as $X \to \infty$ for each~$k$
+(\lean{EM/Ensemble/FirstMoment.lean}{FirstMomentStep}).
+FMS in turn follows from \textbf{CRTPropagationStep}
+(\lean{EM/Ensemble/CRT.lean}{CRTPropagationStep}):
+the equidistribution of $\Prod{n}(k) \bmod q$ (among coprime residues)
+propagates from step~$k$ to step~$k{+}1$.
+The chain is:
+\[
+  \mathrm{SRE}
+  \;+\; \mathrm{CRTPropagationStep}
+  \;\xRightarrow{\text{\color{leanink}$\checkmark$}}\;
+  \mathrm{AccumEquidist}
+  \;\Longrightarrow\;
+  \mathrm{FMS}(\kappa)
+  \;\Longrightarrow\;
+  \mathrm{LMG}
+  \;\xRightarrow{\text{\color{leanink}$\checkmark$}}\;
+  \mathrm{PositiveDensityRSD}.
+\]
+Here SRE (squarefree residue equidistribution) is the standard base
+case, and AccumEquidist~$\Rightarrow$~FMS uses population
+equidistribution of $\minFac$ via the Alladi--Buchstab weights.
+
+CRTPropagationStep now reduces to a cleaner open hypothesis:
+\textbf{EnsembleTransitionApprox}~(ETA,
+\lean{EM/Ensemble/BackwardDynamics.lean}{EnsembleTransitionApprox}),
+which says that the empirical transition probability---the fraction of
+squarefree~$n$ with $\Prod{n}(k) \equiv c$ whose multiplier satisfies
+$\seq{n}(k) \equiv b$---converges to $1/(q{-}1)$ for all nonzero
+$b, c$.  The proved reduction
+\lean{EM/Ensemble/BackwardDynamics.lean}{eta\_implies\_crt\_propagation}
+{\color{leanink}$\checkmark$} shows
+$\mathrm{ETA} \Rightarrow \mathrm{CRTPropagationStep}$
+via the backward density decomposition: the density at step $k{+}1$ is
+the matrix product of the density at step~$k$ with the transition
+matrix, and when both converge to~$1/(q{-}1)$, so does the product.
+The full chain
+\lean{EM/Ensemble/BackwardDynamics.lean}{eta\_sre\_implies\_prsd}
+{\color{leanink}$\checkmark$} composes this with the proved bridges to
+give $\mathrm{ETA} + \mathrm{SRE} \Rightarrow
+\mathrm{PositiveDensityRSD}$.
+
+The structural basis for ETA is CRT multiplier invariance
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}
+{\color{leanink}$\checkmark$}): $\minFac(\Prod{n}(k)+1)$ depends on
+the full integer, not just its residue mod~$q$, so the factoring
+outcome is ``$q$-blind.''
+
+\paragraph{Backward dynamics approach (Tao--Collatz analogy).}
+The backward dynamics infrastructure is formalized in
+\code{Ensemble/BackwardDynamics.lean} (577~lines).
+Joint counts, transition probabilities, their basic probability axioms
+(non-negativity, partition identity, sum-to-one), and the backward
+density decomposition are all proved.
+The approach follows Tao's backward
+dynamics for the Collatz conjecture~\cite{Tao2019Collatz}: for a
+target residue $a \in (\ZZ/q\ZZ)^\times$ at step~$k{+}1$,
+\[
+  F_{k+1}(a) = \sum_{c \in (\ZZ/q\ZZ)^\times} F_k(c) \cdot R(c, a, k, X),
+\]
+where $R(c, a, k, X) = 1/(q{-}1) + O(1/\log X)$ by CRT-blindness.
+When $F_k$ is already uniform, so is $F_{k+1}$, giving the induction
+step.  However, the absorption mechanism (Dead End~\#138)
+invalidates this approach: the equidistribution target
+$r/(r^2{-}1)$ per coprime class (not $1/(r{-}1)$, which neglects
+the zero class of squarefree multiples of~$r$) is never sustained
+for $k \geq 1$, because death events drain nonzero-class mass
+permanently into the absorbing state $0 \bmod q$.
+The formal chain ETA+DCTA+SRE~$\Rightarrow$~PRSD remains proved
+but is vacuously true.
+
+\paragraph{The accumulator as a commutative state.}
+The EM accumulator $\Prod{n}(k) = \prod S_k$ is a squarefree integer
+determined by its prime set~$S_k$.  The dynamics
+$S \mapsto S \cup \{\minFac(\prod S + 1)\}$ is a well-defined map on
+the lattice of finite prime sets, and the walk mod~$q$ depends on~$S$
+only through $\prod S \bmod q$.  Two orbits from different starting
+points that ever reach the same product mod~$q$ have approximately
+identical future walks---the construction history is forgotten.
+
+This approximate Markov property, combined with the super-exponential
+growth $\Prod{n}(k) \geq 2^{2^k}$ (which makes CRT blindness
+increasingly accurate), suggests that the walk mod~$q$ is effectively
+ergodic from generic starting points.  Making this rigorous---showing
+that the CRT error is summable along the orbit---would give a.a.\
+$\mathrm{GenMC}$ for the standard sequence, without any modification
+of the selection rule.
+
+\paragraph{Comparison with DSL.}
+The DSL route (Section~\ref{sec:ensemble}) proves MC for the single
+orbit $n = 2$, contingent on transferring population statistics to one
+deterministic trajectory.
+The ensemble route here proves a density result for \emph{almost all}
+starting points, contingent on CRTPropagationStep, which is a
+population-level hypothesis with no orbit-specificity.
+Neither subsumes the other: DSL would give MC directly; CRTPropagationStep
+gives PositiveDensityRSD (which does not formally imply MC for $n = 2$).
+However, the ensemble route faces a structurally easier barrier, since
+its open hypothesis is a statement about averages, not about one
+specific orbit.
+
+\subsection{Weak Mullin and Analytic Weakenings}
+\label{sec:weak-mullin}
+
+The variants above change the \emph{selection rule}; this subsection
+changes the \emph{conclusion}.  Instead of proving that every prime
+appears ($M = \emptyset$), one can ask that the set of missing
+primes is small, or that the EM reciprocal sum diverges.
+
+\paragraph{Missing primes and Weak Mullin.}
+Define the set of \emph{missing primes}
+\[
+M = \{p \in \mathbb{P} : p \neq \seq{2}(k) \text{ for all } k\}.
+\]
+MC is the assertion $M = \emptyset$.  A natural weakening asks only that
+$M$ is \emph{small} in an analytic sense:
+
+\begin{property}[\defname{WeakMullin} (\abbr{WM})]
+\lean{EM/Population/WeakMullin.lean}{WeakMullin}
+The reciprocal sum over missing primes converges:
+$\sum_{q \in M} 1/q < \infty$.
+\end{property}
+
+This is strictly weaker than MC (which gives $M = \emptyset$ and hence
+a trivially convergent empty sum) but strong enough to have a nontrivial
+consequence:
+
+\begin{property}[\defname{ReciprocalDivergence} (\abbr{RD})]
+\lean{EM/Population/WeakMullin.lean}{ReciprocalDivergence}
+The reciprocal sum over EM primes diverges:
+$\sum_{k=0}^{\infty} 1/\seq{2}(k) = \infty$.
+\end{property}
+
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{mc\_implies\_wm}]
+$\MC \Longrightarrow \mathrm{WM}$.
+\end{theorem}
+
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{wm\_implies\_rd}]
+\label{thm:wm-rd}
+$\mathrm{WM} \Longrightarrow \mathrm{RD}$.
+\end{theorem}
+
+\noindent
+The proof partitions $\mathbb{P} = A \cup M$ (appeared vs.\ missing),
+notes that both $\Sigma_A$ and $\Sigma_M$ converge under WM $+$ $\neg$RD,
+contradicting the divergence of $\sum_{p} 1/p$.
+
+\paragraph{Product divergence.}
+The negation of WM has a quantitative consequence: $\neg\mathrm{WM}$ gives
+$\sum_{q \in M} 1/(q{-}1) = \infty$, so the ``safe fraction'' product
+$\prod_{q \in F}(q{-}2)/(q{-}1) \leq e^{-\sum 1/(q-1)} \to 0$ and its
+reciprocal $\prod (q{-}1)/(q{-}2)$ exceeds any bound
+(\lean{EM/Population/WeakMullin.lean}{not\_wm\_product\_diverges}).
+The product $\prod (q{-}1)/(q{-}2)$ over missing primes measures the
+``confinement cost'': each missing prime~$q$ confines the walk to $q-2$
+of the $q-1$ units in $(\ZZ/q\ZZ)^\times$ (avoiding~$-1$).  If WM
+fails, this confinement cost is unbounded.
+
+\paragraph{Confined energy.}
+For a missing prime $q \geq 3$, the walk avoids $-1$ entirely, so the
+$N$ visits are distributed among only $q-2$ residues.  A pigeonhole
+argument gives a confined-energy lower bound
+(\lean{EM/Population/WeakMullin.lean}{per\_prime\_confined\_energy\_lb}):
+$N^2/(q{-}2) \leq (q{-}1)\sum_a V_N(a)^2$.
+The excess energy ratio $(q{-}1)/(q{-}2)$ compared to the
+equidistributed baseline $N^2/(q{-}1)$ is bounded away from~$1$.
+\defname{JointSVE}
+(\lean{EM/Population/WeakMullin.lean}{JointSVE})---joint subquadratic
+visit energy over any finite set of missing primes---implies MMCSB
+(\lean{EM/Population/WeakMullin.lean}{jointSVE\_implies\_mmcsb}),
+connecting the ``missing primes'' picture to the spectral route.
+
+\paragraph{The shifted squarefree population.}
+The EM accumulator $\Prod{2}(n)$ is squarefree
+(\lean{EM/Population/WeakErgodicity.lean}{prod\_squarefree}),
+so every Euclid number $\Prod{2}(n)+1$ belongs to the shifted
+squarefree population
+$\mathcal{S} = \{m \geq 2 : m{-}1 \text{ squarefree}\}$
+(density $6/\pi^2$).  This decomposes the orbit equidistribution
+problem into:
+\begin{itemize}[nosep]
+\item \textbf{Population Equidistribution (PE):} among elements of
+  $\mathcal{S}$, the smallest prime factor is equidistributed modulo
+  any prime~$q$ (provable by Selberg sieve $+$ Dirichlet).
+\item \textbf{Population Transfer (PT):} the EM trajectory samples
+  $\mathcal{S}$ without introducing mod-$q$ bias.
+  This is the open content.
+\end{itemize}
+The chain PE $+$ PT $+$ EMDImpliesCME $\Longrightarrow$ MC is proved
+(\lean{EM/Population/WeakErgodicity.lean}{pe\_transfer\_cme\_implies\_mc}).
+
+\paragraph{Pairwise decorrelation and positive density.}
+Dead End~\#125 proved that pairwise cancellation does not imply $k$-wise,
+but \emph{variance bounds only use $k=2$}.  The formalization proves the
+revival chain
+(\lean{EM/Population/ReciprocalSum.lean}{dead\_end\_125\_pairwise\_revival}):
+PairwiseStepDecorrelation $+$ LinearMeanGrowth $+$
+ChebyshevConcentration $\Longrightarrow$ AlmostAllSquarefreeRSD\@.
+A further simplification drops PSD entirely:
+
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}]
+\label{thm:positive-density-rsd}
+$\mathrm{LinearMeanGrowth} \;\Longrightarrow\; \mathrm{PositiveDensityRSD}$.
+\end{theorem}
+
+\noindent This is a 1-hypothesis route: LMG is strictly weaker than
+CME---it requires only that the ensemble mean grows linearly, not
+conditional equidistribution.
+
+\subsection{The Function Field Analog}
+\label{sec:function-field}
+
+The Euclid--Mullin construction makes sense over any unique
+factorization domain.  Replacing $\ZZ$ by $\FF_p[t]$ and primes by
+monic irreducible polynomials gives a sequence
+\[
+  f_0 = t, \qquad
+  f_{n+1} = \text{min-degree monic irreducible factor of }
+  F(n) + 1,
+\]
+where $F(n) = f_0 \cdots f_n$ is the running product.  We call this the
+\textbf{FF-EM sequence} and state the function field analog of MC\@:
+
+\begin{conjecture}[\defname{FF-MC}]
+\lean{EM/FunctionField/Analog.lean}{FFMullinConjecture}
+Every monic irreducible polynomial in $\FF_p[t]$ eventually appears in
+the FF-EM sequence.
+\end{conjecture}
+
+The function field setting is instructive because the Weil bound---an
+\emph{open hypothesis} over $\ZZ$ (Wiener--Ikehara + Alladi)---is a
+\emph{theorem} over $\FF_p[t]$.  This eliminates the analytic number
+theory entirely: population equidistribution is free.  The question
+becomes: what remains after removing the ANT difficulty?
+
+\paragraph{What the Weil bound gives.}
+Let $Q \in \FF_p[t]$ be a monic irreducible of degree~$d$, and
+$\chi : (\FF_p[t]/(Q))^\times \to \mathbb{C}^\times$ a non-trivial
+multiplicative character.  The Weil bound for function fields states:
+\[
+  \Bigl|\sum_{\substack{\alpha \in \FF_p[t] \\ \deg \alpha < d}}
+  \chi(\alpha \bmod Q)\Bigr|
+  \;\leq\; (d - 1)\sqrt{p}.
+\]
+This immediately gives \textbf{population equidistribution}
+(\lean{EM/FunctionField/Analog.lean}{weil\_implies\_population\_equidist}):
+among all monic irreducibles, the residues modulo~$Q$ are
+equidistributed in $(\FF_p[t]/(Q))^\times$.  Over $\ZZ$, obtaining
+the analogous statement requires the Weighted PNT in Arithmetic
+Progressions (= Wiener--Ikehara), which is the sole unformalized ANT
+input.  Over $\FF_p[t]$, it is unconditional.
+
+\paragraph{What the Weil bound does not give.}
+Population equidistribution controls character sums over
+\emph{all} monic irreducibles---a generic sum.  FF-MC requires
+controlling the factorization of the \emph{specific} polynomial
+$F(n) + 1$, which is determined by the entire history of the
+sequence.  The Weil bound says nothing about which irreducible
+factor of a specific polynomial has the smallest degree.
+
+This is the \textbf{orbit-specificity barrier} (Dead End~\#127,
+\lean{EM/FunctionField/Analog.lean}{WeilDoesNotImplyFFDSL}),
+structurally identical to the integer case: no known result transfers
+population-level equidistribution to a specific deterministic orbit.
+The function field analog thus confirms that the difficulty of MC is
+\emph{not} the analytic number theory but the orbit transfer.
+
+\paragraph{The bootstrap: competitor exhaustion.}
+Over $\ZZ$, the bootstrap induction is clean: $\minFac$ selects a
+unique prime, so if $q \mid \Prod{2}(n)+1$ and all smaller primes
+have appeared, then $\seq{2}(n{+}1) = q$.  Over $\FF_p[t]$, multiple
+irreducibles of the same degree can divide $F(n)+1$, and the
+min-degree rule only guarantees that the selected factor has degree
+$\leq \deg Q$.
+
+The solution is \textbf{competitor exhaustion}
+(\lean{EM/FunctionField/Bootstrap.lean}{ff\_element\_capture}):
+there are finitely many monic irreducibles of each degree~$d$ over
+$\FF_p$ (exactly $\frac{1}{d}\sum_{e \mid d} \mu(d/e)\, p^e$ of
+them).  If $Q$ divides $F(n)+1$ cofinally, the hitting set
+$\{n : Q \mid F(n)+1\}$ is infinite.  At each such~$n$, the
+selected factor $f_{n+1}$ has $\deg f_{n+1} \leq \deg Q$ and is
+injective into the finite set of competitors
+(by \lean{EM/FunctionField/Bootstrap.lean}{ffSeq\_injective\_proved}).
+Since an injection from an infinite set to a finite set is
+impossible, eventually all competitors of degree $\leq \deg Q$
+are consumed, and $Q$ must be selected.
+
+\begin{theorem}[\lean{EM/FunctionField/Bootstrap.lean}{ff\_dh\_implies\_ffmc}]
+\label{thm:ff-bootstrap}
+$\mathrm{FFDynamicalHitting} \;\Longrightarrow\; \mathrm{FF\text{-}MC}$.
+\end{theorem}
+
+Here \defname{FFDynamicalHitting} asserts: for every monic irreducible
+$Q$ not in the sequence, $Q \mid F(n)+1$ for cofinally many~$n$.
+The proof is a strong induction on $\deg Q$: given FF-MC below
+degree~$d$, cofinal hits by~$Q$ plus competitor exhaustion force~$Q$
+to appear.
+
+\paragraph{SubgroupEscape via Weil.}
+Over $\ZZ$, SubgroupEscape (SE) is proved elementarily via
+PrimeResidueEscape.  Over $\FF_p[t]$, the Weil bound gives a
+quantitative version for \emph{large~$p$}.
+
+The idea: suppose all degree-1 multipliers $\{(t - a) \bmod Q : a \in \FF_p\}$
+lie in a proper subgroup $H \leq (\FF_p[t]/(Q))^\times$ of index~$\ell$.
+Then for any character~$\chi$ that kills~$H$ (i.e.,
+$\chi(h) = 1$ for $h \in H$), the character sum $\sum_{a \in \FF_p}
+\chi((t-a) \bmod Q) = p$ since every term is~$1$.  But the Weil bound
+gives $|\text{sum}| \leq (d-1)\sqrt{p}$, yielding $p \leq (d-1)\sqrt{p}$,
+i.e., $p \leq (d-1)^2$.
+
+\begin{theorem}[\lean{EM/FunctionField/SubgroupEscape.lean}{weil\_implies\_ff\_se}]
+\label{thm:ff-se}
+If $p \geq (d-1)^2 + 1$, then the degree-1 multipliers generate
+the full unit group $(\FF_p[t]/(Q))^\times$ for every monic
+irreducible~$Q$ of degree~$d$.
+\end{theorem}
+
+The threshold $(d-1)^2 + 1$ is sharp for this argument.
+For $d = 1$, SE holds for all~$p$ (the degree-1 images
+\emph{are} all nonzero elements of~$\FF_p$,
+\lean{EM/FunctionField/SubgroupEscape.lean}{ff\_se\_degree\_one}).
+For $d = 2$, the threshold is~$2$, so SE holds for all odd
+primes.
+
+\paragraph{The generation-to-coverage gap.}
+SE proves that the multipliers \emph{generate} the full unit group.
+Does this imply the walk \emph{visits}~$-1$?  No.
+
+\begin{example}[\lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}]
+\label{ex:z4}
+In $\ZZ/4\ZZ$, the alternating steps $\{1, 3, 1, 3, \ldots\}$
+generate the full group ($\gcd(1,3) = 1$), but the additive walk
+$0 \to 1 \to 0 \to 1 \to \cdots$ visits only $\{0, 1\}$, permanently
+missing $2$ and~$3$.
+\end{example}
+
+This is \textbf{Dead End~\#130}: SE does not imply DH.  Generation is
+an algebraic property (the subgroup generated by the step set is
+maximal); coverage is a dynamical property (the walk trajectory
+actually reaches every element).  The two coincide for random walks
+(Diaconis--Shahshahani) but diverge for deterministic ones.
+
+\paragraph{The three-level hierarchy.}
+The FF-MC reduction decomposes the orbit-specificity barrier into
+three levels of difficulty
+(\lean{EM/FunctionField/MultiplierCCSB.lean}{ff\_mc\_mult\_ccsb\_landscape}):
+
+\begin{enumerate}[nosep]
+\item \textbf{Population level} (solved).  Among \emph{all} monic
+  irreducibles of degree~$e$, character values are equidistributed.
+  Free from the Weil bound.
+
+\item \textbf{Fiber level} (open).  Among irreducible factors of a
+  \emph{specific} polynomial $f$ lying in a specific residue class
+  mod~$Q$, character values cancel.  This requires orbit-specific
+  information: Deligne's equidistribution theorem (Weil~II) applies
+  to algebraic families, not to the sequential FF-EM construction.
+
+\item \textbf{Selection level} (open).  Among the irreducible factors
+  of~$f$, the one of \emph{smallest degree} has unbiased character
+  value.  This is \defname{SelectionBiasNeutral}: does the greedy
+  min-degree rule preserve character cancellation?  It is a purely
+  combinatorial question, independent of algebraic geometry.
+\end{enumerate}
+
+The selection level is the true core of the difficulty.  Even if the
+Weil bound gives population equidistribution and Deligne gives
+fiber-level equidistribution, the minimum-degree selection could
+systematically bias character values.
+
+\paragraph{The cyclotomic obstruction.}
+A natural strategy for fiber-level information is the monodromy
+approach: if the Galois group of $F(n)+1$ is ``large'' (e.g.,
+contains the alternating group~$A_d$), then Deligne's equidistribution
+theorem~\cite{Deligne1980} constrains the Frobenius conjugacy class distribution
+and hence the factorization statistics.
+
+\begin{remark}[Dead End~\#129,
+\lean{EM/FunctionField/Analog.lean}{ff\_cyclotomic\_dead\_end}]
+\label{rem:fflm-false}
+The \textbf{FF Large Monodromy} hypothesis (Galois group of
+$F(n)+1$ eventually contains~$A_d$) is \emph{structurally false}.
+The product of all monic irreducibles of degree $\leq d$ over~$\FF_p$
+is $t^{p^d} - t$ (a standard identity).  Adding~$1$ gives
+$t^{p^d} - t + 1$, whose splitting field is contained in
+$\FF_{p^N}$ for some~$N$: the Galois group is \emph{abelian}.
+Since the FF-EM sequence greedily consumes all irreducibles of
+each degree, $F(n)$ eventually divides $t^{p^d} - t$, and the
+Galois group of $F(n)+1$ is forced to be abelian.  Abelian
+monodromy recovers only Dirichlet-type character sums---i.e.,
+population equidistribution, which is already free from Weil.
+\end{remark}
+
+This rules out the monodromy route to FF-MC entirely.  The Galois
+structure of the greedy Euclid construction is fundamentally different
+from that of a ``random'' polynomial of the same degree.
+
+\paragraph{The $\Phi_3$ exclusion criterion.}
+Under perpetual irreducibility of $F(n)+1$ (the FF analog of perpetual
+primality), the walk position mod a degree-$1$ target follows the
+autonomous map $f(w) = w(w{+}1)$ on~$\FF_p$.  The preimage of~$-1$
+under~$f$ is exactly the root set of $\Phi_3(w) = w^2{+}w{+}1$
+(\lean{EM/FunctionField/AutonomousMap.lean}{ffAutonomousMap\_eq\_neg\_one\_iff}
+{\color{leanink}$\checkmark$}).
+
+\begin{theorem}[$\Phi_3$ exclusion ---
+\lean{EM/FunctionField/AutonomousMap.lean}{ff\_neg\_one\_unreachable}
+{\color{leanink}$\checkmark$}]
+\label{thm:ff-phi3-exclusion}
+For $p \equiv 2 \pmod{3}$ with $p \geq 5$: $\Phi_3$ has no roots
+in~$\FF_p$
+(\lean{EM/FunctionField/AutonomousMap.lean}{phi3\_no\_roots}
+{\color{leanink}$\checkmark$}),
+so $-1$ has no preimage under~$f$.  Consequently, the orbit from any
+starting value $a \neq -1$ \textbf{never reaches~$-1$}.
+\end{theorem}
+
+\noindent
+The proof uses Lagrange's theorem: a root of $\Phi_3$ gives an element
+of order~$3$ in~$\FF_p^\times$, forcing $3 \mid p{-}1$; but
+$p \equiv 2 \pmod{3}$ gives $p{-}1 \equiv 1 \pmod{3}$, a
+contradiction.  This is a structural obstruction for degree-$1$ capture
+in FF-EM: the value $-1$ is absorbing (maps to~$0$, then fixed),
+and unreachable from any other starting point.
+The formalization (\code{FunctionField/AutonomousMap.lean}, 225~lines,
+zero \code{sorry}) also proves $f(0) = 0$ (fixed point), $f(-1) = 0$
+(absorbing), and that~$-1$ is visited at most once (only at step~$0$
+if the starting value is~$-1$ itself).
+This parallels the integer-side orbit exclusions
+(Theorem~\ref{thm:perpetual-periodicity}, items~4--7) but is
+\emph{stronger}: over~$\ZZ$, specific primes are excluded one at a
+time by checking closed orbits; over~$\FF_p[t]$, the $\Phi_3$
+criterion excludes \emph{all} degree-$1$ targets simultaneously
+for $p \equiv 2 \pmod{3}$.
+
+\paragraph{The factor tree and stochastic FF-MC.}
+The integer-side factor tree framework (\S\ref{sec:factor-tree})
+transfers directly to $\FF_p[t]$.  The factor tree
+(\code{FunctionField/FactorTree.lean}, 455~lines, zero \code{sorry})
+defines \defname{FFMixedSelection}---at each step, choose \emph{any}
+monic irreducible factor of $F(n)+1$, not just the min-degree one---and
+proves the structural analogue of the integer-side factor tree:
+
+\begin{theorem}[FF factor tree structure ---
+\lean{EM/FunctionField/Master.lean}{theorem\_A\_factor\_tree}
+{\color{leanink}$\checkmark$}]
+\label{thm:ff-factor-tree}
+For any valid mixed selection~$\sigma$ from a monic irreducible starting
+polynomial over~$\FF_p$:
+\begin{enumerate}[nosep]
+\item \textbf{Selection injectivity}: no monic irreducible appears twice
+  (\lean{EM/FunctionField/FactorTree.lean}{ffMixedSel\_injective}
+  {\color{leanink}$\checkmark$}).
+\item \textbf{Coprimality cascade}: no irreducible divides both $F(n)$
+  and $F(n)+1$
+  (\lean{EM/FunctionField/FactorTree.lean}{ffMixedWalkProd\_coprime\_succ}
+  {\color{leanink}$\checkmark$}).
+\item \textbf{Start not capturable}: the starting polynomial can never
+  appear as a selected factor
+  (\lean{EM/FunctionField/FactorTree.lean}{start\_not\_capturable}
+  {\color{leanink}$\checkmark$}).
+\item \textbf{Degree growth}: $\deg(F_\sigma(n)+1) \to \infty$
+  (\lean{EM/FunctionField/PopulationEquidist.lean}{ff\_factor\_pool\_degree\_grows}
+  {\color{leanink}$\checkmark$}).
+\item \textbf{Accumulated product injectivity}: distinct steps give
+  distinct products
+  (\lean{EM/FunctionField/FactorTree.lean}{ffMixedWalkProd\_injective}
+  {\color{leanink}$\checkmark$}).
+\item \textbf{Infinite exploration}: the walk explores infinitely many
+  distinct monic irreducibles
+  (\lean{EM/FunctionField/StochasticMC.lean}{ff\_mixed\_explores\_infinitely\_many}
+  {\color{leanink}$\checkmark$}).
+\end{enumerate}
+All six clauses are unconditional---zero open hypotheses.
+\end{theorem}
+
+\begin{theorem}[Finiteness of irreducibles per degree ---
+\lean{EM/FunctionField/Finiteness.lean}{ffFiniteIrreduciblesPerDegree\_proved}
+{\color{leanink}$\checkmark$}]
+\label{thm:ff-finiteness}
+For any prime~$p$ and any degree~$d$, the set of monic irreducible
+polynomials of degree~$d$ over~$\FF_p$ is finite.
+\end{theorem}
+
+\noindent
+The proof injects monic degree-$d$ polynomials into
+$\operatorname{Fin}(d{+}1) \to \FF_p$ via the coefficient map;
+irreducibles form a subset, hence are also finite.
+This eliminates finiteness as an open hypothesis from the entire FF-MC
+chain:
+
+\begin{theorem}[Unconditional FF bootstrap ---
+\lean{EM/FunctionField/Finiteness.lean}{ff\_dh\_implies\_ffmc\_unconditional}
+{\color{leanink}$\checkmark$}]
+\label{thm:ff-bootstrap-uncond}
+$\mathrm{FFDynamicalHitting} \;\Longrightarrow\; \mathrm{FF\text{-}MC}$.
+No hypothesis beyond FFDH is required: finiteness is supplied
+unconditionally by Theorem~\textup{\ref{thm:ff-finiteness}}.
+\end{theorem}
+
+The stochastic FF-MC assembles these ingredients:
+
+\begin{keyresult}
+\begin{theorem}[Stochastic FF-MC ---
+\lean{EM/FunctionField/StochasticMC.lean}{stochastic\_mc\_unconditional}]
+\label{thm:ff-stochastic-mc}
+With any positive probability of non-greedy factor selection at each
+step, every monic irreducible polynomial over~$\FF_p$ is eventually
+captured.  That is, $\mathrm{FFStochasticMC}$ holds for all
+$\varepsilon > 0$.
+\end{theorem}
+\end{keyresult}
+
+\begin{theorem}[FF phase transition ---
+\lean{EM/FunctionField/StochasticMC.lean}{ff\_phase\_transition\_unconditional}
+{\color{leanink}$\checkmark$}]
+\label{thm:ff-phase-transition}
+The transition is sharp at $\varepsilon = 0$:
+\begin{enumerate}[nosep]
+\item For $\varepsilon > 0$: the stochastic process captures every monic
+  irreducible (Theorem~\textup{\ref{thm:ff-stochastic-mc}}).
+\item For $\varepsilon = 0$: each nontrivial character value has norm
+  exactly~$1$ (no spectral contraction); the walk reduces to the open
+  FF-MC conjecture.
+\end{enumerate}
+The standard FF-MC (the deterministic greedy walk) lives precisely at the
+$\varepsilon = 0$ critical point.  Unconditional---zero open hypotheses.
+\end{theorem}
+
+The full FF unconditional series totals ${\sim}1{,}673$ new lines
+across five files (\code{FactorTree}, \code{PopulationEquidist},
+\code{StochasticMC}, \code{Finiteness}, \code{Master}), all zero
+\texttt{sorry}.
+
+\begin{keyresult}
+The FF unconditional landscape
+(\lean{EM/FunctionField/Master.lean}{ff\_unconditional\_grand\_summary}
+{\color{leanink}$\checkmark$})
+assembles:
+\[
+  \underbrace{\text{Factor tree structure}}_{\text{Thm~\ref{thm:ff-factor-tree}}}
+  \;+\;
+  \underbrace{\text{Finiteness}}_{\text{Thm~\ref{thm:ff-finiteness}}}
+  \;+\;
+  \underbrace{\text{Stochastic MC}}_{\text{Thm~\ref{thm:ff-stochastic-mc}}}
+  \;+\;
+  \underbrace{\text{Phase transition}}_{\text{Thm~\ref{thm:ff-phase-transition}}}
+\]
+into a single machine-checked conjunction.  Every clause is
+unconditional (zero open hypotheses).
+The sole residual for the deterministic FF-MC is FFDH
+(Theorem~\textup{\ref{thm:ff-bootstrap-uncond}}).
+\end{keyresult}
+
+\paragraph{Summary.}
+The function field analog isolates the difficulty of Mullin's
+Conjecture with surgical precision.  Removing the analytic number
+theory (by working over $\FF_p[t]$ where Weil replaces
+Wiener--Ikehara) reveals that the entire difficulty lies in the
+orbit-specificity transfer: from population statistics to a specific
+deterministic orbit.  The three dead ends (\#127: Weil does not
+imply FF-DSL; \#129: large monodromy is false; \#130: SE does not
+imply DH) collectively show that the function field setting, despite
+its algebraic advantages, faces the same fundamental barrier as the
+integer case.
+
+The formalization across fourteen files (${\sim}6{,}300$~lines, zero
+\texttt{sorry}) makes the orbit-specificity barrier visible as a
+mathematical theorem, not merely a heuristic observation:
+\emph{every} algebraic tool that is available over function fields
+has been applied, and the residual is precisely the same open
+hypothesis (DSL/CME) that blocks MC over~$\ZZ$.

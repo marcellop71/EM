@@ -1,0 +1,67 @@
+\begin{abstract}
+The Euclid--Mullin sequence is defined by $a(0)=2$,
+$a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, where $\text{lpf}$ is
+the least prime factor.
+Mullin's Conjecture (MC, 1963) asserts that every prime eventually
+appears.  We present a Lean~4 formalization
+(${\sim}76{,}000$~lines, 141~files, zero~\texttt{sorry}) that reduces MC
+to a single open hypothesis and explores five variant selection rules.
+
+The main result is the machine-verified chain
+\[
+  \mathrm{DSL}
+  \;\Longrightarrow\;
+  \mathrm{CME}
+  \;\Longrightarrow\;
+  \mathrm{CCSB}
+  \;\Longrightarrow\;
+  \mathrm{MC},
+\]
+where \textbf{CME} (Conditional Multiplier Equidistribution) states
+that $\minFac$ destroys correlation between consecutive multiplier
+residues mod~$q$, and \textbf{DSL} (Deterministic Stability Lemma)
+asserts that population-level equidistribution of least prime
+factors transfers to the specific EM orbit.
+An inductive bootstrap recasts MC as walk-hitting on
+$(\ZZ/q\ZZ)^\times$ with SubgroupEscape proved free;
+a character-analytic bridge handles all character orders;
+ensemble averaging over squarefree starting points collapses
+the landscape to DSL\@.
+
+The \emph{factor tree} $\mathcal{T}(m)$---rooted at~$m$, branching at
+every prime factor of~$P{+}1$---provides a unifying framework for
+variants: the standard walk is the leftmost path, and
+$\mathrm{GenMixedMC}(m)$ asks that every prime appear somewhere
+in~$\mathcal{T}(m)$.  Under PSCD (Population Sieve Confinement
+Decay), a density-$1$ set of squarefree starting points satisfies
+GenMixedMC; the full chain PEAP $\Rightarrow$ PSCD is
+machine-checked with no residual open hypothesis:
+a weak unconditional CRT bound (sqfreeCount $\geq X/4$)
+absorbs the sieve constant since $\prod(1-1/p)\to 0$.
+The $\{\minFac, \operatorname{secondMinFac}\}$ two-point variant
+reduces to a single spectral hypothesis~(UFDStrong); for $q = 3$,
+faithful character escape closes this unconditionally.
+The function field analog over~$\FF_p[t]$, where the Weil bound gives
+population equidistribution for free, confirms that the residual
+difficulty is orbit-specificity transfer, not analytic number theory.
+Over 138~dead ends are documented.
+
+\medskip\noindent\textbf{Statements and proofs.}
+Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
+are formally verified in Lean~4; clicking the identifier links to the
+source code.
+Most proofs are sketched rather than fully reported;
+correctness is guaranteed by the type-checker.
+Some misalignment may exist between what is stated here and what is
+proved in the formalization; the Lean source is the authoritative reference.
+To mitigate this risk, we used
+LeanArchitect~\cite{LeanArchitect2026} to cross-check the 20~key
+declarations against the paper's theorem statements;
+this process uncovered one missing precondition, now corrected.
+All published results and open hypotheses are tagged with
+\texttt{@[publish]} and \texttt{@[open\_point]} annotations in the
+GitHub repository (\url{https://github.com/marcellop71/EM}), using the CA
+content-addressing framework for Lean~4; a machine-readable registry
+is available in the \texttt{registry/} folder.
+\end{abstract}
+
