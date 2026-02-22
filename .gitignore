@@ -1,6 +1,11 @@
 /.lake
 __pycache__/
 
+agents/
+docs/
+scripts/
+tmp/
+
 # LaTeX build artifacts
 *.aux
 *.log

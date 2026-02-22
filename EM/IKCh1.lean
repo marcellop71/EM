@@ -150,10 +150,7 @@ theorem vonMangoldt_sum_eq {n : ℕ} :
   vonMangoldt_sum
 
 /-- `Λ = μ ⋆ L` — IK (1.38). -/
-theorem vonMangoldt_eq_log_mul_moebius :
-    ArithmeticFunction.log * (μ : ArithmeticFunction ℝ) =
-      (ArithmeticFunction.vonMangoldt : ArithmeticFunction ℝ) :=
-  log_mul_moebius_eq_vonMangoldt
+abbrev vonMangoldt_eq_log_mul_moebius := @log_mul_moebius_eq_vonMangoldt
 
 /-- `Λ(n) = -∑_{d|n} μ(d) log d` — IK (1.40). -/
 theorem vonMangoldt_eq_neg_sum_moebius_log {n : ℕ} :

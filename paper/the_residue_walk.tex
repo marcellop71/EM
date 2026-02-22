@@ -1,0 +1,296 @@
+%% =========================================================================
+\section{The Residue Walk}
+\label{sec:walk}
+%% =========================================================================
+
+For any starting point $s \geq 2$, the generalized EM sequence and
+running product are defined by mutual recursion:
+\begin{align}
+	\Prod{s}(0) &= s, &
+	\seq{s}(k) &= \minFac\bigl(\Prod{s}(k)+1\bigr), &
+	\Prod{s}(k+1) &= \Prod{s}(k) \cdot \seq{s}(k).
+	\label{eq:gen-em}
+\end{align}
+The standard Euclid--Mullin sequence is the case $s = 2$
+(\lean{EM/EnsembleStructure.lean}{genProd\_two\_eq\_prod}).
+We use subscripted notation throughout: $\seq{s}$, $\Prod{s}$ denote
+the sequence and accumulator from starting point~$s$.
+
+\begin{theorem}[\lean{EM/ReciprocalSumDivergence.lean}{genSeq\_prime},
+  \lean{EM/EnsembleStructure.lean}{genSeq\_injective}]\label{thm:seq-props}
+For any $s \geq 2$, every $\seq{s}(k)$ is prime.
+For squarefree~$s$, the map $k \mapsto \seq{s}(k)$ is injective:
+no prime appears twice.
+\end{theorem}
+
+\noindent Further structural properties, all fully proved:
+\begin{itemize}[nosep]
+\item \textbf{Divisibility}: $s \mid \Prod{s}(k)$ for all~$k$
+  (\lean{EM/EnsembleFirstMoment.lean}{start\_dvd\_genProd}).
+\item \textbf{Strict monotonicity}: $\Prod{s}(k) < \Prod{s}(k{+}1)$
+  (\lean{EM/EnsembleStructure.lean}{genProd\_strict\_mono}).
+\item \textbf{Squarefreeness}: for squarefree~$s$, $\Prod{s}(k)$ is
+  squarefree for all~$k$
+  (\lean{EM/ReciprocalSumDivergence.lean}{genProd\_squarefree}).
+\end{itemize}
+
+\begin{theorem}[\defname{Tail identification} ---
+  \lean{EM/EnsembleStructure.lean}{genProd\_restart}]\label{thm:tail-id}
+Restarting the EM process from the $M$-th accumulator of orbit~$s$
+gives the tail of that orbit:
+\[
+  \Prod{\Prod{s}(M)}(k) \;=\; \Prod{s}(M + k),
+  \qquad
+  \seq{\Prod{s}(M)}(k) \;=\; \seq{s}(M + k).
+\]
+\end{theorem}
+
+\begin{proof}
+By induction on~$k$.  The base case $k = 0$ is immediate from the
+definition $\Prod{n}(0) = n$.  For the step,
+$\Prod{\Prod{s}(M)}(k{+}1) = \Prod{\Prod{s}(M)}(k) \cdot
+\minFac(\Prod{\Prod{s}(M)}(k) + 1)$; the inductive hypothesis
+replaces both occurrences by $\Prod{s}(M{+}k)$, giving
+$\Prod{s}(M{+}k) \cdot \minFac(\Prod{s}(M{+}k) + 1) =
+\Prod{s}(M{+}k{+}1)$.  The sequence identity follows by
+definition.
+\end{proof}
+
+\noindent The tail identification says that the family of
+generalized EM orbits is closed under ``time-shifting'': the orbit
+starting from any intermediate accumulator is not a new object but a
+suffix of the original orbit.
+
+\begin{definition}[\defname{Walk} and \defname{Multiplier}]\label{def:walk-mult}
+For any prime~$q$, the \textbf{residue walk} $\walkZ{s}{q}{\cdot}$ and the
+\textbf{multiplier} $\multZ{s}{q}{\cdot}$ project the accumulator and the
+next prime onto $\ZZ/q\ZZ$:
+$$\begin{aligned}\label{eq:walk}
+  &\walkZ{s}{q}{n} \coloneqq \Prod{s}(n) \bmod q, \\
+  &\multZ{s}{q}{n} \coloneqq \seq{s}(n{+}1) \bmod q.
+\end{aligned}$$
+The first subscript is the starting point; the second is the modulus.
+\end{definition}
+
+\begin{proposition}[\defname{Walk recurrence} ---
+  \lean{EM/MullinGroupCore.lean}{walkZ\_succ},
+  \lean{EM/EnsembleEM.lean}{genWalkZ\_succ}]\label{prop:recurrence}
+$\walkZ{s}{q}{n\!+\!1} = \walkZ{s}{q}{n} \cdot \multZ{s}{q}{n}$ in
+$\ZZ/q\ZZ$, for any starting point~$s$.
+\end{proposition}
+
+\begin{theorem}[\defname{Walk--Divisibility Bridge} ---
+  \lean{EM/EnsembleEM.lean}{genWalkZ\_eq\_neg\_one\_iff}]\label{thm:bridge}
+For any starting point~$s$ and prime~$q$:
+\[
+  \walkZ{s}{q}{k} = -1
+  \quad\Longleftrightarrow\quad
+  q \mid \Prod{s}(k) + 1.
+\]
+\end{theorem}
+
+\noindent The walk can be in one of two regimes:
+
+\begin{enumerate}[nosep]
+\item \textbf{Living regime.}  If $q \nmid s$ and $q$ has not yet appeared in
+  $\seq{s}(0), \ldots, \seq{s}(n{-}1)$, then $q \nmid \Prod{s}(n)$
+  (since $\Prod{s}(n) = s \cdot \seq{s}(0) \cdots \seq{s}(n{-}1)$
+  and $q$ divides none of these factors).
+  So $\walkZ{s}{q}{n} \in (\ZZ/q\ZZ)^\times$---the walk lives
+  in the group of units.
+
+\item \textbf{Dead regime.}  If $q = \seq{s}(k)$ for some~$k$,
+  then $q \mid \Prod{s}(m)$ for all $m > k$, so $\walkZ{s}{q}{m} = 0$
+  forever.  The walk has \emph{collapsed to zero}
+  (\lean{EM/EquidistBootstrap.lean}{walkZ\_capture\_then\_collapse},
+  proved for $s = 2$).
+\end{enumerate}
+
+\noindent The transition from living to dead can happen only
+through~$-1$ (Theorem~\ref{thm:bridge}).
+
+Hitting $-1$ is a \emph{necessary} condition for the walk to die (for
+$q$ to enter the sequence): if $q \mid \Prod{s}(n)+1$, then
+$\walkZ{s}{q}{n} = -1$.  But it is not sufficient by itself.  When
+$\walkZ{s}{q}{n} = -1$, the walk dies only if $q = \minFac(\Prod{s}(n)+1)$,
+i.e.\ no smaller prime divides $\Prod{s}(n)+1$.  If a smaller prime~$p$
+also divides $\Prod{s}(n)+1$, then $\minFac(\Prod{s}(n)+1) \leq p < q$
+and $q$ is \emph{not} selected---the walk \emph{bounces off}~$-1$ and continues living.
+The walk may therefore hit~$-1$ multiple times without dying.  Death
+occurs only at a hit where $q$ is the smallest available factor:
+\[
+  \cdots \to \underbrace{\walkZ{s}{q}{n} = -1}_{\text{bounce}}
+  \to (\ZZ/q\ZZ)^\times \to \cdots \to
+  \underbrace{\walkZ{s}{q}{n_0} = -1}_{\substack{\text{lethal hit:}\\
+    q = \minFac}}
+  \to \underbrace{\walkZ{s}{q}{n_0{+}1} = 0}_{\text{dead}}
+  \to 0 \to \cdots
+\]
+
+What determines whether a hit on~$-1$ is a bounce or a lethal hit?
+The answer depends on which other primes divide $\Prod{s}(n)+1$.
+We now specialize to the standard orbit~$s = 2$, where the
+\emph{sieve gap} provides the answer.
+
+\begin{definition}[\defname{$\MC({<}\,q)$}]\label{def:mc-below}
+For a prime~$q$, write $\MC({<}\,q)$ for the statement that every
+prime smaller than~$q$ appears in the EM sequence:
+$\forall\, p < q,\; p \text{ prime} \;\Rightarrow\; \exists\, k,\;
+\seq{2}(k) = p$.
+\end{definition}
+
+\noindent When $\MC({<}\,q)$ holds, every prime $p < q$ has entered the sequence
+at some stage~$k_p$, so $p \mid \Prod{2}(n)$ for all $n \geq k_p$.
+Past a uniform stage $N_0 = \max_p k_p$, every prime $p < q$ divides
+$\Prod{2}(n)$, and therefore cannot divide $\Prod{2}(n)+1$ (since
+$\gcd(\Prod{2}(n), \Prod{2}(n)+1) = 1$).  This is the \textbf{sieve gap}:
+past~$N_0$, the only primes that can divide $\Prod{2}(n)+1$ are
+$\geq q$.
+
+\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_implies\_seq\_ge}]\label{thm:roughness}
+If $\MC({<}\,q)$ holds, then $\exists\, N_0$ such that
+$\seq{2}(n{+}1) \geq q$ for all $n \geq N_0$.
+\end{theorem}
+
+\noindent The sieve gap transforms hitting~$-1$ from a necessary condition into
+a sufficient one:
+
+\begin{theorem}[\defname{Lethal hit} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_hit\_is\_lethal}]\label{thm:lethal-hit}
+If $\MC({<}\,q)$ holds and $\walkZ{2}{q}{n} = -1$ for some $n$ past the
+sieve gap, then $\seq{2}(n{+}1) = q$.
+\end{theorem}
+
+\begin{proof}
+Since $n$ is past the sieve gap, no prime $< q$ divides
+$\Prod{2}(n)+1$ (Theorem~\ref{thm:roughness}).  But $\walkZ{2}{q}{n} = -1$
+gives $q \mid \Prod{2}(n)+1$, so $q = \minFac(\Prod{2}(n)+1)$, and
+$\seq{2}(n{+}1) = q$.
+\end{proof}
+
+\begin{definition}[Missing prime]\label{def:missing}
+A prime~$q$ is \textbf{missing} if $\seq{2}(n) \neq q$ for all~$n$.
+\end{definition}
+
+\noindent Mullin's Conjecture asserts that no prime is missing.
+Under $\MC({<}\,q)$, the first hit on~$-1$ past the sieve gap is
+lethal.  This immediately constrains missing primes:
+
+\begin{theorem}[\lean{EM/EquidistThreshold.lean}{mcBelow\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
+If $\MC({<}\,q)$ holds and $q$ is missing, then the walk \emph{never}
+hits~$-1$ past the sieve gap: $\exists\, N_0$ such that
+$\walkZ{2}{q}{n} \neq -1$ for all $n \geq N_0$.
+\end{theorem}
+
+\begin{proof}
+Any hit past the sieve gap would give $\seq{2}(n{+}1) = q$
+(Theorem~\ref{thm:lethal-hit}), contradicting $q$ missing.
+\end{proof}
+
+\noindent For the first missing prime~$q$, the hypothesis $\MC({<}\,q)$ holds
+by definition.  So its walk avoids~$-1$ permanently past the sieve
+gap, the walk $\walkZ{2}{q}{\cdot}$ is infinite: it stays
+in~$(\ZZ/q\ZZ)^\times$ forever, never collapsing to zero.
+
+\subsection{The forbidden multiplier and the death channel}
+
+The following algebraic observations hold for every starting point~$s$.
+Suppose the walk is at position $c \in (\ZZ/q\ZZ)^\times$ at step~$n$.
+The walk would hit $-1$ at step $n{+}1$ if and only if
+\[
+  \walkZ{s}{q}{n} \cdot \multZ{s}{q}{n} = -1,
+  \quad\text{i.e.,}\quad
+  \multZ{s}{q}{n} = -c^{-1}.
+\]
+
+\noindent So at every step, there is exactly \textbf{one forbidden multiplier}
+$f(n) = -\walkZ{s}{q}{n}^{-1}$---the unique residue class that would
+send the walk to~$-1$.  This is $1$~element out of $q-1$ possible
+unit residues.
+
+\begin{definition}[\defname{Death channel}]\label{def:death-channel}
+The \textbf{death channel} at position $c$ is the residue class
+$b(c) = -c^{-1} \bmod q$.
+\end{definition}
+
+\noindent When the walk is at~$c$, the death channel is the set of primes
+$p \equiv -c^{-1} \pmod{q}$, which by Dirichlet's theorem has density $1/(q-1)$ among all primes.
+The death channel \emph{moves} with the walk: as $c$ changes from step
+to step, the forbidden class changes with it.  The map $c \mapsto
+-c^{-1}$ is a bijection on $(\ZZ/q\ZZ)^\times$ (it is the composition
+of inversion and negation).
+
+\begin{theorem}[\lean{EM/EquidistSieve.lean}{walk\_hits\_neg\_one\_iff\_mult\_eq\_forbidden}]\label{thm:forbidden}
+For any starting point~$s$ and step~$n$ with $\walkZ{s}{q}{n} \in (\ZZ/q\ZZ)^\times$:
+\[
+  \walkZ{s}{q}{n{+}1} = -1
+  \quad\Longleftrightarrow\quad
+  \multZ{s}{q}{n} = -\walkZ{s}{q}{n}^{-1}.
+\]
+\end{theorem}
+
+\noindent In any orbit where $q$ never appears, the multiplier avoids the
+death channel at every step, forever.
+This brings us to discuss multipliers.
+
+\subsection{The Confinement Theorem and SubgroupEscape}
+
+Before asking whether the walk hits~$-1$, we must ask whether it
+\emph{can}.  The walk is multiplicative:
+$\walkZ{s}{q}{n} = \walkZ{s}{q}{0} \cdot \prod_{k < n} \multZ{s}{q}{k}$.
+The reachable set is the coset
+$\walkZ{s}{q}{0} \cdot \langle \text{multipliers} \rangle$.
+
+\begin{theorem}[\defname{Confinement} --- \lean{EM/MullinGroupCore.lean}{confinement\_forward}]\label{thm:confinement}
+For any starting point~$s$: if every multiplier lies in a subgroup
+$H \leq (\ZZ/q\ZZ)^\times$, then the walk is confined to the coset
+$\walkZ{s}{q}{0} \cdot H$.
+In particular, if $-1 \notin \walkZ{s}{q}{0} \cdot H$, the walk
+\emph{never} hits~$-1$.
+\end{theorem}
+
+\noindent This motivates:
+
+\begin{property}[\defname{SubgroupEscape} (\abbr{SE})]\label{def:se}
+For a starting point~$s$ and prime~$q$: no proper subgroup
+$H < (\ZZ/q\ZZ)^\times$ contains all multipliers.  Equivalently,
+$\langle \multZ{s}{q}{n} : n \in \NN \rangle = (\ZZ/q\ZZ)^\times$.
+\end{property}
+
+\begin{theorem}[\lean{EM/MullinGroupEscape.lean}{se\_of\_maximal\_escape}]
+SE holds iff multipliers escape every \emph{maximal} proper subgroup.
+Since $(\ZZ/q\ZZ)^\times$ is cyclic, the maximal subgroups are the
+index-$\ell$ subgroups for prime $\ell \mid q\!-\!1$.
+\end{theorem}
+
+\noindent When SE holds, the walk is not confined to any proper coset: every
+element of $(\ZZ/q\ZZ)^\times$, including~$-1$, is \emph{reachable}.
+But reachability does not imply hitting---that is a dynamical question.
+
+\subsection{The first missing prime}
+
+We now assemble the key argument.  Suppose, toward contradiction, that
+Mullin's Conjecture is false.  Then there exists a \textbf{first
+missing prime}: the smallest prime~$q$ that never appears in the EM
+sequence. For this~$q$:
+
+\begin{enumerate}[label=(\alph*),nosep]
+\item $\MC({<}\,q)$ holds---by definition, every prime smaller than~$q$
+  is in the sequence.
+\item The walk $\walkZ{2}{q}{\cdot}$ is infinite---since $q$ is missing,
+  $\walkZ{2}{q}{n} \in (\ZZ/q\ZZ)^\times$ for all~$n$.
+\item Past the sieve gap, the walk never hits~$-1$.  Here is why.
+  Eventually (say for $n \geq N_0$), all primes $< q$ have entered
+  the sequence and divide $\Prod{2}(n)$.  For $n \geq N_0$, no prime
+  $< q$ can divide $\Prod{2}(n)+1$ (since it divides $\Prod{2}(n)$ and
+  $\gcd(\Prod{2}(n), \Prod{2}(n)+1) = 1$).  So if $\walkZ{2}{q}{n} = -1$ for
+  some $n \geq N_0$, then $q \mid \Prod{2}(n)+1$, and $q$ is the smallest
+  prime factor of $\Prod{2}(n)+1$ (all smaller primes are excluded).
+  Then $\seq{2}(n{+}1) = q$, contradicting $q$ being missing.
+\end{enumerate}
+
+\
+
+\noindent Therefore: \textbf{for the first missing prime~$q$, the walk is an
+infinite trajectory on $(\ZZ/q\ZZ)^\times$ that avoids the death
+channel at every step past the sieve gap.} Equivalently: $\multZ{2}{q}{n} \neq -\walkZ{2}{q}{n}^{-1}$ for all $n \geq N_0$.
+

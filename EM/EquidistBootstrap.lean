@@ -33,10 +33,11 @@ ingredient for a full inductive proof of MC is the dynamical component
 -/
 
 section InductiveBootstrap
+open Classical
 
 /-- MC holds for all primes below p: every prime r < p appears in the
     Euclid-Mullin sequence. -/
-def mc_below (p : Nat) : Prop :=
+def MCBelow (p : Nat) : Prop :=
   ∀ r, Nat.Prime r → r < p → ∃ k, seq k = r
 
 /-- A prime r < p maps to a nonzero element of ZMod p. -/
@@ -170,7 +171,6 @@ private theorem odd_unit_mem_of_odd_primes_mem {p : Nat} [Fact (Nat.Prime p)]
           rw [← Nat.cast_mul]; congr 1; exact hab.symm
         rw [heq]; exact H.mul_mem ha_mem hb_mem
 
-open Classical in
 /-- If every prime r < p maps into H, then H = ⊤.
     Uses a cardinality argument: the map k ↦ Units.mk0 (k+1) for k ∈ {0,...,p−2}
     injects into H, giving |H| ≥ p−1 = |(ZMod p)ˣ|. -/
@@ -260,17 +260,16 @@ theorem prime_residue_escape : PrimeResidueEscape := by
   · subst hr2; convert h2_mem using 1
   · exact hodd r hr hrp (by have := hr.two_le; omega) hr0
 
-open Classical in
 /-- **Inductive bootstrap for SE**: if MC holds for all primes below p
     and PrimeResidueEscape holds, then SubgroupEscape holds at p.
 
     Proof: each prime r ∈ [3, p) appears as seq(k) for some k ≥ 1
-    (by mc_below, noting seq(0) = 2 ≠ r since r ≥ 3). Then
+    (by MCBelow, noting seq(0) = 2 ≠ r since r ≥ 3). Then
     multZ(p, k−1) = seq(k) mod p = r mod p.  PrimeResidueEscape gives
     an r outside any given proper subgroup H, so H is escaped. -/
-theorem mc_below_pre_implies_se (hpre : PrimeResidueEscape)
+theorem mcBelow_pre_implies_se (hpre : PrimeResidueEscape)
     {p : Nat} [inst : Fact (Nat.Prime p)] (hp : IsPrime p) (hne : ∀ k, seq k ≠ p)
-    (hmc : mc_below p) :
+    (hmc : MCBelow p) :
     ∀ H : Subgroup (ZMod p)ˣ, H ≠ ⊤ →
       ∃ n, (Units.mk0 (multZ p n) (multZ_ne_zero hp hne n)) ∉ H := by
   intro H hH
@@ -410,6 +409,7 @@ remaining open hypothesis is DynamicalHitting. The algebraic component (SE)
 is derived automatically from the induction at each step. -/
 
 section IrreducibleCore
+open Classical
 
 /-- **Dynamical Hitting Hypothesis**: if SubgroupEscape holds at q (all
     multiplier residues escape every proper subgroup of (ZMod q)ˣ), then
@@ -468,12 +468,11 @@ theorem dynamical_hitting_implies_mixing (hdh : DynamicalHitting) :
   obtain ⟨n, hn, hdvd⟩ := hdh q hq hne hse N
   exact ⟨n, hn, (walkZ_eq_neg_one_iff n).mpr hdvd⟩
 
-open Classical in
 /-- **The one-hypothesis reduction**: DynamicalHitting + PrimeResidueEscape
     imply Mullin's Conjecture, by strong induction on p.
 
     At each prime p: the induction hypothesis gives MC(< p), the inductive
-    bootstrap (`mc_below_pre_implies_se`) gives SE(p) from PrimeResidueEscape,
+    bootstrap (`mcBelow_pre_implies_se`) gives SE(p) from PrimeResidueEscape,
     and DynamicalHitting gives HH(p). Then `captures_target` turns the
     hitting event into seq(n+1) = p.
 
@@ -497,10 +496,10 @@ theorem dynamical_hitting_pre_implies_mullin
       by_contra hnotexists
       have hne : ∀ m, seq m ≠ q := fun m heq => hnotexists ⟨m, heq⟩
       -- IH gives MC(< q)
-      have hmc : mc_below q := fun r hr hrq => ih r (by omega) hr.toIsPrime
+      have hmc : MCBelow q := fun r hr hrq => ih r (by omega) hr.toIsPrime
       -- Bootstrap: MC(< q) + PrimeResidueEscape → SE(q)
       haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
-      have hse := mc_below_pre_implies_se hpre hq hne hmc
+      have hse := mcBelow_pre_implies_se hpre hq hne hmc
       -- DynamicalHitting: SE(q) → HH(q)
       obtain ⟨N, hN⟩ := exists_bound q (fun p hpq hp => ih p (by omega) hp)
       obtain ⟨n, hn_ge, hn_dvd⟩ := hdh q hq hne hse N
@@ -520,3 +519,203 @@ theorem dynamical_hitting_implies_mullin (hdh : DynamicalHitting) :
   dynamical_hitting_pre_implies_mullin hdh prime_residue_escape
 
 end IrreducibleCore
+
+/-! ## §13b. The Single Hit Theorem
+
+The weakest hitting condition in the "hitting family" that suffices for MC:
+`SingleHitHypothesis` asks for a single hit on -1 past the sieve gap,
+with `MCBelow q` as an additional hypothesis.
+
+Comparison with the two neighbouring hypotheses:
+- **DynamicalHitting**: SE(q) → ∀ N, ∃ n ≥ N, q ∣ prod(n)+1.
+  Cofinal hitting, does NOT require MCBelow q.
+- **SingleHitHypothesis**: MCBelow(q) → SE(q) →
+  ∀ N₀ with sieve-gap property, ∃ n ≥ N₀, q ∣ prod(n)+1.
+  Single hit past the sieve gap; requires MCBelow q (available from induction).
+- **HittingHypothesis**: hne → ∀ N, ∃ n ≥ N, q ∣ prod(n)+1.
+  Cofinal hitting; neither SE nor MCBelow; strongest but hardest to verify.
+
+SHH is strictly weaker than DH in two ways: (1) it assumes MCBelow q,
+(2) it asks for one hit past a specific bound rather than cofinal hitting.
+Both extras are harmless in the inductive proof but make SHH genuinely
+weaker as a standalone mathematical statement. -/
+
+section SingleHit
+open Classical
+
+/-- **Single Hit Hypothesis**: for every missing prime q, if MC(< q) holds
+    and SubgroupEscape holds at q, then there is at least one hit on -1
+    past the sieve gap (the point where all primes < q have appeared).
+
+    This is strictly weaker than DynamicalHitting in two ways:
+    (1) SHH assumes MC(< q), which DH does not.
+    (2) SHH asks for one hit past a specific bound, while DH asks for
+        cofinal hitting (infinitely many hits past any bound).
+    Both extras are harmless in the inductive proof but make SHH
+    genuinely weaker as a standalone mathematical statement. -/
+def SingleHitHypothesis : Prop :=
+  ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
+    MCBelow q →
+    (∀ H : Subgroup (ZMod q)ˣ, H ≠ ⊤ →
+      ∃ n, (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ∉ H) →
+    ∀ (N₀ : Nat), (∀ p, p < q → IsPrime p → ∃ m, m ≤ N₀ ∧ seq m = p) →
+      ∃ n, N₀ ≤ n ∧ q ∣ (prod n + 1)
+
+/-- **DH implies SingleHitHypothesis**: DynamicalHitting is strictly stronger
+    because it does not require MCBelow q and gives cofinal hitting. -/
+theorem dh_implies_single_hit (hdh : DynamicalHitting) : SingleHitHypothesis := by
+  intro q _ hq hne _hmc hse N₀ _hN₀
+  exact hdh q hq hne hse N₀
+
+/-- **HH implies SingleHitHypothesis**: HittingHypothesis does not need SE
+    or MCBelow at all, so it trivially implies SingleHitHypothesis. -/
+theorem hh_implies_single_hit (hhh : HittingHypothesis) : SingleHitHypothesis := by
+  intro q _ hq hne _hmc _hse N₀ _hN₀
+  exact hhh q hq hne N₀
+
+/-- **The Single Hit Theorem**: SingleHitHypothesis + PrimeResidueEscape
+    imply Mullin's Conjecture, by strong induction on p.
+
+    At each prime p: the induction hypothesis gives MCBelow p, the
+    bootstrap gives SE(p) from PRE, and SingleHitHypothesis gives a
+    hit past the sieve gap. captures_target finishes. -/
+theorem single_hit_pre_implies_mullin
+    (hsh : SingleHitHypothesis) (hpre : PrimeResidueEscape) :
+    MullinConjecture := by
+  unfold MullinConjecture
+  suffices ∀ k q, q ≤ k → IsPrime q → ∃ n, seq n = q by
+    intro q hq; exact this q q (Nat.le_refl q) hq
+  intro k
+  induction k with
+  | zero => intro q hle hq; exact absurd hq.1 (by omega)
+  | succ k ih =>
+    intro q hle hq
+    match Nat.lt_or_ge q (k + 1) with
+    | .inl hlt => exact ih q (by omega) hq
+    | .inr _ =>
+      by_contra hnotexists
+      have hne : ∀ m, seq m ≠ q := fun m heq => hnotexists ⟨m, heq⟩
+      -- IH gives MC(< q)
+      have hmc : MCBelow q := fun r hr hrq => ih r (by omega) hr.toIsPrime
+      -- Bootstrap: MC(< q) + PrimeResidueEscape → SE(q)
+      haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+      have hse := mcBelow_pre_implies_se hpre hq hne hmc
+      -- exists_bound: uniform bound N₀ such that all primes < q appear by N₀
+      obtain ⟨N, hN⟩ := exists_bound q (fun p hpq hp => ih p (by omega) hp)
+      -- SingleHitHypothesis: MC(< q) + SE(q) + sieve gap → ∃ n ≥ N, q ∣ prod n + 1
+      obtain ⟨n, hn_ge, hn_dvd⟩ := hsh q hq hne hmc hse N hN
+      -- All primes < q appeared by step n (since n ≥ N)
+      have hall : ∀ p, p < q → IsPrime p → ∃ m, m ≤ n ∧ seq m = p := by
+        intro p hpq hp
+        obtain ⟨m, hm, hseqm⟩ := hN p hpq hp
+        exact ⟨m, by omega, hseqm⟩
+      -- captures_target: seq(n+1) = q, contradicting q ∉ seq
+      exact hnotexists ⟨n + 1, captures_target hq hn_dvd hall⟩
+
+/-- **The Single Hit Theorem (clean version)**: SingleHitHypothesis alone
+    implies Mullin's Conjecture. PrimeResidueEscape is proved elementarily. -/
+theorem single_hit_implies_mc (hsh : SingleHitHypothesis) :
+    MullinConjecture :=
+  single_hit_pre_implies_mullin hsh prime_residue_escape
+
+/-- DH → MC factors through SingleHitHypothesis:
+    DH → SingleHitHypothesis → MC. -/
+theorem dh_mc_via_single_hit (hdh : DynamicalHitting) : MullinConjecture :=
+  single_hit_implies_mc (dh_implies_single_hit hdh)
+
+end SingleHit
+
+/-! ## First Passage Structure
+
+The walk mod q has a binary structure: it hits -1 at most once (in a
+meaningful way). After the prime q enters the sequence at step k
+(i.e., seq(k) = q), the product prod(m) for all m >= k is divisible by q,
+so walkZ(q,m) = 0 for all m >= k. In particular, walkZ(q,m) != -1 for
+q >= 3, since 0 != -1 in ZMod q.
+
+This means the walk mod q has two phases:
+1. **Pre-entry**: q is not yet in the sequence. walkZ(q,n) != 0 for all n.
+   The walk can hit -1 (triggering q's entry) or stay away.
+2. **Post-entry**: q = seq(k). walkZ(q,m) = 0 for all m >= k.
+   The walk is dead — collapsed to zero forever.
+
+The transition from phase 1 to phase 2 is irreversible: once q enters,
+it divides all subsequent products. -/
+
+section FirstPassage
+
+/-- If q divides prod(n), then walkZ(q,n) = 0. This is the basic cast lemma. -/
+theorem walkZ_eq_zero_of_dvd {q : Nat} {n : Nat} (h : q ∣ prod n) :
+    walkZ q n = 0 := by
+  simp only [walkZ]
+  rwa [ZMod.natCast_eq_zero_iff]
+
+/-- After a prime enters the sequence, the walk collapses to zero.
+    If seq(k) = q and k <= m, then q | prod(m), so walkZ(q,m) = 0. -/
+theorem walkZ_zero_after_entry {q : Nat} {k m : Nat}
+    (hseq : seq k = q) (hle : k ≤ m) :
+    walkZ q m = 0 := by
+  apply walkZ_eq_zero_of_dvd
+  rw [← hseq]
+  exact seq_dvd_prod k m hle
+
+/-- After entry, the walk never hits -1 again (for q >= 3).
+    Since walkZ(q,m) = 0 and 0 != -1 in ZMod q for q >= 3,
+    the walk can never hit -1 after q enters the sequence. -/
+theorem walkZ_ne_neg_one_after_entry {q : Nat} [Fact (Nat.Prime q)]
+    {k m : Nat} (hseq : seq k = q) (hle : k ≤ m) (hq3 : q ≥ 3) :
+    walkZ q m ≠ -1 := by
+  rw [walkZ_zero_after_entry hseq hle]
+  exact neg_one_ne_zero_of_prime_ge_three hq3 |>.symm
+
+/-- At the capture step itself: walkZ(seq(n+1), n) = -1 (the walk hits -1),
+    and then walkZ(seq(n+1), m) = 0 for all m >= n+1.
+    This combines `walkZ_hit_at_seq_succ` with `walkZ_zero_after_entry`. -/
+theorem walkZ_capture_then_collapse {n m : Nat} (hm : n + 1 ≤ m) :
+    walkZ (seq (n + 1)) n = -1 ∧ walkZ (seq (n + 1)) m = 0 :=
+  ⟨walkZ_hit_at_seq_succ n, walkZ_zero_after_entry rfl hm⟩
+
+/-- The walk mod q cannot hit -1 at two distinct times that are both
+    followed by capture. If walkZ(q,n) = -1 and seq(n+1) = q, then
+    for any m > n, walkZ(q,m) != -1. -/
+theorem at_most_one_capture {q : Nat} [Fact (Nat.Prime q)]
+    {n m : Nat} (hseq : seq (n + 1) = q) (hm : n < m) (hq3 : q ≥ 3) :
+    walkZ q m ≠ -1 :=
+  walkZ_ne_neg_one_after_entry hseq (by omega) hq3
+
+/-- No prime can be captured twice in the sequence.
+    This is immediate from seq being injective.
+    If seq(j) = q and seq(k) = q, then j = k. -/
+theorem seq_entry_unique {q : Nat} {j k : Nat}
+    (hj : seq j = q) (hk : seq k = q) : j = k :=
+  seq_injective j k (hj.trans hk.symm)
+
+/-- **First-passage decomposition**: for any prime q >= 3, exactly one of
+    two cases holds:
+    1. q never appears in the sequence (walkZ(q,n) != 0 for all n), or
+    2. q = seq(k) for a unique k, and walkZ(q,m) = 0 for all m >= k.
+
+    This is the "binary structure" of the walk mod q. -/
+theorem first_passage_dichotomy (q : Nat) (_hq : IsPrime q) :
+    (∀ n, seq n ≠ q) ∨ (∃! k, seq k = q) := by
+  by_cases h : ∃ k, seq k = q
+  · obtain ⟨k, hk⟩ := h
+    right
+    exact ⟨k, hk, fun k' hk' => seq_entry_unique hk' hk⟩
+  · left
+    push_neg at h
+    exact h
+
+/-- In the "never appears" case, walkZ(q,n) is always nonzero. -/
+theorem walkZ_always_nonzero_of_missing (q : Nat) (hq : IsPrime q)
+    (hmiss : ∀ n, seq n ≠ q) (n : Nat) :
+    walkZ q n ≠ 0 :=
+  walkZ_ne_zero_of_not_in_seq hq hmiss n
+
+/-- In the "appears once" case, walkZ(q,m) = 0 from the entry point onward. -/
+theorem walkZ_zero_from_entry (q : Nat) {k : Nat}
+    (hentry : seq k = q) (m : Nat) (hm : k ≤ m) :
+    walkZ q m = 0 :=
+  walkZ_zero_after_entry hentry hm
+
+end FirstPassage

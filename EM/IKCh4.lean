@@ -3,6 +3,7 @@ import Mathlib.NumberTheory.Bernoulli
 import Mathlib.NumberTheory.BernoulliPolynomials
 import Mathlib.Analysis.Fourier.PoissonSummation
 import Mathlib.Analysis.Fourier.FourierTransform
+import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Stirling
 import Mathlib.Algebra.Order.Floor.Ring
@@ -136,6 +137,10 @@ and `Real.tsum_eq_tsum_fourier_of_rpow_decay` for functions with power decay.
 -/
 
 section PoissonSummation
+
+-- In Mathlib v4.29, FourierTransform instance for SchwartzMap needs manual provision.
+noncomputable instance : FourierTransform (SchwartzMap ℝ ℂ) (SchwartzMap ℝ ℂ) :=
+  SchwartzMap.instFourierTransform
 
 /-- Poisson summation for Schwartz functions — IK Theorem 4.4 (4.23).
     Mathlib: `SchwartzMap.tsum_eq_tsum_fourier`. -/

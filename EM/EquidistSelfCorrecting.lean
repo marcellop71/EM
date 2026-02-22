@@ -39,7 +39,7 @@ The chain of reductions is:
 DecorrelationHypothesis
     →[decorrelation_implies_ped]→ PositiveEscapeDensity
     →[PEDImpliesComplexCSB]→ ComplexCharSumBound
-    →[ComplexCSBImpliesHitCountLB]→ hitCount_lower_bound
+    →[ComplexCSBImpliesHitCountLB]→ HitCountLowerBound
     →[proved]→ WalkEquidistribution
     →[proved]→ DynamicalHitting
     →[proved]→ MullinConjecture
@@ -112,7 +112,7 @@ def PEDImpliesComplexCSB : Prop := PositiveEscapeDensity → ComplexCharSumBound
     viewed as a complex number, has norm 1.  This follows because `(ZMod q)ˣ`
     is finite, so every element has finite order, and finite-order elements in
     a normed ring have norm 1. -/
-private lemma char_val_norm_one {q : Nat} [Fact (Nat.Prime q)]
+private theorem char_val_norm_one {q : Nat} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (u : (ZMod q)ˣ) :
     ‖(χ u : ℂ)‖ = 1 := by
   have h2 : IsOfFinOrder (χ u) := χ.isOfFinOrder (isOfFinOrder_of_finite u)
@@ -206,7 +206,7 @@ theorem decorrelation_implies_ped :
 
     This composes:
     - `PEDImpliesComplexCSB` (open): PED → ComplexCharSumBound
-    - `ComplexCSBImpliesHitCountLB` (open): CCSB → hitCount_lower_bound
+    - `ComplexCSBImpliesHitCountLB` (open): CCSB → HitCountLowerBound
     - `complex_csb_mc` (proved): CCSB + Fourier → MullinConjecture -/
 theorem ped_mc
     (hped : PositiveEscapeDensity)
@@ -223,7 +223,7 @@ theorem ped_mc
     DecorrelationHypothesis
         → PositiveEscapeDensity        [decorrelation_implies_ped, proved]
         → ComplexCharSumBound          [PEDImpliesComplexCSB]
-        → hitCount_lower_bound         [ComplexCSBImpliesHitCountLB]
+        → HitCountLowerBound         [ComplexCSBImpliesHitCountLB]
         → WalkEquidistribution         [proved]
         → MullinConjecture             [proved]
     ``` -/
@@ -260,7 +260,7 @@ def NoLongRuns (L : Nat) : Prop :=
     ∃ k, k < L ∧ χ (emMultUnit q hq hne (n + k)) ≠ 1
 
 /-- Helper: `(i + 1) * L ≤ N - N₀` when `i < (N - N₀) / L`. -/
-private lemma block_fits {N N₀ L : ℕ} (_ : 0 < L) (i : ℕ)
+private theorem block_fits {N N₀ L : ℕ} (_ : 0 < L) (i : ℕ)
     (hi : i < (N - N₀) / L) (_ : N₀ ≤ N) :
     (i + 1) * L ≤ N - N₀ := by
   have h1 : i + 1 ≤ (N - N₀) / L := hi
@@ -270,7 +270,7 @@ private lemma block_fits {N N₀ L : ℕ} (_ : 0 < L) (i : ℕ)
 
 /-- Helper: counting escapes via injection from block indices.
     For each block i < (N - N₀)/L, classical choice picks a witness in escSet. -/
-lemma escape_count_ge_blocks {q : ℕ} [Fact (Nat.Prime q)]
+theorem escape_count_ge_blocks {q : ℕ} [Fact (Nat.Prime q)]
     {hq : IsPrime q} {hne : ∀ k, seq k ≠ q}
     {χ : (ZMod q)ˣ →* ℂˣ} {N₀ L : ℕ}
     (hN₀ : ∀ n ≥ N₀, ∃ k, k < L ∧ χ (emMultUnit q hq hne (n + k)) ≠ 1)
@@ -579,13 +579,13 @@ def IsOrder2 {q : Nat} [Fact (Nat.Prime q)] (χ : (ZMod q)ˣ →* ℂˣ) : Prop 
   ∀ u : (ZMod q)ˣ, (χ u : ℂ) = 1 ∨ (χ u : ℂ) = -1
 
 /-- Every value of an order-2 character squares to 1 in ℂ. -/
-lemma order2_sq_eq_one {q : Nat} [Fact (Nat.Prime q)]
+theorem order2_sq_eq_one {q : Nat} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (hord2 : IsOrder2 χ) (u : (ZMod q)ˣ) :
     (χ u : ℂ) ^ 2 = 1 := by
   rcases hord2 u with h | h <;> simp [h]
 
 /-- The walk character values of an order-2 character all lie in {+1, −1}. -/
-lemma walk_char_val_pm_one {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
+theorem walk_char_val_pm_one {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (hord2 : IsOrder2 χ) (n : ℕ) :
     (χ (emWalkUnit q hq hne n) : ℂ) = 1 ∨
     (χ (emWalkUnit q hq hne n) : ℂ) = -1 := by
@@ -605,7 +605,7 @@ lemma walk_char_val_pm_one {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
 
 /-- When the multiplier character value is −1 (an escape), the walk character
     value is negated at the next step. -/
-lemma escape_flips_walk_char {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
+theorem escape_flips_walk_char {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (n : ℕ) :
     (χ (emMultUnit q hq hne n) : ℂ) = -1 →
     (χ (emWalkUnit q hq hne (n + 1)) : ℂ) =
@@ -615,7 +615,7 @@ lemma escape_flips_walk_char {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
 
 /-- When the multiplier character value is 1 (a kernel step), the walk
     character value is preserved at the next step. -/
-lemma kernel_preserves_walk_char {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
+theorem kernel_preserves_walk_char {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (n : ℕ) :
     (χ (emMultUnit q hq hne n) : ℂ) = 1 →
     (χ (emWalkUnit q hq hne (n + 1)) : ℂ) =
@@ -625,7 +625,7 @@ lemma kernel_preserves_walk_char {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
 
 /-- **Walk norm is 1 for order-2 characters**: each walk character value has
     complex norm 1. -/
-lemma walk_char_norm_one {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
+theorem walk_char_norm_one {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (hord2 : IsOrder2 χ) (n : ℕ) :
     ‖(χ (emWalkUnit q hq hne n) : ℂ)‖ = 1 := by
   rcases walk_char_val_pm_one hq hne χ hord2 n with h | h <;> simp [h]
@@ -680,6 +680,55 @@ theorem order2_noLongRuns_mc (L : Nat) (hL : 0 < L) (hnlr : NoLongRuns L)
   noLongRuns_mc' L hL hnlr hped_csb
 
 end BREOrder2
+
+/-! ## §35.1. NoLongRuns for Quadratic Residues
+
+This subsection provides a specialized variant of `NoLongRuns` restricted to
+order-2 characters, corresponding to the natural statement "no L consecutive
+quadratic residues after the sieve gap" when q ≡ 1 (mod 4).
+
+For a prime q, an order-2 character χ takes only values ±1. The most important
+example is the quadratic residue (Legendre) character when q ≡ 1 (mod 4).
+The condition `NoLongRunsQuadratic L` asserts that beyond some threshold, we
+never see L consecutive multipliers all satisfying χ(m) = 1 (i.e., all in the
+kernel of χ).
+
+This is a natural restriction of the general `NoLongRuns L` hypothesis:
+- `NoLongRuns L` quantifies over ALL nontrivial characters χ
+- `NoLongRunsQuadratic L` quantifies only over order-2 characters
+
+Note: The reduction `NoLongRunsQuadratic L → MC` would require a proof that
+controlling ONLY order-2 characters is sufficient for PED. The existing
+`order2_noLongRuns_mc` theorem assumes full `NoLongRuns L` (all characters),
+so `NoLongRunsQuadratic` represents a genuinely weaker (and more natural)
+hypothesis that would require a new proof strategy. This is left as future work.
+-/
+
+open Classical in
+/-- **NoLongRunsQuadratic(L)**: For every prime q not in the sequence,
+    for every order-2 character χ mod q (which includes the quadratic residue
+    character when q ≡ 1 mod 4), there exists N₀ such that for all n ≥ N₀,
+    among the L consecutive multipliers m(n), ..., m(n+L-1), at least one
+    satisfies χ(m(n+k)) ≠ 1.
+
+    **Interpretation**: No run of L consecutive quadratic residues after the
+    sieve gap (for primes where the QR character is nontrivial).
+
+    **Status**: This is strictly weaker than `NoLongRuns L` (which requires
+    escapes for ALL nontrivial characters, not just order-2 ones). Whether
+    this weaker hypothesis is sufficient for MC is an open question. -/
+def NoLongRunsQuadratic (L : Nat) : Prop :=
+  ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
+  ∀ (χ : (ZMod q)ˣ →* ℂˣ) (_hχ : χ ≠ 1) (_hord2 : IsOrder2 χ),
+  ∃ N₀ : ℕ, ∀ n ≥ N₀,
+    ∃ k, k < L ∧ χ (emMultUnit q hq hne (n + k)) ≠ 1
+
+/-- **NoLongRuns implies NoLongRunsQuadratic**: the general no-long-runs
+    hypothesis implies the order-2 restricted version. -/
+theorem noLongRuns_implies_noLongRunsQuadratic (L : ℕ) (hnlr : NoLongRuns L) :
+    NoLongRunsQuadratic L := by
+  intro q inst hq hne χ hχ _hord2
+  exact @hnlr q inst hq hne χ hχ
 
 /-! ## §36. Sieve Equidistribution, Dirichlet Independence, and Multi-Modular CSB
 
@@ -783,7 +832,7 @@ section MultiModular
     This is a strengthening of `ComplexCharSumBound` with a uniformity threshold.
     Combined with `ThresholdHitting → MC` (proved in §14), MultiModularCSB implies
     MC by taking B = Q₀ and using `FiniteMCBelow Q₀` (which is finitely verifiable,
-    and verified for Q₀ = 11 in `concrete_mc_below_11`).
+    and verified for Q₀ = 11 in `concrete_mcBelow_11`).
 
     **This is an open Prop**: proving it requires analytic estimates on the spectral
     gap of the EM dynamical system, or a sieve argument showing that the walk is
@@ -870,7 +919,7 @@ section WalkTelescope
 /-- Every value of a multiplicative character `χ : (ZMod q)ˣ →* ℂˣ`,
     viewed as a complex number, has norm 1.  Extracted here as a non-private
     lemma for use in §37. -/
-lemma walkTelescope_char_norm_one {q : Nat} [Fact (Nat.Prime q)]
+theorem walkTelescope_char_norm_one {q : Nat} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (u : (ZMod q)ˣ) :
     ‖(χ u : ℂ)‖ = 1 := by
   have h2 : IsOfFinOrder (χ u) := χ.isOfFinOrder (isOfFinOrder_of_finite u)

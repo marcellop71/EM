@@ -1,0 +1,423 @@
+%% =========================================================================
+\section{The Lean Formalization}
+\label{sec:lean}
+%% =========================================================================
+
+Having developed the mathematical reduction and identified the
+structural obstacles, we describe the Lean~4 formalization that
+certifies these results.
+
+\paragraph{Codebase Structure}
+
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 70~files
+totaling ${\sim}43{,}200$~lines.  The dependency chain is linear, with
+three leaf modules:
+
+\footnotesize
+\begin{longtable}{l p{7cm} r}
+\toprule
+\textbf{File} & \textbf{Content} & \textbf{Lines} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{File} & \textbf{Content} & \textbf{Lines} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\emph{continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{3}{l}{\emph{Core sequence and walk}} \\
+\code{Euclid.lean} & Constructive Euclid's theorem & 422 \\
+\code{MullinDefs.lean} & \code{seq}, \code{prod}, \code{aux}, identities & 527 \\
+\code{MullinConjectures.lean} & MC, Conjecture A (FALSE), HH & 490 \\
+\code{MullinDWH.lean} & DivisorWalkHypothesis (leaf) & 547 \\
+\code{MullinResidueWalk.lean} & WalkCoverage, residue walk, concrete MC & 603 \\
+\midrule
+\multicolumn{3}{l}{\emph{Group theory and algebraic framework}} \\
+\code{MullinGroupCore.lean} & walkZ, multZ, confinement, SE & 422 \\
+\code{MullinGroupEscape.lean} & Escape lemmas, 8-element argument & 634 \\
+\code{MullinGroupSEInstances.lean} & 29 concrete SE instances ($q \leq 157$) & 364 \\
+\code{MullinGroupPumping.lean} & Gordon sequenceability~\cite{Gordon1961} (leaf) & 343 \\
+\code{MullinGroupQR.lean} & QR obstruction ($\leq 1.6\%$) (leaf) & 684 \\
+\code{MullinCRT.lean} & CRT multiplier invariance, walk recurrence & 160 \\
+\code{MullinDepartureGraph.lean} & Departure graph, infinite recurrence, safe prime lattice & 641 \\
+\code{RotorRouter.lean} & Scheduled walk coverage (standalone) & 455 \\
+\code{MullinRotorBridge.lean} & EMPR + SE $\Rightarrow$ MC bridge & 87 \\
+\midrule
+\multicolumn{3}{l}{\emph{Equidistribution and character sums}} \\
+\code{EquidistPreamble.lean} & PE $\Rightarrow$ MC, bootstrapping & 234 \\
+\code{EquidistSieve.lean} & Sieve, WHP $\Leftrightarrow$ HH, forbidden multiplier, M\"obius death & 755 \\
+\code{EquidistSelfAvoidance.lean} & Self-avoidance, periodicity & 450 \\
+\code{EquidistCharPRE.lean} & Character non-vanishing, PRE $\Leftrightarrow$ SE & 807 \\
+\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 721 \\
+\code{EquidistThreshold.lean} & Sieve gap, one-prime gap, cofinal pair avoidance & 321 \\
+\code{EquidistOrbitAnalysis.lean} & Cofinal orbits, quotient walk, sieve, selectability & 1434 \\
+\code{EquidistFourier.lean} & Character sums, Fourier bridge & 1317 \\
+\code{EquidistSelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel & 1163 \\
+\code{EquidistSieveTransfer.lean} & Sieve transfer, coprimality, neg-inv involution & 1457 \\
+\midrule
+\multicolumn{3}{l}{\emph{CME decomposition and spectral analysis}} \\
+\code{CMEVariants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 113 \\
+\code{CMEDecomposition.lean} & CME $=$ A $+$ B decomposition, EMD $\Rightarrow$ CME & 385 \\
+\code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, sieve bridge & 1795 \\
+\code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel & 899 \\
+\code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT, dead ends & 1687 \\
+\code{LargeSieveSpectral.lean} & Walk energy, HOD, VdC, CME, VCB, SVE & 2693 \\
+\midrule
+\multicolumn{3}{l}{\emph{SDDS and independence}} \\
+\code{SieveDefinedDynamics.lean} & Abstract SDDS framework, factoring rules & 195 \\
+\code{SDDSBridge.lean} & SDDS $\leftrightarrow$ EM bridge, orbit/walk/mult correspondence & 375 \\
+\code{SDDSReduction.lean} & StrongSME $\Rightarrow$ MC via sieve-map equidist.\ & 126 \\
+\code{ExcursionIndependence.lean} & Walk excursions, char.\ sum independence & 461 \\
+\code{CRTFiberIndependence.lean} & SE $\Rightarrow$ NAO, CRT independence, death channel & 296 \\
+\midrule
+\multicolumn{3}{l}{\emph{Population and weak variants}} \\
+\code{WeakMullin.lean} & Missing primes, WM $\Rightarrow$ RD, EMBV $\Rightarrow$ MC & 362 \\
+\code{WeakErgodicity.lean} & Squarefree accumulator, PE+PT+EMDImpliesCME & 160 \\
+\code{PopulationEquidistProof.lean} & MinFacResidueEquidist $\Rightarrow$ PE (analytic) & 187 \\
+\code{ReciprocalSumDivergence.lean} & Generalized EM reciprocal sum divergence & 289 \\
+\code{PopulationTransferStrategy.lean} & PE + DSL $\Rightarrow$ MC, ensemble concentration & 273 \\
+\midrule
+\multicolumn{3}{l}{\emph{Ensemble framework (new)}} \\
+\code{EnsembleStructure.lean} & Generalized EM: genProd, genSeq, injectivity & 247 \\
+\code{EnsembleEM.lean} & Generalized walk/multiplier, bridge to standard EM & 114 \\
+\code{EnsembleCRT.lean} & CRT equidistribution, sqfree residue averaging & 503 \\
+\code{EnsembleDecorrelation.lean} & CRT-based decorrelation, Markov density bounds & 477 \\
+\code{EnsembleFirstMoment.lean} & First moment, $\kappa = 2/3$, FM+VB $\Rightarrow$ RSD & 320 \\
+\code{EnsemblePT.lean} & Full CRT chain $\Rightarrow$ cancellation, Weyl $\Rightarrow$ MC & 2159 \\
+\code{EnsembleCRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 763 \\
+\code{EnsembleBaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 407 \\
+\midrule
+\multicolumn{3}{l}{\emph{DSL and master reduction (new)}} \\
+\code{DSLInfrastructure.lean} & Energy evolution, fiber analysis, FEB $\Rightarrow$ CME & 683 \\
+\code{ShiftedSquarefreeDensity.lean} & Sieve density $g(r)$, algebraic properties & 251 \\
+\code{VisitEquidistribution.lean} & ExcessEnergy $=$ visit deviation, SVE $\leftrightarrow$ VE & 187 \\
+\code{SelfCorrectingDrift.lean} & Lyapunov identity, SCD $\equiv$ SVE, Dead End \#120 & 652 \\
+\code{SMSBPerClassEscape.lean} & Per-class bad set analysis, Dead End \#121 & 460 \\
+\code{MasterReduction.lean} & All reduction chains assembled, DSL $\Rightarrow$ MC & 210 \\
+\code{DSLVariance.lean} & Population variance route to DSL, second moment & 407 \\
+\code{CRTPointwiseTransfer.lean} & OCE $=$ CME, all routes to MC via CRT & 262 \\
+\code{SubstitutionPrinciple.lean} & SP $=$ CME, fiber return visits, 4-route witness & 301 \\
+\code{TailIdentityAttack.lean} & Tail energy identities, 4th moment, Chebyshev bridge & 433 \\
+\code{TailWindowDecorrelation.lean} & Window decomposition, variance identity, TWD $\Rightarrow$ MC & 477 \\
+\midrule
+\multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
+\code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 195 \\
+\midrule
+\multicolumn{3}{l}{\emph{Iwaniec--Kowalski infrastructure}} \\
+\code{IKCh1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 434 \\
+\code{IKCh2.lean} & Iwaniec--Kowalski Ch.\,2: summation formulas & 270 \\
+\code{IKCh3.lean} & Iwaniec--Kowalski Ch.\,3: combinatorial sieve & 557 \\
+\code{IKCh4.lean} & Iwaniec--Kowalski Ch.\,4: summation formulas & 598 \\
+\code{IKCh5.lean} & Iwaniec--Kowalski Ch.\,5: Kloosterman sums & 877 \\
+\code{IKCh7Foundations.lean} & Iwaniec--Kowalski Ch.\,7: foundations, norm bounds & 328 \\
+\code{IKCh7AdditiveLS.lean} & Iwaniec--Kowalski Ch.\,7: additive large sieve & 989 \\
+\code{IKCh7MultiplicativeLS.lean} & Iwaniec--Kowalski Ch.\,7: multiplicative large sieve & 462 \\
+\code{IKCh7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications & 1537 \\
+\code{IKCh7Hilbert.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert inequality chain & 2279 \\
+\end{longtable}
+\normalsize
+
+\subsection{Axiom Usage: What's Constructive}
+
+The core definitions (\code{seq}, \code{prod}, \code{aux}) and
+their basic properties (\code{seq\_isPrime}, \code{seq\_injective})
+are \textbf{fully constructive}: they use only \code{propext} and
+\code{Quot.sound} (no \code{Classical.choice}, no
+\code{Decidable} instances beyond~$\NN$).  Euclid's theorem
+itself (\code{Euclid.lean}) is constructive.
+
+Classical reasoning enters at the reduction level:
+\begin{itemize}[nosep]
+\item The $\HH \Rightarrow \MC$ proof uses well-founded induction
+  (strong induction on $\NN$), which in Lean~4 is constructive but
+  relies on \code{Classical.choice} for the
+  cofinal-implies-hit argument.
+\item Character theory (orthogonality, Fourier inversion) is
+  inherently classical via \code{open Classical}.
+\item All open hypotheses are stated as \code{def \ldots : Prop},
+  never as \code{sorry}'d theorems.  The type-checker guarantees
+  that no proof obligation is silently assumed.
+\end{itemize}
+
+\subsection{Mathlib Dependencies}
+
+The formalization draws on several Mathlib libraries:
+\begin{itemize}[nosep]
+\item \textbf{Group theory}: \code{Subgroup}, \code{QuotientGroup},
+  \code{orderOf}, cyclic group structure, maximal subgroups
+  (\code{Subgroup.IsCoatom}).
+\item \textbf{Number theory}: \code{Nat.minFac}, Legendre symbols,
+  quadratic reciprocity, \code{ZMod}, Dirichlet characters, Gauss sums.
+\item \textbf{Character theory}: \code{DirichletCharacter.Orthogonality},
+  roots of unity in algebraically closed fields, character bounds,
+  \code{MulChar.sum\_eq\_zero\_of\_ne\_one}.
+\item \textbf{Analysis}: \code{norm\_sum\_le}, complex norms,
+  \code{IsOfFinOrder.norm\_eq\_one}, Fourier analysis on $\ZZ/n\ZZ$
+  (\code{ZMod.dft}, discrete Fourier transform).
+\item \textbf{Dirichlet's theorem}: \code{Nat.infinite\_setOf\_prime\_and\_eq\_mod}
+  (primes in arithmetic progressions, via $L$-series).
+\item \textbf{Harmonic analysis}: Parseval's theorem for finite abelian
+  groups, trigonometric exponentials, geometric series identities.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Lines of Lean code & ${\sim}43{,}000$ \\
+Files & 69 \\
+Theorems/lemmas & ${\sim}1{,}470$ \\
+Definitions & ${\sim}575$ \\
+\code{sorry} occurrences & \textbf{0} \\
+Open hypotheses (stated as \code{def}) & ${\sim}50$ \\
+Mathlib version & v4.29.0-rc1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Summary of Formally Verified Results}
+\label{sec:verified-results}
+
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}p{5.5cm}l>{\raggedright\arraybackslash}p{4.5cm}@{}}
+\toprule
+\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\emph{continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{3}{l}{\emph{Sequence foundations}} \\
+\quad Every $\seq{2}(n)$ is prime & Proved & \code{seq\_isPrime} \\
+\quad No prime repeats & Proved & \code{seq\_injective} \\
+\midrule
+\multicolumn{3}{l}{\emph{Main reductions to MC}} \\
+\quad \textbf{DSL $\Rightarrow$ MC} (sole hypothesis, via ensemble) & \textbf{Proved} & \code{full\_chain\_dsl} \\
+\quad \textbf{SHH $\Rightarrow$ MC} (Single Hit Theorem) & Proved & \code{single\_hit\_implies\_mc} \\
+\quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting route) & Proved & \code{dynamical\_hitting\_implies\_mullin} \\
+\quad \textbf{CCSB $\Rightarrow$ MC} (single hypothesis) & Proved & \code{complex\_csb\_mc'} \\
+\quad \textbf{CME $\Rightarrow$ MC} (sharpest, all $d$) & Proved & \code{cme\_implies\_mc} \\
+\quad PE + DSL $\Rightarrow$ MC & Proved & \code{pe\_dsl\_implies\_mc} \\
+\quad PE + DSLHitting $\Rightarrow$ MC & Proved & \code{pe\_dsl\_hitting\_implies\_mc} \\
+\quad PE $\Rightarrow$ MC & Proved & \code{pe\_implies\_mullin} \\
+\quad HH $\Rightarrow$ MC & Proved & \code{hh\_implies\_mullin} \\
+\quad SE + MH $\Rightarrow$ MC & Proved & \code{se\_mixing\_implies\_mullin} \\
+\quad \textbf{WE $\Rightarrow$ MC} (single Prop) & Proved & \code{walk\_equidist\_mc} \\
+\midrule
+\multicolumn{3}{l}{\emph{Inductive bootstrap}} \\
+\quad PrimeResidueEscape (elementary) & Proved & \code{prime\_residue\_escape} \\
+\quad MC($<\!p$) + PRE $\Rightarrow$ SE($p$) & Proved & \code{mcBelow\_pre\_implies\_se} \\
+\quad $q$-roughness from MC($<\!q$) & Proved & \code{mcBelow\_implies\_seq\_ge} \\
+\quad One-prime gap & Proved & \code{mcBelow\_cofinal\_hit\_implies\_mc\_at} \\
+\quad mcBelow 11 & Proved & \code{concrete\_mcBelow\_11} \\
+\midrule
+\multicolumn{3}{l}{\emph{Algebraic framework}} \\
+\quad Confinement Theorem & Proved & \code{confinement\_forward/reverse} \\
+\quad PRE $\Leftrightarrow$ SE & Proved & \code{pre\_iff\_se} \\
+\quad SE $\Leftrightarrow$ character detection & Proved & \code{se\_iff\_char\_detection} \\
+\quad Maximal subgroup reduction & Proved & \code{se\_of\_maximal\_escape} \\
+\quad WHP $\Leftrightarrow$ HH & Proved & \code{whp\_iff\_hh} \\
+\quad SE density argument (CRT + QR) & Proved & \code{se\_qr\_obstruction} \\
+\midrule
+\multicolumn{3}{l}{\emph{Character sum chain}} \\
+\quad Fourier bridge: CCSB $\Rightarrow$ hit count lb & Proved & \code{complex\_csb\_implies\_hit\_count\_lb\_proved} \\
+\quad Decorrelation $\Rightarrow$ PED & Proved & \code{decorrelation\_implies\_ped} \\
+\quad NoLongRuns$(L)$ $\Rightarrow$ PED & Proved & \code{noLongRuns\_implies\_ped} \\
+\quad BRE $\Rightarrow$ PEDImpliesCSB & Proved & \code{block\_rotation\_implies\_ped\_csb} \\
+\quad CME $\Rightarrow$ CCSB (all $d$, bypasses BRE) & Proved & \code{cme\_implies\_ccsb} \\
+\quad CME $\Rightarrow$ MC & Proved & \code{cme\_implies\_mc} \\
+\quad Walk char recurrence ($\mathbb{C}$-valued) & Proved & \code{char\_walk\_recurrence} \\
+\quad Telescoping identity & Proved & \code{walk\_telescope\_identity} \\
+\quad Telescoping norm $\leq 2$ & Proved & \code{walk\_telescope\_norm\_bound} \\
+\quad Shift-one autocorrelation & Proved & \code{walk\_shift\_one\_correlation} \\
+\quad Order-2 sign-flip chain & Proved & \code{order2\_noLongRuns\_mc} \\
+\midrule
+\multicolumn{3}{l}{\emph{Walk dynamics}} \\
+\quad Walk--divisibility bridge & Proved & \code{walkZ\_eq\_neg\_one\_iff} \\
+\quad Products strictly monotone & Proved & \code{prod\_strictMono} \\
+\quad Fundamental trichotomy & Proved & \code{avoidance\_contradicts\_se\_mixing} \\
+\quad Self-avoidance dichotomy & Proved & \code{self\_avoidance\_dichotomy} \\
+\quad Scheduled walk coverage & Proved & \code{scheduled\_walk\_covers\_all} \\
+\midrule
+\multicolumn{3}{l}{\emph{Selectability analysis}} \\
+\quad Divisor freshness & Proved & \code{divisor\_not\_yet\_in\_seq} \\
+\quad Passed-over persistence & Proved & \code{passed\_over\_persists} \\
+\quad Selectability extinction & Proved & \code{selectability\_extinguished} \\
+\quad MC $\Rightarrow$ $\neg$InfinitelySelectable & Proved & \code{mc\_implies\_not\_infinitely\_selectable} \\
+\quad DH $\Rightarrow$ InfinitelySelectable & Proved & \code{dh\_implies\_infinitely\_selectable} \\
+\midrule
+\multicolumn{3}{l}{\emph{Sieve and orbit analysis}} \\
+\quad EMFE $\Leftrightarrow$ TailSE & Proved & \code{emfe\_iff\_tail\_se\_at} \\
+\quad TailSE $\Rightarrow$ CofinalEscape $\Rightarrow$ QuotientDH & Proved & \code{tail\_se\_gives\_sub\_dh} \\
+\quad Dirichlet: $\infty$ primes per residue class & Proved & \code{dirichlet\_residues\_independent} \\
+\quad Minimality sieve + coupling & Proved & \code{minimality\_sieve} \\
+\quad StrongSieveEquidist $\Rightarrow$ NoLongRunsAt & Proved & \code{strongSieveEquidist\_noLongRunsAt} \\
+\quad NoLongRunsAt $\Rightarrow$ PEDAt & Proved & \code{noLongRunsAt\_ped} \\
+\quad DPED $\Rightarrow$ PED & Proved & \code{dped\_implies\_ped} \\
+\quad PDE $+$ sieve chain $\Rightarrow$ MC & Proved & \code{primeDensity\_chain\_mc} \\
+\quad GLPFE $+$ SieveTransfer $\Rightarrow$ MC & Proved & \code{genericLPF\_chain\_mc} \\
+\quad SieveEquidist $\Rightarrow$ Dec & Proved & \code{sieve\_equidist\_implies\_decorrelation} \\
+\quad SieveEquidist $\Rightarrow$ PED & Proved & \code{sieve\_equidist\_implies\_ped} \\
+\midrule
+\multicolumn{3}{l}{\emph{Ensemble and DSL framework}} \\
+\quad Generalized EM: genProd, genSeq & Proved & \code{genProd\_two\_eq\_prod} \\
+\quad genSeq injective & Proved & \code{genSeq\_injective} \\
+\quad Tail identification: $\Prod{\Prod{s}(M)}(k) = \Prod{s}(M{+}k)$ & Proved & \code{genProd\_restart} \\
+\quad $n \mid \text{genProd}(n, k)$ & Proved & \code{start\_dvd\_genProd} \\
+\quad $\Prod{2}(n)$ squarefree & Proved & \code{prod\_squarefree} \\
+\quad Buchstab weight $\kappa(2) = 2/3$ & Proved & \code{buchstabWeight\_two} \\
+\quad FM + VB $\Rightarrow$ RSD & Proved & \code{first\_moment\_variance\_implies\_rsd} \\
+\quad CharConcentration $\Rightarrow$ Cancellation & Proved & \code{char\_concentration\_implies\_cancellation} \\
+\quad FEB $\Rightarrow$ CME (fiber energy) & Proved & \code{feb\_implies\_cme} \\
+\quad Cross term $=$ sum of fiber cross terms & Proved & \code{total\_cross\_term\_eq\_sum\_fiber} \\
+\quad $\|\chi(u)\| = 1$ for group chars & Proved & \code{char\_value\_norm\_one} \\
+\quad Energy $= N + 2 \sum$ cross terms & Proved & \code{char\_sum\_energy\_eq\_N\_plus\_cross} \\
+\quad $o(N)$ cross terms $\Rightarrow$ linear energy & Proved & \code{cross\_term\_controls\_growth} \\
+\quad ExcessEnergy $=$ visit deviation & Proved & \code{excessEnergy\_eq\_visit\_deviation} \\
+\quad SVE $\Leftrightarrow$ VE & Proved & \code{sve\_iff\_ve} \\
+\quad Lyapunov one-step identity & Proved & \code{lyapunov\_one\_step} \\
+\quad Lyapunov telescope: $L(N) = 2R(N) + \text{linear}$ & Proved & \code{lyapunov\_telescope} \\
+\quad Visit deviations sum to zero & Proved & \code{visitDeviation\_sum\_zero} \\
+\quad SCD $\Rightarrow$ VE $\Rightarrow$ MC & Proved & \code{scd\_implies\_ve} \\
+\quad Doubly stochastic transitions & Proved & \code{group\_walk\_doubly\_stochastic} \\
+\quad Zero expected drift (uniform multiplier) & Proved & \code{uniform\_multiplier\_zero\_drift} \\
+\quad SVE $\Rightarrow$ SCD above threshold (equivalence) & Proved & \code{sve\_implies\_scd\_above\_threshold} \\
+\quad Per-class bad set partition identity & Proved & \code{badVisitsInClass\_card\_sum\_eq} \\
+\quad Pigeonhole: some class small bad set & Proved & \code{exists\_class\_small\_bad\_set} \\
+\quad Population energy $\geq 0$ & Proved & \code{populationCharEnergy\_nonneg} \\
+\quad Population energy $=$ ensemble avg & Proved & \code{populationCharEnergy\_eq\_ensembleAvg} \\
+\quad Cross-term pair symmetry & Proved & \code{crossTermPair\_comm} \\
+\quad CSVB $\Rightarrow$ SecondMomentBound & Proved & \code{charSumVarianceBound\_implies\_secondMomentBound} \\
+\quad SD $\Rightarrow$ PairwiseCrossTermVanishing & Proved & \code{stepDecorrelation\_implies\_pairwiseVanishing} \\
+\quad Variance chain from bridges & Proved & \code{variance\_chain\_from\_bridges} \\
+\quad EnsembleConcentration $\Rightarrow$ AlmostAllSqfreeEqd & Proved & \code{ensemble\_concentration\_implies\_eqd} \\
+\quad OCE $=$ CME (definitional, \code{rfl}) & Proved & \code{oce\_eq\_cme} \\
+\quad OCE $\Rightarrow$ MC & Proved & \code{oce\_implies\_mc} \\
+\quad PCE $+$ CRT bridge $\Rightarrow$ MC & Proved & \code{pce\_bridge\_implies\_mc} \\
+\quad DSL subsumes CRT bridge & Proved & \code{dsl\_implies\_crt\_bridge} \\
+\quad All three routes $\Rightarrow$ MC & Proved & \code{all\_routes\_to\_mc} \\
+\quad SE $\Rightarrow$ NAO & Proved & \code{se\_implies\_nao} \\
+\quad Full CRT chain $\Rightarrow$ cancellation & Proved & \code{full\_crt\_chain\_implies\_cancellation} \\
+\quad WeylHittingBridge & Proved & \code{weyl\_hitting\_bridge\_proved} \\
+\quad PerChiCancellationBridge & Proved & \code{per\_chi\_cancellation\_bridge\_proved} \\
+\quad Walk cancellation ($n{=}2$) $\Rightarrow$ MC & Proved & \code{cancel\_weyl\_implies\_mc} \\
+\quad JSE $+$ MultCancelToWalkCancel $\Rightarrow$ MC & Proved & \code{jse\_transfer\_implies\_mc} \\
+\quad SD $\Rightarrow$ a.a.\ char sum cancellation & Proved & \code{sd\_implies\_cancellation} \\
+\quad 4-hypothesis master (SRE+CRT+Bridge+Decorr) & Proved & \code{ensemble\_pt\_master\_simplified} \\
+\quad GenHittingImpliesGenMC & Proved & \code{gen\_hitting\_implies\_gen\_mc\_proved} \\
+\quad DecorrelationImpliesVariance & Proved & \code{decorrelation\_implies\_variance\_proved} \\
+\quad CharVarianceImpliesConcentration & Proved & \code{char\_variance\_implies\_concentration\_proved} \\
+\quad EnsembleMultEquidistImpliesCharMeanZero & Proved & \code{ensemble\_mult\_equidist\_char\_mean\_zero} \\
+\quad JSE base case (tower rule) & Proved & \code{jse\_base\_case} \\
+\quad Cofactor identity: $w(n){+}1 = m(n) \cdot \mathrm{cof}(n)$ & Proved & \code{shifted\_walk\_eq\_mult\_mul\_cof} \\
+\quad Hit $\Leftrightarrow$ cofZ $= 0$ & Proved & \code{walkZ\_eq\_neg\_one\_iff\_cofZ\_zero} \\
+\quad SP $=$ CME (definitional, \code{simp}) & Proved & \code{sp\_eq\_cme} \\
+\quad SP $\Rightarrow$ MC & Proved & \code{substitution\_principle\_implies\_mc} \\
+\quad All 4 routes with SP $\Rightarrow$ MC & Proved & \code{all\_routes\_to\_mc\_with\_sp} \\
+\quad Fiber return visit injectivity & Proved & \code{return\_visit\_mult\_injective} \\
+\quad Fiber return visit coprimality & Proved & \code{return\_visit\_mult\_coprime} \\
+\quad SP structural summary (4-tuple) & Proved & \code{sp\_structural\_summary} \\
+\quad Tail energy $=$ standard EM tail & Proved & \code{genSeqCharEnergy\_standard\_tail} \\
+\quad SMSB $\Rightarrow$ Chebyshev density bound & Proved & \code{second\_moment\_squared\_implies\_chebyshev} \\
+\quad FourPointPCV chain $\Rightarrow$ CDB & Proved & \code{four\_point\_pcv\_chain} \\
+\quad Window $=$ tail identity & Proved & \code{windowCharSum\_eq\_genSeqCharPartialSum} \\
+\quad Variance identity (diag $+$ cross) & Proved & \code{norm\_sq\_sum\_eq\_diag\_plus\_cross} \\
+\quad Total sum $=$ sum of window sums & Proved & \code{charSum\_eq\_window\_sum} \\
+\quad Total energy $=$ diag $+$ cross & Proved & \code{charEnergy\_window\_decomp} \\
+\quad Diagonal energy $\leq J \cdot K^2$ & Proved & \code{diag\_energy\_le} \\
+\quad TWD $\Rightarrow$ MC (via CCSB bridge) & Proved & \code{twd\_implies\_mc\_from\_bridge} \\
+\midrule
+\multicolumn{3}{l}{\emph{Large sieve route}} \\
+\quad MultiModularCSB $\Rightarrow$ MC & Proved & \code{mmcsb\_implies\_mc} \\
+\quad BV chain $\Rightarrow$ MC & Proved & \code{bv\_chain\_mc} \\
+\quad ArithLS chain $\Rightarrow$ MC & Proved & \code{arith\_ls\_chain\_mc} \\
+\quad ALS chain $\Rightarrow$ MC & Proved & \code{als\_prime\_arith\_ls\_chain\_mc} \\
+\quad \textbf{WeakALS} (\S58) & \textbf{Proved} & \code{weak\_als\_from\_card\_bound} \\
+\quad Gauss sum inversion (\S57) & Proved & \code{char\_sum\_to\_exp\_sum} \\
+\quad \textbf{ALS $\Rightarrow$ PrimeArithLS} (\S65) & \textbf{Proved} & \code{als\_implies\_prime\_arith\_ls} \\
+\quad Hilbert chain $\Rightarrow$ ALS & Proved & \code{hilbert\_chain\_als} \\
+\quad HilbertInequality1 $\Rightarrow$ HilbertInequality (rescaling) & Proved & \code{hilbert\_rescale} \\
+\quad MittagLefflerCsc (Mittag-Leffler for $\csc$) & Proved & \code{mittag\_leffler\_csc\_proved} \\
+\quad CscBilinearBound $\Rightarrow$ GramOffDiag & Proved & \code{csc\_bilinear\_implies\_gram\_offdiag} \\
+\quad CrossRCesaroConvergence & Proved & \code{cross\_r\_cesaro\_convergence\_proved} \\
+\quad GramOffDiag $\Rightarrow$ ALS & Proved & \code{gram\_offdiag\_bilinear\_implies\_als} \\
+\quad Refined Gram off-diagonal bound & Proved & \code{gramMatrix\_offdiag\_bound\_dist} \\
+\quad Packing bound (pigeonhole) & Proved & \code{round\_sep\_card\_le} \\
+\quad Jordan's inequality (\S56) & Proved & \code{sin\_pi\_ge\_two\_mul} \\
+\quad Geometric sum bound (\S56) & Proved & \code{norm\_eAN\_geom\_sum\_le\_inv} \\
+\quad Parseval for ZMod.dft (\S53) & Proved & \code{zmod\_dft\_parseval} \\
+\quad Gauss sum norm $\|\tau\|^2 = p$ (\S54) & Proved & \code{gaussSum\_norm\_sq\_eq\_prime} \\
+\quad Walk autocorrelation identities (\S53) & Proved & \code{walkAutocorrelation\_*} \\
+\quad Character Parseval (\S60) & Proved & \code{char\_parseval\_units} \\
+\quad All 8 GCT internal lemmas (\S56--\S62) & Proved & \code{gct\_nontrivial\_char\_sum\_le} \\
+\midrule
+\multicolumn{3}{l}{\emph{Open hypotheses --- live targets}} \\
+\quad \textbf{DeterministicStabilityLemma} (sole hypothesis) & \textbf{Open} & \code{DeterministicStabilityLemma} \\
+\quad \textbf{DSLHitting} (weaker variant) & \textbf{Open} & \code{DSLHitting} \\
+\quad \textbf{SingleHitHypothesis} (weakest sufficient) & \textbf{Open} & \code{SingleHitHypothesis} \\
+\quad \textbf{DynamicalHitting} & \textbf{Open} & \code{DynamicalHitting} \\
+\quad \textbf{ComplexCharSumBound} & \textbf{Open} & \code{ComplexCharSumBound} \\
+\quad \textbf{MultiModularCSB} & \textbf{Open} & \code{MultiModularCSB} \\
+\quad DecorrelationHypothesis & \textbf{Open} & \code{DecorrelationHypothesis} \\
+\quad PositiveEscapeDensity & \textbf{Open} & \code{PositiveEscapeDensity} \\
+\quad \textbf{PEDImpliesComplexCSB} (sole sieve-route gap) & \textbf{Open} & \code{PEDImpliesComplexCSB} \\
+\quad NoLongRuns$(L)$ & \textbf{Open} & \code{NoLongRuns} \\
+\quad SieveEquidistribution & \textbf{Open} & \code{SieveEquidistribution} \\
+\quad MertensEscape & \textbf{Open} & \code{MertensEscape} \\
+\quad SieveAmplification & \textbf{Open} & \code{SieveAmplification} \\
+\quad \textbf{SieveTransfer} (genuine frontier) & \textbf{Open} & \code{SieveTransfer} \\
+\quad StrongSieveEquidist & \textbf{Open} & \code{StrongSieveEquidist} \\
+\quad DistributionalPED & \textbf{Open} & \code{DistributionalPED} \\
+\quad \textbf{BVImpliesMMCSB} (genuine frontier) & \textbf{Open} & \code{BVImpliesMMCSB} \\
+\quad GaussConductorTransfer (all lemmas proved) & \textbf{Open} & \code{GaussConductorTransfer} \\
+\quad PrimeArithLSImpliesMMCSB & \textbf{Open} & \code{PrimeArithLSImpliesMMCSB} \\
+\quad HilbertInequality (IK Lemma~7.8, $\delta$-separated) & \textbf{Open} & \code{HilbertInequality} \\
+\quad HilbertInequality1 (1-separated core) & \textbf{Open} & \code{HilbertInequality1} \\
+\quad HilbertCscBilinearBridge & \textbf{Open} & \code{HilbertCscBilinearBridge} \\
+\quad EnsembleConcentration & \textbf{Open} & \code{EnsembleConcentration} \\
+\quad RecipSumConcentration & \textbf{Open} & \code{RecipSumConcentration} \\
+\quad CharSumVarianceBound & \textbf{Open} & \code{CharSumVarianceBound} \\
+\quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
+\quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\
+\quad EMDImpliesCME & \textbf{Open} & \code{EMDImpliesCME} \\
+\quad JointStepEquidist (ensemble route gap) & \textbf{Open} & \code{JointStepEquidist} \\
+\quad MultCancelToWalkCancel ($\equiv$ CCSB, Dead End \#117) & \textbf{Open} & \code{MultCancelToWalkCancel} \\
+\quad PairwiseVanishingImpliesSMB (variance route) & \textbf{Open} & \code{PairwiseVanishingImpliesSMB} \\
+\quad SMBImpliesDSL (second moment $\Rightarrow$ DSL) & \textbf{Open} & \code{SMBImpliesDSL} \\
+\quad VarianceChainImpliesDSL (full variance chain) & \textbf{Open} & \code{VarianceChainImpliesDSL} \\
+\quad CRTPointwiseTransferBridge (PCE $\Rightarrow$ OCE) & \textbf{Open} & \code{CRTPointwiseTransferBridge} \\
+\quad SubstitutionPrinciple ($=$ CME, fiber char sums) & \textbf{Open} & \code{SubstitutionPrinciple} \\
+\quad FourPointPCV (4-point correlation vanishing) & \textbf{Open} & \code{FourPointPCV} \\
+\quad SecondMomentSquaredBound & \textbf{Open} & \code{SecondMomentSquaredBound} \\
+\quad FourPointPCVImpliesSMSB & \textbf{Open} & \code{FourPointPCVImpliesSMSB} \\
+\quad SelfCorrectingDrift ($R(N) = o(N^2)$) & \textbf{Open} & \code{SelfCorrectingDrift} \\
+\quad TailWindowDecorrelation (cross terms vanish) & \textbf{Open} & \code{TailWindowDecorrelation} \\
+\quad TWDImpliesCCSB (TWD $\Rightarrow$ CCSB bridge) & \textbf{Open} & \code{TWDImpliesCCSB} \\
+\midrule
+\multicolumn{3}{l}{\emph{Known theorems --- not yet in Mathlib}} \\
+\quad PrimeDensityEquipartition (PNT in APs) & Known & \code{PrimeDensityEquipartition} \\
+\quad GenericLPFEquidist (Alladi~\cite{Alladi1977}) & Known & \code{GenericLPFEquidist} \\
+\quad BombieriVinogradov & Known & \code{BombieriVinogradov} \\
+\quad AnalyticLargeSieve & Known & \code{AnalyticLargeSieve} \\
+\quad ArithmeticLargeSieve & Known & \code{ArithmeticLargeSieve} \\
+\midrule
+\multicolumn{3}{l}{\emph{Dead ends --- false or blocked}} \\
+\quad MultCSBImpliesMMCSB (false in general, \S\ref{sec:walk-bridge-false}) & \textbf{Dead} & \code{MultCSBImpliesMMCSB} \\
+\quad BlockRotationEstimate (impossible for $d \geq 3$, Remark~\ref{rem:bre-impossible}) & \textbf{Dead} & \code{BlockRotationEstimate} \\
+\quad MultCancelToWalkCancel (counterexample, Dead End~\#117) & \textbf{Dead} & \code{MultCancelToWalkCancel} \\
+\quad Cofactor identity (joint variable, Dead End~\#115) & \textbf{Dead} & shifted\_walk\_eq\_mult\_mul\_cof \\
+\quad SCD $\equiv$ SVE (no new leverage, Dead End~\#120) & \textbf{Dead} & \code{sve\_implies\_scd\_above\_threshold} \\
+\quad SMSB+SE per-class $\to$ CME (Dead End~\#121) & \textbf{Dead} & \code{smsb\_se\_collapse\_certificate} \\
+\end{longtable}
+\renewcommand{\arraystretch}{1.0}
+\normalsize
+

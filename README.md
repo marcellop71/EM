@@ -1,10 +1,11 @@
-# Formalizing the Mullin's Conjecture
-
-A Lean 4 formalization (Mathlib v4.27.0) with ~22,400 lines of Lean across 32 files.
+# A formalized reduction of the Mullin's Conjecture
 
 ## The Euclid–Mullin Sequence
 
-Euclid's proof that there are infinitely many primes shows that for any finite set of primes, their product plus one has a prime factor outside the set — but does not specify *which* factor. The [Euclid–Mullin sequence](https://oeis.org/A000945) (Mullin, 1963) makes a definite choice: always take the *smallest* prime factor.
+Euclid’s proposition IX.20 of the Elements shows that for any finite set of primes, each prime
+factor of their product plus one is outside the set: to grow your set of primes, you can pick any
+of them.
+The [Euclid–Mullin sequence](https://oeis.org/A000945) (Mullin, 1963) makes a definite choice: always take the *smallest* prime factor.
 
 ```
 a(0) = 2,    a(n+1) = smallest prime factor of (a(0) · a(1) · ··· · a(n) + 1)
@@ -16,26 +17,9 @@ The first terms are 2, 3, 7, 43, 13, 53, 5, 6221671, 38709183810571, 139, 2801, 
 
 ## Paper
 
-The full paper is available at [`docs/paper.pdf`](docs/paper.pdf) (source: [`docs/paper.tex`](docs/paper.tex)), with clickable links to the Lean source code for every formally verified result.
+The full paper is available in this repo at [`paper/main.pdf`](paper/main.pdf) with clickable links to the Lean source code for every formally verified result.
 
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [`docs/main-results.md`](docs/main-results.md) | Proved reductions, open hypotheses, key results |
-| [`docs/agents.md`](docs/agents.md) | Multi-agent system documentation |
-| [`docs/status.md`](docs/status.md) | Detailed project status |
-
-## Building
-
-Requires [Lean 4](https://lean-lang.org/) and [Mathlib](https://github.com/leanprover-community/mathlib4) v4.27.0.
-
-```bash
-curl https://elan.lean-lang.org/install.sh -sSf | sh   # install elan
-git clone <repo-url> && cd EM
-lake exe cache get   # download prebuilt Mathlib oleans
-lake build           # builds all source files — zero errors, zero sorry
-```
+Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`zulip_mathlib_candidates.md`](zulip_mathlib_candidates.md) for a curated list including:
 
 ## License
 

@@ -1,0 +1,46 @@
+\begin{abstract}
+The Euclid--Mullin sequence is defined by $a(0)=2$,
+$a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, where $\text{lpf}$ is
+the least prime factor.
+Mullin's Conjecture (MC, 1963) asserts that every prime eventually
+appears.  We present a Lean~4 formalization
+(${\sim}43{,}200$~lines, 70~files, zero~\texttt{sorry}) that reduces MC to a
+single open hypothesis.
+
+The main result is the machine-verified chain
+\[
+  \mathrm{DSL}
+  \;\Longrightarrow\;
+  \mathrm{CME}
+  \;\Longrightarrow\;
+  \mathrm{CCSB}
+  \;\Longrightarrow\;
+  \mathrm{MC},
+\]
+where \textbf{Conditional Multiplier Equidistribution}~(CME) states
+that the $\minFac$ operation destroys correlation between consecutive
+multiplier residues mod~$q$, and the
+\textbf{Deterministic Stability Lemma}~(DSL) asserts that
+population-level equidistribution of least prime factors---a standard
+consequence of analytic number theory---transfers to conditional
+equidistribution for the specific EM orbit.  DSL is the sole remaining
+hypothesis: it is the statement $\mathrm{PE} \Rightarrow
+\mathrm{CME}$, where PE is the population equidistribution that
+follows from Alladi's theorem on least prime factors.
+
+The reduction proceeds in stages.  An \emph{inductive bootstrap}
+recasts MC as a walk-hitting problem on $(\ZZ/q\ZZ)^\times$ and shows
+the algebraic precondition (SubgroupEscape) is free.  A
+\emph{character-analytic bridge} proves CME $\Rightarrow$ CCSB for
+all character orders, bypassing the $d \geq 3$ barrier.  An
+\emph{ensemble averaging} framework, parametrizing the EM construction
+by squarefree starting points and using CRT decorrelation, collapses
+the full landscape to DSL\@.
+An independent route through \emph{Visit Equidistribution}~(VE)---the
+walk visits every residue class with equal frequency---also implies MC
+via a separate machine-verified chain, bypassing CME entirely.
+
+Over 121~dead ends are
+documented, trying to delineate the boundary of current methods as precisely as possible.
+\end{abstract}
+

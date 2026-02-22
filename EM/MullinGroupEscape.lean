@@ -1,5 +1,7 @@
 import EM.MullinGroupCore
 import Mathlib.Order.Atoms.Finite
+import Mathlib.Algebra.Group.Subgroup.Lattice
+import Mathlib.Algebra.Group.Subgroup.Finite
 import Mathlib.Data.Nat.Totient
 
 /-!
@@ -15,9 +17,43 @@ subgroups of (ZMod q)×, giving concrete SE instances:
 * Fact instances for primes 11-157
 -/
 
+-- In Mathlib v4.29, CompleteLattice → BoundedOrder → OrderTop TC chain is
+-- broken for Subgroup. Provide the instance manually.
+instance subgroupOrderTop {G : Type*} [Group G] : OrderTop (Subgroup G) :=
+  CompleteLattice.toBoundedOrder.toOrderTop
+
 namespace MullinGroup
 
-open Mullin Euclid
+open Mullin Euclid Classical
+
+/-! ## Helper lemmas for natCast ≠ 1 and natCast ≠ -1
+
+These factor the repetitive proof pattern used in the 12 `ne_one`/`ne_neg_one`
+theorems below. Each multiplier escape proof reduces to showing V < q and V ≠ 1
+(for `ne_one`) or V + 1 < q (for `ne_neg_one`), both dischargeable by `omega`. -/
+
+/-- If V < q and V ≠ 1, then (V : ZMod q) ≠ 1.
+    Used to factor the repetitive `multZ q n ≠ 1` proofs. -/
+private theorem natCast_ne_one_of_lt {q V : Nat} [Fact (Nat.Prime q)]
+    (hV : V < q) (hV1 : V ≠ 1) : ((V : Nat) : ZMod q) ≠ 1 := by
+  have hq2 : q ≥ 2 := (Fact.out : Nat.Prime q).two_le
+  intro h
+  rw [show (1 : ZMod q) = ((1 : Nat) : ZMod q) from Nat.cast_one.symm] at h
+  have hmod := (ZMod.natCast_eq_natCast_iff' V 1 q).mp h
+  rw [Nat.mod_eq_of_lt (by omega : V < q), Nat.mod_eq_of_lt (by omega : 1 < q)] at hmod
+  omega
+
+/-- If V + 1 < q, then (V : ZMod q) ≠ -1.
+    Used to factor the repetitive `multZ q n ≠ -1` proofs. -/
+private theorem natCast_ne_neg_one_of_lt {q V : Nat} [Fact (Nat.Prime q)]
+    (hVp1 : V + 1 < q) : ((V : Nat) : ZMod q) ≠ -1 := by
+  intro h
+  have hVp1_cast : ((V + 1 : Nat) : ZMod q) = 0 := by
+    have : ((V : Nat) : ZMod q) + 1 = 0 := by rw [h]; ring
+    calc ((V + 1 : Nat) : ZMod q) = ((V : Nat) : ZMod q) + 1 := by push_cast; ring
+      _ = 0 := this
+  rw [ZMod.natCast_eq_zero_iff] at hVp1_cast
+  exact absurd (Nat.le_of_dvd (by omega) hVp1_cast) (by omega)
 
 /-! ## Concrete SubgroupEscape: the first multiplier escapes {±1}
 
@@ -32,29 +68,13 @@ q ≥ 5 implies q ∤ 2 (so 3 ≢ 1) and q ∤ 4 (so 3 ≢ -1). -/
 theorem first_mult_ne_one {q : Nat} [Fact (Nat.Prime q)] (hq5 : q ≥ 5) :
     multZ q 0 ≠ 1 := by
   simp only [multZ, show 0 + 1 = 1 from rfl, seq_one]
-  intro h
-  -- h : ((3 : Nat) : ZMod q) = 1
-  -- Convert 1 to Nat cast, then use natCast_eq_natCast_iff'
-  rw [show (1 : ZMod q) = ((1 : Nat) : ZMod q) from Nat.cast_one.symm] at h
-  have hmod := (ZMod.natCast_eq_natCast_iff' 3 1 q).mp h
-  -- hmod : 3 % q = 1 % q. But 3 < q and 1 < q, so 3 = 1: absurd.
-  rw [Nat.mod_eq_of_lt (by omega : 3 < q), Nat.mod_eq_of_lt (by omega : 1 < q)] at hmod
-  omega
+  exact natCast_ne_one_of_lt (by omega) (by omega)
 
 /-- 3 ≢ -1 (mod q) for q ≥ 5: the first multiplier is not -1. -/
 theorem first_mult_ne_neg_one {q : Nat} [Fact (Nat.Prime q)] (hq5 : q ≥ 5) :
     multZ q 0 ≠ -1 := by
   simp only [multZ, show 0 + 1 = 1 from rfl, seq_one]
-  intro h
-  -- h : ((3 : Nat) : ZMod q) = -1
-  -- Then (3 + 1 : ZMod q) = 0, i.e., (4 : ZMod q) = 0, i.e., q | 4
-  have h4 : ((4 : Nat) : ZMod q) = 0 := by
-    have : ((3 : Nat) : ZMod q) + 1 = 0 := by rw [h]; ring
-    calc ((4 : Nat) : ZMod q) = ((3 : Nat) : ZMod q) + 1 := by push_cast; ring
-      _ = 0 := this
-  rw [ZMod.natCast_eq_zero_iff] at h4
-  -- h4 : q ∣ 4, but q ≥ 5, impossible
-  exact absurd (Nat.le_of_dvd (by omega) h4) (by omega)
+  exact natCast_ne_neg_one_of_lt (by omega)
 
 /-- **The first multiplier escapes {±1}** for q ≥ 5 prime.
     This is a concrete SubgroupEscape instance: the index-2 subgroup
@@ -68,23 +88,13 @@ theorem first_mult_escapes_pm_one {q : Nat} [Fact (Nat.Prime q)]
 theorem second_mult_ne_one {q : Nat} [Fact (Nat.Prime q)] (hq11 : q ≥ 11) :
     multZ q 1 ≠ 1 := by
   simp only [multZ, show 1 + 1 = 2 from rfl, seq_two]
-  intro h
-  rw [show (1 : ZMod q) = ((1 : Nat) : ZMod q) from Nat.cast_one.symm] at h
-  have hmod := (ZMod.natCast_eq_natCast_iff' 7 1 q).mp h
-  rw [Nat.mod_eq_of_lt (by omega : 7 < q), Nat.mod_eq_of_lt (by omega : 1 < q)] at hmod
-  omega
+  exact natCast_ne_one_of_lt (by omega) (by omega)
 
 /-- 7 ≢ -1 (mod q) for q ≥ 11: the second multiplier is not -1. -/
 theorem second_mult_ne_neg_one {q : Nat} [Fact (Nat.Prime q)] (hq11 : q ≥ 11) :
     multZ q 1 ≠ -1 := by
   simp only [multZ, show 1 + 1 = 2 from rfl, seq_two]
-  intro h
-  have h8 : ((8 : Nat) : ZMod q) = 0 := by
-    have : ((7 : Nat) : ZMod q) + 1 = 0 := by rw [h]; ring
-    calc ((8 : Nat) : ZMod q) = ((7 : Nat) : ZMod q) + 1 := by push_cast; ring
-      _ = 0 := this
-  rw [ZMod.natCast_eq_zero_iff] at h8
-  exact absurd (Nat.le_of_dvd (by omega) h8) (by omega)
+  exact natCast_ne_neg_one_of_lt (by omega)
 
 /-- **The second multiplier also escapes {±1}** for q ≥ 11 prime. -/
 theorem second_mult_escapes_pm_one {q : Nat} [Fact (Nat.Prime q)]
@@ -130,45 +140,25 @@ stronger escape results for larger subgroups. -/
 theorem third_mult_ne_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 47) :
     multZ q 2 ≠ 1 := by
   simp only [multZ, show 2 + 1 = 3 from rfl, seq_three]
-  intro h
-  rw [show (1 : ZMod q) = ((1 : Nat) : ZMod q) from Nat.cast_one.symm] at h
-  have hmod := (ZMod.natCast_eq_natCast_iff' 43 1 q).mp h
-  rw [Nat.mod_eq_of_lt (by omega : 43 < q), Nat.mod_eq_of_lt (by omega : 1 < q)] at hmod
-  omega
+  exact natCast_ne_one_of_lt (by omega) (by omega)
 
 /-- 43 ≢ -1 (mod q) for q ≥ 47. -/
 theorem third_mult_ne_neg_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 47) :
     multZ q 2 ≠ -1 := by
   simp only [multZ, show 2 + 1 = 3 from rfl, seq_three]
-  intro h
-  have h44 : ((44 : Nat) : ZMod q) = 0 := by
-    have : ((43 : Nat) : ZMod q) + 1 = 0 := by rw [h]; ring
-    calc ((44 : Nat) : ZMod q) = ((43 : Nat) : ZMod q) + 1 := by push_cast; ring
-      _ = 0 := this
-  rw [ZMod.natCast_eq_zero_iff] at h44
-  exact absurd (Nat.le_of_dvd (by omega) h44) (by omega)
+  exact natCast_ne_neg_one_of_lt (by omega)
 
 /-- 13 ≢ 1 (mod q) for q ≥ 17. -/
 theorem fourth_mult_ne_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 17) :
     multZ q 3 ≠ 1 := by
   simp only [multZ, show 3 + 1 = 4 from rfl, seq_four]
-  intro h
-  rw [show (1 : ZMod q) = ((1 : Nat) : ZMod q) from Nat.cast_one.symm] at h
-  have hmod := (ZMod.natCast_eq_natCast_iff' 13 1 q).mp h
-  rw [Nat.mod_eq_of_lt (by omega : 13 < q), Nat.mod_eq_of_lt (by omega : 1 < q)] at hmod
-  omega
+  exact natCast_ne_one_of_lt (by omega) (by omega)
 
 /-- 13 ≢ -1 (mod q) for q ≥ 17. -/
 theorem fourth_mult_ne_neg_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 17) :
     multZ q 3 ≠ -1 := by
   simp only [multZ, show 3 + 1 = 4 from rfl, seq_four]
-  intro h
-  have h14 : ((14 : Nat) : ZMod q) = 0 := by
-    have : ((13 : Nat) : ZMod q) + 1 = 0 := by rw [h]; ring
-    calc ((14 : Nat) : ZMod q) = ((13 : Nat) : ZMod q) + 1 := by push_cast; ring
-      _ = 0 := this
-  rw [ZMod.natCast_eq_zero_iff] at h14
-  exact absurd (Nat.le_of_dvd (by omega) h14) (by omega)
+  exact natCast_ne_neg_one_of_lt (by omega)
 
 /-- **All four multipliers are pairwise distinct mod q** for q ≥ 47.
     The residues {3, 7, 43, 13} are distinct in (ZMod q)× when q ≥ 47,
@@ -228,45 +218,25 @@ Using seq 5 = 53 and seq 6 = 5. -/
 theorem fifth_mult_ne_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 59) :
     multZ q 4 ≠ 1 := by
   simp only [multZ, show 4 + 1 = 5 from rfl, seq_five]
-  intro h
-  rw [show (1 : ZMod q) = ((1 : Nat) : ZMod q) from Nat.cast_one.symm] at h
-  have hmod := (ZMod.natCast_eq_natCast_iff' 53 1 q).mp h
-  rw [Nat.mod_eq_of_lt (by omega : 53 < q), Nat.mod_eq_of_lt (by omega : 1 < q)] at hmod
-  omega
+  exact natCast_ne_one_of_lt (by omega) (by omega)
 
 /-- 53 ≢ -1 (mod q) for q ≥ 59. -/
 theorem fifth_mult_ne_neg_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 59) :
     multZ q 4 ≠ -1 := by
   simp only [multZ, show 4 + 1 = 5 from rfl, seq_five]
-  intro h
-  have h54 : ((54 : Nat) : ZMod q) = 0 := by
-    have : ((53 : Nat) : ZMod q) + 1 = 0 := by rw [h]; ring
-    calc ((54 : Nat) : ZMod q) = ((53 : Nat) : ZMod q) + 1 := by push_cast; ring
-      _ = 0 := this
-  rw [ZMod.natCast_eq_zero_iff] at h54
-  exact absurd (Nat.le_of_dvd (by omega) h54) (by omega)
+  exact natCast_ne_neg_one_of_lt (by omega)
 
 /-- 5 ≢ 1 (mod q) for q ≥ 7. -/
 theorem sixth_mult_ne_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 7) :
     multZ q 5 ≠ 1 := by
   simp only [multZ, show 5 + 1 = 6 from rfl, seq_six]
-  intro h
-  rw [show (1 : ZMod q) = ((1 : Nat) : ZMod q) from Nat.cast_one.symm] at h
-  have hmod := (ZMod.natCast_eq_natCast_iff' 5 1 q).mp h
-  rw [Nat.mod_eq_of_lt (by omega : 5 < q), Nat.mod_eq_of_lt (by omega : 1 < q)] at hmod
-  omega
+  exact natCast_ne_one_of_lt (by omega) (by omega)
 
 /-- 5 ≢ -1 (mod q) for q ≥ 7. -/
 theorem sixth_mult_ne_neg_one {q : Nat} [Fact (Nat.Prime q)] (hq : q ≥ 7) :
     multZ q 5 ≠ -1 := by
   simp only [multZ, show 5 + 1 = 6 from rfl, seq_six]
-  intro h
-  have h6 : ((6 : Nat) : ZMod q) = 0 := by
-    have : ((5 : Nat) : ZMod q) + 1 = 0 := by rw [h]; ring
-    calc ((6 : Nat) : ZMod q) = ((5 : Nat) : ZMod q) + 1 := by push_cast; ring
-      _ = 0 := this
-  rw [ZMod.natCast_eq_zero_iff] at h6
-  exact absurd (Nat.le_of_dvd (by omega) h6) (by omega)
+  exact natCast_ne_neg_one_of_lt (by omega)
 
 /-! ## Six multipliers pairwise distinct
 
@@ -314,7 +284,6 @@ theorem multZ_injOn_six {q : Nat} [Fact (Nat.Prime q)] (hq59 : q ≥ 59)
     rfl | rfl | rfl | rfl | rfl | rfl <;>
   first | rfl | (exfalso; exact absurd heq ‹_›) | (exfalso; exact absurd heq.symm ‹_›)
 
-open Classical in
 /-- **Six multipliers escape subgroups of order ≤ 5**: for q ≥ 59 prime
     and q ∉ seq, any subgroup H ≤ (ZMod q)× with at most 5 elements
     fails to contain all six multiplier residues.
@@ -461,7 +430,6 @@ from 1, and from -1 (`mults_product_ne_one`, `mults_product_ne_neg_one`,
 in H. Together with `six_mults_escape_card_le_five`, this shows: for q ≥ 59,
 any proper subgroup of order ≤ 7 is escaped. -/
 
-open Classical in
 /-- **Eight elements escape subgroups of order ≤ 7**: for q ≥ 59 prime
     and q ∉ seq, any subgroup of order ≤ 7 cannot contain all 6 multiplier
     residues. Proof: the 8 pairwise distinct elements {1, m0, ..., m5, m0*m1}
@@ -539,7 +507,6 @@ theorem eight_elts_escape_order_le_seven {q : Nat} [Fact (Nat.Prime q)]
       _ = Fintype.card H := Finset.card_univ
   omega
 
-open Classical in
 /-- **Maximal subgroup escape implies SE**: in any finite group, to prove
     that a set of elements generates the whole group, it suffices to show
     they escape every maximal proper subgroup (coatom in the subgroup lattice).
@@ -572,7 +539,6 @@ This gives a clean framework for finite verification: for each prime q in a
 given range, find a multiplier index n such that `orderOf (multZ q n) = q-1`,
 and conclude SE holds at q. -/
 
-open Classical in
 /-- An element of full order in a finite group cannot belong to any proper subgroup.
     If `orderOf g = |G|`, then `g` generates the whole group, so `g ∉ H` for
     any proper `H < G`. -/
@@ -593,13 +559,9 @@ theorem not_mem_proper_subgroup_of_full_order [Group G] [Fintype G]
   -- card G | card H and card H ≤ card G → card H = card G
   have h_eq : Fintype.card H = Fintype.card G :=
     le_antisymm h_le (Nat.le_of_dvd Fintype.card_pos h_dvd)
-  -- Equal cardinality → H = G: carrier Finset = univ
-  rw [eq_top_iff]; intro x _
-  have hfs : (H : Set G).toFinset = Finset.univ :=
-    Finset.eq_univ_of_card _ (by rw [Set.toFinset_card]; exact h_eq)
-  exact Set.mem_toFinset.mp (hfs ▸ Finset.mem_univ x)
+  -- Equal cardinality → H = G
+  exact Subgroup.eq_top_of_card_eq H (by rwa [Nat.card_eq_fintype_card, Nat.card_eq_fintype_card])
 
-open Classical in
 /-- If some multiplier is a primitive root mod q (order = q-1), then
     SubgroupEscape holds at q: no proper subgroup contains that multiplier. -/
 theorem se_at_of_prim_root {q : Nat} [inst : Fact (Nat.Prime q)]
@@ -611,7 +573,6 @@ theorem se_at_of_prim_root {q : Nat} [inst : Fact (Nat.Prime q)]
   refine ⟨n, not_mem_proper_subgroup_of_full_order ?_ hH⟩
   rw [hord, ← Nat.totient_prime inst.out]; exact (ZMod.card_units_eq_totient q).symm
 
-open Classical in
 /-- **Concrete SE helper**: verify SubgroupEscape at prime q by finding a multiplier
     that is a primitive root. The primitive root property is verified via power checks:
     `v^((q-1)/p) ≠ 1` for each prime p | (q-1). Uses `native_decide`. -/

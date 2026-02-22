@@ -13,7 +13,7 @@ Uses quadratic reciprocity to analyze SE for the QR (index-2) subgroup:
 
 namespace MullinGroup
 
-open Mullin Euclid
+open Mullin Euclid Classical
 
 /-! ## Quadratic Reciprocity and SubgroupEscape
 
@@ -29,11 +29,17 @@ For each multiplier prime p ∈ {3, 5, 7, 13, 43, 53}:
 This section formalizes the individual QR conditions. -/
 
 -- Fact instances for multiplier primes
+/-- Registers 3 as a known prime. -/
 instance fact_prime_3 : Fact (Nat.Prime 3) := ⟨by decide⟩
+/-- Registers 5 as a known prime. -/
 instance fact_prime_5 : Fact (Nat.Prime 5) := ⟨by decide⟩
+/-- Registers 7 as a known prime. -/
 instance fact_prime_7 : Fact (Nat.Prime 7) := ⟨by decide⟩
+/-- Registers 13 as a known prime. -/
 instance fact_prime_13 : Fact (Nat.Prime 13) := ⟨by decide⟩
+/-- Registers 43 as a known prime. -/
 instance fact_prime_43 : Fact (Nat.Prime 43) := ⟨by decide⟩
+/-- Registers 53 as a known prime. -/
 instance fact_prime_53 : Fact (Nat.Prime 53) := ⟨by decide⟩
 
 /-! ### Helper lemmas for quadratic reciprocity -/
@@ -43,21 +49,21 @@ theorem neg_one_pow_half_eq_one {q : ℕ} (hq : q % 4 = 1) :
     (-1 : ℤ) ^ (q / 2) = 1 := by
   obtain ⟨k, rfl⟩ : ∃ k, q = 4 * k + 1 := ⟨q / 4, by omega⟩
   have : (4 * k + 1) / 2 = 2 * k := by omega
-  rw [this, pow_mul]; norm_num
+  rw [this, pow_mul]; norm_num; exact one_pow _
 
 /-- When q ≡ 3 mod 4, (-1)^(q/2) = -1. -/
 theorem neg_one_pow_half_eq_neg_one' {q : ℕ} (hq : q % 4 = 3) :
     (-1 : ℤ) ^ (q / 2) = -1 := by
   obtain ⟨k, rfl⟩ : ∃ k, q = 4 * k + 3 := ⟨q / 4, by omega⟩
   have : (4 * k + 3) / 2 = 2 * k + 1 := by omega
-  rw [this, pow_add, pow_mul, pow_one]; norm_num
+  rw [this, pow_add, pow_mul, pow_one]; norm_num; exact one_pow _
 
 /-- For odd multiplier m, (-1)^(m*n) = (-1)^n. -/
 theorem neg_one_pow_odd_mul {m n : ℕ} (hm : m % 2 = 1) :
     (-1 : ℤ) ^ (m * n) = (-1 : ℤ) ^ n := by
   obtain ⟨k, rfl⟩ : ∃ k, m = 2 * k + 1 := ⟨m / 2, by omega⟩
   rw [show (2 * k + 1) * n = 2 * (k * n) + n from by ring]
-  rw [pow_add, pow_mul]; norm_num
+  rw [pow_add, pow_mul]; norm_num; exact one_pow _
 
 /-- Reduce legendreSym p (↑q) to legendreSym p r when q ≡ r mod p. -/
 theorem legendreSym_nat_eq_mod (p : ℕ) [Fact (Nat.Prime p)] (q : ℕ) (r : ℤ)
@@ -145,65 +151,59 @@ theorem legendreSym_five_eq_neg_one {q : ℕ} [Fact (Nat.Prime q)]
 QRs mod 7: {1, 2, 4}. NQRs mod 7: {3, 5, 6}.
 (7/q) = -1 iff q % 28 ∈ {5, 11, 13, 15, 17, 23}. -/
 
+/-- Helper: reduce (7/q) via QR to (-1)^(q/2) * (q mod 7 / 7).
+    Steps 1-4 of the common pattern for all six residue classes mod 28. -/
+private theorem legendreSym_seven_reduce {q : ℕ} [Fact (Nat.Prime q)]
+    (hq2 : q ≠ 2) : legendreSym q 7 = (-1) ^ (q / 2) * legendreSym 7 (q : ℤ) := by
+  have hqr := @legendreSym.quadratic_reciprocity' 7 q _ _
+    (by decide) hq2
+  simp only [show (7 : ℕ) / 2 = 3 from by decide] at hqr
+  show legendreSym q (↑(7 : ℕ)) = _; rw [hqr]
+  rw [neg_one_pow_odd_mul (by decide : (3 : ℕ) % 2 = 1)]
+
+/-- Helper: (7/q) = -1 when q % 4 = 1 and q mod 7 is a quadratic non-residue mod 7. -/
+private theorem legendreSym_seven_neg_one_mod4_1 {q : ℕ} [Fact (Nat.Prime q)]
+    (hq2 : q ≠ 2) (hmod4 : q % 4 = 1) (r : ℤ) (hr : (q : ℤ) % ↑(7 : ℕ) = r)
+    (hnqr : legendreSym 7 r = -1) : legendreSym q 7 = -1 := by
+  rw [legendreSym_seven_reduce hq2, neg_one_pow_half_eq_one hmod4, one_mul,
+    legendreSym.mod 7 (q : ℤ), hr, hnqr]
+
+/-- Helper: (7/q) = -1 when q % 4 = 3 and q mod 7 is a quadratic residue mod 7. -/
+private theorem legendreSym_seven_neg_one_mod4_3 {q : ℕ} [Fact (Nat.Prime q)]
+    (hq2 : q ≠ 2) (hmod4 : q % 4 = 3) (r : ℤ) (hr : (q : ℤ) % ↑(7 : ℕ) = r)
+    (hqr : legendreSym 7 r = 1) : legendreSym q 7 = -1 := by
+  rw [legendreSym_seven_reduce hq2, neg_one_pow_half_eq_neg_one' hmod4,
+    legendreSym.mod 7 (q : ℤ), hr, hqr, mul_one]
+
+/-- `legendreSym q 7 = -1` when `q % 28 = 5`, i.e., `q ≡ 1 mod 4` and `q ≡ 5 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_5 {q : ℕ} [Fact (Nat.Prime q)]
-    (hmod : q % 28 = 5) : legendreSym q 7 = -1 := by
-  have hqr := @legendreSym.quadratic_reciprocity' 7 q _ _
-    (by decide) (by intro h; subst h; omega)
-  simp only [show (7 : ℕ) / 2 = 3 from by decide] at hqr
-  show legendreSym q (↑(7 : ℕ)) = -1; rw [hqr]
-  rw [neg_one_pow_odd_mul (by decide : (3 : ℕ) % 2 = 1)]
-  rw [neg_one_pow_half_eq_one (by omega), one_mul]
-  rw [legendreSym_nat_eq_mod 7 q 5 (by omega)]; native_decide
+    (hmod : q % 28 = 5) : legendreSym q 7 = -1 :=
+  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 5 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 11`, i.e., `q ≡ 3 mod 4` and `q ≡ 4 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_11 {q : ℕ} [Fact (Nat.Prime q)]
-    (hmod : q % 28 = 11) : legendreSym q 7 = -1 := by
-  have hqr := @legendreSym.quadratic_reciprocity' 7 q _ _
-    (by decide) (by intro h; subst h; omega)
-  simp only [show (7 : ℕ) / 2 = 3 from by decide] at hqr
-  show legendreSym q (↑(7 : ℕ)) = -1; rw [hqr]
-  rw [neg_one_pow_odd_mul (by decide : (3 : ℕ) % 2 = 1)]
-  rw [neg_one_pow_half_eq_neg_one' (by omega)]
-  rw [legendreSym_nat_eq_mod 7 q 4 (by omega)]; native_decide
+    (hmod : q % 28 = 11) : legendreSym q 7 = -1 :=
+  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 4 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 13`, i.e., `q ≡ 1 mod 4` and `q ≡ 6 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_13 {q : ℕ} [Fact (Nat.Prime q)]
-    (hmod : q % 28 = 13) : legendreSym q 7 = -1 := by
-  have hqr := @legendreSym.quadratic_reciprocity' 7 q _ _
-    (by decide) (by intro h; subst h; omega)
-  simp only [show (7 : ℕ) / 2 = 3 from by decide] at hqr
-  show legendreSym q (↑(7 : ℕ)) = -1; rw [hqr]
-  rw [neg_one_pow_odd_mul (by decide : (3 : ℕ) % 2 = 1)]
-  rw [neg_one_pow_half_eq_one (by omega), one_mul]
-  rw [legendreSym_nat_eq_mod 7 q 6 (by omega)]; native_decide
+    (hmod : q % 28 = 13) : legendreSym q 7 = -1 :=
+  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 6 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 15`, i.e., `q ≡ 3 mod 4` and `q ≡ 1 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_15 {q : ℕ} [Fact (Nat.Prime q)]
-    (hmod : q % 28 = 15) : legendreSym q 7 = -1 := by
-  have hqr := @legendreSym.quadratic_reciprocity' 7 q _ _
-    (by decide) (by intro h; subst h; omega)
-  simp only [show (7 : ℕ) / 2 = 3 from by decide] at hqr
-  show legendreSym q (↑(7 : ℕ)) = -1; rw [hqr]
-  rw [neg_one_pow_odd_mul (by decide : (3 : ℕ) % 2 = 1)]
-  rw [neg_one_pow_half_eq_neg_one' (by omega)]
-  rw [legendreSym_nat_eq_mod 7 q 1 (by omega)]; native_decide
+    (hmod : q % 28 = 15) : legendreSym q 7 = -1 :=
+  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 1 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 17`, i.e., `q ≡ 1 mod 4` and `q ≡ 3 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_17 {q : ℕ} [Fact (Nat.Prime q)]
-    (hmod : q % 28 = 17) : legendreSym q 7 = -1 := by
-  have hqr := @legendreSym.quadratic_reciprocity' 7 q _ _
-    (by decide) (by intro h; subst h; omega)
-  simp only [show (7 : ℕ) / 2 = 3 from by decide] at hqr
-  show legendreSym q (↑(7 : ℕ)) = -1; rw [hqr]
-  rw [neg_one_pow_odd_mul (by decide : (3 : ℕ) % 2 = 1)]
-  rw [neg_one_pow_half_eq_one (by omega), one_mul]
-  rw [legendreSym_nat_eq_mod 7 q 3 (by omega)]; native_decide
+    (hmod : q % 28 = 17) : legendreSym q 7 = -1 :=
+  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 3 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 23`, i.e., `q ≡ 3 mod 4` and `q ≡ 2 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_23 {q : ℕ} [Fact (Nat.Prime q)]
-    (hmod : q % 28 = 23) : legendreSym q 7 = -1 := by
-  have hqr := @legendreSym.quadratic_reciprocity' 7 q _ _
-    (by decide) (by intro h; subst h; omega)
-  simp only [show (7 : ℕ) / 2 = 3 from by decide] at hqr
-  show legendreSym q (↑(7 : ℕ)) = -1; rw [hqr]
-  rw [neg_one_pow_odd_mul (by decide : (3 : ℕ) % 2 = 1)]
-  rw [neg_one_pow_half_eq_neg_one' (by omega)]
-  rw [legendreSym_nat_eq_mod 7 q 2 (by omega)]; native_decide
+    (hmod : q % 28 = 23) : legendreSym q 7 = -1 :=
+  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 2 (by omega) (by native_decide)
 
 /-- 7 is a QNR mod q for primes q > 7 outside the 6 QR classes mod 28. -/
 theorem legendreSym_seven_eq_neg_one {q : ℕ} [Fact (Nat.Prime q)]
@@ -534,7 +534,6 @@ escaping DIFFERENT prime-index subgroups. Formally:
 This is strictly more general than `se_at_of_pow_checks` (which requires
 a single multiplier escaping ALL prime-index subgroups simultaneously). -/
 
-open Classical in
 /-- In a finite group, if `g ∈ H` for subgroup `H`, then `g ^ |H| = 1`.
     This is the "Lagrange" fact: the order of `g` divides `|H|`. -/
 theorem pow_card_subgroup_eq_one {G : Type*} [Group G] [Fintype G]
@@ -547,7 +546,6 @@ theorem pow_card_subgroup_eq_one {G : Type*} [Group G] [Fintype G]
   obtain ⟨c, hc⟩ := h1
   rw [hc, pow_mul, pow_orderOf_eq_one, one_pow]
 
-open Classical in
 /-- If `|H|` divides `d`, then every element of `H` satisfies `g^d = 1`. -/
 theorem pow_eq_one_of_mem_subgroup {G : Type*} [Group G] [Fintype G]
     {g : G} {H : Subgroup G} (hg : g ∈ H) {d : ℕ} (hd : Fintype.card H ∣ d) :
@@ -555,7 +553,6 @@ theorem pow_eq_one_of_mem_subgroup {G : Type*} [Group G] [Fintype G]
   obtain ⟨k, hk⟩ := hd
   rw [hk, pow_mul, pow_card_subgroup_eq_one hg, one_pow]
 
-open Classical in
 /-- **SE via prime-index escape**: SubgroupEscape holds at q if, for every
     prime ℓ dividing q-1, some multiplier residue m satisfies m^((q-1)/ℓ) ≠ 1
     (i.e., m is NOT an ℓ-th power residue mod q).
@@ -664,6 +661,10 @@ Uses the new `se_of_prime_index_escape` framework with manual witnesses. -/
 
 instance fact_prime_131 : Fact (Nat.Prime 131) := ⟨by decide⟩
 
+/-- SubgroupEscape at `q = 131` via multi-witness strategy. Since all six standard
+    multipliers {3,5,7,13,43,53} are quadratic residues mod 131, no single one is a
+    primitive root. Instead, for each prime factor of `130 = 2 * 5 * 13`, a different
+    multiplier escapes the corresponding maximal subgroup. -/
 theorem se_at_131 (hq : IsPrime 131) (hne : ∀ k, seq k ≠ 131) :
     ∀ H : Subgroup (ZMod 131)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 131 m) (multZ_ne_zero hq hne m)) ∉ H := by

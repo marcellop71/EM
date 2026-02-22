@@ -114,7 +114,7 @@ The key reduction: if `ComplexCharSumBound` holds for all primes q >= Q_0
 
 The per-prime chain is:
 ```
-CCSB at q → hitCount_lower_bound at q → WalkEquidistribution at q
+CCSB at q → HitCountLowerBound at q → WalkEquidistribution at q
           → cofinal hitting of -1 at q → ThresholdHitting at q
 ```
 
@@ -127,34 +127,17 @@ section MMCSBReduction
     at a prime q >= Q_0, the MMCSB data gives the norm bound on the character
     sum along the EM walk.
 
-    This replicates `dirichlet_char_sum_le_of_csb` (which is private in
-    EquidistFourier.lean) using per-prime MMCSB data instead of global CCSB. -/
-private lemma dirichlet_char_sum_le_of_mmcsb
+    Specializes `dirichlet_char_sum_le_of_unit_bound` (in EquidistFourier.lean)
+    with the per-prime bound extracted from `MultiModularCSB`. -/
+private theorem dirichlet_char_sum_le_of_mmcsb
     (hmmcsb : MultiModularCSB)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (hge : q ≥ hmmcsb.choose)
     (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)
     (ε : ℝ) (hε : 0 < ε) :
     ∃ N₀ : ℕ, ∀ N ≥ N₀,
-      ‖∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n)‖ ≤ ε * N := by
-  -- MMCSB gives per-prime data for χ : (ZMod q)ˣ →* ℂˣ
-  have hcsb_q := hmmcsb.choose_spec q hge hq hne
-  -- ψ.toUnitHom is a non-trivial (ZMod q)ˣ →* ℂˣ
-  have hψ' : ψ.toUnitHom ≠ 1 := by
-    intro h
-    apply hψ
-    have h1 : (1 : DirichletCharacter ℂ q).toUnitHom = 1 := by
-      ext a; simp [MulChar.one_apply_coe]
-    exact (DirichletCharacter.toUnitHom_inj (χ := ψ) 1).mp (h.trans h1.symm)
-  obtain ⟨N₀, hN₀⟩ := hcsb_q ψ.toUnitHom hψ' ε hε
-  refine ⟨N₀, fun N hN => ?_⟩
-  have heq : ∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n) =
-      ∑ n ∈ Finset.range N, (ψ.toUnitHom (emWalkUnit q hq hne n) : ℂ) := by
-    apply Finset.sum_congr rfl
-    intro n _
-    exact (MulChar.coe_toUnitHom ψ (emWalkUnit q hq hne n)).symm
-  rw [heq]
-  exact hN₀ N hN
+      ‖∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n)‖ ≤ ε * N :=
+  dirichlet_char_sum_le_of_unit_bound hq hne (hmmcsb.choose_spec q hge hq hne) ψ hψ ε hε
 
 /-- Per-prime hit count lower bound from MMCSB: if MultiModularCSB holds with
     threshold Q_0, then for any prime q >= Q_0 not in the sequence, the walk
@@ -314,7 +297,7 @@ open Classical in
     1. `mmcsb_implies_threshold`: MMCSB → ThresholdHitting(Q_0)
     2. `threshold_finite_implies_mullin`: ThresholdHitting(B) + FiniteMCBelow(B) → MC
 
-    For Q_0 <= 11, the finite verification is already done (`finite_mc_below_11`).
+    For Q_0 <= 11, the finite verification is already done (`finite_mcBelow_11`).
     For Q_0 > 11, `FiniteMCBelow(Q_0)` requires verifying that all primes below
     Q_0 appear in the EM sequence (a finite computation in principle). -/
 theorem mmcsb_implies_mc
@@ -333,7 +316,7 @@ theorem mmcsb_small_threshold_mc
     MullinConjecture := by
   apply mmcsb_implies_mc hmmcsb
   intro q hq hlt
-  exact finite_mc_below_11 q hq (by omega)
+  exact finite_mcBelow_11 q hq (by omega)
 
 end MMCSBReduction
 
@@ -1410,7 +1393,7 @@ theorem telescope_constrains_walk :
 
 /-- Auxiliary: for a nontrivial MonoidHom χ : (ZMod q)ˣ →* ℂˣ, the sum ∑ a, (χ a : ℂ) = 0.
     Uses the standard trick: pick b with χ(b) ≠ 1, then χ(b) · S = S implies S = 0. -/
-private lemma unit_char_sum_eq_zero {q : ℕ} [Fact (Nat.Prime q)]
+private theorem unit_char_sum_eq_zero {q : ℕ} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (hχ : χ ≠ 1) :
     ∑ a : (ZMod q)ˣ, (χ a : ℂ) = 0 := by
   -- Since χ ≠ 1, there exists b with χ(b) ≠ 1
@@ -1435,7 +1418,7 @@ private lemma unit_char_sum_eq_zero {q : ℕ} [Fact (Nat.Prime q)]
 
 /-- Auxiliary: the multiplier character sum decomposes as ∑_a χ(a) · V_N(a)
     where V_N(a) = #{n < N : m(n) = a}. -/
-private lemma mult_char_sum_fiber {q : ℕ} [Fact (Nat.Prime q)]
+private theorem mult_char_sum_fiber {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (χ : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
     ∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) =
@@ -1455,7 +1438,7 @@ private lemma mult_char_sum_fiber {q : ℕ} [Fact (Nat.Prime q)]
   rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul, mul_comm]
 
 /-- Auxiliary: the total multiplier hit count sums to N. -/
-private lemma mult_hit_count_sum {q : ℕ} [Fact (Nat.Prime q)]
+private theorem mult_hit_count_sum {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (N : ℕ) :
     ∑ a : (ZMod q)ˣ,
       ((Finset.range N).filter (fun n => emMultUnit q hq hne n = a)).card = N := by
@@ -1467,7 +1450,7 @@ private lemma mult_hit_count_sum {q : ℕ} [Fact (Nat.Prime q)]
   simpa using h.symm
 
 /-- Auxiliary: ‖(χ a : ℂ)‖ = 1 for a MonoidHom χ : (ZMod q)ˣ →* ℂˣ. -/
-private lemma unit_monoidHom_norm_one {q : ℕ} [Fact (Nat.Prime q)]
+private theorem unit_monoidHom_norm_one {q : ℕ} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (a : (ZMod q)ˣ) :
     ‖(χ a : ℂ)‖ = 1 := by
   have hfin : IsOfFinOrder a := isOfFinOrder_of_finite a

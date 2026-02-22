@@ -68,7 +68,7 @@ open Classical in
 
     This is a direct corollary of `AddChar.sum_mulShift` applied to
     the primitive character `stdAddChar` on `ZMod N`. -/
-lemma stdAddChar_sum_eq (a : ZMod N) :
+theorem stdAddChar_sum_eq (a : ZMod N) :
     ∑ k : ZMod N, ZMod.stdAddChar (a * k) =
     if a = (0 : ZMod N) then (N : ℂ) else 0 := by
   have hprim := ZMod.isPrimitive_stdAddChar N
@@ -330,7 +330,7 @@ variable {p : ℕ} [Fact (Nat.Prime p)]
 /-- Values of a multiplicative character χ on (ZMod p)ˣ have norm 1 in ℂ.
     This is because character values are roots of unity of order dividing |(ZMod p)ˣ|,
     and roots of unity have norm 1 in ℂ. -/
-lemma mulChar_norm_one_of_unit (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
+theorem mulChar_norm_one_of_unit (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
     ‖χ a‖ = 1 := by
   have hfin : IsOfFinOrder a := isOfFinOrder_of_finite a
   have hfin' : IsOfFinOrder ((MulChar.equivToUnitHom χ) a) :=
@@ -346,7 +346,7 @@ lemma mulChar_norm_one_of_unit (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
 
 /-- Conjugate of a multiplicative character value equals the inverse character value.
     For a : (ZMod p)ˣ, conj(χ a) = χ⁻¹ a. -/
-lemma mulChar_conj_eq_inv (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
+theorem mulChar_conj_eq_inv (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
     starRingEnd ℂ (χ (a : ZMod p)) = χ⁻¹ (a : ZMod p) := by
   rw [MulChar.inv_apply_eq_inv']
   rw [starRingEnd_apply, Complex.star_def]
@@ -354,7 +354,7 @@ lemma mulChar_conj_eq_inv (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
 
 /-- Conjugate of a multiplicative character value equals the inverse character value
     for all elements of ZMod p (including 0). -/
-lemma mulChar_conj_eq_inv' (χ : MulChar (ZMod p) ℂ) (a : ZMod p) :
+theorem mulChar_conj_eq_inv' (χ : MulChar (ZMod p) ℂ) (a : ZMod p) :
     starRingEnd ℂ (χ a) = χ⁻¹ a := by
   by_cases ha : IsUnit a
   · obtain ⟨u, rfl⟩ := ha
@@ -528,7 +528,8 @@ open Complex Finset
 noncomputable def eAN (α : ℝ) : ℂ :=
   Complex.exp (2 * ↑Real.pi * Complex.I * ↑α)
 
-/-- `e(0) = 1`. -/
+/-- The normalized exponential `e(α) = exp(2πiα)` evaluates to 1 at zero,
+reflecting that a full-period rotation returns to the identity. -/
 theorem eAN_zero : eAN 0 = 1 := by
   simp [eAN, mul_zero, Complex.exp_zero]
 
@@ -566,7 +567,7 @@ theorem eAN_intCast (n : ℤ) : eAN (n : ℝ) = 1 := by
 
 /-- `e(α) ≠ 0` — the exponential is never zero. -/
 theorem eAN_ne_zero (α : ℝ) : eAN α ≠ 0 := by
-  intro h; have := eAN_norm α; rw [h, norm_zero] at this; exact one_ne_zero this.symm
+  simp only [eAN]; exact Complex.exp_ne_zero _
 
 /-- `e(α) * conj(e(α)) = 1` — unitarity. -/
 theorem eAN_mul_conj (α : ℝ) : eAN α * starRingEnd ℂ (eAN α) = 1 := by
@@ -585,11 +586,15 @@ theorem eAN_conj_mul (α : ℝ) : starRingEnd ℂ (eAN α) * eAN α = 1 := by
 noncomputable def trigKernel (R : ℕ) (α : Fin R → ℝ) (k : ℤ) : ℂ :=
   ∑ r : Fin R, eAN (k * α r)
 
-/-- K(0) = R. -/
+/-- At zero frequency the trigonometric kernel `K(k) = ∑_r e(k·α_r)` equals the number of
+sample points `R`, since each summand `e(0) = 1`. This normalization anchors the
+diagonal term in Parseval-type identities for the large sieve. -/
 theorem trigKernel_zero (R : ℕ) (α : Fin R → ℝ) : trigKernel R α 0 = ↑R := by
   simp [trigKernel, Int.cast_zero, zero_mul, eAN_zero]
 
-/-- K(-k) = conj(K(k)). -/
+/-- The trigonometric kernel has conjugation symmetry: negating the frequency conjugates the
+kernel value. This follows from `e(-t) = conj(e(t))` applied termwise, and ensures the
+kernel's Fourier coefficients are Hermitian. -/
 theorem trigKernel_neg (R : ℕ) (α : Fin R → ℝ) (k : ℤ) :
     trigKernel R α (-k) = starRingEnd ℂ (trigKernel R α k) := by
   simp only [trigKernel, map_sum]
@@ -698,7 +703,9 @@ theorem conj_mul_eAN (c : ℂ) (t : ℝ) :
     starRingEnd ℂ (c * eAN t) = starRingEnd ℂ c * starRingEnd ℂ (eAN t) := by
   exact map_mul (starRingEnd ℂ) c (eAN t)
 
-/-- `conj(e(t)) = e(-t)`. -/
+/-- Complex conjugation of the normalized exponential negates the argument:
+`conj(e(t)) = e(-t)`. This is the fundamental symmetry `exp(-2πit) = conj(exp(2πit))`
+that underlies Hermitian structure in Fourier analysis. -/
 theorem conj_eAN (t : ℝ) : starRingEnd ℂ (eAN t) = eAN (-t) := by
   rw [eAN_neg]
 
