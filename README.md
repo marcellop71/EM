@@ -17,7 +17,7 @@ The first terms are 2, 3, 7, 43, 13, 53, 5, 6221671, 38709183810571, 139, 2801, 
 
 ## Paper
 
-The full paper is available at [`docs/paper.pdf`](docs/paper.pdf) (source: [`docs/paper.tex`](docs/paper.tex)), with clickable links to the Lean source code for every formally verified result.
+The full paper is available in this repo at [`paper/main.pdf`](paper/main.pdf) with clickable links to the Lean source code for every formally verified result.
 
 ## License
 
