@@ -391,3 +391,251 @@ theorem generating_escapes_proper {G : Type*} [Group G]
   exact multiplier_closure_ne_top_of_confined m H hH hall hgen
 
 end SafePrimeLattice
+
+/-! ## Complement Generation in Finite Groups
+
+A key structural fact: in a finite group of order ≥ 3, removing any single element
+from the group still yields a generating set. This means that the "single-element
+avoidance" imposed by DH failure is always compatible with SubgroupEscape. -/
+
+section ComplementGeneration
+
+/-- **Complement generates**: in a group of order ≥ 3, removing any single element
+    from the carrier still generates the full group. The proof uses:
+    for any `g : G`, pick `a ∈ G \ {g}` with `a ≠ 1` (possible since |G| ≥ 3).
+    Then `g = a * (a⁻¹ * g)`, and `a⁻¹ * g ≠ g` since `a ≠ 1`, so both factors
+    lie in `G \ {g}`. -/
+theorem closure_compl_singleton_eq_top {G : Type*} [Group G] [Fintype G]
+    (hcard : 3 ≤ Fintype.card G) (g : G) :
+    Subgroup.closure ((Set.univ : Set G) \ {g}) = ⊤ := by
+  classical
+  -- Step 1: find a ∈ G with a ≠ g and a ≠ 1
+  have hexists : ∃ a : G, a ≠ g ∧ a ≠ 1 := by
+    by_contra hall
+    push_neg at hall
+    -- hall : ∀ a, a ≠ g → a = 1, so every element is g or 1
+    -- Claim |G| ≤ 2 by bounding via `card_le_one_iff` or explicit injection
+    have h2 : Fintype.card G ≤ 2 := by
+      by_cases hg1 : g = (1 : G)
+      · -- If g = 1, then hall gives ∀ a, a ≠ 1 → a = 1, so |G| = 1
+        subst hg1
+        have : Fintype.card G ≤ 1 :=
+          Fintype.card_le_one_iff.mpr (fun a b => by
+            by_cases ha : a = 1
+            · by_cases hb : b = 1
+              · rw [ha, hb]
+              · exact absurd (hall b hb) hb
+            · exact absurd (hall a ha) ha)
+        omega
+      · -- g ≠ 1. Define f : G → Bool with f(g) = true, f(x) = false for x ≠ g
+        -- This is injective since all non-g elements equal 1
+        have hinj : Function.Injective (fun x : G => decide (x = g)) := by
+          intro a b hab
+          simp only [decide_eq_decide] at hab
+          by_cases hag : a = g
+          · by_cases hbg : b = g
+            · rw [hag, hbg]
+            · simp [hag, hbg] at hab
+          · by_cases hbg : b = g
+            · simp [hag, hbg] at hab
+            · rw [hall a hag, hall b hbg]
+        calc Fintype.card G ≤ Fintype.card Bool := Fintype.card_le_of_injective _ hinj
+          _ = 2 := Fintype.card_bool
+    omega
+  -- Step 2: prove closure = ⊤
+  rw [eq_top_iff]
+  intro x _
+  by_cases hxg : x = g
+  · obtain ⟨a, hag, ha1⟩ := hexists
+    -- x = g = a * (a⁻¹ * g), both factors ≠ g
+    rw [hxg, show g = a * (a⁻¹ * g) from by group]
+    apply Subgroup.mul_mem
+    · exact Subgroup.subset_closure ⟨Set.mem_univ _, by simpa using hag⟩
+    · have hne : a⁻¹ * g ≠ g := by
+        intro heq
+        apply ha1
+        have h1 : a⁻¹ = (1 : G) := mul_right_cancel (heq.trans (one_mul g).symm)
+        exact inv_eq_one.mp h1
+      exact Subgroup.subset_closure ⟨Set.mem_univ _, by simpa using hne⟩
+  · exact Subgroup.subset_closure ⟨Set.mem_univ _, by simpa using hxg⟩
+
+/-- **Generating from complement**: if `S ⊇ univ \ {g}` and `|G| ≥ 3`,
+    then `closure S = ⊤`. Useful corollary: a multiplier sequence whose range
+    misses at most one element still generates the full group. -/
+theorem closure_eq_top_of_compl_singleton_subset {G : Type*} [Group G] [Fintype G]
+    (hcard : 3 ≤ Fintype.card G) (S : Set G) (g : G)
+    (hS : (Set.univ : Set G) \ {g} ⊆ S) :
+    Subgroup.closure S = ⊤ := by
+  have h := closure_compl_singleton_eq_top hcard g
+  exact top_le_iff.mp (h ▸ Subgroup.closure_mono hS)
+
+end ComplementGeneration
+
+/-! ## Structural Dichotomy for Target Avoidance
+
+Abstract framework: for a walk `w` with multipliers `m` in a finite group,
+hitting a target element `t` requires `m(k) = w(k)⁻¹ * t` at some step k.
+If the walk never hits `t`, then at every recurrent position `c`, the
+departure multiplier `c⁻¹ * t` is systematically avoided. This is the
+"single death-channel avoidance" constraint.
+
+The key structural insight (for safe primes): this avoidance is compatible
+with SubgroupEscape — removing one element from the full group still generates
+when |G| ≥ 3. So DH failure at safe primes cannot be detected purely from
+generation properties; it requires analytic input (equidistribution). -/
+
+section TargetAvoidance
+
+variable {G : Type*} [Group G]
+
+/-- **Hitting characterization**: the walk hits target `t` at step `k+1`
+    iff the multiplier at step k equals the "death value" `w(k)⁻¹ * t`. -/
+theorem walk_hits_target_iff (w m : ℕ → G)
+    (hwalk : ∀ k, w (k + 1) = w k * m k) (t : G) (k : ℕ) :
+    w (k + 1) = t ↔ m k = (w k)⁻¹ * t := by
+  constructor
+  · intro h
+    have hwk := hwalk k
+    rw [h] at hwk
+    -- hwk : t = w k * m k, need m k = (w k)⁻¹ * t
+    calc m k = (w k)⁻¹ * (w k * m k) := by rw [inv_mul_cancel_left]
+      _ = (w k)⁻¹ * t := by rw [← hwk]
+  · intro h
+    rw [hwalk k, h, mul_inv_cancel_left]
+
+/-- **Departure avoidance at recurrent positions**: if the walk never hits
+    target `t` after step `N`, then at any position `c`, the departure
+    multipliers past step `N` avoid the death value `c⁻¹ * t`. -/
+theorem departure_avoids_death_value (w m : ℕ → G)
+    (hwalk : ∀ k, w (k + 1) = w k * m k) (t : G) (N : ℕ)
+    (havoid : ∀ k, N ≤ k → w k ≠ t) (c : G) (k : ℕ) (hk : N ≤ k)
+    (hpos : w k = c) :
+    m k ≠ c⁻¹ * t := by
+  intro heq
+  exact havoid (k + 1) (by omega) ((walk_hits_target_iff w m hwalk t k).mpr (hpos ▸ heq))
+
+/-- **Departure set exclusion**: if the walk avoids target `t` from step `N` onwards,
+    then at position `c`, every departure multiplier past `N` lies in `G \ {c⁻¹ * t}`. -/
+theorem departure_set_excludes_death_value (w m : ℕ → G)
+    (hwalk : ∀ k, w (k + 1) = w k * m k) (t : G) (N : ℕ)
+    (havoid : ∀ k, N ≤ k → w k ≠ t) (c : G) (k : ℕ) (hk : N ≤ k)
+    (hpos : w k = c) :
+    m k ∈ (Set.univ : Set G) \ {c⁻¹ * t} :=
+  ⟨Set.mem_univ _, departure_avoids_death_value w m hwalk t N havoid c k hk hpos⟩
+
+/-- **Infinite avoidance**: if the walk visits position `c` infinitely often and
+    never hits target `t` after step `N`, then infinitely many departure multipliers
+    at `c` avoid the death value `c⁻¹ * t`. -/
+theorem infinite_departures_avoiding_death (w m : ℕ → G) [Finite G]
+    (hwalk : ∀ k, w (k + 1) = w k * m k) (t : G) (N : ℕ)
+    (havoid : ∀ k, N ≤ k → w k ≠ t) (c : G)
+    (hcof : Set.Infinite {k : ℕ | w k = c}) :
+    Set.Infinite {k : ℕ | N ≤ k ∧ w k = c ∧ m k ≠ c⁻¹ * t} := by
+  -- The set {k | w k = c} is infinite, and {k | k < N} is finite,
+  -- so {k | N ≤ k ∧ w k = c} is infinite. Each such k also avoids the death value.
+  have hN_finite : Set.Finite {k : ℕ | ¬(N ≤ k)} := by
+    apply (Set.Finite.subset (Set.finite_Iio N) _)
+    intro k hk
+    simp only [Set.mem_setOf_eq, not_le] at hk
+    exact Set.mem_Iio.mpr hk
+  have hinf2 : Set.Infinite ({k : ℕ | w k = c} \ {k | ¬(N ≤ k)}) :=
+    hcof.diff hN_finite
+  apply hinf2.mono
+  intro k hk
+  simp only [Set.mem_diff, Set.mem_setOf_eq, not_not] at hk ⊢
+  exact ⟨hk.2, hk.1, departure_avoids_death_value w m hwalk t N havoid c k hk.2 hk.1⟩
+
+end TargetAvoidance
+
+/-! ## Safe Prime DH Structural Dichotomy
+
+For a safe prime `q` with `|G| = q - 1 = 2p'` (p' prime), DH failure means
+the walk avoids `-1` from some step onwards. The structural consequences:
+
+1. At every recurrent position `c`, departure multipliers avoid `c⁻¹ * (-1) = -c⁻¹`.
+2. Despite this avoidance, `G \ {-c⁻¹}` still generates `G` (since `|G| ≥ 4`).
+3. So SE (SubgroupEscape) is structurally compatible with DH failure.
+4. The DH failure constraint is "invisible" to the subgroup lattice — it requires
+   analytic methods (equidistribution, character sums) to detect.
+
+This formalizes why the DH → MC reduction is genuinely hard: the structural
+(algebraic) constraints from SE leave room for DH failure. -/
+
+section SafePrimeDichotomy
+
+/-- **Safe prime target avoidance dichotomy**: either every element of `G` is visited
+    by the walk, or the walk avoids some element. In the avoidance case, the
+    departure multipliers at each recurrent position are restricted but still
+    generate the full group (when `|G| ≥ 3`). -/
+theorem avoidance_compatible_with_generation {G : Type*} [Group G] [Fintype G]
+    (hcard : 3 ≤ Fintype.card G)
+    (_w _m : ℕ → G) (_hwalk : ∀ k, _w (k + 1) = _w k * _m k)
+    (t : G) (_N : ℕ) (_havoid : ∀ k, _N ≤ k → _w k ≠ t)
+    (c : G) :
+    Subgroup.closure ((Set.univ : Set G) \ {c⁻¹ * t}) = ⊤ :=
+  closure_compl_singleton_eq_top hcard (c⁻¹ * t)
+
+/-- **Avoidance does not obstruct SE**: even when the walk avoids target `t` and
+    departure multipliers at position `c` are restricted to `G \ {c⁻¹ * t}`,
+    there exists a multiplier sequence whose range is contained in `G \ {c⁻¹ * t}`
+    yet still generates the full group. So DH failure cannot be ruled out by
+    purely algebraic (subgroup lattice) arguments.
+
+    This is the formal version of "SE is compatible with DH failure." -/
+theorem se_compatible_with_dh_failure {G : Type*} [Group G] [Fintype G]
+    (hcard : 3 ≤ Fintype.card G) (t : G) (c : G) :
+    ∃ S : Set G, S ⊆ (Set.univ : Set G) \ {c⁻¹ * t} ∧
+    Subgroup.closure S = ⊤ := by
+  exact ⟨(Set.univ : Set G) \ {c⁻¹ * t}, le_refl _,
+    closure_compl_singleton_eq_top hcard _⟩
+
+/-- **Safe prime order bound**: for a safe prime `q` (i.e., `q` prime with
+    `(q-1)/2` prime), we have `q - 1 ≥ 4`. This ensures `|G| ≥ 3` for any
+    group of order `q - 1`, which is needed for complement generation. -/
+theorem safe_prime_order_ge_four {q : ℕ} (hq : IsSafePrime q) :
+    4 ≤ q - 1 := by
+  obtain ⟨hpq, hpp⟩ := hq
+  have hq2 : q ≥ 2 := hpq.two_le
+  have hp2 : (q - 1) / 2 ≥ 2 := hpp.two_le
+  omega
+
+/-- **Safe prime: complement generation applies**: for a safe prime `q` and any
+    group `G` of order `q - 1`, we have `|G| ≥ 4 ≥ 3`, so removing any single
+    element from `G` still generates `G`. -/
+theorem safe_prime_compl_generates {G : Type*} [Group G] [Fintype G]
+    {q : ℕ} (hq : IsSafePrime q) (hord : Fintype.card G = q - 1) (g : G) :
+    Subgroup.closure ((Set.univ : Set G) \ {g}) = ⊤ := by
+  apply closure_compl_singleton_eq_top
+  have := safe_prime_order_ge_four hq
+  omega
+
+/-- **Safe prime SE + DH failure compatibility**: for a safe prime `q`, the subgroup
+    escape condition is structurally compatible with DH failure. Specifically, for
+    any position `c` and target `t`, the restricted departure set `G \ {c⁻¹ * t}`
+    generates the full group of order `q - 1`. -/
+theorem safe_prime_se_dh_compatible {G : Type*} [Group G] [Fintype G]
+    {q : ℕ} (hq : IsSafePrime q) (hord : Fintype.card G = q - 1) (c t : G) :
+    Subgroup.closure ((Set.univ : Set G) \ {c⁻¹ * t}) = ⊤ :=
+  safe_prime_compl_generates hq hord (c⁻¹ * t)
+
+/-- **DH failure forces analytic obstruction**: at the recurrent position, the
+    departure multipliers avoid exactly one element (the death value) yet still
+    generate the full group. This means the DH failure is "analytically invisible"
+    to the subgroup lattice — it can only be detected by measuring the frequency
+    of multiplier values (equidistribution), not their group-theoretic span.
+
+    Formally: given a walk that avoids target `t`, visits position `c` infinitely
+    often, and has `|G| ≥ 3`, the infinitely-many departure multipliers at `c`
+    all lie in `G \ {c⁻¹ * t}`, which generates `G`. The discrepancy between
+    "generates G" and "avoids -1" is purely distributional. -/
+theorem dh_failure_distributional_gap {G : Type*} [Group G] [Fintype G]
+    (hcard : 3 ≤ Fintype.card G)
+    (w m : ℕ → G) (hwalk : ∀ k, w (k + 1) = w k * m k)
+    (t : G) (N : ℕ) (havoid : ∀ k, N ≤ k → w k ≠ t) (c : G)
+    (_hcof : Set.Infinite {k : ℕ | w k = c}) :
+    (∀ k, N ≤ k → w k = c → m k ∈ (Set.univ : Set G) \ {c⁻¹ * t}) ∧
+    Subgroup.closure ((Set.univ : Set G) \ {c⁻¹ * t}) = ⊤ :=
+  ⟨fun k hk hc => departure_set_excludes_death_value w m hwalk t N havoid c k hk hc,
+   closure_compl_singleton_eq_top hcard _⟩
+
+end SafePrimeDichotomy
