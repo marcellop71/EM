@@ -1,0 +1,249 @@
+%% =========================================================================
+\section{The Residue Walk}
+\label{sec:walk}
+%% =========================================================================
+
+We define two sequences by mutual recursion:
+\begin{alignat}{2}
+  \seq(0) &\coloneqq 2, &\qquad
+  \Prod(0) &\coloneqq 2, \label{eq:base}\\
+  \seq(n+1) &\coloneqq \minFac\bigl(\Prod(n) + 1\bigr), &\qquad
+  \Prod(n+1) &\coloneqq \Prod(n) \cdot \seq(n+1). \label{eq:step}
+\end{alignat}
+
+\begin{theorem}[\lean{EM/MullinDefs.lean}{seq\_isPrime, seq\_injective}]\label{thm:seq-props}
+Every $\seq(n)$ is prime, and the sequence is injective: no prime
+appears twice.
+\end{theorem}
+
+\begin{definition}[\defname{Walk} and \defname{Multiplier}]\label{def:walk-mult}
+For any prime~$q$, define the \textbf{residue walk} and the \textbf{multiplier} by projecting the accumulator and the next prime onto $\ZZ/q\ZZ$:
+
+$$\begin{aligned}\label{eq:walk}
+  &\walkZ{q}{n} \coloneqq \Prod(n) \bmod q \\
+  &\multZ{q}{n} \coloneqq \seq(n{+}1) \bmod q
+\end{aligned}$$
+\end{definition}
+
+\begin{proposition}[\defname{Walk recurrence} --- \lean{EM/MullinGroupCore.lean}{walkZ\_succ}]\label{prop:recurrence}
+$\walkZ{q}{n\!+\!1} = \walkZ{q}{n} \cdot \multZ{q}{n}$ in
+$\ZZ/q\ZZ$.
+\end{proposition}
+
+\noindent The walk can be in one of two regimes:
+
+\
+
+\begin{enumerate}[nosep]
+\item \textbf{Living regime.}  If $q$ has not yet appeared in the
+  sequence up to step~$n$, then $q \nmid \Prod(n)$ (since $\Prod(n)$
+  is a product of the primes $\seq(0), \ldots, \seq(n)$, none equal
+  to~$q$).  So $\walkZ{q}{n} \in (\ZZ/q\ZZ)^\times$---the walk lives
+  in the group of units.
+
+\item \textbf{Dead regime.}  If $q = \seq(k)$ for some $k \leq n$,
+  then $q \mid \Prod(n)$, so $\walkZ{q}{n} = 0$.  From this point on,
+  $q \mid \Prod(m)$ for all $m \geq k$, so $\walkZ{q}{m} = 0$
+  forever.  The walk has \emph{collapsed to zero}
+  (\lean{EM/EquidistBootstrap.lean}{walkZ\_capture\_then\_collapse}).
+\end{enumerate}
+
+\
+
+The transition from living to dead can happen only through $-1$:
+
+\begin{theorem}[\defname{Walk--Divisibility Bridge} --- \lean{EM/MullinGroupCore.lean}{walkZ\_eq\_neg\_one\_iff}]\label{thm:bridge}
+For any prime~$q$ and any~$n$ such that $\walkZ{q}{n} \in
+(\ZZ/q\ZZ)^\times$:
+\[
+  \walkZ{q}{n} = -1
+  \quad\Longleftrightarrow\quad
+  q \mid \bigl(\Prod(n) + 1\bigr).
+\]
+\end{theorem}
+
+Hitting $-1$ is a \emph{necessary} condition for the walk to die (for
+$q$ to enter the sequence): if $q \mid \Prod(n)+1$, then
+$\walkZ{q}{n} = -1$.  But it is not sufficient by itself.  When
+$\walkZ{q}{n} = -1$, the walk dies only if $q = \minFac(\Prod(n)+1)$,
+i.e.\ no smaller prime divides $\Prod(n)+1$.  If a smaller prime~$p$
+also divides $\Prod(n)+1$, then $\minFac(\Prod(n)+1) \leq p < q$
+and $q$ is \emph{not} selected---the walk \emph{bounces off}~$-1$ and continues living.
+The walk may therefore hit~$-1$ multiple times without dying.  Death
+occurs only at a hit where $q$ is the smallest available factor:
+\[
+  \cdots \to \underbrace{\walkZ{q}{n} = -1}_{\text{bounce}}
+  \to (\ZZ/q\ZZ)^\times \to \cdots \to
+  \underbrace{\walkZ{q}{n_0} = -1}_{\substack{\text{lethal hit:}\\
+    q = \minFac}}
+  \to \underbrace{\walkZ{q}{n_0{+}1} = 0}_{\text{dead}}
+  \to 0 \to \cdots
+\]
+
+What determines whether a hit on~$-1$ is a bounce or a lethal hit?
+The answer depends on which other primes divide $\Prod(n)+1$.  This
+is controlled by the \emph{sieve gap}.
+
+\begin{definition}[\defname{$\MC({<}\,q)$}]\label{def:mc-below}
+For a prime~$q$, write $\MC({<}\,q)$ for the statement that every
+prime smaller than~$q$ appears in the EM sequence:
+$\forall\, p < q,\; p \text{ prime} \;\Rightarrow\; \exists\, k,\;
+\seq(k) = p$.
+\end{definition}
+
+\noindent When $\MC({<}\,q)$ holds, every prime $p < q$ has entered the sequence
+at some stage~$k_p$, so $p \mid \Prod(n)$ for all $n \geq k_p$.
+Past a uniform stage $N_0 = \max_p k_p$, every prime $p < q$ divides
+$\Prod(n)$, and therefore cannot divide $\Prod(n)+1$ (since
+$\gcd(\Prod(n), \Prod(n)+1) = 1$).  This is the \textbf{sieve gap}:
+past~$N_0$, the only primes that can divide $\Prod(n)+1$ are
+$\geq q$.
+
+\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_implies\_seq\_ge}]\label{thm:roughness}
+If $\MC({<}\,q)$ holds, then $\exists\, N_0$ such that
+$\seq(n{+}1) \geq q$ for all $n \geq N_0$.
+\end{theorem}
+
+\noindent The sieve gap transforms hitting~$-1$ from a necessary condition into
+a sufficient one:
+
+\begin{theorem}[\defname{Lethal hit} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_hit\_is\_lethal}]\label{thm:lethal-hit}
+If $\MC({<}\,q)$ holds and $\walkZ{q}{n} = -1$ for some $n$ past the
+sieve gap, then $\seq(n{+}1) = q$.
+\end{theorem}
+
+\begin{proof}
+Since $n$ is past the sieve gap, no prime $< q$ divides
+$\Prod(n)+1$ (Theorem~\ref{thm:roughness}).  But $\walkZ{q}{n} = -1$
+gives $q \mid \Prod(n)+1$, so $q = \minFac(\Prod(n)+1)$, and
+$\seq(n{+}1) = q$.
+\end{proof}
+
+\begin{definition}[Missing prime]\label{def:missing}
+A prime~$q$ is \textbf{missing} if $\seq(n) \neq q$ for all~$n$.
+\end{definition}
+
+\noindent Mullin's Conjecture asserts that no prime is missing.
+Under $\MC({<}\,q)$, the first hit on~$-1$ past the sieve gap is
+lethal.  This immediately constrains missing primes:
+
+\begin{theorem}[\lean{EM/EquidistThreshold.lean}{mc\_below\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
+If $\MC({<}\,q)$ holds and $q$ is missing, then the walk \emph{never}
+hits~$-1$ past the sieve gap: $\exists\, N_0$ such that
+$\walkZ{q}{n} \neq -1$ for all $n \geq N_0$.
+\end{theorem}
+
+\begin{proof}
+Any hit past the sieve gap would give $\seq(n{+}1) = q$
+(Theorem~\ref{thm:lethal-hit}), contradicting $q$ missing.
+\end{proof}
+
+\noindent For the first missing prime~$q$, the hypothesis $\MC({<}\,q)$ holds
+by definition.  So its walk avoids~$-1$ permanently past the sieve
+gap, the walk $\walkZ{q}{\cdot}$ is infinite: it stays
+in~$(\ZZ/q\ZZ)^\times$ forever, never collapsing to zero.
+
+\subsection{The forbidden multiplier and the death channel}
+
+Suppose the walk is at position $c \in (\ZZ/q\ZZ)^\times$ at step~$n$.
+The walk would hit $-1$ at step $n{+}1$ if and only if
+\[
+  \walkZ{q}{n} \cdot \multZ{q}{n} = -1,
+  \quad\text{i.e.,}\quad
+  \multZ{q}{n} = -c^{-1}.
+\]
+
+\noindent So at every step, there is exactly \textbf{one forbidden multiplier}
+$f(n) = -\walkZ{q}{n}^{-1}$---the unique residue class that would
+send the walk to~$-1$.  This is $1$~element out of $q-1$ possible
+unit residues.
+
+\begin{definition}[\defname{Death channel}]\label{def:death-channel}
+The \textbf{death channel} at position $c$ is the residue class
+$b(c) = -c^{-1} \bmod q$.
+\end{definition}
+
+\noindent When the walk is at~$c$, the death channel is the set of primes
+$p \equiv -c^{-1} \pmod{q}$, which by Dirichlet's theorem has density $1/(q-1)$ among all primes.
+The death channel \emph{moves} with the walk: as $c$ changes from step
+to step, the forbidden class changes with it.  The map $c \mapsto
+-c^{-1}$ is a bijection on $(\ZZ/q\ZZ)^\times$ (it is the composition
+of inversion and negation).
+
+\begin{theorem}[\lean{EM/EquidistSieve.lean}{walk\_hits\_neg\_one\_iff\_mult\_eq\_forbidden}]\label{thm:forbidden}
+For any step~$n$ with $\walkZ{q}{n} \in (\ZZ/q\ZZ)^\times$:
+\[
+  \walkZ{q}{n{+}1} = -1
+  \quad\Longleftrightarrow\quad
+  \multZ{q}{n} = -\walkZ{q}{n}^{-1}.
+\]
+\end{theorem}
+
+\noindent The statement ``$q$ is missing'' is therefore equivalent to:
+\[
+  \text{For all } n: \quad \multZ{q}{n} \neq -\walkZ{q}{n}^{-1}.
+\]
+In words: the multiplier avoids the death channel at every step, forever.
+This brings us to discuss multipliers.
+
+\subsection{The Confinement Theorem and SubgroupEscape}
+
+Before asking whether the walk hits~$-1$, we must ask whether it
+\emph{can}.  The walk is multiplicative:
+$\walkZ{q}{n} = \walkZ{q}{0} \cdot \prod_{k < n} \multZ{q}{k}$.
+The reachable set is the coset
+$\walkZ{q}{0} \cdot \langle \text{multipliers} \rangle$.
+
+\begin{theorem}[\defname{Confinement} --- \lean{EM/MullinGroupCore.lean}{confinement\_forward}]\label{thm:confinement}
+If every multiplier lies in a subgroup $H \leq (\ZZ/q\ZZ)^\times$,
+then the walk is confined to the coset $\walkZ{q}{0} \cdot H$.
+In particular, if $-1 \notin \walkZ{q}{0} \cdot H$, the walk
+\emph{never} hits~$-1$.
+\end{theorem}
+
+\noindent This motivates:
+
+\begin{definition}[\defname{SubgroupEscape} (\abbr{SE})]\label{def:se}
+For a prime~$q$: no proper subgroup $H < (\ZZ/q\ZZ)^\times$ contains
+all multipliers.  Equivalently,
+$\langle \multZ{q}{n} : n \in \NN \rangle = (\ZZ/q\ZZ)^\times$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/MullinGroupEscape.lean}{se\_of\_maximal\_escape}]
+SE holds iff multipliers escape every \emph{maximal} proper subgroup.
+Since $(\ZZ/q\ZZ)^\times$ is cyclic, the maximal subgroups are the
+index-$\ell$ subgroups for prime $\ell \mid q\!-\!1$.
+\end{theorem}
+
+\noindent When SE holds, the walk is not confined to any proper coset: every
+element of $(\ZZ/q\ZZ)^\times$, including~$-1$, is \emph{reachable}.
+But reachability does not imply hitting---that is a dynamical question.
+
+\subsection{The first missing prime}
+
+We now assemble the key argument.  Suppose, toward contradiction, that
+Mullin's Conjecture is false.  Then there exists a \textbf{first
+missing prime}: the smallest prime~$q$ that never appears in the EM
+sequence. For this~$q$:
+
+\begin{enumerate}[label=(\alph*),nosep]
+\item $\MC({<}\,q)$ holds---by definition, every prime smaller than~$q$
+  is in the sequence.
+\item The walk $\walkZ{q}{\cdot}$ is infinite---since $q$ is missing,
+  $\walkZ{q}{n} \in (\ZZ/q\ZZ)^\times$ for all~$n$.
+\item Past the sieve gap, the walk never hits~$-1$.  Here is why.
+  Eventually (say for $n \geq N_0$), all primes $< q$ have entered
+  the sequence and divide $\Prod(n)$.  For $n \geq N_0$, no prime
+  $< q$ can divide $\Prod(n)+1$ (since it divides $\Prod(n)$ and
+  $\gcd(\Prod(n), \Prod(n)+1) = 1$).  So if $\walkZ{q}{n} = -1$ for
+  some $n \geq N_0$, then $q \mid \Prod(n)+1$, and $q$ is the smallest
+  prime factor of $\Prod(n)+1$ (all smaller primes are excluded).
+  Then $\seq(n{+}1) = q$, contradicting $q$ being missing.
+\end{enumerate}
+
+\
+
+\noindent Therefore: \textbf{for the first missing prime~$q$, the walk is an
+infinite trajectory on $(\ZZ/q\ZZ)^\times$ that avoids the death
+channel at every step past the sieve gap.} Equivalently: $\multZ{q}{n} \neq -\walkZ{q}{n}^{-1}$ for all $n \geq N_0$.
+

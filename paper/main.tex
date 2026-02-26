@@ -1,0 +1,98 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tikz-cd}
+\usepackage[margin=1in]{geometry}
+\usepackage{scalerel}
+
+% Inline code: sans-serif, small, dark teal, with breakable underscores.
+\definecolor{codeink}{HTML}{1B6B6D}
+\newcommand{\code}[1]{%
+  {\color{codeink}\sffamily\small #1}%
+}
+
+% Lean 4 source links for formally verified results.
+% Set \leanurl to the repository blob URL for clickable source references.
+\newcommand{\leanurl}{https://github.com/marcellop71/EM/blob/main}
+\definecolor{leanink}{HTML}{4338CA}
+\newcommand{\lean}[2]{%
+  \texorpdfstring{%
+    \href{\leanurl/#1}{%
+      {\color{leanink}\sffamily\footnotesize%
+        \scalerel*{\checkmark}{X}\kern0.12em#2}}%
+  }{#2}%
+}
+
+% Allow line breaks at underscores everywhere (tables, \code, etc.).
+\renewcommand{\_}{\textunderscore\hspace{0pt}}
+
+% Named definitions/theorems: small-caps for names, bold small-caps for abbreviations.
+\definecolor{defink}{HTML}{7C3AED}
+\newcommand{\defname}[1]{\texorpdfstring{{\color{defink}\textsc{#1}}}{#1}}
+\newcommand{\abbr}[1]{\texorpdfstring{{\color{defink}\textsc{\textbf{#1}}}}{#1}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\seq}{\mathrm{em}}
+\newcommand{\Prod}{\mathrm{P}}
+\newcommand{\minFac}{\mathrm{minFac}}
+\newcommand{\walkZ}[2]{\mathrm{P}_{#1}(#2)}
+\newcommand{\multZ}[2]{\mathrm{m}_{#1}(#2)}
+\newcommand{\SE}{\mathrm{SE}}
+\newcommand{\MH}{\mathrm{MH}}
+\newcommand{\HH}{\mathrm{HH}}
+\renewcommand{\DH}{\mathrm{DH}}
+\newcommand{\MC}{\mathrm{MC}}
+\newcommand{\PE}{\mathrm{PE}}
+\newcommand{\ME}{\mathrm{ME}}
+\newcommand{\EMPR}{\mathrm{EMPR}}
+\newcommand{\WHP}{\mathrm{WHP}}
+\newcommand{\EKE}{\mathrm{EKE}}
+\newcommand{\PRE}{\mathrm{PRE}}
+
+\title{A formalized reduction of the Mullin's Conjecture}
+
+\author{Marcello Paris}
+\date{February 2026}
+
+\begin{document}
+
+\maketitle
+\input{abstract.tex}
+
+\newpage
+\tableofcontents
+
+\newpage
+\input{introduction.tex}
+\input{the_residue_walk.tex}
+\input{the_inductive_bootstrap.tex}
+\input{the_character_sum_reduction.tex}
+\input{why_its_hard.tex}
+\input{the_lean_formalization.tex}
+\input{open_problems.tex}
+\input{appendix.tex}
+\input{bibliography.tex}
+
+\end{document}

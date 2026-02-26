@@ -1,0 +1,37 @@
+\begin{abstract}
+The Euclid--Mullin sequence is defined by $a(0)=2$,
+$a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, where $\text{lpf}$ is
+the least prime factor.
+Mullin's Conjecture (MC, 1963) asserts that every prime eventually
+appears.  We present a Lean~4 formalization
+(${\sim}26{,}900$~lines, 35~files, \textbf{zero sorry}) that reduces MC to a
+single open hypothesis.
+
+An \emph{inductive bootstrap} yields the primary reduction: the
+\textbf{Single Hit Theorem} shows that MC follows if, for each
+prime~$q$, the multiplicative walk on $(\ZZ/q\ZZ)^\times$ hits~$-1$
+at least once past a computable bound.  The algebraic precondition
+(SubgroupEscape) is free: for any prime $p \geq 5$, some odd prime
+$r < p$ escapes every proper subgroup of $(\ZZ/p\ZZ)^\times$, proved
+using only modular arithmetic.  A separate \emph{Fourier bridge}
+gives a parallel reduction: MC follows whenever certain walk character
+sums are $o(N)$.
+
+Multiple reduction routes---algebraic, character-analytic,
+sieve-theoretic---all converge on the same
+\emph{orbit-specificity gap}: transferring generic equidistribution
+to one deterministic orbit.  The sharpest sufficient condition is
+Conditional Multiplier Equidistribution~(CME)---the statement that
+the factoring operation in the EM construction destroys correlation
+between consecutive multiplier residues---proved to imply the
+Complex Character Sum Bound~(CCSB) for all character orders,
+bypassing the $d \geq 3$ barrier.  CME decomposes as
+$\mathrm{CME} = \mathrm{VCB} + \mathrm{Dec}$, where
+Vanishing Conditional Bias~(VCB) is a strictly weaker hypothesis
+permitting fiber sums to be proportional to visit counts rather than
+small.  We prove $\mathrm{VCB} + \mathrm{PED} \Rightarrow
+\mathrm{CCSB}$, giving nine independent routes to MC.
+Over a hundred dead ends are
+documented, precisely delineating the boundary of current methods.
+\end{abstract}
+

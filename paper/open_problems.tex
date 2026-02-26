@@ -1,0 +1,420 @@
+%% =========================================================================
+\section{Open Problems}
+\label{sec:open}
+%% =========================================================================
+
+The formalization certifies the reductions above and pinpoints the
+frontier.  This section identifies the open problems whose resolution
+would close Mullin's Conjecture.
+
+\subsection{CCSB as the Precise Frontier}
+
+The formalization identifies \textbf{ComplexCharSumBound} as the
+irreducible analytic content.  The question:
+
+\begin{center}
+\emph{Are the walk character sums $\sum_{n<N} \chi(\walkZ{q}{n})$ bounded
+$o(N)$ for every non-trivial $\chi$?}
+\end{center}
+
+CCSB is a single hypothesis that implies MC with no additional
+conditions.  As shown in Section~\ref{sec:character}, CCSB rules out
+permanent avoidance of~$-1$: the Fourier bridge forces the hit count
+at~$-1$ to be $N/(q{-}1) + o(N)$, contradicting the zero hits that
+the first missing prime's walk must achieve past the sieve gap.
+
+The walk telescoping identities (Section~\ref{sec:character}) provide
+precise structural constraints.  The identity
+$\sum_n \chi(w(n))(\chi(m(n))-1) = O(1)$ means that the walk sum
+$S_N$ and the multiplier sum $M_N = \sum_n \chi(m(n))$ satisfy
+$S_N \approx S_N + (M_N - S_N) = M_N + O(1)$ only in the crude sense;
+the telescoping does \emph{not} separate them.
+
+\subsection{Connection to Bombieri--Vinogradov}
+
+A Bombieri--Vinogradov type result for EM walk residues would give:
+\[
+\sum_{\substack{q \leq Q \\ q\text{ prime}}}
+\max_{a}
+\Bigl| |\{n \leq N : w(n) \equiv a \pmod{q}\}|
+  - \frac{N}{q-1} \Bigr|
+\;\ll\; \frac{NQ}{(\log N)^A}.
+\]
+For non-exceptional primes, the hit count at~$-1$ would be
+$\sim N/(q{-}1) > 0$, contradicting permanent avoidance; the finitely
+many exceptional primes below~$Q_0$ are handled by the inductive
+bootstrap (\S\ref{sec:bootstrap}), closing the conjecture.
+
+The difficulty is that BV applies to the set of \emph{all} primes,
+not to a specific subsequence.  The EM walk is deterministic and
+self-referential: the walk at step~$n$ depends on the factorization
+of~$\Prod(n)+1$, which depends on all previous walk values.  Standard
+BV does not apply.
+
+\subsection{Connection to Chebotarev}
+
+The \textbf{EffectiveKummerEscape} hypothesis asserts: for each
+prime~$\ell$, there exists~$B$ such that for $q \geq B$ with
+$\ell \mid q\!-\!1$, some multiplier among the first~$B$ escapes the
+$\ell$-th power kernel.  This is a Chebotarev-type statement for the
+Kummer extension $\mathbb{Q}(\zeta_\ell, 3^{1/\ell}, \ldots,
+53^{1/\ell})$: the Frobenius at~$q$ determines which multiplier
+primes are $\ell$-th power residues.
+
+An effective Chebotarev density theorem for this fixed number field
+would give EKE for all but finitely many~$q$ (effectively bounded).
+Combined with finite verification for the remaining~$q$, this would
+prove PRE and hence SE unconditionally---but SE is
+\emph{already} proved unconditionally via the elementary PRE.
+The Chebotarev approach would give a stronger \emph{effective}
+bound on how quickly SE kicks in, refining the density argument of
+\S\ref{sec:bootstrap}.
+
+\subsection{The Sieve-Theoretic Approach}
+
+\textbf{Mertens\-Escape}: for any prime~$q$ and proper
+subgroup~$H$, infinitely many primes outside~$H$ exist
+(Dirichlet content).
+\textbf{Sieve\-Amplification}: Mertens escape should force
+eventual $\minFac(\Prod(n){+}1)$ escape from~$H$, via
+super-exponential growth and mutual coprimality of
+successive Euclid numbers.
+
+The formally verified chain:
+$\mathrm{MertensEscape} + \mathrm{SieveAmplification}
+\xrightarrow{\text{proved}}
+\mathrm{TailSE} \xrightarrow{\text{proved}}
+\mathrm{CofinalEscape} \xrightarrow{\text{proved}}
+\mathrm{QuotientDH}$.
+
+The formalization articulates a richer sieve infrastructure in two parallel
+routes:
+
+\paragraph{Cumulative route.}
+\begin{gather*}
+\mathrm{PDE}
+\xrightarrow{\text{Alladi}}
+\mathrm{GLPFE}
+\xrightarrow{\mathrm{SieveTransfer}}
+\mathrm{SieveEquidist}
+\xrightarrow{\text{open}}
+\mathrm{NoLongRuns} \\
+\xrightarrow{\text{proved}}
+\mathrm{PED}
+\xrightarrow{\text{open}}
+\mathrm{CCSB}
+\xrightarrow{\text{proved}}
+\mathrm{MC}.
+\end{gather*}
+Here PDE is PrimeDensityEquipartition (PNT in arithmetic progressions,
+a known theorem not yet in Mathlib), and GLPFE is GenericLPFEquidist
+(Alladi's theorem~\cite{Alladi1977} on $\minFac$ distribution of generic integers,
+also known but not formalized).  Both ends of the chain---from PDE to
+GLPFE via Alladi, and from CCSB to MC via Fourier inversion---are
+formally proved.
+
+\paragraph{Window route.}
+\[
+\mathrm{StrongSieveEquidist}
+\xrightarrow{\text{proved}}
+\mathrm{NoLongRunsAt}
+\xrightarrow{\text{proved}}
+\mathrm{PEDAt}
+\xrightarrow{\text{open}}
+\mathrm{CCSB}
+\xrightarrow{\text{proved}}
+\mathrm{MC}.
+\]
+StrongSieveEquidist asserts that EM multipliers are equidistributed
+within sliding windows; NoLongRunsAt and PEDAt are per-prime variants
+proved by pigeonhole and block-counting respectively
+(\lean{EM/EquidistSieveTransfer.lean\#L185}{strongSieveEquidist\_noLongRunsAt},
+\lean{EM/EquidistSieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
+
+\paragraph{The genuine frontier.}
+\textbf{SieveTransfer} is the critical open hypothesis: does the
+equidistribution of $\minFac$ residues for generic integers transfer
+to the specific EM orbit?  Everything above SieveTransfer is known
+mathematics; everything below it is proved.  SieveTransfer is where
+``known but not formalized'' meets ``genuinely open.''
+
+The difficulty: for \emph{generic} $q$-rough integers,
+$\minFac$ residues are equidistributed (by CRT + Mertens)---the
+death channel gets its fair share of multipliers.  But the EM
+Euclid numbers are not generic: each is determined by the entire
+walk history.  Transferring the generic equidistribution to this
+specific orbit is the open step.
+
+\paragraph{Sieve-to-harmonic convergence.}
+The sieve hierarchy (\S36--\S39 of \code{EquidistSelfCorrecting.lean})
+and the harmonic hierarchy (\S30--\S35) converge: both produce
+DecorrelationHypothesis as output.  The full chain
+\[
+\mathrm{SieveEquidist}
+\xrightarrow{\text{proved}}
+\mathrm{Dec}
+\xrightarrow{\text{proved}}
+\mathrm{PED}
+\xrightarrow[\text{sole gap}]{\text{open}}
+\mathrm{CCSB}
+\xrightarrow{\text{proved}}
+\mathrm{MC}
+\]
+is formalized, with the first two arrows machine-verified
+(\lean{EM/LargeSieve.lean\#L1634}{sieve\_equidist\_implies\_decorrelation},
+\lean{EM/EquidistSelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
+The sieve route achieves SieveEquidist~$\Rightarrow$~Dec via a
+counting-to-character-sum bridge: SieveEquidistribution produces
+\code{EMMultCharSumBound} with $Q_0 = 0$, meaning multiplier character
+sums cancel for \emph{all} primes~$q$, which is exactly
+DecorrelationHypothesis.  The sole remaining gap on this route is
+\textbf{PEDImpliesComplexCSB}
+(\lean{EM/EquidistSelfCorrecting.lean\#L109}{PEDImpliesComplexCSB}):
+does positive escape density for all primes imply walk character sum
+cancellation?  Any proof of SieveEquidistribution (e.g., from PNT
+in APs $+$ Alladi's theorem) would immediately yield Dec and PED
+for free, isolating this single bridge as the only open step.
+
+\subsection{What Would Close the Conjecture}
+
+The cleanest paths to MC:
+\begin{enumerate}
+\item \textbf{Prove CME} (sharpest target): show that the multiplier
+  character sum $\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ is
+  $o(N)$ for each walk position~$c$.  CME is strictly weaker than
+  CCSB, and $\mathrm{CME} \Rightarrow \mathrm{CCSB}$ is proved
+  (\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}).
+  CME asks only about the \emph{conditional} distribution of
+  multipliers given walk state---it does not require controlling the
+  walk character sum itself.  This bypasses the $d \geq 3$ barrier
+  entirely.
+
+\item \textbf{Prove CCSB directly}: show that no non-trivial
+  character sum can sustain the $\Omega(N)$ bias that permanent
+  avoidance of~$-1$ would require.  The self-correcting sieve
+  (concentration of EM primes in a residue class is exponentially
+  self-limiting) is the strongest heuristic argument.
+
+\item \textbf{Prove a BV-type estimate}: even an averaged bound
+  over~$q$ would suffice---for $q \geq Q_0$ it rules out permanent
+  avoidance, and the finitely many $q < Q_0$ are handled by the
+  inductive bootstrap (\S\ref{sec:bootstrap}).
+
+\item \textbf{Close the orbit chain gap}: show that at each cofinally
+  visited walk position, at least two distinct multiplier classes
+  appear.  This would force the orbit chain to expand to the full group.
+
+\item \textbf{Prove DH directly}: show that a multiplicative walk
+  on a cyclic group with a generating set of multipliers must hit
+  every element cofinally.  This is a combinatorial question about
+  deterministic walks.
+
+\item \textbf{Prove SieveTransfer}: show that the EM orbit's $\minFac$
+  distribution matches that of generic integers, at least on average.
+  The cumulative sieve route (\S38) reduces this to known number theory
+  (PNT in APs + Alladi's theorem); closing SieveTransfer gives CME
+  (and hence CCSB) via the conditional multiplier equidistribution
+  framework.
+
+\item \textbf{Prove BVImpliesMMCSB or PrimeArithLSImpliesMMCSB}: the
+  large sieve route (\S41--\S65) reduces MC to a transfer hypothesis.
+  Given Bombieri--Vinogradov or the analytic large sieve, the remaining
+  open step is showing that the EM orbit's multipliers receive their
+  fair share of each residue class---in particular, that the death
+  channel is not systematically avoided.  This is the same
+  orbit-specificity gap as SieveTransfer, approached from a different
+  mathematical toolkit.
+\end{enumerate}
+
+\subsection{Does the Walk Hit $-1$?}
+
+The irreducible open question is not whether DH holds (cofinal
+hitting is a convenient sufficient condition) but whether the walk
+hits~$-1$ \emph{at least once} past the sieve gap.  The Single Hit
+Theorem (Theorem~\ref{thm:single-hit}) shows that a single hit at
+each prime suffices for MC; DH, CCSB, and CME are strategies for
+producing that hit.
+
+\paragraph{Evidence for.}
+Two independent lines of evidence suggest the walk does hit~$-1$.
+(1)~\emph{Self-correcting feedback}: the formalized sieve analysis
+(\code{EquidistSelfCorrecting.lean}) shows that concentration of EM
+primes in a residue class is exponentially self-limiting---a walk
+biased toward missing $-1$ automatically biases the multiplier
+distribution toward correcting that miss.
+(2)~\emph{Analogy with Artin's conjecture}: Artin's conjecture
+(that every non-square integer is a primitive root for infinitely
+many primes) has the same orbit-specificity structure and is believed
+true; Hooley~\cite{Hooley1967} proved it conditional on GRH.  The
+walk-hitting question is the analogous statement for the EM walk
+and would follow from an analogous uniformity hypothesis.
+
+\paragraph{Evidence against.}
+Two features of the EM sequence give pause.
+(1)~\emph{Cox--van der Poorten}~\cite{CoxVdP1968}: the ``largest factor'' variant of
+the Euclid--Mullin sequence provably misses primes.  The EM
+sequence's completeness is not a soft consequence of the Euclid
+construction but depends sensitively on the $\minFac$ selection
+rule.  This fragility means heuristic arguments
+(``it should work because Euclid numbers have many factors'') are
+not reliable.
+(2)~\emph{The $d \geq 3$ barrier}: the formalization proves that
+the most natural route from multiplier escape density to walk
+character sum cancellation (PED~$\Rightarrow$~BRE~$\Rightarrow$~CCSB) is
+\emph{impossible} for character orders $d \geq 3$.  This is not
+evidence against the hit, but it shows that producing one
+requires mechanisms beyond the simplest equidistribution
+framework.  The CME bypass sidesteps this barrier, but the barrier's
+existence means any proof must be genuinely subtle.
+
+\paragraph{Assessment.}
+We believe the walk does hit~$-1$ at every prime, primarily because
+the self-correcting sieve mechanism provides a concrete dynamical
+reason (not merely a probabilistic heuristic) for the walk to
+eventually hit~$-1$.  The strongest form of this belief: CME should
+hold because the EM multipliers, conditioned on walk position, have
+no arithmetic reason to avoid the death channel systematically.
+But we acknowledge that no existing technique can prove this, and
+the $d \geq 3$ barrier shows that the proof, when found, will need
+to exploit the specific structure of the EM walk in ways that
+current analytic number theory does not.
+
+%% =========================================================================
+\section{Summary of Verified Results}
+\label{sec:summary}
+%% =========================================================================
+
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}p{5.5cm}l>{\raggedright\arraybackslash}p{4.5cm}@{}}
+\toprule
+\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\emph{continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{3}{l}{\emph{Sequence foundations}} \\
+\quad Every $\seq(n)$ is prime & Proved & \code{seq\_isPrime} \\
+\quad No prime repeats & Proved & \code{seq\_injective} \\
+\midrule
+\multicolumn{3}{l}{\emph{Main reductions to MC}} \\
+\quad \textbf{SHH $\Rightarrow$ MC} (Single Hit Theorem) & Proved & \code{single\_hit\_implies\_mc} \\
+\quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting route) & Proved & \code{dynamical\_hitting\_implies\_mullin} \\
+\quad \textbf{CCSB $\Rightarrow$ MC} (single hypothesis) & Proved & \code{complex\_csb\_mc'} \\
+\quad PE $\Rightarrow$ MC & Proved & \code{pe\_implies\_mullin} \\
+\quad HH $\Rightarrow$ MC & Proved & \code{hh\_implies\_mullin} \\
+\quad SE + MH $\Rightarrow$ MC & Proved & \code{se\_mixing\_implies\_mullin} \\
+\quad \textbf{WE $\Rightarrow$ MC} (single Prop) & Proved & \code{walk\_equidist\_mc} \\
+\midrule
+\multicolumn{3}{l}{\emph{Inductive bootstrap}} \\
+\quad PrimeResidueEscape (elementary) & Proved & \code{prime\_residue\_escape} \\
+\quad MC($<\!p$) + PRE $\Rightarrow$ SE($p$) & Proved & \code{mc\_below\_pre\_implies\_se} \\
+\quad $q$-roughness from MC($<\!q$) & Proved & \code{mc\_below\_implies\_seq\_ge} \\
+\quad One-prime gap & Proved & \code{mc\_below\_cofinal\_hit\_implies\_mc\_at} \\
+\quad mc\_below 11 & Proved & \code{concrete\_mc\_below\_11} \\
+\midrule
+\multicolumn{3}{l}{\emph{Algebraic framework}} \\
+\quad Confinement Theorem & Proved & \code{confinement\_forward/reverse} \\
+\quad PRE $\Leftrightarrow$ SE & Proved & \code{pre\_iff\_se} \\
+\quad SE $\Leftrightarrow$ character detection & Proved & \code{se\_iff\_char\_detection} \\
+\quad Maximal subgroup reduction & Proved & \code{se\_of\_maximal\_escape} \\
+\quad WHP $\Leftrightarrow$ HH & Proved & \code{whp\_iff\_hh} \\
+\quad SE density argument (CRT + QR) & Proved & \code{se\_qr\_obstruction} \\
+\midrule
+\multicolumn{3}{l}{\emph{Character sum chain}} \\
+\quad Fourier bridge: CCSB $\Rightarrow$ hit count lb & Proved & \code{complex\_csb\_implies\_hit\_count\_lb\_proved} \\
+\quad Decorrelation $\Rightarrow$ PED & Proved & \code{decorrelation\_implies\_ped} \\
+\quad NoLongRuns$(L)$ $\Rightarrow$ PED & Proved & \code{noLongRuns\_implies\_ped} \\
+\quad BRE $\Rightarrow$ PEDImpliesCSB & Proved & \code{block\_rotation\_implies\_ped\_csb} \\
+\quad CME $\Rightarrow$ CCSB (all $d$, bypasses BRE) & Proved & \code{cme\_implies\_ccsb} \\
+\quad CME $\Rightarrow$ MC & Proved & \code{cme\_implies\_mc} \\
+\quad Walk char recurrence ($\mathbb{C}$-valued) & Proved & \code{char\_walk\_recurrence} \\
+\quad Telescoping identity & Proved & \code{walk\_telescope\_identity} \\
+\quad Telescoping norm $\leq 2$ & Proved & \code{walk\_telescope\_norm\_bound} \\
+\quad Shift-one autocorrelation & Proved & \code{walk\_shift\_one\_correlation} \\
+\quad Order-2 sign-flip chain & Proved & \code{order2\_noLongRuns\_mc} \\
+\midrule
+\multicolumn{3}{l}{\emph{Walk dynamics}} \\
+\quad Walk--divisibility bridge & Proved & \code{walkZ\_eq\_neg\_one\_iff} \\
+\quad Products strictly monotone & Proved & \code{prod\_strictMono} \\
+\quad Fundamental trichotomy & Proved & \code{avoidance\_contradicts\_se\_mixing} \\
+\quad Self-avoidance dichotomy & Proved & \code{self\_avoidance\_dichotomy} \\
+\quad Scheduled walk coverage & Proved & \code{scheduled\_walk\_covers\_all} \\
+\midrule
+\multicolumn{3}{l}{\emph{Selectability analysis}} \\
+\quad Divisor freshness & Proved & \code{divisor\_not\_yet\_in\_seq} \\
+\quad Passed-over persistence & Proved & \code{passed\_over\_persists} \\
+\quad Selectability extinction & Proved & \code{selectability\_extinguished} \\
+\quad MC $\Rightarrow$ $\neg$InfinitelySelectable & Proved & \code{mc\_implies\_not\_infinitely\_selectable} \\
+\quad DH $\Rightarrow$ InfinitelySelectable & Proved & \code{dh\_implies\_infinitely\_selectable} \\
+\midrule
+\multicolumn{3}{l}{\emph{Sieve and orbit analysis}} \\
+\quad EMFE $\Leftrightarrow$ TailSE & Proved & \code{emfe\_iff\_tail\_se\_at} \\
+\quad TailSE $\Rightarrow$ CofinalEscape $\Rightarrow$ QuotientDH & Proved & \code{tail\_se\_gives\_sub\_dh} \\
+\quad Dirichlet: $\infty$ primes per residue class & Proved & \code{dirichlet\_residues\_independent} \\
+\quad Minimality sieve + coupling & Proved & \code{minimality\_sieve} \\
+\quad StrongSieveEquidist $\Rightarrow$ NoLongRunsAt & Proved & \code{strongSieveEquidist\_noLongRunsAt} \\
+\quad NoLongRunsAt $\Rightarrow$ PEDAt & Proved & \code{noLongRunsAt\_ped} \\
+\quad DPED $\Rightarrow$ PED & Proved & \code{dped\_implies\_ped} \\
+\quad PDE $+$ sieve chain $\Rightarrow$ MC & Proved & \code{primeDensity\_chain\_mc} \\
+\quad GLPFE $+$ SieveTransfer $\Rightarrow$ MC & Proved & \code{genericLPF\_chain\_mc} \\
+\quad SieveEquidist $\Rightarrow$ Dec & Proved & \code{sieve\_equidist\_implies\_decorrelation} \\
+\quad SieveEquidist $\Rightarrow$ PED & Proved & \code{sieve\_equidist\_implies\_ped} \\
+\midrule
+\multicolumn{3}{l}{\emph{Large sieve route}} \\
+\quad MultiModularCSB $\Rightarrow$ MC & Proved & \code{mmcsb\_implies\_mc} \\
+\quad BV chain $\Rightarrow$ MC & Proved & \code{bv\_chain\_mc} \\
+\quad ArithLS chain $\Rightarrow$ MC & Proved & \code{arith\_ls\_chain\_mc} \\
+\quad ALS chain $\Rightarrow$ MC & Proved & \code{als\_prime\_arith\_ls\_chain\_mc} \\
+\quad \textbf{WeakALS} (\S58) & \textbf{Proved} & \code{weak\_als\_from\_card\_bound} \\
+\quad Gauss sum inversion (\S57) & Proved & \code{char\_sum\_to\_exp\_sum} \\
+\quad \textbf{ALS $\Rightarrow$ PrimeArithLS} (\S65) & \textbf{Proved} & \code{als\_implies\_prime\_arith\_ls} \\
+\quad Jordan's inequality (\S56) & Proved & \code{sin\_pi\_ge\_two\_mul} \\
+\quad Geometric sum bound (\S56) & Proved & \code{norm\_eAN\_geom\_sum\_le\_inv} \\
+\quad Parseval for ZMod.dft (\S53) & Proved & \code{zmod\_dft\_parseval} \\
+\quad Gauss sum norm $\|\tau\|^2 = p$ (\S54) & Proved & \code{gaussSum\_norm\_sq\_eq\_prime} \\
+\quad Walk autocorrelation identities (\S53) & Proved & \code{walkAutocorrelation\_*} \\
+\quad Character Parseval (\S60) & Proved & \code{char\_parseval\_units} \\
+\quad All 8 GCT internal lemmas (\S56--\S62) & Proved & \code{gct\_nontrivial\_char\_sum\_le} \\
+\midrule
+\multicolumn{3}{l}{\emph{Open hypotheses --- live targets}} \\
+\quad \textbf{SingleHitHypothesis} (weakest sufficient) & \textbf{Open} & \code{SingleHitHypothesis} \\
+\quad \textbf{DynamicalHitting} & \textbf{Open} & \code{DynamicalHitting} \\
+\quad \textbf{ComplexCharSumBound} & \textbf{Open} & \code{ComplexCharSumBound} \\
+\quad \textbf{MultiModularCSB} & \textbf{Open} & \code{MultiModularCSB} \\
+\quad DecorrelationHypothesis & \textbf{Open} & \code{DecorrelationHypothesis} \\
+\quad PositiveEscapeDensity & \textbf{Open} & \code{PositiveEscapeDensity} \\
+\quad \textbf{PEDImpliesComplexCSB} (sole sieve-route gap) & \textbf{Open} & \code{PEDImpliesComplexCSB} \\
+\quad NoLongRuns$(L)$ & \textbf{Open} & \code{NoLongRuns} \\
+\quad SieveEquidistribution & \textbf{Open} & \code{SieveEquidistribution} \\
+\quad MertensEscape & \textbf{Open} & \code{MertensEscape} \\
+\quad SieveAmplification & \textbf{Open} & \code{SieveAmplification} \\
+\quad \textbf{SieveTransfer} (genuine frontier) & \textbf{Open} & \code{SieveTransfer} \\
+\quad StrongSieveEquidist & \textbf{Open} & \code{StrongSieveEquidist} \\
+\quad DistributionalPED & \textbf{Open} & \code{DistributionalPED} \\
+\quad \textbf{BVImpliesMMCSB} (genuine frontier) & \textbf{Open} & \code{BVImpliesMMCSB} \\
+\quad GaussConductorTransfer (all lemmas proved) & \textbf{Open} & \code{GaussConductorTransfer} \\
+\quad PrimeArithLSImpliesMMCSB & \textbf{Open} & \code{PrimeArithLSImpliesMMCSB} \\
+\midrule
+\multicolumn{3}{l}{\emph{Known theorems --- not yet in Mathlib}} \\
+\quad PrimeDensityEquipartition (PNT in APs) & Known & \code{PrimeDensityEquipartition} \\
+\quad GenericLPFEquidist (Alladi~\cite{Alladi1977}) & Known & \code{GenericLPFEquidist} \\
+\quad BombieriVinogradov & Known & \code{BombieriVinogradov} \\
+\quad AnalyticLargeSieve & Known & \code{AnalyticLargeSieve} \\
+\quad ArithmeticLargeSieve & Known & \code{ArithmeticLargeSieve} \\
+\midrule
+\multicolumn{3}{l}{\emph{Dead ends --- false or blocked}} \\
+\quad MultCSBImpliesMMCSB (false in general, \S\ref{sec:walk-bridge-false}) & \textbf{Dead} & \code{MultCSBImpliesMMCSB} \\
+\quad BlockRotationEstimate (impossible for $d \geq 3$, Remark~\ref{rem:bre-impossible}) & \textbf{Dead} & \code{BlockRotationEstimate} \\
+\end{longtable}
+\renewcommand{\arraystretch}{1.0}
+\normalsize
+
+

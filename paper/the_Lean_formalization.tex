@@ -1,0 +1,118 @@
+%% =========================================================================
+\section{The Lean Formalization}
+\label{sec:lean}
+%% =========================================================================
+
+Having developed the mathematical reduction and identified the
+structural obstacles, we describe the Lean~4 formalization that
+certifies these results.
+
+\paragraph{Codebase Structure}
+
+The formalization uses Lean~4 with Mathlib~v4.27.0 across 35~files
+totaling ${\sim}26{,}900$~lines.  The dependency chain is linear, with
+three leaf modules:
+
+\begin{center}
+\small
+\begin{tabular}{llr}
+\toprule
+\textbf{File} & \textbf{Content} & \textbf{Lines} \\
+\midrule
+\code{Euclid.lean} & Constructive Euclid's theorem & 422 \\
+\code{MullinDefs.lean} & \code{seq}, \code{prod}, \code{aux}, identities & 527 \\
+\code{MullinConjectures.lean} & MC, Conjecture A (FALSE), HH & 490 \\
+\code{MullinDWH.lean} & DivisorWalkHypothesis (leaf) & 547 \\
+\code{MullinResidueWalk.lean} & WalkCoverage, residue walk, concrete MC & 603 \\
+\code{MullinGroupCore.lean} & walkZ, multZ, confinement, SE & 422 \\
+\code{MullinGroupEscape.lean} & Escape lemmas, 8-element argument & 673 \\
+\code{MullinGroupSEInstances.lean} & 29 concrete SE instances ($q \leq 157$) & 364 \\
+\code{MullinGroupPumping.lean} & Gordon sequenceability (leaf) & 343 \\
+\code{MullinGroupQR.lean} & QR obstruction ($\leq 1.6\%$) (leaf) & 683 \\
+\code{MullinCRT.lean} & CRT multiplier invariance, walk recurrence & 160 \\
+\code{MullinDepartureGraph.lean} & Departure graph, infinite recurrence, safe prime lattice & 393 \\
+\code{RotorRouter.lean} & Scheduled walk coverage (standalone) & 421 \\
+\code{MullinRotorBridge.lean} & EMPR + SE $\Rightarrow$ MC bridge & 87 \\
+\code{EquidistPreamble.lean} & PE $\Rightarrow$ MC, bootstrapping & 234 \\
+\code{EquidistSieve.lean} & Sieve, WHP $\Leftrightarrow$ HH, forbidden multiplier, M\"obius death & 755 \\
+\code{EquidistSelfAvoidance.lean} & Self-avoidance, periodicity & 450 \\
+\code{EquidistCharPRE.lean} & Character non-vanishing, PRE $\Leftrightarrow$ SE & 811 \\
+\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 617 \\
+\code{EquidistThreshold.lean} & Sieve gap, one-prime gap, cofinal pair avoidance & 325 \\
+\code{EquidistOrbitAnalysis.lean} & Cofinal orbits, quotient walk, sieve, selectability & 1441 \\
+\code{EquidistFourier.lean} & Character sums, Fourier bridge & 1298 \\
+\code{EquidistSelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel (\S31--\S37, \S72) & 1163 \\
+\code{EquidistSieveTransfer.lean} & Sieve transfer, coprimality, neg-inv involution (\S38--\S78) & 1457 \\
+\code{CMEVariants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 113 \\
+\code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, sieve bridge (\S41--\S52, \S79) & 1812 \\
+\code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel (\S53--\S55) & 892 \\
+\code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT, dead ends (\S56--\S65, \S81--\S82) & 1683 \\
+\code{LargeSieveSpectral.lean} & Walk energy, HOD, VdC, CME, VCB, SVE, transition matrix (\S66--\S86) & 2670 \\
+\midrule
+\code{IKCh1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 437 \\
+\code{IKCh2.lean} & Iwaniec--Kowalski Ch.\,2: summation formulas & 270 \\
+\code{IKCh3.lean} & Iwaniec--Kowalski Ch.\,3: combinatorial sieve & 557 \\
+\code{IKCh4.lean} & Iwaniec--Kowalski Ch.\,4: summation formulas & 593 \\
+\code{IKCh5.lean} & Iwaniec--Kowalski Ch.\,5: Kloosterman sums & 877 \\
+\code{IKCh7.lean} & Iwaniec--Kowalski Ch.\,7: bilinear forms, duality, Gram, MLS, sieve & 2269 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Axiom Usage: What's Constructive}
+
+The core definitions (\code{seq}, \code{prod}, \code{aux}) and
+their basic properties (\code{seq\_isPrime}, \code{seq\_injective})
+are \textbf{fully constructive}: they use only \code{propext} and
+\code{Quot.sound} (no \code{Classical.choice}, no
+\code{Decidable} instances beyond~$\NN$).  Euclid's theorem
+itself (\code{Euclid.lean}) is constructive.
+
+Classical reasoning enters at the reduction level:
+\begin{itemize}[nosep]
+\item The $\HH \Rightarrow \MC$ proof uses well-founded induction
+  (strong induction on $\NN$), which in Lean~4 is constructive but
+  relies on \code{Classical.choice} for the
+  cofinal-implies-hit argument.
+\item Character theory (orthogonality, Fourier inversion) is
+  inherently classical via \code{open Classical}.
+\item All open hypotheses are stated as \code{def \ldots : Prop},
+  never as \code{sorry}'d theorems.  The type-checker guarantees
+  that no proof obligation is silently assumed.
+\end{itemize}
+
+\subsection{Mathlib Dependencies}
+
+The formalization draws on several Mathlib libraries:
+\begin{itemize}[nosep]
+\item \textbf{Group theory}: \code{Subgroup}, \code{QuotientGroup},
+  \code{orderOf}, cyclic group structure, maximal subgroups
+  (\code{Subgroup.IsCoatom}).
+\item \textbf{Number theory}: \code{Nat.minFac}, Legendre symbols,
+  quadratic reciprocity, \code{ZMod}, Dirichlet characters, Gauss sums.
+\item \textbf{Character theory}: \code{DirichletCharacter.Orthogonality},
+  roots of unity in algebraically closed fields, character bounds,
+  \code{MulChar.sum\_eq\_zero\_of\_ne\_one}.
+\item \textbf{Analysis}: \code{norm\_sum\_le}, complex norms,
+  \code{IsOfFinOrder.norm\_eq\_one}, Fourier analysis on $\ZZ/n\ZZ$
+  (\code{ZMod.dft}, discrete Fourier transform).
+\item \textbf{Dirichlet's theorem}: \code{Nat.infinite\_setOf\_prime\_and\_eq\_mod}
+  (primes in arithmetic progressions, via $L$-series).
+\item \textbf{Harmonic analysis}: Parseval's theorem for finite abelian
+  groups, trigonometric exponentials, geometric series identities.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Lines of Lean code & ${\sim}26{,}900$ \\
+Files & 35 \\
+Theorems/lemmas & ${\sim}910$ \\
+Definitions & ${\sim}460$ \\
+\code{sorry} occurrences & \textbf{0} \\
+Open hypotheses (stated as \code{def}) & ${\sim}26$ \\
+Mathlib version & v4.27.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+

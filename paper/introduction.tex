@@ -1,0 +1,217 @@
+%% =========================================================================
+\section{Introduction}
+\label{sec:intro}
+%% =========================================================================
+
+Euclid's proposition IX.20 of the \emph{Elements} shows that for any
+finite set of primes, each prime factor of their product plus one is outside the
+set: to grow your set of primes, you can pick any of them. The \textbf{Euclid--Mullin
+sequence} (OEIS A000945), introduced by Mullin~\cite{Mullin1963}, makes a
+definite choice: always take the \emph{smallest} prime factor.
+\begin{align}
+  a(0) &= 2, &
+  a(n+1) &= \text{smallest prime factor of } \bigl(a(0) \cdots a(n) + 1\bigr).
+  \label{eq:em-def}
+\end{align}
+The first twenty terms (0-indexed) are
+\begin{gather*}
+  \underbrace{2}_{a(0)},\;
+  3,\; 7,\; 43,\; 13,\; 53,\;
+  \underbrace{5}_{a(6)},\;
+  \underbrace{6221671}_{a(7)},\;
+  38709183810571, \\
+  139,\; 2801,\;
+  \underbrace{11}_{a(11)},\;
+  17,\; 5471,\; 52662739,\; 23003,\;
+  30693651606209, \\
+  \underbrace{37}_{a(17)},\;
+  1741,\;
+  \underbrace{1313797957}_{a(19)},\; \ldots
+\end{gather*}
+The sequence shows an erratic behavior: small primes appear out of their
+natural order ($5$ not until position~$6$, $11$ at position~$11$,
+$37$ at position~$17$), while enormous primes---a 7-digit number at
+position~$7$, a 14-digit number at position~$8$---appear early.  As of
+2025, only 51~terms are known and some primes like $41$ and $47$ are
+not yet observed.  Computing further terms requires \emph{complete}
+factorization of $\Prod(n)+1$ (where $\Prod(n) \coloneqq a(0)\cdots a(n)$
+is the running product): finding any prime factor is not
+enough---one must certify that no smaller factor exists.  Since
+$\Prod(n)$ grows super-exponentially, this quickly exceeds the reach
+of all known factoring algorithms.  By construction, no prime can
+appear twice.
+
+\begin{conjecture}[Mullin, 1963]\label{conj:mullin}
+Every prime number eventually appears in the Euclid--Mullin sequence.
+\end{conjecture}
+
+The conjecture has resisted proof for over sixty years.  The difficulty
+is showing that the deterministic $\minFac$ rule eventually \emph{selects} each prime.
+That the rule matters is not idle speculation: Cox and van der
+Poorten~\cite{CoxVdP1968} showed that replacing $\minFac$ with the
+\emph{largest} prime factor provably misses infinitely many primes.
+
+Each step couples the next prime to the full factorization history, creating a recursive dependency that
+defeats both probabilistic heuristics and standard sieve methods.
+
+At each step, $\Prod(n)+1$ may have many prime factors, and just the \emph{smallest} is chosen.
+So, a target prime~$q$ may possibly divide $\Prod(n)+1$ for many (maybe infinite) $n$,
+yet never be selected if a smaller prime always divides $\Prod(n)+1$ as well.
+Our formalization tries to make this tension precise.
+
+\paragraph{The accumulator structure.}
+The running product $\Prod(n)$ is an \emph{accumulator}: a single
+number that commits to the entire sequence history via irreversible
+multiplication, analogous to the cumulative digest in a hash chain.
+The accumulator poses a challenge~$\Prod(n)+1$; the response
+$\minFac(\Prod(n)+1)$ extends the chain; and the updated accumulator
+$\Prod(n{+}1) = \Prod(n) \cdot \minFac(\Prod(n){+}1)$ absorbs the
+response irreversibly---once a prime enters the product, it divides
+every future product and can never appear again
+(Theorem~\ref{thm:extinct}).
+
+This accumulator coupling is what makes standard tools fail.  Sieve
+methods require approximate independence between the events
+``$p \mid m$'' for different~$m$; here successive challenges
+$\Prod(n)+1$ share a cumulative history.  Ergodic methods require a
+fixed or state-dependent map; here the map at step~$n$ depends on the
+full accumulator, not just the current residue.  The walk
+reformulation (Section~\ref{sec:walk}) tames this coupling by
+projecting the accumulator onto a finite group: $\walkZ{q}{n} =
+\Prod(n) \bmod q$ preserves the divisibility information relevant
+to~$q$ while discarding the accumulator's combinatorial complexity.
+But the information lost in this projection is exactly the source of
+difficulty: the walk position determines \emph{whether} $q$ can divide
+$\Prod(n)+1$; the full accumulator determines \emph{which} prime is
+actually selected.  Every open hypothesis in this paper---DH, CCSB,
+CME---addresses this gap.
+
+\paragraph{The factoring channel.}
+The accumulator structure of the EM sequence is closely analogous to a
+cryptographic hash chain: each term is deterministically derived from
+its predecessor through an operation---integer factorization---that
+destroys algebraic relationships.  In an iterated SHA-256 chain
+$x_0, H(x_0), H(H(x_0)), \ldots$, each value is uniquely determined
+by the seed, yet consecutive terms pass every reasonable statistical
+test for independence.  In the EM sequence, the running product
+$\Prod(n)$ determines $\Prod(n)+1$, whose smallest prime factor
+becomes the next multiplier; but the $O(\log q)$ bits visible in the
+residue $\Prod(n) \bmod q$ cannot control the outcome of factoring the
+${\sim}2^n$-bit integer $\Prod(n)+1$.  This \emph{information
+bottleneck} is why the multiplier residues behave as if
+independent---and why the walk on $(\ZZ/q\ZZ)^\times$ should visit
+every element, including the ``death state'' $-1$ that would put~$q$
+in the sequence.  The analogy is tighter than it may appear: in both
+cases the pseudorandomness claim concerns a fully deterministic process
+whose forward map is easy but whose outputs resist structural
+prediction---the difference being that $\minFac$ achieves this not by
+cryptographic design but accidentally, through the information
+bottleneck of projecting a ${\sim}2^n$-bit integer onto $O(\log q)$
+bits.  Our formalization makes this intuition precise: we
+identify the exact mathematical content---Conditional Multiplier
+Equidistribution---needed to convert ``the factoring channel destroys
+correlation'' into a proof of MC, and show it implies the conjecture
+through a verified chain of reductions.
+
+\
+
+Our main result is a formally verified reduction of MC to a single
+dynamical question: for each prime~$q$, does the walk on
+$(\ZZ/q\ZZ)^\times$ hit~$-1$ at least once past a computable bound?
+The strategy proceeds in three stages:
+
+\
+
+\begin{enumerate}[nosep]
+\item \textbf{Reformulation.}  We recast ``does prime~$q$ appear?'' as
+  ``does a multiplicative walk on the cyclic group $(\ZZ/q\ZZ)^\times$
+  hit the element~$-1$?''  This translation is exact
+  (Section~\ref{sec:walk}).
+\item \textbf{Bootstrap.}  We show that the algebraic precondition for
+  the walk to reach~$-1$---that the multipliers generate the full
+  group---is \emph{free}, following from the inductive hypothesis
+  $\MC({<}\,p)$ via an elementary lemma
+  (Section~\ref{sec:bootstrap}).  A single hit on~$-1$ past the
+  sieve gap suffices for MC\@.
+\item \textbf{Diagnosis.}  We develop the harmonic-analytic and
+  sieve-theoretic infrastructure to determine \emph{precisely} what
+  kind of statement would produce the required hit, and why known methods
+  fall short (Sections~\ref{sec:character}--\ref{sec:hard}).
+\end{enumerate}
+
+\
+
+The formalization serves two purposes:
+(i)~it guarantees that every reduction is logically sound, and (ii)~it
+precisely delineates the boundary between what is proved and what
+remains open, preventing the kind of subtle gap that plagues pencil-and-paper
+reductions involving multiple interacting hypotheses.
+
+\
+
+The primary reduction is:
+
+\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/EquidistBootstrap.lean}{single\_hit\_implies\_mc}]
+\label{thm:main}
+$\mathrm{SingleHitHypothesis} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+SingleHitHypothesis asks: for every missing prime~$q$, if $\MC({<}\,q)$
+and $\SE(q)$ hold, then $q \mid \Prod(n)+1$ for some~$n$ past the
+sieve gap.  The proof is by strong induction on~$p$: the inductive
+hypothesis gives $\MC({<}\,p)$, PrimeResidueEscape (proved elementarily)
+bootstraps $\SE(p)$, and the single hit past the sieve gap gives
+$\seq(n{+}1) = p$.
+
+The algebraic precondition---that the multipliers generate
+$(\ZZ/q\ZZ)^\times$---is free; the open problem is purely dynamical.
+Multiple strategies for producing the required hit are formally verified:
+
+\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\label{thm:dh-main}
+$\mathrm{DynamicalHitting} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
+$\mathrm{ComplexCharSumBound} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
+$\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
+\end{theorem}
+
+All reductions are fully machine-verified with zero \code{sorry}.
+Each strategy produces at least one hit past the sieve gap, which the
+Single Hit Theorem converts into MC\@.  The formalization thus
+provides a precise ``roadmap'': prove DynamicalHitting,
+ComplexCharSumBound, CME, VCB~$+$~PED, or any of the equivalent
+formulations in \S\ref{sec:character} and \S\ref{sec:open}, and the
+rest follows by machine-checked deduction.
+
+\paragraph{Notation.}
+Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
+are formally verified in Lean~4; clicking the identifier links to the
+source code.
+
+\paragraph{Organization.}
+The paper follows the logical structure of the reduction.
+Section~\ref{sec:walk} reformulates MC as a walk-hitting problem,
+establishes the algebraic prerequisites, and derives the first missing prime's death channel avoidance.
+Section~\ref{sec:bootstrap} presents the inductive bootstrap---the
+core insight that SubgroupEscape is free---and proves the Single Hit
+Theorem, reducing MC to producing one hit at each prime.
+Section~\ref{sec:character} develops the character-analytic reduction
+(CCSB~$\Rightarrow$~MC), including the large sieve infrastructure, the
+spectral energy bridge, and the van der Corput--autocorrelation route.
+Section~\ref{sec:hard} explains \emph{why} the remaining hypothesis is
+difficult by analyzing dead ends and structural barriers.
+Section~\ref{sec:lean} describes the Lean formalization.
+Section~\ref{sec:open} discusses open problems and paths forward.
+Appendix~\ref{app:history} collects the historical background;
+Appendix~\ref{app:analogies} discusses analogies with
+Artin's conjecture, multiplicative walks, Sarnak's program, and
+sieve theory;
+Appendix~\ref{app:routes} presents additional sieve and spectral routes to MC;
+Appendix~\ref{app:agents} describes the human--AI methodology;
+and Appendix~\ref{sec:glossary} provides a glossary of all definitions and hypotheses.
+

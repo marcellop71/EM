@@ -1,0 +1,592 @@
+%% =========================================================================
+\section{The Character Sum Reduction}
+\label{sec:character}
+%% =========================================================================
+
+Sections~\ref{sec:walk}--\ref{sec:bootstrap} established the picture: for the first
+missing prime~$q$, the walk lives in $(\ZZ/q\ZZ)^\times$ forever, the
+multipliers generate the full group, yet the walk avoids~$-1$
+permanently past the sieve gap.  The death channel
+$f(n) = -\walkZ{q}{n}^{-1}$ is dodged at every step.  The Single Hit
+Theorem (\S\ref{sec:single-hit}) reduces MC to producing one hit
+on~$-1$ past the sieve gap at each prime.
+
+The question is not ``does the walk equidistribute?''---that is far
+stronger than needed.  The question is: \emph{can the walk really
+avoid one class out of~$q{-}1$ forever?}  This section develops the
+harmonic-analytic tools to show it cannot: character sums detect the
+anomaly that permanent avoidance would create, and bounding them rules
+it out.
+
+\paragraph{Why character sums?}
+Permanent avoidance of~$-1$ means the hit count
+$|\{n < N : \walkZ{q}{n} = -1\}|$ stays at zero past the sieve gap.
+Character orthogonality decomposes this count into a uniform share
+$N/(q{-}1)$ plus correction terms built from non-trivial character
+sums $S_\chi(N) = \sum_{n<N}\chi(\walkZ{q}{n})$.  The uniform share
+grows linearly; for the hit count to remain zero, the correction terms
+must cancel this growth.  That requires at least one non-trivial
+character sum to be $\Omega(N/(q{-}1))$---a sustained asymmetry in
+the character spectrum.  The hypothesis CCSB (all $|S_\chi(N)| =
+o(N)$) rules this out: it forces the hit count to be eventually
+positive, contradicting permanent avoidance.
+
+\medskip\noindent\textbf{What is new vs.\ what is infrastructure.}\enspace
+The CCSB~$\Rightarrow$~MC reduction (Definition~\ref{thm:ccsb-mc}),
+the Fourier bridge (Theorem~\ref{thm:fourier-step}), the
+Decorrelation--PED chain (\S\ref{sec:dec-chain}), and the telescoping
+no-go results (\S\ref{sec:telescope}) are original contributions of
+this formalization.  The large sieve infrastructure
+(\S\ref{sec:large-sieve}, Appendix~\ref{sec:sve})---including the weak ALS,
+Gauss sum inversion, van der Corput, and Parseval---formalizes known
+results; its purpose is to identify the precise \emph{transfer gap}
+between classical tools and the EM orbit, which is itself a
+contribution (see \S\ref{sec:large-sieve}).
+
+The formalization develops this Fourier-analytic reduction because
+character sums provide the cleanest interface between the
+death-channel avoidance problem and the toolkit of analytic number
+theory: the Bombieri--Vinogradov theorem, the large sieve inequality,
+and Gauss sum inversion all produce character sum bounds, and the
+formalization shows exactly how each connects to ruling out permanent
+avoidance.
+
+\subsection{Character Sums and Permanent Avoidance}
+
+For a Dirichlet character $\chi : (\ZZ/q\ZZ)^\times \to \mathbb{C}^\times$,
+the \emph{walk character sum} is
+\[
+  S_\chi(N) \;=\; \sum_{n < N} \chi\bigl(\walkZ{q}{n}\bigr).
+\]
+
+\begin{definition}[\defname{ComplexCharSumBound} (\abbr{CCSB})]
+For every missing prime~$q$, every non-trivial character~$\chi$, and
+every $\varepsilon > 0$, there exists $N_0$ such that for all
+$N \geq N_0$:
+\[
+  \|S_\chi(N)\| \;\leq\; \varepsilon \cdot N.
+\]
+In other words, the walk character sums are $o(N)$---they grow
+strictly slower than linearly.  The contrapositive: if the walk
+permanently avoids~$-1$, some non-trivial character sum must be
+$\Omega(N)$ (to cancel the uniform share in the Fourier bridge).
+CCSB rules this out.
+\end{definition}
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
+\label{thm:ccsb-mc}
+$\mathrm{CCSB} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+This is a single-hypothesis reduction with no additional parameters.
+The proof composes three bridges:
+
+\begin{enumerate}[nosep]
+\item \textbf{Fourier inversion} (\lean{EM/EquidistFourier.lean}{complex\_csb\_implies\_hit\_count\_lb\_proved}):
+  CCSB implies that the hit count at~$-1$ satisfies
+  $|\{n < N : \walkZ{q}{n} = -1\}| = N/(q{-}1) + o(N)$,
+  which is eventually positive.  This directly contradicts permanent
+  avoidance past the sieve gap (the character orthogonality formula,
+  Theorem~\ref{thm:fourier-step}, gives this for any target~$t$;
+  specializing to $t = -1$ is what matters).
+
+\item \textbf{Cofinal hitting gives HH}
+  (\lean{EM/EquidistFourier.lean}{walk\_equidist\_mc}):
+  the eventually-positive hit count at~$-1$ gives cofinal hitting,
+  hence HH\@.  (In fact, the Fourier bridge yields equidistribution
+  across all classes, but only the $t = -1$ case is needed.  SE is a
+  side effect: a walk visiting~$-1$ cannot be confined to a proper
+  coset.)
+
+\item \textbf{DH implies MC} (Theorem~\ref{thm:dh-mc}): via the
+  inductive bootstrap.
+\end{enumerate}
+
+\subsection{The Fourier Bridge}
+
+The Fourier bridge is the single most important proved result after
+DH~$\Rightarrow$~MC itself: it converts character sum bounds into hit
+count lower bounds, and hence into MC.
+
+\begin{theorem}[\lean{EM/EquidistFourier.lean}{walk\_hit\_count\_fourier\_step}]
+\label{thm:fourier-step}
+For any target $t \in (\ZZ/q\ZZ)^\times$:
+\[
+  \bigl|\{n < N : \walkZ{q}{n} = t\}\bigr|
+  \;=\; \frac{1}{q-1}\sum_{\chi} \overline{\chi(t)}\, S_\chi(N),
+\]
+where the sum is over all Dirichlet characters mod~$q$.
+\end{theorem}
+
+This is a standard Fourier inversion formula on the finite group
+$(\ZZ/q\ZZ)^\times$, stated for all~$t$.  Specializing to $t = -1$
+and splitting the trivial character $\chi_0$ (with $\chi_0(a) = 1$
+for all~$a$) from the non-trivial ones:
+\[
+  \bigl|\{n < N : \walkZ{q}{n} = -1\}\bigr|
+  \;=\; \underbrace{\frac{N}{q-1}}_{\text{uniform share}}
+  \;+\; \underbrace{\frac{1}{q-1}\sum_{\chi \neq \chi_0}
+    \overline{\chi(-1)}\, S_\chi(N)}_{\text{correction}}.
+\]
+The first term grows linearly.  The correction term is bounded by
+$\tfrac{1}{q-1}\sum_{\chi \neq \chi_0} |S_\chi(N)|$, since
+$|\overline{\chi(-1)}| = 1$.  If CCSB holds---all
+$|S_\chi(N)| = o(N)$---the correction is $o(N)$, and the hit count
+is $N/(q{-}1) + o(N)$, which is eventually positive.
+
+\paragraph{The contrapositive.}
+Section~\ref{sec:bootstrap} showed that for the first missing
+prime~$q$, the hit count at~$-1$ is exactly~0 past the sieve gap.
+By the Fourier bridge, this forces the correction terms to
+cancel the entire main term $N/(q{-}1)$.  Since there are only
+$q{-}2$ non-trivial characters, at least one must satisfy
+$|S_\chi(N)| = \Omega(N/(q{-}1)^2)$---a sustained linear-scale
+bias in the character spectrum.  CCSB ($= o(N)$) rules this out.
+The Fourier bridge thus converts the geometric statement ``the walk
+avoids~$-1$ permanently'' into the spectral statement ``some character
+sum has sustained bias,'' and CCSB negates the latter.
+
+Returning to our running example ($q = 41$): the walk must accumulate
+a deficit of $\sim N/40$ hits at~$-1$ compared to uniform, which
+requires sustained character sum bias across the 39~non-trivial
+characters.  Proving CCSB for $q = 41$ would rule out this bias and
+establish that 41~eventually appears.
+
+\subsection{The Decorrelation--PED--CCSB Chain}
+\label{sec:dec-chain}
+
+CCSB rules out permanent avoidance of~$-1$.  But the walk is built
+from \emph{multipliers}: $\walkZ{q}{n{+}1} = \walkZ{q}{n} \cdot
+\multZ{q}{n}$.  Since $\chi$ is a group homomorphism,
+$\chi(\walkZ{q}{n}) = \chi(\walkZ{q}{0}) \cdot \prod_{k<n}
+\chi(\multZ{q}{k})$: the walk character sum is a sum of
+\emph{partial products} of the multiplier characters.  The question
+becomes: what properties of the multiplier sequence would prevent
+the walk from permanently dodging the death channel?
+
+This subsection formalizes a chain of progressively weaker hypotheses
+about the multipliers, each implying the next via proved bridges.
+The goal is to decompose CCSB into sharper conditions on the multiplier
+sequence, and to identify exactly where the irreducible difficulty
+lies.
+
+\begin{definition}[\defname{PositiveEscapeDensity} (\abbr{PED})]
+For every missing prime~$q$ and non-trivial~$\chi$, there exist
+$\delta > 0$ and $N_0$ such that for $N \geq N_0$:
+$|\{k < N : \chi(\multZ{q}{k}) \neq 1\}| \geq \delta N$.
+\end{definition}
+
+The name ``escape'' comes from the SubgroupEscape perspective: the
+kernel $\ker(\chi)$ is a proper subgroup of $(\ZZ/q\ZZ)^\times$, and
+$\chi(\multZ{q}{k}) \neq 1$ means the $k$-th multiplier ``escapes''
+from $\ker(\chi)$.  PED asks that a positive fraction of multipliers
+escape \emph{every} proper subgroup, not just occasionally but with
+positive density.  The connection to the death channel: since the
+death channel is a single class and multipliers that escape
+$\ker(\chi)$ ``rotate'' the walk character value $\chi(\walkZ{q}{n})$
+by a non-trivial amount, enough escapes should prevent the systematic
+avoidance needed for permanent death-channel dodging.  PED is a weak
+condition---it says nothing about cancellation, only that the
+multipliers are not asymptotically trapped in any subgroup.
+
+\begin{definition}[\defname{DecorrelationHypothesis}]
+For every missing prime~$q$ and non-trivial~$\chi$, the multiplier
+character sums are $o(N)$:
+$\|\sum_{n<N} \chi(\multZ{q}{n})\| \leq \varepsilon N$ for large~$N$.
+\end{definition}
+
+Decorrelation is stronger than PED: it asks not merely that many
+multipliers escape $\ker(\chi)$, but that they do so with enough
+balance that the character values cancel.  If the multipliers were
+independent random elements of $(\ZZ/q\ZZ)^\times$, the sum would be
+$O(\sqrt{N})$ by the law of large numbers---far smaller than
+$\varepsilon N$.  Decorrelation asks for the much weaker $o(N)$.
+
+\begin{definition}[\defname{NoLongRuns}$(L)$]
+For every missing prime~$q$ and non-trivial~$\chi$, past some
+threshold, no $L$ consecutive multipliers all lie in $\ker(\chi)$.
+\end{definition}
+
+NoLongRuns is a qualitative cousin of PED: if multipliers never stay
+inside $\ker(\chi)$ for $L$~steps in a row, then at least $1/(2L)$ of
+them escape.  This condition is easier to verify in practice because it
+only requires checking short blocks.
+
+\begin{definition}[\defname{BlockRotationEstimate} (\abbr{BRE})]
+If the escape count is $\geq \delta N$, then the walk character sums
+are $o(N)$.  This encapsulates the Cauchy--Schwarz / van der Corput
+step in harmonic analysis.
+\end{definition}
+
+BRE is the bridge between the multiplier-level conditions
+(PED/Decorrelation) and the walk-level condition (CCSB).  It says:
+given that multipliers escape with positive density, the walk
+character sums must cancel.  The intuition is that each escape event
+``rotates'' the walk character value $\chi(\walkZ{q}{n})$ by a
+non-trivial amount, and sufficiently many such rotations produce
+cancellation in the sum.  BRE is the sole unproved bridge in the PED
+route.
+
+The hypotheses above---PED, Decorrelation, NoLongRuns---all treat
+the multiplier sequence as a single stream, ignoring what the walk is
+doing at the moment.  But permanent death-channel avoidance is a
+statement about the \emph{coupling} between walk position and
+multiplier: the death channel $-\walkZ{q}{n}^{-1}$ is a function of
+walk position, so avoiding it means the multiplier distribution at
+each walk position is biased away from one class.  A more refined
+hypothesis should address this coupling head-on.
+
+\begin{definition}[\defname{ConditionalMultiplierEquidist} (\abbr{CME})]
+\label{def:cme}%
+For every missing prime~$q$, non-trivial~$\chi$, $\varepsilon > 0$,
+there exists~$N_0$ such that for $N \geq N_0$ and every walk
+position~$c \in (\ZZ/q\ZZ)^\times$:
+$\|\sum_{\substack{n < N \\ \walkZ{q}{n} = c}} \chi(\multZ{q}{n})\|
+\leq \varepsilon N$.
+\end{definition}
+
+CME says the multiplier distribution is the same at every walk
+position.  Since the death channel is a function of walk position,
+CME implies the death channel has no special status---the multiplier
+is no more likely to avoid the forbidden class than any other.
+Formally, CME is strictly stronger than Decorrelation: it bounds the
+fiber sums
+$\sum_{\substack{n<N \\ \walkZ{q}{n} = c}} \chi(\multZ{q}{n}) = o(N)$
+separately for each position~$c$, not just the global sum.
+Since the global sum is the sum of the fiber sums, CME implies
+Decorrelation by the triangle inequality
+(\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_dec}).
+The significance of CME is that it also implies CCSB
+\emph{directly}, bypassing PED and BRE entirely: the fiber
+decomposition and the telescoping identity together convert
+conditional multiplier cancellation into walk character sum
+cancellation, for \emph{all} character orders, without needing the
+intermediate PED $\to$ BRE $\to$ CCSB chain.
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{decorrelation\_implies\_ped}]
+Decorrelation $\Rightarrow$ PED.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Contrapositive.  If few multipliers escape $\ker(\chi)$---say fewer
+than $\delta N$---then most contribute $\chi(m(n)) = 1$ to the sum.
+The at most $\delta N$ exceptions contribute values of norm~$\leq 1$.
+By the reverse triangle inequality, $|\sum \chi(m(n))| \geq N - 2\delta N$,
+which is $\geq \varepsilon N$ for $\delta$ small enough.  This
+contradicts Decorrelation.
+\end{proof}
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{noLongRuns\_implies\_ped}]
+NoLongRuns$(L) \Rightarrow$ PED with $\delta = 1/(2L)$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Partition $\{0, \ldots, N{-}1\}$ into blocks of length~$L$.  Each block
+contains at least one escape (by assumption), so the total escape count
+is $\geq N/(2L)$.
+\end{proof}
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{block\_rotation\_implies\_ped\_csb}]
+BRE $\Rightarrow$ PEDImpliesComplexCSB.
+\end{theorem}
+
+The PED route, with all proved arrows:
+\[
+\mathrm{Dec} \;\xrightarrow{\text{proved}}\; \mathrm{PED}
+\;\xleftarrow{\text{proved}}\; \mathrm{NoLongRuns}(L)
+\;\xrightarrow{\text{BRE, open}}\;
+\mathrm{CCSB}
+\;\xrightarrow{\text{proved}}\;
+\mathrm{MC}.
+\]
+The sole open bridge in this route is BRE: converting positive escape
+density into walk character sum cancellation.
+
+However, the PED route is not the only path.  CME implies CCSB
+\emph{directly}, bypassing PED and BRE entirely
+(\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}):
+\[
+\mathrm{CME}
+\;\xrightarrow{\text{proved}}\;
+\mathrm{CCSB}
+\;\xrightarrow{\text{proved}}\;
+\mathrm{MC}.
+\]
+This bypass is significant: the $d \geq 3$ barrier
+(Remark~\ref{rem:bre-impossible}) blocks the PED $\to$ CCSB
+factorization for characters of order $\geq 3$, but CME $\to$ CCSB
+works for \emph{all} character orders, using only the telescoping
+identity and fiber decomposition.
+
+\subsection{Vanishing Conditional Bias}
+\label{sec:vcb}
+
+CME is a strong hypothesis: it asks that \emph{every} fiber character
+sum $F(c, \chi) = \sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ be
+$o(N)$---in other words, that $\mu = 0$ in the proportionality
+$F(c, \chi) \approx \mu \cdot V_N(c)$.  But the telescoping route to
+CCSB does not need~$\mu = 0$; it needs only that $\mu \neq 1$.  This
+observation motivates a strictly weaker hypothesis.
+
+\begin{definition}[\defname{VanishingConditionalBias} (\abbr{VCB})]
+\label{def:vcb}%
+For every missing prime~$q$, non-trivial~$\chi$, and $\varepsilon > 0$,
+there exists~$N_0$ such that for $N \geq N_0$ there is a complex
+number~$\mu = \mu(N, \chi)$ with $|\mu| \leq 1$ satisfying, for all
+$c \in (\ZZ/q\ZZ)^\times$:
+\[
+  \left\|\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))
+    \;-\; \mu \cdot V_N(c)\right\|
+  \;\leq\; \varepsilon \cdot N,
+\]
+where $V_N(c) = |\{n < N : w(n) = c\}|$ is the visit count.
+\end{definition}
+
+In words: the factoring channel treats all walk positions
+proportionally (the formal content of the factoring channel analogy
+from \S\ref{sec:intro})---the character statistics of multipliers are
+the same at every position, up to a common constant~$\mu$ (which may vary
+with~$N$ and~$\chi$ but must be common across all positions~$c$).
+Combined with PED (enough multipliers escape), the proportionality
+constant cannot equal~1; the telescope then forces the walk character
+sum to be $o(N)$, ruling out the sustained bias needed for permanent
+avoidance.
+
+\begin{proposition}[\lean{EM/LargeSieveSpectral.lean\#L1997}{cme\_implies\_vcb}]
+$\mathrm{CME} \Rightarrow \mathrm{VCB}$ with $\mu = 0$.
+Conversely, $\mathrm{VCB} + \mathrm{Dec} \Rightarrow \mathrm{CME}$.
+Thus CME decomposes as $\mathrm{CME} = \mathrm{VCB} + \mathrm{Dec}$.
+VCB alone is strictly weaker than CME: it permits the fiber sums to
+be $\Theta(N)$, provided they are proportional to the visit counts.
+\end{proposition}
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2049}{vcbPedImpliesCcsb}]
+\label{thm:vcb-ped-ccsb}
+$\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \mathrm{CCSB}$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+From VCB, the telescope identity gives
+$(\mu - 1) \cdot S_N = O(1) + O(\varepsilon N (q{-}1))$.
+If $|1 - \mu|$ is bounded away from zero, then
+$S_N = O(\varepsilon N / |1{-}\mu|) = o(N)$.
+
+To show $|1 - \mu| \geq c_0 > 0$, PED provides $\delta > 0$ such
+that at least $\delta N$ multipliers escape $\ker(\chi)$.  For each
+escaping multiplier, $\chi(m(n))$ is a non-trivial $d$-th root of
+unity, satisfying $\mathrm{Re}(\chi(m(n))) \leq 1 - \eta_0^2/2$
+where $\eta_0 = \min_{\zeta \in \mu_d \setminus \{1\}} |\zeta - 1| > 0$
+(\lean{EM/LargeSieveSpectral.lean\#L2014}{norm\_sub\_one\_sq\_eq},
+\lean{EM/LargeSieveSpectral.lean\#L2027}{unit\_norm\_re\_le\_of\_dist}).
+This real-part defect accumulates over $\delta N$ escaping steps,
+forcing $|\sum \chi(m(n)) - N| \geq c_0 N$ for
+$c_0 = \delta \eta_0^2 / 2$.  Combined with VCB's control
+$|\sum \chi(m(n)) - \mu N| \leq C \varepsilon N$, the reverse
+triangle inequality gives $|1 - \mu| \geq c_0/2$ for small
+$\varepsilon$.
+\end{proof}
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2343}{vcb\_ped\_implies\_mc}]
+$\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+This decomposition splits the monolithic CME hypothesis into two
+independently attackable pieces:
+\begin{itemize}[nosep]
+\item \textbf{VCB} (``the factoring channel preserves proportionality''):
+  the character distribution of multipliers is the same at every walk
+  position, up to a common rate.  This captures the ``factorization
+  independence'' intuition---that the factoring operation destroys the
+  correlation between walk position and multiplier residue.
+\item \textbf{PED} (``enough multipliers escape every character kernel''):
+  a positive fraction of multiplier residues fall outside any proper
+  subgroup.
+\end{itemize}
+VCB is a recent contribution of the formalization.
+
+\subsection{Walk Telescoping Identities}
+\label{sec:telescope}
+
+The hypotheses above attack CCSB by decomposing it into conditions on
+the multiplier sequence.  Before proceeding to the large sieve route,
+we pause to examine what the walk recurrence
+$\chi(w(n{+}1)) = \chi(w(n)) \cdot \chi(m(n))$ itself forces.  This
+multiplicative structure is the \emph{only} algebraic relation
+connecting walk and multiplier character values, and it constrains
+any possible proof of CCSB\@.  The following identities make these
+constraints explicit.  They are formalized not because they solve
+CCSB, but because they reveal the structural landscape: they show
+which proof strategies are compatible with the walk's algebra and
+which are ruled out.
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_telescope\_identity}]
+\label{thm:telescope}
+For any $\chi$ and $N$:
+\[
+  \sum_{n < N} \chi(w(n))\cdot\bigl(\chi(m(n)) - 1\bigr)
+  \;=\; \chi(w(N)) - \chi(w(0)).
+\]
+\end{theorem}
+
+This identity follows immediately from the walk recurrence
+$\chi(w(n{+}1)) = \chi(w(n)) \cdot \chi(m(n))$: writing
+$\chi(w(n)) \cdot (\chi(m(n)) - 1) = \chi(w(n{+}1)) - \chi(w(n))$,
+the sum telescopes to $\chi(w(N)) - \chi(w(0))$.
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_telescope\_norm\_bound}]
+The telescoping sum has norm $\leq 2$ (triangle inequality on
+unit-norm terms).
+\end{theorem}
+
+The $\leq 2$ bound looks innocent, but it constrains how the walk
+can respond to the death channel.  Each summand
+$\chi(w(n))\cdot(\chi(m(n)) - 1)$ is non-zero exactly when
+$\chi(m(n)) \neq 1$---i.e., when the multiplier escapes
+$\ker(\chi)$, ``rotating'' the character value.  The $\leq 2$ bound
+means the net rotation over all $N$ steps is negligible, tightly
+coupling the walk character sum $S_N = \sum_{n<N} \chi(w(n))$ to the
+multiplier character sum $M_N = \sum_{n<N} \chi(m(n))$.  Splitting
+the product in Theorem~\ref{thm:telescope} gives
+$S_N \cdot \overline{M_N/N} - S_N = O(1)$ (after normalization).
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_shift\_one\_correlation}]
+\label{thm:shift-one}
+$\sum_{n < N} \chi(w(n)) \cdot \overline{\chi(w(n+1))}
+  = \overline{\sum_{n < N} \chi(m(n))}$.
+\end{theorem}
+
+This identity says that the lag-1 autocorrelation of the walk
+character equals the conjugate of the multiplier character sum.  It is
+a \emph{no-go result} for the van der Corput method with $H = 1$:
+VdC bounds $|S_N|^2$ in terms of autocorrelations, but at lag $h = 1$,
+the autocorrelation is exactly $|M_N|$---the multiplier character
+sum---which need not be small.  So VdC with a single shift gives only
+$|S_N| \leq O(\sqrt{N \cdot |M_N|})$, which is $O(N)$ in the worst
+case, not the $o(N)$ that CCSB requires.  This means any proof of CCSB
+must either (i)~use higher-order correlations (HOD,
+Appendix~\ref{sec:sve}) or (ii)~establish multiplier decorrelation
+first.
+
+\subsection{The Large Sieve Route}
+\label{sec:large-sieve}
+
+The preceding subsections attacked the question ``can the walk avoid
+$-1$ permanently?'' for a single modulus~$q$.  A different strategy
+works with \emph{many moduli simultaneously}: classical analytic
+number theory produces character sum estimates averaged over all
+moduli $q \leq Q$, and such averaged results are often easier to
+prove than pointwise ones.  The large sieve inequality and the
+Bombieri--Vinogradov theorem are the two central tools for this.
+
+The formalization develops this multi-modular route across three files
+(\code{LargeSieve.lean}, \code{Large\-Sieve\-Harmonic.lean},
+\code{Large\-Sieve\-Analytic.lean}) totaling ${\sim}5{,}870$~lines,
+connecting classical analytic number theory to MC via a multi-modular
+character sum bound.
+
+\paragraph{Why formalize the large sieve?}
+The analytic large sieve inequality and the Bombieri--Vinogradov theorem
+are among the most powerful tools in analytic number theory for
+controlling the distribution of primes in arithmetic progressions.
+If these tools could be applied to the EM walk, MC would follow.
+We formalize the connection---not the deep theorems themselves (which
+are known results, stated as open Props)---for two reasons:
+\begin{enumerate}[nosep]
+\item To identify \emph{precisely} what transfer hypothesis is needed to
+  apply each classical result to the specific EM orbit, and
+\item To verify that six apparently independent routes (BV, ArithLS, ALS,
+  PrimeArithLS, LoD, sieve transfer) all reduce to the \emph{same}
+  orbit-specificity gap.
+\end{enumerate}
+This diagnosis is itself a mathematical contribution: it shows that the
+difficulty of MC is not a failure of existing analytic tools but a
+fundamental obstacle in applying ensemble-averaged results to a single
+deterministic orbit.
+
+\begin{definition}[\defname{MultiModularCSB} (\abbr{MMCSB})]
+There exists $Q_0$ such that for all $q \geq Q_0$ prime, every
+non-trivial character~$\chi$ mod~$q$, and every $\varepsilon > 0$,
+there exists $N_0$ such that for $N \geq N_0$:
+$\|S_\chi(N)\| \leq \varepsilon N$.
+\end{definition}
+
+MultiModularCSB is weaker than CCSB in that it allows finitely many
+exceptional primes below~$Q_0$.  This weakening is crucial because
+averaged results like BV naturally produce bounds that fail for
+finitely many moduli.
+
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L320}{mmcsb\_implies\_mc}]
+\label{thm:mmcsb-mc}
+$\mathrm{MultiModularCSB} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+The proof composes the per-prime Fourier bridge
+(Theorem~\ref{thm:fourier-step}) with the inductive bootstrap: for
+$q \geq Q_0$, MMCSB gives hit count $\sim N/(q{-}1) > 0$ at~$-1$,
+contradicting permanent avoidance; for the finitely many primes
+$q < Q_0$, the bootstrap (Section~\ref{sec:bootstrap}) handles
+them---once MC holds for all primes below~$q$, the sieve gap and
+one-prime gap (Theorem~\ref{thm:one-prime-gap}) reduce MC($q$) to a
+single hitting event.
+
+Three parallel routes to MultiModularCSB are formalized:
+
+\paragraph{Bombieri--Vinogradov route.}
+BV says primes are equidistributed among arithmetic progressions ``on
+average over moduli'': for most $q \leq Q = \sqrt{x}/(\log x)^A$, the
+count of primes $\leq x$ in any progression $a \bmod q$ is close to
+the expected $\pi(x)/\phi(q)$.  If this applies to the EM multipliers,
+the death channel---a single progression---gets its fair share of
+multipliers, breaking the avoidance.
+
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L379}{bv\_chain\_mc}]
+$\mathrm{BV} + \mathrm{BVImpliesMMCSB} \;\Longrightarrow\; \MC$.
+\end{theorem}
+The transfer hypothesis BVImpliesMMCSB is a \textbf{genuine frontier}:
+it requires transferring the averaged equidistribution statement of BV
+(valid for primes in generic progressions) to the specific EM walk orbit.
+The EM sequence is not a generic sample of primes---it is a deterministic
+sequence defined by iterated factorization---so its multipliers could
+exhibit special correlations that BV's averaged estimate cannot detect.
+
+The route was decomposed into two stages:
+\[
+\mathrm{BV}
+\xrightarrow{\text{sieve transfer}}
+\mathrm{EMMultCSB}
+\xrightarrow{\text{walk bridge}}
+\mathrm{MMCSB}
+\xrightarrow{\text{proved}}
+\mathrm{MC},
+\]
+separating the number-theoretic content (BV~$\Rightarrow$~EMMultCSB,
+where EMMultCSB bounds the \emph{multiplier} character sums)
+from the dynamical content (EMMultCSB~$\Rightarrow$~MMCSB, converting
+multiplier bounds to \emph{walk} bounds).  However, the walk bridge
+\textbf{MultCSBImpliesMMCSB is false in general}
+(\lean{EM/LargeSieve.lean\#L1243}{MultCSBImpliesMMCSB}):
+the walk character sum $\sum \chi(w(n))$ is a \emph{partial product}
+$\prod_{k<n} \chi(m(k))$ of the multiplier characters, and partial
+products of equidistributed unit complex numbers need not cancel---they
+perform a random walk on the unit circle whose norm grows as~$\sqrt{N}$,
+not as~$o(N)$.  The telescope identity (Theorem~\ref{thm:shift-one})
+makes this obstruction precise: the $h\!=\!1$ autocorrelation equals
+the multiplier character sum, so van der Corput with a single shift
+gives only~$O(N)$, not~$o(N)$.
+This is why the CME bypass (fiber decomposition $+$ telescoping,
+Definition~\ref{def:cme}) is essential: it goes directly from
+conditional multiplier equidistribution to CCSB without ever
+requiring the walk bridge.
+
+\paragraph{Additional sieve routes.}
+Two further routes are formalized---the arithmetic large sieve
+(ArithLS~$\Rightarrow$~MC, a dead end) and the analytic
+large sieve (ALS~$\Rightarrow$~PrimeArithLS~$\Rightarrow$~MC), where
+the ALS-to-PrimeArithLS bridge via Gauss sum inversion is fully proved
+across eight internal lemmas.  In both cases, the genuine open content
+is the same \emph{orbit-specificity transfer}: applying averaged
+results to one deterministic orbit.  The full details, including the
+ALS definition, weak ALS proof, Gauss sum inversion theorem, and a
+spectral energy route (SVE, van der Corput, HOD, CME) with its
+complete hypothesis hierarchy, appear in Appendix~\ref{app:routes}.
+

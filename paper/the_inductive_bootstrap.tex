@@ -1,0 +1,334 @@
+%% =========================================================================
+\section{The Inductive Bootstrap}
+\label{sec:bootstrap}
+%% =========================================================================
+
+With the first missing prime's situation established (\S\ref{sec:walk}), we now show that the algebraic precondition---SubgroupEscape---comes for free, and that a single hit on~$-1$ past the sieve gap suffices for MC\@.
+
+The walk avoids~$-1$ forever.  Can it at least \emph{reach}~$-1$?
+That is: does SE hold?
+
+\begin{theorem}[\defname{PrimeResidueEscape} (\abbr{PRE});
+  \lean{EM/EquidistBootstrap.lean}{prime\_residue\_escape}]\label{thm:pre}
+For every prime $p \geq 5$ and every proper subgroup
+$H < (\ZZ/p\ZZ)^\times$, some odd prime $r < p$ has residue
+$r \bmod p \notin H$.
+\end{theorem}
+
+\begin{proof}
+Suppose every odd prime $r \in [3, p)$ satisfies $r \bmod p \in H$.
+Since $H$ is a subgroup, every \emph{product} of such primes is
+in~$H$.  Every odd number in~$[1, p)$ factors into odd primes $< p$,
+so every odd number in~$[1, p)$ maps into~$H$.  In particular,
+$p - 2 \equiv -2$ and $p - 4 \equiv -4$ are both in~$H$ (both odd
+and $< p$ for $p \geq 5$).  Then $2 = (-4)(-2)^{-1} \in H$, so every
+even number in $[1, p)$ is in~$H$ as well.  Hence
+$H = (\ZZ/p\ZZ)^\times$, contradicting $H$ proper.
+\end{proof}
+
+\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{mc\_below\_pre\_implies\_se}]
+\label{thm:bootstrap}
+$\MC({<}\,p) + \PRE \;\Longrightarrow\; \SE(p)$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Let $H < (\ZZ/p\ZZ)^\times$ be proper.  By PRE, some odd prime
+$r < p$ has $r \bmod p \notin H$.  By $\MC({<}\,p)$, the prime~$r$
+appears as $\seq(k)$ for some~$k$.  Then $\multZ{p}{k{-}1} \equiv r
+\pmod{p} \notin H$.
+\end{proof}
+
+\begin{corollary}\label{cor:fmp-se}
+For the first missing prime~$q$: the multipliers generate all of
+$(\ZZ/q\ZZ)^\times$.  SubgroupEscape holds, and $-1$ is reachable.
+\end{corollary}
+
+The one-prime gap (Theorem~\ref{thm:one-prime-gap}) shows that
+$\MC({<}\,q)$ plus a single divisibility event $q \mid \Prod(n)+1$
+past the sieve gap gives $\MC(q)$.  The bootstrap
+(Theorem~\ref{thm:bootstrap}) shows that $\MC({<}\,q)$ gives $\SE(q)$
+for free.  These two facts compose into the primary reduction of
+Mullin's Conjecture.
+
+\begin{definition}[\defname{SingleHitHypothesis} (\abbr{SHH})]\label{def:shh}
+For every prime~$q$: if $\MC({<}\,q)$ and $\SE(q)$ hold and $q$ is
+missing, then there exists~$n$ past the sieve gap with
+$q \mid \Prod(n)+1$.
+
+\
+
+\noindent Equivalently: for every prime~$q$, if $\MC({<}\,q)$ and $\SE(q)$
+hold, then either $q$ already appears in the sequence, or there
+exists $n \geq N_0(q)$ with $\walkZ{q}{n} = -1$.
+\end{definition}
+
+\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/EquidistBootstrap.lean}{single\_hit\_implies\_mc}]
+\label{thm:single-hit}
+$\mathrm{SingleHitHypothesis} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+\begin{proof}
+By strong induction on~$p$.  Assume $\MC({<}\,p)$.
+
+\
+
+\begin{enumerate}[nosep]
+\item \textbf{Bootstrap gives SE\@.}
+    $\MC({<}\,p) + \PRE \Rightarrow \SE(p)$ (Theorem~\ref{thm:bootstrap}).
+    Since PRE is proved unconditionally (Theorem~\ref{thm:pre}), we
+    obtain $\SE(p)$.
+
+\item \textbf{SHH gives a hit.}
+    Since $\MC({<}\,p)$ and $\SE(p)$ hold, SHH provides
+    $n \geq N_0$ (past the sieve gap) with $p \mid \Prod(n)+1$.
+
+\item \textbf{The sieve gap closes.}
+    Past $N_0$, all primes $< p$ divide $\Prod(n)$ and hence cannot
+    divide $\Prod(n)+1$.  So $p = \minFac(\Prod(n)+1)$, giving
+    $\seq(n{+}1) = p$.
+\end{enumerate}
+\end{proof}
+
+\subsection{The death channel avoidance paradox}
+
+We now have a precise and sharp picture of the first missing prime~$q$:
+
+\
+
+\begin{enumerate}[nosep]
+\item The walk lives in $(\ZZ/q\ZZ)^\times$ forever.
+\item The multipliers generate the full group---$-1$ is reachable.
+\item The walk never reaches $-1$---the death channel is avoided at
+  every step past the sieve gap.
+\item At each step, the death channel is a single residue class out
+  of $q - 1$---a ``target'' of density $1/(q-1)$.
+\end{enumerate}
+
+\
+
+\noindent Mullin's Conjecture is therefore equivalent to: \textbf{this situation
+is impossible.}  The open problem is now:
+
+\begin{center}
+\emph{Does the multiplicative walk on $(\ZZ/q\ZZ)^\times$ defined by
+the EM sequence, whose multipliers generate the full group, hit~$-1$
+at least once past the sieve gap?}
+\end{center}
+
+``At least once past the sieve gap'' is the precise requirement.  Not
+cofinally, not equidistributed---once.
+The intuition for impossibility rests on an information-theoretic
+asymmetry.  At step~$n$, the death channel
+$f(n) = -\walkZ{q}{n}^{-1}$ is determined by the walk position
+$\walkZ{q}{n} = \Prod(n) \bmod q$, which carries $O(\log q)$ bits of
+information.  The multiplier
+$\multZ{q}{n} = \minFac(\Prod(n)+1) \bmod q$ is determined by the
+full integer $\Prod(n)+1$, which has $\sim 2^n$ bits.  The factoring
+operation $\minFac$ extracts global arithmetic information from all
+$\sim 2^n$ bits; the death channel is determined by $O(\log q)$ bits.
+For the multiplier to systematically avoid the death channel, the
+$O(\log q)$-bit residue would have to predict the outcome of an
+operation on a $2^n$-bit integer---a ``prediction'' whose information
+content vanishes exponentially.
+
+More precisely: for a generic $q$-rough integer $N \equiv a \pmod{q}$,
+the conditional distribution of $\minFac(N) \bmod q$ is
+asymptotically uniform over $(\ZZ/q\ZZ)^\times$, by CRT\@.  Knowing
+$N \bmod q$ does not constrain $N \bmod p$ for any other prime~$p$,
+so it does not constrain which primes $\leq N^{1/2}$ divide~$N$.  The
+density of the death channel among all primes is $1/(q-1)$, and the
+conditional probability that $\minFac(N)$ falls in the death channel
+is $1/(q-1) + o(1)$ as $N \to \infty$, \emph{independently of the
+residue class~$a$}.
+
+For the EM sequence, $\Prod(n)+1$ grows super-exponentially
+($\Prod(n)+1 \geq 2^{2^n}$), so the $o(1)$ error at each step
+shrinks exponentially fast.  The ``probability'' of avoiding the death
+channel for~$N$ consecutive steps is heuristically
+$(1 - 1/(q-1))^N \to 0$.  Converting this heuristic into a proof is
+the content of the conjecture.
+
+\subsection{Sufficient conditions for the single hit}
+\label{sec:sufficient-conditions}
+
+Several formally verified strategies produce the required single hit
+past the sieve gap.  Each implies MC via the Single Hit Theorem.
+
+\begin{definition}[\defname{DynamicalHitting} (\abbr{DH})]\label{def:dh}\label{def:hh}
+For every missing prime~$q$: $\SE(q) \Rightarrow \HH(q)$, where
+$\HH(q)$ (\defname{HittingHypothesis}) asks for cofinal hitting:
+$\forall\, N,\; \exists\, n \geq N,\; q \mid (\Prod(n) + 1)$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\label{thm:dh-mc}
+$\DH \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+DH is stronger than SHH: it does not assume $\MC({<}\,q)$ and asks for
+infinitely many hits rather than one.  But the extra strength is
+convenient---DH interfaces cleanly with character sum methods.
+In the death channel language, DH asserts: if the multipliers generate
+$(\ZZ/q\ZZ)^\times$, then the multiplier cannot avoid the forbidden
+residue $-\walkZ{q}{n}^{-1}$ forever.  Equivalently: there is no
+infinite walk on a cyclic group, with a generating set of multipliers,
+that dodges a single moving target of density $1/(q-1)$ at every step.
+
+The key structural point: SHH is \textbf{strictly weaker} than
+DynamicalHitting in two ways.
+First, SHH assumes $\MC({<}\,q)$, which DH does not (DH only assumes SE).
+Second, SHH asks for one hit past the sieve gap, while DH asks for
+cofinal hitting.  Both extra assumptions are harmless in the inductive
+proof---$\MC({<}\,q)$ is always available at the inductive step, and
+one hit is all the Single Hit Theorem needs---but they make SHH
+genuinely easier to satisfy as a mathematical statement.
+
+\begin{remark}\label{rem:shh-vs-dh}
+The logical relationships among the hitting hypotheses are:
+\[
+  \HH \;\Longrightarrow\; \DH \;\Longrightarrow\; \mathrm{SHH},
+\]
+where $\HH$ on its own denotes the \emph{unconditional} version of
+$\HH(q)$ from Definition~\ref{def:dh}: cofinal hitting asserted for
+every missing~$q$ without assuming $\SE(q)$.
+DH conditions cofinal hitting on SE, and SHH asks for a
+single hit past the sieve gap given both $\MC({<}\,q)$ and SE\@.
+All three imply MC\@.  SHH is the weakest: it assumes the most
+($\MC({<}\,q)$ and SE, both provided free by the inductive bootstrap)
+and demands the least (one hit, not infinitely many).
+The converses need not hold.
+\end{remark}
+
+\begin{definition}[\defname{ComplexCharSumBound} (\abbr{CCSB})]\label{def:ccsb-intro}
+For every missing prime~$q$ and every non-trivial character~$\chi$:
+$\|S_\chi(N)\| = o(N)$, where
+$S_\chi(N) = \sum_{n<N}\chi(\walkZ{q}{n})$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
+\label{thm:ccsb-mc-intro}
+$\mathrm{CCSB} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+CCSB produces the hit via Fourier inversion: if all non-trivial
+character sums are $o(N)$, the hit count at~$-1$ is
+$N/(q{-}1) + o(N)$, which is eventually positive.  One hit past
+the sieve gap is lethal (Section~\ref{sec:character}).
+
+\begin{definition}[\defname{ConditionalMultiplierEquidist} (\abbr{CME})]\label{def:cme-intro}
+For every missing prime~$q$, every non-trivial~$\chi$, and every walk
+position~$c$: the multiplier characters
+$\chi(\multZ{q}{n})$ conditioned on $\walkZ{q}{n} = c$ are equidistributed
+(their partial sums are $o(N)$).
+\end{definition}
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
+\label{thm:cme-mc-intro}
+$\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
+\end{theorem}
+
+CME is the sharpest hypothesis: it asserts that the factoring
+operation destroys correlation between consecutive multiplier residues
+conditioned on the walk position.  It implies CCSB for all character
+orders, bypassing the $d \geq 3$ barrier that blocks the
+BRE route.
+
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{vcb\_ped\_implies\_mc}]
+\label{thm:vcb-ped-mc-intro}
+$\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
+\end{theorem}
+
+VCB (Vanishing Conditional Bias) is a weakening of CME that permits
+fiber sums to be proportional to visit counts rather than small;
+combined with PED (Positive Escape Density), it reaches CCSB\@.
+
+Each of these strategies produces at least one hit past the sieve gap,
+which the Single Hit Theorem (Theorem~\ref{thm:single-hit}) converts
+into MC\@.
+
+\paragraph{Why it's hard: the walk controls nothing}
+
+The difficulty is entirely in the coupling between walk position and
+multiplier.  At step~$n$:
+
+\begin{itemize}[nosep]
+\item The \textbf{walk position} $\walkZ{q}{n} = \Prod(n) \bmod q$
+  determines the death channel $f(n) = -\walkZ{q}{n}^{-1}$.
+\item The \textbf{multiplier}
+  $\multZ{q}{n} = \minFac(\Prod(n)+1) \bmod q$ is what must fall
+  into the death channel.
+\item Both depend on $\Prod(n)$: the walk position depends on
+  $\Prod(n) \bmod q$, and the multiplier depends on $\Prod(n)+1$ as
+  a full integer.
+\end{itemize}
+
+The walk position sees $O(\log q)$ bits; the multiplier sees all
+$\sim 2^n$ bits.  But they share the same underlying object
+$\Prod(n)$.  The question is whether this shared dependence creates a
+correlation strong enough for the multiplier to systematically avoid
+one residue class out of $q-1$.
+
+For a \emph{random} sequence of multipliers drawn uniformly from
+$(\ZZ/q\ZZ)^\times$, the probability of avoiding the death channel
+for $N$ steps is $(1 - 1/(q-1))^N \to 0$.  The EM walk is not
+random---it is deterministic---but the factoring operation that
+determines each multiplier is, heuristically, a decorrelating ``hash.''
+This is the \textbf{factorization independence heuristic}: the
+function $\minFac$, applied to a $2^n$-bit integer, produces an
+output that is effectively uncorrelated with the $O(\log q)$-bit
+residue class of the input.
+
+Every open hypothesis in this paper---DH, CCSB, CME---is a precise
+formalization of this heuristic.
+
+\subsection{Supporting Infrastructure}
+
+The remainder of this section collects the supporting results that
+flesh out the bootstrap: the one-prime gap, the sieve gap, and the power residue decomposition.
+
+\paragraph{The Sieve Gap and the One-Prime Gap}
+
+The $q$-roughness theorem (Theorem~\ref{thm:roughness}) resolves the
+selectability problem described in Section~\ref{sec:intro}: past the
+sieve gap, $q$ is the smallest available factor whenever it divides
+the Euclid number.  This gives the one-prime gap:
+
+\begin{theorem}[\defname{One-prime gap} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_cofinal\_hit\_implies\_mc\_at}]
+\label{thm:one-prime-gap}
+$\MC({<}\,q)$ plus a single hitting event
+$q \mid \Prod(n)+1$ for some $n$ past the sieve gap
+implies $\MC(q)$.
+\end{theorem}
+
+\paragraph{The Power Residue Decomposition}
+
+Since $(\ZZ/q\ZZ)^\times$ is cyclic of order $q\!-\!1$, its subgroup
+lattice is determined by the prime factorization of $q\!-\!1$.  A
+multiplier set generates the full group if and only if it escapes every
+maximal subgroup---and the maximal subgroups correspond to the prime
+divisors $\ell$ of~$q\!-\!1$.  This decomposition converts SE into
+independent conditions, one per prime~$\ell \mid q\!-\!1$.
+
+\begin{definition}[\defname{PowerResidueEscape} ($\abbr{PRE}_\ell$)]
+$\exists\, n : \multZ{q}{n}^{(q-1)/\ell} \neq 1$ in $(\ZZ/q\ZZ)^\times$.
+\end{definition}
+
+\begin{theorem}[\abbr{PRE} $\Leftrightarrow$ \abbr{SE} --- \lean{EM/EquidistCharPRE.lean}{pre\_iff\_se}]
+$\mathrm{PRE} \;\Longleftrightarrow\; \SE$.
+The forward direction uses only Lagrange's theorem; the reverse uses
+cyclicity of $(\ZZ/q\ZZ)^\times$.
+\end{theorem}
+
+\paragraph{Quadratic Reciprocity Obstruction}
+
+The power residue decomposition raises a natural question: for how many
+primes~$q$ could SE actually \emph{fail}?  Since each PRE$_\ell$
+condition asks only that \emph{one} multiplier among infinitely many
+escapes the $\ell$-th power subgroup, SE failure requires all
+multipliers to be $\ell$-th power residues for some $\ell \mid q{-}1$.
+By CRT and quadratic reciprocity, the density of primes~$q$ for which
+the first~$k$ multiplier primes all fail to escape the index-2
+subgroup is at most $O(2^{-k})$.  Extending this to a rigorous
+density-zero statement for SE failure would require controlling all
+prime divisors $\ell \mid q{-}1$ simultaneously, which remains open.
+

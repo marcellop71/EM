@@ -2,7 +2,7 @@
 __pycache__/
 
 agents/
-docs/scout_*.md
+docs/
 
 # LaTeX build artifacts
 *.aux
