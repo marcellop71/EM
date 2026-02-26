@@ -2581,4 +2581,142 @@ theorem lemma715_of_crt (hcrt : CRTCoprimeSumEq) : Lemma715 := by
   intro N a q ω Ω hN hq hsf hωlt hΩcard hΩval hsifted
   exact lemma715_aux hcrt q N a ω Ω hN hq hsf hωlt hΩcard hΩval hsifted
 
+set_option maxHeartbeats 800000 in
+/-- The CRT coprime sum equality is provable: the double sum over coprime
+    residues mod p and mod q' equals the single sum over coprime residues
+    mod p*q', via the CRT bijection (b1,b2) ↦ (b1*q'+b2*p) % (p*q'). -/
+theorem crt_coprime_sum_eq_proved : CRTCoprimeSumEq := by
+  intro N a p q' hp hq' hcop
+  -- Source and target finsets
+  set S1 := (Finset.range p).filter (Nat.Coprime · p)
+  set S2 := (Finset.range q').filter (Nat.Coprime · q')
+  set T := (Finset.range (p * q')).filter (Nat.Coprime · (p * q'))
+  -- CRT map
+  set f : ℕ × ℕ → ℕ := fun x => (x.1 * q' + x.2 * p) % (p * q')
+  -- Positivity
+  have hp_pos := hp.pos
+  have hpq_pos : 0 < p * q' := Nat.mul_pos hp_pos hq'
+  -- Step 0: Convert nested sum to product finset sum
+  rw [← Finset.sum_product_right']
+  -- Step 1: Forward mapping (f maps S1 ×ˢ S2 into T)
+  have hf_mem : ∀ x ∈ S1 ×ˢ S2, f x ∈ T := by
+    intro ⟨b1, b2⟩ hx
+    have hb1_mem := (Finset.mem_product.mp hx).1
+    have hb2_mem := (Finset.mem_product.mp hx).2
+    have hb1_cop : Nat.Coprime b1 p := (Finset.mem_filter.mp hb1_mem).2
+    have hb2_cop : Nat.Coprime b2 q' := (Finset.mem_filter.mp hb2_mem).2
+    refine Finset.mem_filter.mpr ⟨Finset.mem_range.mpr (Nat.mod_lt _ hpq_pos), ?_⟩
+    -- Coprime (b1*q'+b2*p) (p*q'), then mod preserves this
+    have hc : Nat.Coprime (b1 * q' + b2 * p) (p * q') := by
+      apply Nat.Coprime.mul_right
+      · rw [show b1 * q' + b2 * p = b1 * q' + p * b2 from by ring]
+        rw [Nat.coprime_add_mul_left_left]
+        exact hb1_cop.mul_left hcop.symm
+      · rw [show b1 * q' + b2 * p = q' * b1 + b2 * p from by ring]
+        rw [Nat.coprime_mul_left_add_left]
+        exact hb2_cop.mul_left hcop
+    show Nat.gcd (f (b1, b2)) (p * q') = 1
+    change Nat.gcd ((b1 * q' + b2 * p) % (p * q')) (p * q') = 1
+    rw [← Nat.gcd_rec, Nat.gcd_comm]
+    exact hc
+  -- Step 2: Injectivity
+  have hf_inj : Set.InjOn f ↑(S1 ×ˢ S2) := by
+    intro ⟨b1, b2⟩ hx ⟨b1', b2'⟩ hx' heq
+    have hb1_lt : b1 < p :=
+      Finset.mem_range.mp (Finset.mem_of_mem_filter _ (Finset.mem_product.mp hx).1)
+    have hb1'_lt : b1' < p :=
+      Finset.mem_range.mp (Finset.mem_of_mem_filter _ (Finset.mem_product.mp hx').1)
+    have hb2_lt : b2 < q' :=
+      Finset.mem_range.mp (Finset.mem_of_mem_filter _ (Finset.mem_product.mp hx).2)
+    have hb2'_lt : b2' < q' :=
+      Finset.mem_range.mp (Finset.mem_of_mem_filter _ (Finset.mem_product.mp hx').2)
+    have hmod : b1 * q' + b2 * p ≡ b1' * q' + b2' * p [MOD p * q'] := heq
+    -- Reduce mod p and cancel q'
+    have hmod_p := hmod.of_mul_right q'
+    have ha1 : p * b2 + b1 * q' ≡ b1 * q' [MOD p] := Nat.ModEq.modulus_mul_add
+    have ha1' : b1 * q' + b2 * p ≡ b1 * q' [MOD p] := by
+      rwa [show p * b2 + b1 * q' = b1 * q' + b2 * p from by ring] at ha1
+    have ha2 : p * b2' + b1' * q' ≡ b1' * q' [MOD p] := Nat.ModEq.modulus_mul_add
+    have ha2' : b1' * q' + b2' * p ≡ b1' * q' [MOD p] := by
+      rwa [show p * b2' + b1' * q' = b1' * q' + b2' * p from by ring] at ha2
+    have hmod_bq : b1 * q' ≡ b1' * q' [MOD p] := ha1'.symm.trans (hmod_p.trans ha2')
+    have hb1_eq : b1 = b1' :=
+      (Nat.ModEq.cancel_right_of_coprime hcop hmod_bq).eq_of_lt_of_lt hb1_lt hb1'_lt
+    -- Reduce mod q' and cancel p
+    have hmod_q' := hmod.of_mul_left p
+    have hb1_rw : q' * b1 + b2 * p ≡ b2 * p [MOD q'] := Nat.ModEq.modulus_mul_add
+    have hb1_rw' : b1 * q' + b2 * p ≡ b2 * p [MOD q'] := by
+      rwa [show q' * b1 + b2 * p = b1 * q' + b2 * p from by ring] at hb1_rw
+    have hb1'_rw : q' * b1' + b2' * p ≡ b2' * p [MOD q'] := Nat.ModEq.modulus_mul_add
+    have hb1'_rw' : b1' * q' + b2' * p ≡ b2' * p [MOD q'] := by
+      rwa [show q' * b1' + b2' * p = b1' * q' + b2' * p from by ring] at hb1'_rw
+    have hmod_bp : b2 * p ≡ b2' * p [MOD q'] := hb1_rw'.symm.trans (hmod_q'.trans hb1'_rw')
+    have hb2_eq : b2 = b2' :=
+      (Nat.ModEq.cancel_right_of_coprime hcop.symm hmod_bp).eq_of_lt_of_lt hb2_lt hb2'_lt
+    exact Prod.ext hb1_eq hb2_eq
+  -- Step 3: Surjectivity (via card equality from Euler totient multiplicativity)
+  have hf_surj : Set.SurjOn f ↑(S1 ×ˢ S2) ↑T := by
+    have hcard_eq : (S1 ×ˢ S2).card = T.card := by
+      rw [Finset.card_product]
+      have h : ∀ n, ((Finset.range n).filter (Nat.Coprime · n)).card = n.totient := by
+        intro n; rw [Nat.totient_eq_card_coprime]; congr 1; ext a; simp [Nat.coprime_comm]
+      rw [h, h, h, Nat.totient_mul hcop]
+    have him_card : ((S1 ×ˢ S2).image f).card = (S1 ×ˢ S2).card :=
+      Finset.card_image_of_injOn hf_inj
+    have him_sub : (S1 ×ˢ S2).image f ⊆ T :=
+      Finset.image_subset_iff.mpr (fun x hx => hf_mem x hx)
+    have him_eq : (S1 ×ˢ S2).image f = T :=
+      Finset.eq_of_subset_of_card_le him_sub (by omega)
+    intro b hb
+    have hb' : b ∈ (S1 ×ˢ S2).image f := him_eq ▸ hb
+    exact Finset.mem_image.mp hb'
+  -- Step 4: Value equality (eAN identity via div/mod decomposition)
+  have hf_val : ∀ x ∈ S1 ×ˢ S2,
+      ‖∑ n : Fin N, a n *
+        IK.eAN ((↑(n : ℕ) : ℝ) * ((x.1 : ℝ) / (p : ℝ) + (x.2 : ℝ) / (q' : ℝ)))‖ ^ 2 =
+      ‖∑ n : Fin N, a n *
+        IK.eAN ((↑(n : ℕ) : ℝ) * (f x : ℝ) / ((p : ℝ) * (q' : ℝ)))‖ ^ 2 := by
+    intro ⟨b1, b2⟩ _
+    congr 1; congr 1
+    apply Finset.sum_congr rfl; intro nn _
+    congr 1
+    simp only [eAN_eq_root_eAN]
+    -- Clean variables for div/mod to avoid cast explosion
+    set c := b1 * q' + b2 * p
+    set pq := p * q'
+    set d := c / pq
+    set r := c % pq
+    have hdiv : pq * d + r = c := Nat.div_add_mod c pq
+    have hc_real : (c : ℝ) = (d : ℝ) * (pq : ℝ) + (r : ℝ) := by
+      have : (pq : ℝ) * (d : ℝ) + (r : ℝ) = (c : ℝ) := by exact_mod_cast hdiv
+      linarith
+    have hpq_cast : (pq : ℝ) = (p : ℝ) * (q' : ℝ) := by
+      show ((p * q' : ℕ) : ℝ) = (p : ℝ) * (q' : ℝ); exact Nat.cast_mul p q'
+    have hp_ne : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hp.ne_zero
+    have hq'_ne : (q' : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+    -- LHS rewrite: nn * (b1/p + b2/q') = nn * c / (p*q')
+    have hfrac : (↑(nn : ℕ) : ℝ) * ((b1 : ℝ) / (p : ℝ) + (b2 : ℝ) / (q' : ℝ)) =
+        (↑(nn : ℕ) : ℝ) * (c : ℝ) / ((p : ℝ) * (q' : ℝ)) := by
+      rw [mul_div_assoc]; congr 1
+      rw [show (c : ℝ) = (b1 : ℝ) * (q' : ℝ) + (b2 : ℝ) * (p : ℝ) from by
+        show ((b1 * q' + b2 * p : ℕ) : ℝ) = _; push_cast; ring]
+      field_simp
+    rw [hfrac]
+    -- Decompose c = d*pq + r, then kill the integer part via eAN periodicity
+    have harg : (↑(nn : ℕ) : ℝ) * (c : ℝ) / ((p : ℝ) * (q' : ℝ)) =
+        (↑(nn : ℕ) : ℝ) * (d : ℝ) + (↑(nn : ℕ) : ℝ) * (r : ℝ) / ((p : ℝ) * (q' : ℝ)) := by
+      rw [hc_real, hpq_cast]; field_simp
+    rw [harg, mul_div_assoc, _root_.eAN_add]
+    have hint : _root_.eAN ((↑(nn : ℕ) : ℝ) * (d : ℝ)) = 1 := by
+      have h1 : (↑(nn : ℕ) : ℝ) * (d : ℝ) = (↑(nn * d : ℕ) : ℝ) := by push_cast; ring
+      rw [h1, show (↑(nn * d : ℕ) : ℝ) = (↑((nn * d : ℕ) : ℤ) : ℝ) from by push_cast; rfl]
+      exact _root_.eAN_intCast _
+    rw [hint, one_mul]
+  -- Assemble via sum_nbij
+  exact Finset.sum_nbij f hf_mem hf_inj hf_surj hf_val
+
+/-- **Lemma 7.15 proved** — Lemma 7.15 for general squarefree modulus. -/
+theorem lemma715_proved : Lemma715 :=
+  lemma715_of_crt crt_coprime_sum_eq_proved
+
 end IK
