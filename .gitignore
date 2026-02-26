@@ -3,6 +3,8 @@ __pycache__/
 
 agents/
 docs/
+scripts/
+tmp/
 
 # LaTeX build artifacts
 *.aux
