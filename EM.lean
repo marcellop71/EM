@@ -36,3 +36,4 @@ import EM.MullinDepartureGraph
 import EM.SieveDefinedDynamics
 import EM.SDDSBridge
 import EM.SDDSReduction
+import EM.ExcursionIndependence
