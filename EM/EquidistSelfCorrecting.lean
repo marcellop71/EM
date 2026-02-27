@@ -112,7 +112,7 @@ def PEDImpliesComplexCSB : Prop := PositiveEscapeDensity → ComplexCharSumBound
     viewed as a complex number, has norm 1.  This follows because `(ZMod q)ˣ`
     is finite, so every element has finite order, and finite-order elements in
     a normed ring have norm 1. -/
-private lemma char_val_norm_one {q : Nat} [Fact (Nat.Prime q)]
+private theorem char_val_norm_one {q : Nat} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (u : (ZMod q)ˣ) :
     ‖(χ u : ℂ)‖ = 1 := by
   have h2 : IsOfFinOrder (χ u) := χ.isOfFinOrder (isOfFinOrder_of_finite u)
@@ -260,7 +260,7 @@ def NoLongRuns (L : Nat) : Prop :=
     ∃ k, k < L ∧ χ (emMultUnit q hq hne (n + k)) ≠ 1
 
 /-- Helper: `(i + 1) * L ≤ N - N₀` when `i < (N - N₀) / L`. -/
-private lemma block_fits {N N₀ L : ℕ} (_ : 0 < L) (i : ℕ)
+private theorem block_fits {N N₀ L : ℕ} (_ : 0 < L) (i : ℕ)
     (hi : i < (N - N₀) / L) (_ : N₀ ≤ N) :
     (i + 1) * L ≤ N - N₀ := by
   have h1 : i + 1 ≤ (N - N₀) / L := hi

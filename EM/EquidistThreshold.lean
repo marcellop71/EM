@@ -27,6 +27,7 @@ Concrete verification: MCBelow 11 is proved from seq values 0–6, giving
 FiniteMCBelow 11 and the specialization ThresholdHitting 11 → MC. -/
 
 section ThresholdApproach
+open Classical
 
 /-- `ThresholdHitting B`: DynamicalHitting restricted to primes q ≥ B.
     For any prime q ≥ B not in the sequence, SubgroupEscape at q implies
@@ -55,7 +56,6 @@ theorem dynamical_hitting_implies_threshold (hdh : DynamicalHitting) (B : Nat) :
     ThresholdHitting B := by
   intro q inst hq hne _ hse N; exact hdh q hq hne hse N
 
-open Classical in
 /-- **Threshold reduction**: ThresholdHitting B + FiniteMCBelow B + PRE → MC.
 
     Proof by strong induction on q:
@@ -143,8 +143,8 @@ q ∣ Prod(n)+1. DynamicalHitting provides this: SE(q) (free from MC(<q)
 via PrimeResidueEscape) implies cofinal hitting. -/
 
 section SieveGap
+open Classical
 
-open Classical in
 /-- **q-roughness**: MC(<q) implies seq(n+1) ≥ q for all sufficiently large n.
     All primes below q have been consumed into the running product, so none
     can divide Prod(n)+1 past the collection stage. -/
@@ -181,7 +181,6 @@ theorem mcBelow_hit_captures {q : Nat} (hq : IsPrime q)
     seq (n + 1) = q :=
   captures_target hq hdvd (fun p hpq hp => hlate p (IsPrime.toNatPrime hp) hpq)
 
-open Classical in
 /-- **Lethal hit**: MC(<q) + walkZ(q,n) = -1 past the sieve gap implies seq(n+1) = q.
     Under MC(<q), every hit on -1 past the sieve gap is lethal: q is the smallest
     prime factor of Prod(n)+1, so the minFac selection must pick q. -/
@@ -195,7 +194,6 @@ theorem mcBelow_hit_is_lethal {q : Nat} [Fact (Nat.Prime q)]
     obtain ⟨m, hm, hseqm⟩ := hN₀ p hpq hp.toIsPrime
     exact ⟨m, by omega, hseqm⟩)
 
-open Classical in
 /-- **Walk avoids -1 past sieve gap for a missing prime**: MC(<q) + q missing
     implies walkZ(q,n) ≠ -1 for all n past the sieve gap.
     Immediate from `mcBelow_hit_is_lethal`: any hit would give seq(n+1) = q,
@@ -207,7 +205,6 @@ theorem mcBelow_missing_walk_ne_neg_one {q : Nat} [Fact (Nat.Prime q)]
   exact ⟨N₀, fun n hn hwalk =>
     hmiss (n + 1) (mcBelow_hit_is_lethal hq hN₀ hn hwalk)⟩
 
-open Classical in
 /-- **The one-prime gap theorem**: MC(<q) + cofinal q-hitting → MC(q).
     The sieve at level q−1 is free from MC(<q). Extending by one prime
     requires exactly one cofinal divisibility event q ∣ Prod(n)+1 —
@@ -221,7 +218,6 @@ theorem mcBelow_cofinal_hit_implies_mc_at {q : Nat} (hq : IsPrime q)
   exact ⟨n + 1, captures_target hq hdvd (fun p hpq hp =>
     let ⟨m, hm, hseqm⟩ := hN p hpq hp; ⟨m, by omega, hseqm⟩)⟩
 
-open Classical in
 /-- **Full one-step induction via DH**: MC(<q) + DH at q → MC(q).
     Under MC(<q), SE(q) is free via PrimeResidueEscape. DH converts SE(q)
     to cofinal hitting, and `mcBelow_cofinal_hit_implies_mc_at` finishes. -/

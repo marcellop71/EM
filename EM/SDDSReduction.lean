@@ -31,9 +31,11 @@ which directly gives `HittingHypothesis`. The existing reduction
 
 open Mullin Euclid MullinGroup
 
+section
+open Classical
+
 /-! ## Basic SME to divisibility -/
 
-open Classical in
 /-- SME at a single prime q implies q divides some Euclid number.
 
 Given that the EM SDDS walk at q hits every unit, in particular it
@@ -50,7 +52,6 @@ theorem sme_implies_dvd_euclid (q : ℕ) (hq : Nat.Prime q)
 
 /-! ## Strong (cofinal) SME -/
 
-open Classical in
 /-- **Strong Sieve Map Equidistribution**: the walk of the EM SDDS
 hits every unit in (ZMod q)^times cofinally — that is, past any
 given bound N.
@@ -65,7 +66,6 @@ noncomputable def StrongSME : Prop :=
     haveI : Fact (Nat.Prime q) := ⟨hq⟩
     ∀ (u : (ZMod q)ˣ) (N : ℕ), ∃ n, N ≤ n ∧ (emSDDS q hq).walk n = (u : ZMod q)
 
-open Classical in
 /-- StrongSME implies HittingHypothesis.
 
 Proof: HH requires that for every prime q not in the sequence, and
@@ -101,7 +101,6 @@ theorem strong_sme_implies_mc (hstrong : StrongSME) :
 
 /-! ## Weak result from basic SME -/
 
-open Classical in
 /-- Basic SME for all primes implies every missing prime divides
 some Euclid number.
 
@@ -123,3 +122,5 @@ theorem sme_for_all_implies_euclid_divisibility
   intro q hq _hne
   haveI : Fact (Nat.Prime q) := ⟨hq⟩
   exact sme_implies_dvd_euclid q hq (hsme q hq)
+
+end

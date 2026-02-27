@@ -344,6 +344,7 @@ alternation theorem (the cleanest provable result toward Approach B). -/
 section QuotientWalkDecomposition
 
 open MullinGroup
+open Classical
 
 /-- **Quotient walk recurrence**: the walk in (ZMod q)ˣ/H satisfies the same
     multiplicative recurrence as the full walk. This follows directly from
@@ -523,7 +524,6 @@ theorem dh_implies_quotient_dh {q : Nat} [Fact (Nat.Prime q)]
   obtain ⟨n, hn, hw⟩ := hdh N
   exact ⟨n, hn, by congr 1; exact Units.ext hw⟩
 
-open Classical in
 /-- **Cofinal pair gives quotient DH for escaped subgroups (under HH failure)**:
     If HH fails at q, and (w₀, s₀) is the cofinal pair with s₀ ∉ H,
     then the quotient walk visits at least TWO distinct elements cofinally.
@@ -593,6 +593,7 @@ avoidance holds at every position. -/
 section CofinalEscapeReduction
 
 open MullinGroup
+open Classical
 
 /-- **CofinalEscape at H**: there exists a cofinally visited position with a
     cofinal multiplier that escapes the subgroup H. -/
@@ -602,7 +603,6 @@ def CofinalEscape (q : Nat) [Fact (Nat.Prime q)]
   ∃ (x s : ZMod q) (hcof : ∀ N, ∃ n, N ≤ n ∧ walkZ q n = x ∧ multZ q n = s),
     Units.mk0 s (cofinal_mult_ne_zero hq hne hcof) ∉ H
 
-open Classical in
 /-- **CofinalEscape → QuotientDH for index-2 subgroups**: if there exists
     a cofinal pair whose multiplier escapes an index-2 subgroup H, then
     QuotientDH holds at H. -/
@@ -616,7 +616,6 @@ theorem cofinal_escape_quotient_dh {q : Nat} [Fact (Nat.Prime q)]
   obtain ⟨_, _, hcof, hs_esc⟩ := hce
   exact quotient_dh_of_index_two_escape hq hne hcof hhf H _hH hs_esc hcard
 
-open Classical in
 /-- **Cofinal successor step**: from a cofinally visited position, produce
     the next cofinally visited position via cofinal multiplier + successor. -/
 noncomputable def cofinalStep {q : Nat} [Fact (Nat.Prime q)]
@@ -626,7 +625,6 @@ noncomputable def cofinalStep {q : Nat} [Fact (Nat.Prime q)]
   let h := cofinal_visited_has_cofinal_mult hq hne xp.property
   ⟨xp.val * h.choose, cofinal_successor_visited h.choose_spec⟩
 
-open Classical in
 /-- **The orbit chain**: iterating cofinalStep from a starting position.
     Each position carries a proof that it is cofinally visited. -/
 noncomputable def orbitChain {q : Nat} [Fact (Nat.Prime q)]
@@ -683,6 +681,7 @@ Key results:
 section CofinalEscapeReductionTail
 
 open MullinGroup
+open Classical
 
 /-- **Walk eventually cofinal**: past some threshold N, every walk position
     is cofinally visited. Non-cofinal positions are each eventually avoided;
@@ -707,7 +706,6 @@ theorem walk_eventually_cofinal {q : Nat} [Fact (Nat.Prime q)]
     le_trans (Finset.le_sup (f := bound) (Finset.mem_univ _)) hn
   exact hbound (walkZ q n) hncof n hge rfl
 
-open Classical in
 /-- **Cofinal escape or eventual confinement**: for any proper subgroup H,
     either CofinalEscape(H) holds (some cofinal pair's multiplier escapes H),
     or all multipliers are eventually confined to H. -/
@@ -751,7 +749,6 @@ def TailSubgroupEscape (q : Nat) [Fact (Nat.Prime q)]
   ∀ (H : Subgroup (ZMod q)ˣ), H ≠ ⊤ →
     ∀ N, ∃ n, N ≤ n ∧ emMultUnit q hq hne n ∉ H
 
-open Classical in
 /-- **TailSE implies CofinalEscape at every proper H**: if multipliers don't
     settle into any proper subgroup, then for each proper H there's a cofinal
     pair whose multiplier escapes H. -/
@@ -781,7 +778,6 @@ theorem cofinal_escape_all_implies_tail_se {q : Nat} [Fact (Nat.Prime q)]
   rwa [show emMultUnit q hq hne n =
     Units.mk0 s (cofinal_mult_ne_zero hq hne hcof) from Units.ext hs]
 
-open Classical in
 /-- **TailSE ↔ CofinalEscape at every proper H**: the two conditions are
     equivalent, giving a clean characterization of the tail escape property
     in terms of the cofinal orbit structure. -/
@@ -792,7 +788,6 @@ theorem tail_se_iff_cofinal_escape_all {q : Nat} [Fact (Nat.Prime q)]
   ⟨fun htse H hH => tail_se_implies_cofinal_escape hq hne htse H hH,
    fun hce => cofinal_escape_all_implies_tail_se hq hne hce⟩
 
-open Classical in
 /-- **TailSE → QuotientDH at every index-2 subgroup**: under HH failure,
     TailSE gives CofinalEscape at every proper H, which by §19 gives
     QuotientDH at every index-2 subgroup.
@@ -819,7 +814,6 @@ theorem tail_se_of_subsingleton {q : Nat} [Fact (Nat.Prime q)]
   exfalso
   exact hH (eq_top_iff.mpr (fun x _ => Subsingleton.elim x 1 ▸ H.one_mem))
 
-open Classical in
 /-- **Cofinal escape reduction summary**: packages the equivalences and
     reductions established in this section.
 
@@ -875,6 +869,7 @@ Key results:
 section SieveHypothesisReduction
 
 open MullinGroup
+open Classical
 
 /-- **Products are unbounded**: for any bound B, there exists n with B ≤ prod n.
     Follows from exponential growth: prod n ≥ 2^(n+1) and n < 2^n. -/
@@ -883,7 +878,6 @@ theorem prod_unbounded (B : Nat) : ∃ n, B ≤ prod n := by
     exact ⟨B, le_trans Nat.lt_two_pow_self.le (Nat.pow_le_pow_right (by norm_num) (by omega))⟩
   exact ⟨n, le_trans hn (prod_exponential_growth n)⟩
 
-open Classical in
 /-- **EuclidMinFacEscape**: for any prime q and proper subgroup H of (ZMod q)ˣ,
     there exist infinitely many indices n where minFac(prod(n)+1) escapes H.
     References `prod` and `Euclid.minFac` but NOT `seq`/`walkZ`/`multZ`/`emMultUnit`,
@@ -899,7 +893,6 @@ def EuclidMinFacEscape : Prop :=
       ∀ (hne : (Euclid.minFac (prod n + 1) : ZMod q) ≠ 0),
         Units.mk0 ((Euclid.minFac (prod n + 1) : ZMod q)) hne ∉ H
 
-open Classical in
 /-- **EMFE implies TailSE**: the existential sieve hypothesis gives infinitely
     many escapes from any proper subgroup. The key idea: minFac(prod(n)+1) is
     exactly seq(n+1), so escape of the minFac unit is escape of emMultUnit. -/
@@ -924,7 +917,6 @@ theorem emfe_implies_se (hemfe : EuclidMinFacEscape) : SubgroupEscape := by
   obtain ⟨n, _, hesc⟩ := emfe_implies_tail_se hemfe q hq hne H hH 0
   exact ⟨n, hesc⟩
 
-open Classical in
 /-- **TailSE implies per-q EMFE**: if the walk multipliers escape every proper
     subgroup cofinally, then minFac(prod(n)+1) escapes every proper subgroup
     cofinally. This is the converse of `emfe_implies_tail_se` at a fixed q. -/
@@ -942,7 +934,6 @@ theorem tail_se_implies_emfe_at
   rwa [show emMultUnit q hq hne n =
     Units.mk0 (Euclid.minFac (prod n + 1) : ZMod q) hne' from Units.ext rfl] at hesc
 
-open Classical in
 /-- **Per-q EMFE implies TailSE**: if minFac(prod(n)+1) escapes every proper
     subgroup cofinally at q, then the walk multipliers do too. Together with
     `tail_se_implies_emfe_at`, this gives a full equivalence at each fixed q. -/
@@ -964,7 +955,6 @@ theorem emfe_at_implies_tail_se
     Units.mk0 (Euclid.minFac (prod n + 1) : ZMod q) hne_cast from Units.ext rfl]
   exact hesc hne_cast
 
-open Classical in
 /-- **EMFE ↔ TailSE at a fixed prime**: the factorization-level escape property
     (minFac(prod(n)+1) escapes H cofinally) is equivalent to the walk-level
     escape property (emMultUnit escapes H cofinally). This equivalence holds
@@ -983,7 +973,6 @@ theorem emfe_iff_tail_se_at
     TailSubgroupEscape q hq hne :=
   ⟨emfe_at_implies_tail_se hq hne, tail_se_implies_emfe_at hq hne⟩
 
-open Classical in
 /-- **MertensEscape**: for any prime q, proper subgroup H of (ZMod q)ˣ, and
     finite exclusion set S, there exists a prime outside H ∪ S ∪ {q}.
 
@@ -1023,7 +1012,6 @@ theorem mertens_sieve_implies_se
     SubgroupEscape :=
   emfe_implies_se (hsa hme)
 
-open Classical in
 /-- **Sieve reduction summary**: MertensEscape + SieveAmplification combined
     with HH failure gives the full reduction chain at every prime not in the
     sequence: TailSE, CofinalEscape at every proper H, and QuotientDH at
@@ -1126,6 +1114,7 @@ fundamental barrier that no marginal-distribution argument can cross. -/
 
 section AnalyticalCharacterization
 open MullinGroup
+open Classical
 
 /-- **Reduction summary for DH**: collects the full verified reduction chain.
     Given DH (the sole open hypothesis), we get MC via strong induction + PRE.
@@ -1136,7 +1125,6 @@ theorem dh_reduction_chain :
     DynamicalHitting → MullinConjecture :=
   dynamical_hitting_implies_mullin
 
-open Classical in
 /-- **TailSE gives everything below DH**: at any prime q not in the sequence,
     TailSE gives CofinalEscape at every proper subgroup and QuotientDH at
     every index-2 subgroup. This exhausts what marginal multiplier distribution

@@ -646,7 +646,7 @@ private instance : NeZero p := ⟨hp.out.ne_zero⟩
 
 /-- Cauchy-Schwarz for finite sums over an arbitrary Fintype:
     ‖∑_i g(i) * h(i)‖² ≤ (∑_i ‖g(i)‖²) * (∑_i ‖h(i)‖²). -/
-private lemma norm_sq_sum_mul_le {ι : Type*} [Fintype ι]
+private theorem norm_sq_sum_mul_le {ι : Type*} [Fintype ι]
     (g h : ι → ℂ) :
     ‖∑ i : ι, g i * h i‖ ^ 2 ≤
     (∑ i : ι, ‖g i‖ ^ 2) * (∑ i : ι, ‖h i‖ ^ 2) := by
@@ -660,7 +660,7 @@ private lemma norm_sq_sum_mul_le {ι : Type*} [Fintype ι]
         Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun i => ‖g i‖) (fun i => ‖h i‖)
 
 /-- Sum of ‖χ⁻¹(b)‖² over ZMod p is at most p. -/
-private lemma sum_inv_char_norm_sq_le (χ : MulChar (ZMod p) ℂ) :
+private theorem sum_inv_char_norm_sq_le (χ : MulChar (ZMod p) ℂ) :
     ∑ b : ZMod p, ‖χ⁻¹ b‖ ^ 2 ≤ (p : ℝ) := by
   calc ∑ b : ZMod p, ‖χ⁻¹ b‖ ^ 2
       ≤ ∑ _b : ZMod p, (1 : ℝ) := by
@@ -674,7 +674,7 @@ private lemma sum_inv_char_norm_sq_le (χ : MulChar (ZMod p) ℂ) :
         simp [Finset.sum_const, Finset.card_univ, ZMod.card p, nsmul_eq_mul, mul_one]
 
 /-- Auxiliary: the character sum equals the Gauss-expanded form (full sum version). -/
-private lemma char_sum_eq_gauss_exp (f : ZMod p → ℂ)
+private theorem char_sum_eq_gauss_exp (f : ZMod p → ℂ)
     (χ : MulChar (ZMod p) ℂ) (hχ : χ ≠ 1) :
     ∑ n : ZMod p, f n * χ n =
     (gaussSum χ⁻¹ (ZMod.stdAddChar (N := p)))⁻¹ *
@@ -754,7 +754,7 @@ private instance neZeroP60 : NeZero p := ⟨hp.out.ne_zero⟩
 
 /-- Character orthogonality on units using `sum_char_inv_mul_char_eq`:
     ∑_χ χ(↑a) * conj(χ(↑b)) = p.totient · [a = b]. -/
-private lemma sum_char_unit_orth (a b : (ZMod p)ˣ) :
+private theorem sum_char_unit_orth (a b : (ZMod p)ˣ) :
     ∑ χ : DirichletCharacter ℂ p,
       χ (↑a : ZMod p) * starRingEnd ℂ (χ (↑b : ZMod p)) =
     if a = b then ((p : ℕ).totient : ℂ) else 0 := by
@@ -772,7 +772,7 @@ private lemma sum_char_unit_orth (a b : (ZMod p)ˣ) :
 
 /-- **ℂ-valued Parseval for multiplicative characters on (ZMod p)ˣ**:
     ∑_χ (∑_a g(a) χ(a)) * conj(∑_b g(b) χ(b)) = p.totient · ∑_a g(a) · conj(g(a)). -/
-private lemma char_parseval_units_complex (g : (ZMod p)ˣ → ℂ) :
+private theorem char_parseval_units_complex (g : (ZMod p)ˣ → ℂ) :
     ∑ χ : DirichletCharacter ℂ p,
       (∑ a : (ZMod p)ˣ, g a * χ (↑a)) *
       starRingEnd ℂ (∑ b : (ZMod p)ˣ, g b * χ (↑b)) =
@@ -939,13 +939,13 @@ variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 private instance neZeroP62 : NeZero p := ⟨hp.out.ne_zero⟩
 
 /-- The number of Dirichlet characters mod p equals p - 1 (as a natural number). -/
-private lemma dirichlet_card_eq_totient :
+private theorem dirichlet_card_eq_totient :
     Fintype.card (DirichletCharacter ℂ p) = (p : ℕ).totient := by
   rw [← Nat.card_eq_fintype_card]
   exact DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ p
 
 /-- The number of Dirichlet characters mod p equals p - 1. -/
-private lemma dirichlet_card_eq_pred :
+private theorem dirichlet_card_eq_pred :
     Fintype.card (DirichletCharacter ℂ p) = p - 1 := by
   rw [dirichlet_card_eq_totient, Nat.totient_prime hp.out]
 

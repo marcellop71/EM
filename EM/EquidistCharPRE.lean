@@ -227,8 +227,8 @@ maximal subgroup. This is a finite check, bounded by the number of prime
 factors of q-1 (at most log₂(q-1)). -/
 
 section LargeEllReduction
+open Classical
 
-open Classical in
 /-- **SE from large subgroup escape**: for q ≥ 59, to prove SE it suffices to
     escape every proper subgroup of order > 7. Subgroups of order ≤ 7 are
     handled automatically by `eight_elts_escape_order_le_seven`. -/
@@ -244,7 +244,6 @@ theorem se_of_large_subgroup_escape {q : Nat} [Fact (Nat.Prime q)]
     exact ⟨n, hn⟩
   · exact hesc H hH (by omega)
 
-open Classical in
 /-- **SE from maximal large escape**: for q ≥ 59, SE holds if every maximal
     subgroup (coatom) of order > 7 is escaped.
 
@@ -267,7 +266,6 @@ theorem se_of_maximal_large_escape {q : Nat} [Fact (Nat.Prime q)]
     exact ⟨n, hn⟩
   · exact hesc M hM (by omega)
 
-open Classical in
 /-- **Small primes suffice for SE**: for q ≥ 59, SE holds if every proper
     subgroup of order > 7 has an escaping multiplier among the first 7 mults
     (indices 0..6, corresponding to seq values 3,7,43,13,53,5,6221671).
@@ -486,6 +484,7 @@ most primes. The PRE formulation extends this to higher power residues
 (cubic, quintic, etc.) and quantifies exactly what remains to prove. -/
 
 section PowerResidueDecomposition
+open Classical
 
 /-- **Power Residue Escape**: for every prime q not in the EM sequence and
     every prime ℓ dividing q-1, some multiplier residue is not an ℓ-th power
@@ -513,7 +512,6 @@ theorem pre_implies_se : PowerResidueEscape → SubgroupEscape := by
   intro hpre q _ hq hne H hH
   exact se_of_prime_index_escape hq hne (fun ℓ hℓ => hpre q hq hne ℓ hℓ) H hH
 
-open Classical in
 /-- **SE → PRE**: subgroup escape implies power residue escape.
     This direction uses cyclicity of `(ZMod q)ˣ`.
 
@@ -594,6 +592,7 @@ where the kernel order exceeds 7.
   small prime ℓ where all multipliers are ℓ-th power residues -/
 
 section LocalPRE
+open Classical
 
 /-- Local per-prime-factor power residue escape at specific q and ℓ.
     PRE_at q ℓ asserts that some multiplier is not an ℓ-th power residue mod q,
@@ -602,7 +601,6 @@ def PRE_at (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (ℓ : Nat) : Prop :=
   ∃ n, (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ^ ((q - 1) / ℓ) ≠ 1
 
-open Classical in
 /-- **Automatic PRE for large ℓ**: when the ℓ-th power kernel has order ≤ 7,
     PRE_at holds automatically.
 
@@ -643,7 +641,6 @@ theorem pre_at_of_small_kernel {q : Nat} [inst : Fact (Nat.Prime q)]
   -- hn : Units.mk0 (multZ q n) _ ∉ K, i.e., ¬(m^d = 1)
   exact ⟨n, hn⟩
 
-open Classical in
 /-- **SE reduces to large-kernel PRE**: SubgroupEscape at q holds provided
     PRE_at holds for every prime factor ℓ of q-1 whose kernel has order > 7.
     Prime factors with small kernels ((q-1)/ℓ ≤ 7) are handled automatically
@@ -669,7 +666,6 @@ theorem not_pre_at_iff_all_pow_eq_one {q : Nat} [Fact (Nat.Prime q)]
     ∀ n, (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ^ ((q - 1) / ℓ) = 1 := by
   simp only [PRE_at, not_exists, not_not]
 
-open Classical in
 /-- **SE failure requires small obstruction**: if SE fails at q ≥ 59, there
     must exist a prime factor ℓ of q-1 with (q-1)/ℓ > 7 (i.e., a "large
     kernel") such that ALL multipliers are ℓ-th power residues mod q.
@@ -705,6 +701,7 @@ EKE reduces SE to a finite computation for small q.
 -/
 
 section EffKummer
+open Classical
 
 /-- **Effective Kummer Escape**: for each prime ℓ, there exists a uniform bound
     B such that for any prime q ≥ B with ℓ | q-1, some multiplier among the
@@ -730,7 +727,6 @@ theorem eke_implies_pre_at_large (heke : EffectiveKummerEscape) :
   exact ⟨B, fun q _ hq hne hqB hdvd => by
     obtain ⟨n, _, hn⟩ := hB q hq hne hqB hdvd; exact ⟨n, hn⟩⟩
 
-open Classical in
 /-- **PRE for large-kernel primes → SE**: if PRE_at holds at every prime factor
     ℓ of q-1 with large kernel ((q-1)/ℓ > 7), then SE holds at q ≥ 59.
     Small-kernel primes are handled automatically by `pre_at_of_small_kernel`. -/

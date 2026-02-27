@@ -1201,7 +1201,7 @@ private instance neZeroP75b : NeZero p := ⟨hp.out.ne_zero⟩
 
 /-- For any MulChar χ on ZMod p (p prime), the sum `∑_{b : ZMod p} χ(b) * f(b)`
     equals `∑_{b : (ZMod p)ˣ} χ(↑b) * f(↑b)` because χ vanishes on non-units. -/
-private lemma mulchar_sum_eq_units_sum
+private theorem mulchar_sum_eq_units_sum
     (f : ZMod p → ℂ) (χ : MulChar (ZMod p) ℂ) :
     ∑ b : ZMod p, χ b * f b =
     ∑ b : (ZMod p)ˣ, χ (↑b) * f (↑b) := by

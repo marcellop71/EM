@@ -147,6 +147,7 @@ is `o(N)`, yielding `MultiModularCSB`.
 section SubquadraticVisitEnergyBridge
 
 open Finset DirichletCharacter
+open Classical
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
@@ -158,7 +159,6 @@ private instance neZeroP67 : NeZero p := ⟨hp.out.ne_zero⟩
 noncomputable def excessEnergy {N : ℕ} (w : Fin N → (ZMod p)ˣ) : ℝ :=
   ((p : ℝ) - 1) * (∑ a : (ZMod p)ˣ, (walkVisitCount w a : ℝ) ^ 2) - (N : ℝ) ^ 2
 
-open Classical in
 /-- The excess energy equals the sum of ‖S_χ‖² over nontrivial characters.
 
     From Walk Energy Parseval: `∑_χ ‖S_χ‖² = (p-1) · ∑_a V_N(a)²`.
@@ -193,7 +193,6 @@ theorem excess_energy_eq_nontrivial_sum {N : ℕ} (w : Fin N → (ZMod p)ˣ) :
     linarith [hsplit]
   exact hee.symm
 
-open Classical in
 /-- The excess energy is nonneg. -/
 theorem excessEnergy_nonneg {N : ℕ} (w : Fin N → (ZMod p)ˣ) :
     0 ≤ excessEnergy w := by
@@ -202,7 +201,6 @@ theorem excessEnergy_nonneg {N : ℕ} (w : Fin N → (ZMod p)ˣ) :
   intro χ _
   positivity
 
-open Classical in
 /-- Each nontrivial character's ‖S_χ‖² is bounded by the excess energy. -/
 theorem nontrivial_char_sq_le_excess {N : ℕ} (w : Fin N → (ZMod p)ˣ)
     (ψ : DirichletCharacter ℂ p) (hψ : ψ ≠ 1) :
@@ -319,6 +317,7 @@ The proof uses character orthogonality to expand the indicator function
 section FiniteWeylCriterion
 
 open Finset DirichletCharacter
+open Classical
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
@@ -349,7 +348,7 @@ theorem char_indicator_expansion (a x : (ZMod p)ˣ) :
 /-- The occupation measure V_N(a) can be recovered from character sums via
     the orthogonality expansion:
     V_N(a) = (1/(p-1)) · ∑_χ χ(a⁻¹) · (∑_n χ(w(n))). -/
-private lemma visit_count_char_expansion {N : ℕ} (w : Fin N → (ZMod p)ˣ)
+private theorem visit_count_char_expansion {N : ℕ} (w : Fin N → (ZMod p)ˣ)
     (a : (ZMod p)ˣ) (hp1 : (1 : ℝ) < p) :
     (walkVisitCount w a : ℂ) =
     (1 / ((p : ℂ) - 1)) *
@@ -373,10 +372,9 @@ private lemma visit_count_char_expansion {N : ℕ} (w : Fin N → (ZMod p)ˣ)
     ring
   rw [hkey, one_div, ← mul_assoc, inv_mul_cancel₀ hp1c, one_mul]
 
-open Classical in
 /-- **Weyl criterion separating trivial character**: the occupation measure decomposes as
     V_N(a) = N/(p-1) + (1/(p-1)) · ∑_{χ≠1} χ(a⁻¹) · S_χ. -/
-private lemma visit_count_nontrivial_decomposition {N : ℕ} (w : Fin N → (ZMod p)ˣ)
+private theorem visit_count_nontrivial_decomposition {N : ℕ} (w : Fin N → (ZMod p)ˣ)
     (a : (ZMod p)ˣ) (hp1 : (1 : ℝ) < p) :
     (walkVisitCount w a : ℂ) - (N : ℂ) / ((p : ℂ) - 1) =
     (1 / ((p : ℂ) - 1)) *
@@ -403,7 +401,6 @@ private lemma visit_count_nontrivial_decomposition {N : ℕ} (w : Fin N → (ZMo
   field_simp
   ring
 
-open Classical in
 /-- **Finite Weyl criterion**: if all nontrivial character sums are bounded by ε·N,
     then the walk visits each unit approximately N/(p-1) times.
 
@@ -565,7 +562,7 @@ def VanDerCorputBound : Prop :=
     2 * (N : ℝ) ^ 2 / ((H : ℝ) + 1) + 2 * δ * (N : ℝ) ^ 2
 
 /-- Cauchy-Schwarz for `Finset.range` sums: `‖∑_{i<M} z_i‖² ≤ M · ∑_{i<M} ‖z_i‖²`. -/
-private lemma norm_sq_sum_le_card_mul_range {M : ℕ} {z : ℕ → ℂ} :
+private theorem norm_sq_sum_le_card_mul_range {M : ℕ} {z : ℕ → ℂ} :
     ‖∑ j ∈ Finset.range M, z j‖ ^ 2 ≤ (M : ℝ) * ∑ j ∈ Finset.range M, ‖z j‖ ^ 2 := by
   have h1 : ‖∑ j ∈ Finset.range M, z j‖ ^ 2 ≤ (∑ j ∈ Finset.range M, ‖z j‖) ^ 2 := by
     gcongr; exact norm_sum_le _ _
@@ -577,74 +574,50 @@ private lemma norm_sq_sum_le_card_mul_range {M : ℕ} {z : ℕ → ℂ} :
     _ = (M : ℝ) * ∑ j ∈ Finset.range M, ‖z j‖ ^ 2 := by
         simp [Finset.card_range]
 
-private lemma int_shift_injOn (s : Finset ℕ) (c : ℤ) :
+private theorem int_shift_injOn (s : Finset ℕ) (c : ℤ) :
     Set.InjOn (fun n : ℕ => (↑n + c : ℤ)) s := by
   intro a _ b _ hab; exact_mod_cast show (a : ℤ) = b by linarith
 
-/-- **Van der Corput bound** (proved): the finite Van der Corput inequality
-    for bounded sequences with small autocorrelations.
+/-- Algebraic reduction: from the IK-style inequality
+    `(H+1)^2 * ‖S‖^2 ≤ 2N(H+1)N(1+Hδ)` to the final VdC bound
+    `‖S‖^2 ≤ 2N^2/(H+1) + 2δN^2`. -/
+private theorem vdc_ik_reduction {N H : ℕ} {δ : ℝ} {S : ℂ}
+    (hH1r : (0 : ℝ) < (H : ℝ) + 1) (hδ : 0 < δ) :
+    ((H : ℝ) + 1) ^ 2 * ‖S‖ ^ 2 ≤
+      2 * (↑N : ℝ) * ((H : ℝ) + 1) * ↑N * (1 + ↑H * δ) →
+    ‖S‖ ^ 2 ≤ 2 * (N : ℝ) ^ 2 / ((H : ℝ) + 1) + 2 * δ * (N : ℝ) ^ 2 := by
+  intro hIK
+  have h1 : ‖S‖ ^ 2 ≤ 2 * (N : ℝ) ^ 2 * (1 + (H : ℝ) * δ) / ((H : ℝ) + 1) := by
+    rw [le_div_iff₀ hH1r]
+    nlinarith [sq ((H : ℝ) + 1), sq_nonneg ‖S‖]
+  have h2 : 2 * (N : ℝ) ^ 2 * (1 + (H : ℝ) * δ) / ((H : ℝ) + 1)
+      ≤ 2 * (N : ℝ) ^ 2 / ((H : ℝ) + 1) + 2 * δ * (N : ℝ) ^ 2 := by
+    suffices h : 2 * (N : ℝ) ^ 2 * ((H : ℝ) * δ) / ((H : ℝ) + 1) ≤
+        2 * δ * (N : ℝ) ^ 2 by
+      have expand : 2 * (N : ℝ) ^ 2 * (1 + (H : ℝ) * δ) / ((H : ℝ) + 1) =
+          2 * (N : ℝ) ^ 2 / ((H : ℝ) + 1) + 2 * (N : ℝ) ^ 2 * ((H : ℝ) * δ) / ((H : ℝ) + 1) := by
+        rw [mul_add, mul_one, add_div]
+      linarith
+    rw [div_le_iff₀ hH1r]; nlinarith
+  linarith
 
-    Proof uses the Iwaniec-Kowalski averaging trick: define w(j) = ∑_{h≤H} g(j-h)
-    where g is the zero extension of f. Then ∑w = (H+1)S, and Cauchy-Schwarz gives
-    (H+1)²‖S‖² ≤ (N+H)·∑‖w(j)‖². The energy ∑‖w(j)‖² expands via double sum
-    into autocorrelations and is bounded by (H+1)N(1+Hδ). -/
-theorem vanDerCorputBound : VanDerCorputBound := by
-  intro N f hf H hH1 hHN δ hδ hR
-  have hN_pos : 0 < N := lt_of_lt_of_le hH1 hHN
-  have hNr : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN_pos
-  have hH1r : (0 : ℝ) < (H : ℝ) + 1 := by positivity
-  set S := ∑ n ∈ Finset.range N, f n with hS_def
-  -- Reduce to IK inequality
-  suffices hIK : ((H : ℝ) + 1) ^ 2 * ‖S‖ ^ 2 ≤
-      2 * (↑N : ℝ) * ((H : ℝ) + 1) * ↑N * (1 + ↑H * δ) by
-    have h1 : ‖S‖ ^ 2 ≤ 2 * (N : ℝ) ^ 2 * (1 + (H : ℝ) * δ) / ((H : ℝ) + 1) := by
-      rw [le_div_iff₀ hH1r]
-      nlinarith [sq ((H : ℝ) + 1), sq_nonneg ‖S‖]
-    have h2 : 2 * (N : ℝ) ^ 2 * (1 + (H : ℝ) * δ) / ((H : ℝ) + 1)
-        ≤ 2 * (N : ℝ) ^ 2 / ((H : ℝ) + 1) + 2 * δ * (N : ℝ) ^ 2 := by
-      suffices h : 2 * (N : ℝ) ^ 2 * ((H : ℝ) * δ) / ((H : ℝ) + 1) ≤
-          2 * δ * (N : ℝ) ^ 2 by
-        have expand : 2 * (N : ℝ) ^ 2 * (1 + (H : ℝ) * δ) / ((H : ℝ) + 1) =
-            2 * (N : ℝ) ^ 2 / ((H : ℝ) + 1) + 2 * (N : ℝ) ^ 2 * ((H : ℝ) * δ) / ((H : ℝ) + 1) := by
-          rw [mul_add, mul_one, add_div]
-        linarith
-      rw [div_le_iff₀ hH1r]; nlinarith
-    linarith
-  -- == Prove IK inequality ==
-  -- Use ℕ-indexed windowed sum to avoid ℤ coercion issues.
-  -- g(n) = f(n) for n < N, 0 otherwise (on ℕ)
-  -- w(j) = ∑_{h=0}^{H} g(j-h) = ∑_{h=0}^{min(j,H)} f(j-h) when j-h < N
-  -- The key quantities:
-  --   diag = ∑_{h=0}^{H} ∑_{n<N} ‖f(n)‖² = (H+1)·∑‖f‖² ≤ (H+1)N
-  --   offdiag = 2·∑_{ℓ=1}^{H} Re(∑_{n<N-ℓ} f(n)·conj(f(n+ℓ)))
-  -- and (H+1)²‖S‖² ≤ (N+H)·((H+1)N + ∑offdiag)
-  --
-  -- We work directly with the VdC identity in a simplified form.
-  -- From the autocorrelation hypothesis and the trivial bound ‖f‖≤1:
-  -- ‖S‖² = ∑_n |f(n)|² + 2·Re(∑_{ℓ=1}^{N-1} ∑_{n<N-ℓ} f(n)·conj(f(n+ℓ)))
-  -- But this gives ‖S‖² ≤ N + 2·(N-1)·δ·N which is O(δN²), missing the 1/(H+1) factor.
-  --
-  -- The windowed-sum approach IS needed. Use ℤ-indexed version but be careful with casts.
-  -- Define g : ℤ → ℂ as zero extension
-  set g : ℤ → ℂ := fun n => if 0 ≤ n ∧ n < (N : ℤ) then f n.toNat else 0 with hg_def
-  -- w(j) = ∑_{h=0}^{H} g(j - h)
-  set w : ℤ → ℂ := fun j => ∑ h ∈ Finset.range (H + 1), g (j - ↑h) with hw_def
-  set Jset := (Finset.Ico (0 : ℤ) (↑N + ↑H)) with hJset_def
-  -- Step A: Sum identity
-  -- We prove this by showing ∑_{j∈Jset} g(j-h) = S for each h ∈ [0,H]
+/-- Sum identity for windowed sums: `∑_{j∈Jset} w(j) = (H+1) * S`.
+    Each shift `g(j-h)` sums to `S` over `Jset` by reindexing. -/
+private theorem vdc_sum_identity {N H : ℕ} {f : ℕ → ℂ}
+    (g : ℤ → ℂ) (hg_def : g = fun n => if 0 ≤ n ∧ n < (N : ℤ) then f n.toNat else 0)
+    (w : ℤ → ℂ) (hw_def : w = fun j => ∑ h ∈ Finset.range (H + 1), g (j - ↑h))
+    (Jset : Finset ℤ) (hJset_def : Jset = Finset.Ico (0 : ℤ) (↑N + ↑H))
+    (S : ℂ) (hS_def : S = ∑ n ∈ Finset.range N, f n) :
+    ∑ j ∈ Jset, w j = (↑(H + 1) : ℂ) * S := by
+  -- First prove ∑_{j∈Jset} g(j-h) = S for each h ∈ [0,H]
   have hg_shift_sum : ∀ h ≤ H, ∑ j ∈ Jset, g (j - (h : ℤ)) = S := by
     intro h hh
-    -- The nonzero terms are exactly those with 0 ≤ j-h < N, i.e., h ≤ j < N+h
-    -- Reindex: n = j - h, so j = n + h with n ∈ [0, N)
-    -- Step 1: zero-extend beyond support
     have : ∑ j ∈ Jset, g (j - (h : ℤ)) =
         ∑ n ∈ Finset.range N, g (↑n) := by
-      -- The image of range(N) under (n ↦ ↑n+h) ⊆ Jset
       set img := Finset.image (fun n : ℕ => (↑n + (h : ℤ))) (Finset.range N)
       have himg_sub : img ⊆ Jset := by
         intro j hj; simp only [img, Finset.mem_image, Finset.mem_range] at hj
         obtain ⟨n, hn, rfl⟩ := hj; simp [hJset_def, Finset.mem_Ico]; omega
-      -- Outside the image, g(j-h) = 0
       have hzero : ∀ j ∈ Jset, j ∉ img → g (j - (h : ℤ)) = 0 := by
         intro j _ hnmem
         simp only [hg_def]; split_ifs with hcond
@@ -657,64 +630,33 @@ theorem vanDerCorputBound : VanDerCorputBound := by
       apply Finset.sum_congr rfl; intro n _
       show g ((↑n + (h : ℤ)) - (h : ℤ)) = g (↑n)
       congr 1; omega
-    rw [this]
+    rw [this, hS_def]
     apply Finset.sum_congr rfl
     intro n hn
     have hn_lt := Finset.mem_range.mp hn
     simp [hg_def, hn_lt]
-  have hsum_identity : ∑ j ∈ Jset, w j = (↑(H + 1) : ℂ) * S := by
-    simp only [hw_def]
-    rw [Finset.sum_comm]
-    rw [Finset.sum_congr rfl (fun h hh => hg_shift_sum h
-      (Nat.lt_succ_iff.mp (Finset.mem_range.mp hh)))]
-    rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-  -- Step B: Cauchy-Schwarz
-  have hcard_Jset : Jset.card = N + H := by
-    simp [hJset_def, Int.card_Ico]; omega
-  have hCS : ‖∑ j ∈ Jset, w j‖ ^ 2 ≤ (↑(N + H) : ℝ) * ∑ j ∈ Jset, ‖w j‖ ^ 2 := by
-    calc ‖∑ j ∈ Jset, w j‖ ^ 2
-        ≤ (∑ j ∈ Jset, ‖w j‖) ^ 2 := by gcongr; exact norm_sum_le _ _
-      _ = (∑ j ∈ Jset, 1 * ‖w j‖) ^ 2 := by simp
-      _ ≤ (∑ _j ∈ Jset, (1 : ℝ) ^ 2) * (∑ j ∈ Jset, ‖w j‖ ^ 2) :=
-          Finset.sum_mul_sq_le_sq_mul_sq Jset (fun _ => 1) (fun j => ‖w j‖)
-      _ = (↑(N + H) : ℝ) * ∑ j ∈ Jset, ‖w j‖ ^ 2 := by simp [hcard_Jset]
-  have hLHS : ((H : ℝ) + 1) ^ 2 * ‖S‖ ^ 2 = ‖∑ j ∈ Jset, w j‖ ^ 2 := by
-    rw [hsum_identity, norm_mul, Complex.norm_natCast, sq, sq]; push_cast; ring
-  -- Step C: Energy bound
-  suffices hEnergy : (∑ j ∈ Jset, ‖w j‖ ^ 2 : ℝ) ≤
-      (↑H + 1) * ↑N * (1 + ↑H * δ) by
-    rw [hLHS]
-    calc ‖∑ j ∈ Jset, w j‖ ^ 2
-        ≤ (↑(N + H) : ℝ) * ∑ j ∈ Jset, ‖w j‖ ^ 2 := hCS
-      _ ≤ (↑(N + H) : ℝ) * ((↑H + 1) * ↑N * (1 + ↑H * δ)) := by gcongr
-      _ ≤ (2 * (↑N : ℝ)) * ((↑H + 1) * ↑N * (1 + ↑H * δ)) := by
-          gcongr; push_cast
-          have : (H : ℝ) ≤ (N : ℝ) := Nat.cast_le.mpr hHN
-          linarith
-      _ = 2 * ↑N * (↑H + 1) * ↑N * (1 + ↑H * δ) := by ring
-  -- == Prove hEnergy ==
-  set Hset := Finset.range (H + 1) with hHset_def
-  -- C1: norm-squared expansion
-  have hnorm_sq_w : ∀ j : ℤ, (‖w j‖ ^ 2 : ℝ) =
-      (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re := by
-    intro j
-    rw [complex_norm_sq_eq_re_mul_conj (w j)]
-    simp only [hw_def, map_sum, Finset.mul_sum, Finset.sum_mul]
-    congr 1; rw [Finset.sum_comm]
-  -- C2: Sum over j and swap
-  have henergy_expand : (∑ j ∈ Jset, ‖w j‖ ^ 2 : ℝ) =
-      (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset,
-        ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re := by
-    simp_rw [hnorm_sq_w]; rw [Complex.re_sum]; simp_rw [Complex.re_sum]
-    rw [Finset.sum_comm (s := Jset) (t := Hset)]
-    simp_rw [Finset.sum_comm (s := Jset) (t := Hset)]
-  -- C3: Diagonal bound: for h₁ = h₂, each inner sum = ∑ ‖f(n)‖²
+  simp only [hw_def]
+  rw [Finset.sum_comm]
+  rw [Finset.sum_congr rfl (fun h hh => hg_shift_sum h
+    (Nat.lt_succ_iff.mp (Finset.mem_range.mp hh)))]
+  rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+
+/-- Diagonal energy bound: for each `h`, the diagonal inner product
+    `∑_j g(j-h) * conj(g(j-h))` equals `∑_n ‖f(n)‖^2`, and the aggregate
+    diagonal sum is bounded by `(H+1) * N`. -/
+private theorem vdc_diagonal_bound {N H : ℕ} {f : ℕ → ℂ}
+    (hf : ∀ n, ‖f n‖ ≤ 1)
+    (g : ℤ → ℂ) (hg_def : g = fun n => if 0 ≤ n ∧ n < (N : ℤ) then f n.toNat else 0)
+    (Jset : Finset ℤ) (hJset_def : Jset = Finset.Ico (0 : ℤ) (↑N + ↑H))
+    (Hset : Finset ℕ) (hHset_def : Hset = Finset.range (H + 1)) :
+    (∑ h₁ ∈ Hset, ∑ j ∈ Jset,
+      g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₁))).re ≤ (↑H + 1) * ↑N := by
+  -- Each diagonal inner sum equals ∑_n ‖f(n)‖^2
   have hdiag_eq : ∀ h ∈ Hset,
       ∑ j ∈ Jset, g (j - ↑h) * starRingEnd ℂ (g (j - ↑h)) =
       ∑ n ∈ Finset.range N, (‖f n‖ ^ 2 : ℂ) := by
     intro h hh
-    have hh_le : h ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh)
-    -- Reindex via n ↦ n + h, use sum_nbij
+    have hh_le : h ≤ H := by rw [hHset_def] at hh; exact Nat.lt_succ_iff.mp (Finset.mem_range.mp hh)
     have heq : ∑ j ∈ Jset, g (j - ↑h) * starRingEnd ℂ (g (j - ↑h)) =
         ∑ n ∈ Finset.range N, g (↑n) * starRingEnd ℂ (g (↑n)) := by
       set img := Finset.image (fun n : ℕ => (↑n + (h : ℤ))) (Finset.range N)
@@ -738,79 +680,202 @@ theorem vanDerCorputBound : VanDerCorputBound := by
     simp only [hg_def, Int.natCast_nonneg, Nat.cast_lt, hn_lt, and_self, ite_true,
                 Int.toNat_natCast]
     rw [Complex.mul_conj']
+  -- Norm-squared sum is bounded by N
   have hf_norm_sq_le : (∑ n ∈ Finset.range N, ‖f n‖ ^ 2 : ℝ) ≤ ↑N := by
     calc (∑ n ∈ Finset.range N, ‖f n‖ ^ 2 : ℝ)
         ≤ ∑ _n ∈ Finset.range N, (1 : ℝ) :=
           Finset.sum_le_sum (fun n _ => by nlinarith [hf n, norm_nonneg (f n)])
       _ = ↑N := by simp
-  -- C4: Off-diagonal cross-sum bound
-  have hcross_bound : ∀ h₁ ∈ Hset, ∀ h₂ ∈ Hset, h₁ ≠ h₂ →
+  -- Assemble
+  have hrewr : ∑ h₁ ∈ Hset, ∑ j ∈ Jset,
+      g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₁)) =
+      ∑ _h₁ ∈ Hset, ∑ n ∈ Finset.range N, (‖f n‖ ^ 2 : ℂ) :=
+    Finset.sum_congr rfl (fun h hh => hdiag_eq h hh)
+  rw [hrewr, Finset.sum_const, hHset_def, Finset.card_range, nsmul_eq_mul]
+  rw [show (↑(H + 1) : ℂ) * ∑ n ∈ Finset.range N, (‖f n‖ ^ 2 : ℂ) =
+      (↑((↑(H + 1) : ℝ) * ∑ n ∈ Finset.range N, ‖f n‖ ^ 2) : ℂ) from by
+    push_cast; simp]
+  rw [Complex.ofReal_re]
+  calc (↑(H + 1) : ℝ) * ∑ n ∈ Finset.range N, ‖f n‖ ^ 2
+      ≤ (↑(H + 1) : ℝ) * ↑N := by gcongr
+    _ = (↑H + 1) * ↑N := by push_cast; ring
+
+/-- Off-diagonal cross-sum bound: for `h₁ ≠ h₂` in `Hset`, the cross-sum
+    `‖∑_j g(j-h₁) * conj(g(j-h₂))‖ ≤ δ * N`. Uses reindexing and
+    conjugation symmetry to reduce to the autocorrelation hypothesis. -/
+private theorem vdc_cross_bound {N H : ℕ} {f : ℕ → ℂ} {δ : ℝ}
+    (hHN : H ≤ N)
+    (hR : ∀ h : ℕ, 1 ≤ h → h ≤ H →
+      ‖∑ n ∈ Finset.range (N - h), f n * starRingEnd ℂ (f (n + h))‖ ≤ δ * (N : ℝ))
+    (g : ℤ → ℂ) (hg_def : g = fun n => if 0 ≤ n ∧ n < (N : ℤ) then f n.toNat else 0)
+    (Jset : Finset ℤ) (hJset_def : Jset = Finset.Ico (0 : ℤ) (↑N + ↑H))
+    (Hset : Finset ℕ) (hHset_def : Hset = Finset.range (H + 1)) :
+    ∀ h₁ ∈ Hset, ∀ h₂ ∈ Hset, h₁ ≠ h₂ →
       ‖∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ ≤ δ * ↑N := by
-    intro h₁ hh₁ h₂ hh₂ hne
-    have hh₁_le : h₁ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₁)
-    have hh₂_le : h₂ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₂)
-    -- Reduce to the case h₁ < h₂ by conjugation symmetry
-    suffices hmain : ∀ a b : ℕ, a ∈ Hset → b ∈ Hset → a < b →
-        ‖∑ j ∈ Jset, g (j - ↑a) * starRingEnd ℂ (g (j - ↑b))‖ ≤ δ * ↑N by
-      rcases lt_or_gt_of_ne hne with hlt | hgt
-      · exact hmain h₁ h₂ hh₁ hh₂ hlt
-      · rw [show (∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))) =
-            starRingEnd ℂ (∑ j ∈ Jset, g (j - ↑h₂) * starRingEnd ℂ (g (j - ↑h₁))) from by
-              rw [map_sum]; apply Finset.sum_congr rfl; intro j _
-              rw [map_mul, starRingEnd_self_apply, mul_comm]]
-        rw [norm_starRingEnd_complex]
-        exact hmain h₂ h₁ hh₂ hh₁ hgt
-    intro h₁ h₂ hh₁ hh₂ hlt
-    have hh₁_le : h₁ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₁)
-    have hh₂_le : h₂ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₂)
-    set ℓ := h₂ - h₁ with hℓ_def
-    have hℓ_pos : 1 ≤ ℓ := by omega
-    have hℓ_le : ℓ ≤ H := by omega
-    -- Reindex the Jset sum to range(N-ℓ) sum via m = j - h₂
-    have hsum_reindex : ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂)) =
-        ∑ m ∈ Finset.range (N - ℓ), f (m + ℓ) * starRingEnd ℂ (f m) := by
-      have hNℓ : ℓ ≤ N := le_trans hℓ_le hHN
-      set img := Finset.image (fun m : ℕ => (↑m + (h₂ : ℤ))) (Finset.range (N - ℓ))
-      have himg_sub : img ⊆ Jset := by
-        intro j hj; simp only [img, Finset.mem_image, Finset.mem_range] at hj
-        obtain ⟨m, hm, rfl⟩ := hj; simp [hJset_def, Finset.mem_Ico]; omega
-      rw [← Finset.sum_subset himg_sub (fun j _ hnj => by
-        by_cases hsupp2 : 0 ≤ j - (h₂ : ℤ) ∧ j - (h₂ : ℤ) < ↑N
-        · -- hsupp2 active but j ∉ img; show g(j-h₁) = 0
-          -- j ∉ img means (j-h₂).toNat ∉ range(N-ℓ), so j-h₂ ≥ N-ℓ, so j-h₁ ≥ N
-          by_cases hsupp1 : 0 ≤ j - (h₁ : ℤ) ∧ j - (h₁ : ℤ) < ↑N
-          · -- Both supports active: j IS in img (contradiction)
-            exfalso; apply hnj; simp only [img, Finset.mem_image, Finset.mem_range]
-            refine ⟨(j - (h₂ : ℤ)).toNat, ?_, ?_⟩
-            · zify [hNℓ]; rw [Int.toNat_of_nonneg hsupp2.1]; omega
-            · rw [Int.toNat_of_nonneg hsupp2.1]; omega
-          · have : g (j - ↑h₁) = 0 := by
-              simp only [hg_def]; exact if_neg hsupp1
-            simp [this]
-        · -- g(j - h₂) = 0, so product is zero
-          push_neg at hsupp2
-          have : g (j - ↑h₂) = 0 := by
-            simp only [hg_def]; split_ifs with hcond
-            · exact absurd hcond.2 (not_lt.mpr (hsupp2 hcond.1))
-            · rfl
-          simp [this])]
-      rw [Finset.sum_image (by intro a _ b _ (hab : (↑a : ℤ) + ↑h₂ = ↑b + ↑h₂); omega)]
-      apply Finset.sum_congr rfl; intro m hm
-      have hm_lt := Finset.mem_range.mp hm
-      have hmN : m + ℓ < N := by omega
-      simp only [show (↑m + (h₂ : ℤ) - ↑h₁) = ↑(m + ℓ) from by push_cast; omega,
-                  show (↑m + (h₂ : ℤ) - ↑h₂) = ↑m from by omega]
-      simp only [hg_def, Int.natCast_nonneg, Nat.cast_lt, hmN, and_self, ite_true,
-                  Int.toNat_natCast, show m < N from by omega]
-    rw [hsum_reindex]
-    rw [show (∑ m ∈ Finset.range (N - ℓ), f (m + ℓ) * starRingEnd ℂ (f m)) =
-        starRingEnd ℂ (∑ m ∈ Finset.range (N - ℓ),
-          f m * starRingEnd ℂ (f (m + ℓ))) from by
-        rw [map_sum]; apply Finset.sum_congr rfl; intro m _
-        rw [map_mul, starRingEnd_self_apply, mul_comm]]
-    rw [norm_starRingEnd_complex]
-    exact hR ℓ hℓ_pos hℓ_le
-  -- C5: Assembly
+  intro h₁ hh₁ h₂ hh₂ hne
+  have hh₁_mem : h₁ ∈ Finset.range (H + 1) := hHset_def ▸ hh₁
+  have hh₂_mem : h₂ ∈ Finset.range (H + 1) := hHset_def ▸ hh₂
+  have hh₁_le : h₁ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₁_mem)
+  have hh₂_le : h₂ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₂_mem)
+  -- Reduce to the case h₁ < h₂ by conjugation symmetry
+  suffices hmain : ∀ a b : ℕ, a ∈ Hset → b ∈ Hset → a < b →
+      ‖∑ j ∈ Jset, g (j - ↑a) * starRingEnd ℂ (g (j - ↑b))‖ ≤ δ * ↑N by
+    rcases lt_or_gt_of_ne hne with hlt | hgt
+    · exact hmain h₁ h₂ hh₁ hh₂ hlt
+    · rw [show (∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))) =
+          starRingEnd ℂ (∑ j ∈ Jset, g (j - ↑h₂) * starRingEnd ℂ (g (j - ↑h₁))) from by
+            rw [map_sum]; apply Finset.sum_congr rfl; intro j _
+            rw [map_mul, starRingEnd_self_apply, mul_comm]]
+      rw [norm_starRingEnd_complex]
+      exact hmain h₂ h₁ hh₂ hh₁ hgt
+  intro h₁ h₂ hh₁ hh₂ hlt
+  have hh₁_mem : h₁ ∈ Finset.range (H + 1) := hHset_def ▸ hh₁
+  have hh₂_mem : h₂ ∈ Finset.range (H + 1) := hHset_def ▸ hh₂
+  have hh₁_le : h₁ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₁_mem)
+  have hh₂_le : h₂ ≤ H := Nat.lt_succ_iff.mp (Finset.mem_range.mp hh₂_mem)
+  set ℓ := h₂ - h₁ with hℓ_def
+  have hℓ_pos : 1 ≤ ℓ := by omega
+  have hℓ_le : ℓ ≤ H := by omega
+  -- Reindex the Jset sum to range(N-ℓ) sum via m = j - h₂
+  have hsum_reindex : ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂)) =
+      ∑ m ∈ Finset.range (N - ℓ), f (m + ℓ) * starRingEnd ℂ (f m) := by
+    have hNℓ : ℓ ≤ N := le_trans hℓ_le hHN
+    set img := Finset.image (fun m : ℕ => (↑m + (h₂ : ℤ))) (Finset.range (N - ℓ))
+    have himg_sub : img ⊆ Jset := by
+      intro j hj; simp only [img, Finset.mem_image, Finset.mem_range] at hj
+      obtain ⟨m, hm, rfl⟩ := hj; simp [hJset_def, Finset.mem_Ico]; omega
+    rw [← Finset.sum_subset himg_sub (fun j _ hnj => by
+      by_cases hsupp2 : 0 ≤ j - (h₂ : ℤ) ∧ j - (h₂ : ℤ) < ↑N
+      · by_cases hsupp1 : 0 ≤ j - (h₁ : ℤ) ∧ j - (h₁ : ℤ) < ↑N
+        · exfalso; apply hnj; simp only [img, Finset.mem_image, Finset.mem_range]
+          refine ⟨(j - (h₂ : ℤ)).toNat, ?_, ?_⟩
+          · zify [hNℓ]; rw [Int.toNat_of_nonneg hsupp2.1]; omega
+          · rw [Int.toNat_of_nonneg hsupp2.1]; omega
+        · have : g (j - ↑h₁) = 0 := by
+            simp only [hg_def]; exact if_neg hsupp1
+          simp [this]
+      · push_neg at hsupp2
+        have : g (j - ↑h₂) = 0 := by
+          simp only [hg_def]; split_ifs with hcond
+          · exact absurd hcond.2 (not_lt.mpr (hsupp2 hcond.1))
+          · rfl
+        simp [this])]
+    rw [Finset.sum_image (by intro a _ b _ (hab : (↑a : ℤ) + ↑h₂ = ↑b + ↑h₂); omega)]
+    apply Finset.sum_congr rfl; intro m hm
+    have hm_lt := Finset.mem_range.mp hm
+    have hmN : m + ℓ < N := by omega
+    simp only [show (↑m + (h₂ : ℤ) - ↑h₁) = ↑(m + ℓ) from by push_cast; omega,
+                show (↑m + (h₂ : ℤ) - ↑h₂) = ↑m from by omega]
+    simp only [hg_def, Int.natCast_nonneg, Nat.cast_lt, hmN, and_self, ite_true,
+                Int.toNat_natCast, show m < N from by omega]
+  rw [hsum_reindex]
+  rw [show (∑ m ∈ Finset.range (N - ℓ), f (m + ℓ) * starRingEnd ℂ (f m)) =
+      starRingEnd ℂ (∑ m ∈ Finset.range (N - ℓ),
+        f m * starRingEnd ℂ (f (m + ℓ))) from by
+      rw [map_sum]; apply Finset.sum_congr rfl; intro m _
+      rw [map_mul, starRingEnd_self_apply, mul_comm]]
+  rw [norm_starRingEnd_complex]
+  exact hR ℓ hℓ_pos hℓ_le
+
+/-- Aggregate off-diagonal bound: the total off-diagonal contribution to the
+    energy is bounded by `H * (H+1) * δ * N`, using triangle inequality and
+    the per-pair cross bound. -/
+private theorem vdc_offdiag_bound {N H : ℕ} {δ : ℝ}
+    (g : ℤ → ℂ)
+    (Jset : Finset ℤ)
+    (Hset : Finset ℕ) (hHset_def : Hset = Finset.range (H + 1))
+    (hcross_bound : ∀ h₁ ∈ Hset, ∀ h₂ ∈ Hset, h₁ ≠ h₂ →
+      ‖∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ ≤ δ * ↑N) :
+    (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
+      ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re ≤
+      ↑H * (↑H + 1) * δ * ↑N := by
+  calc (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
+        ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re
+      ≤ ‖∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
+        ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ :=
+        Complex.re_le_norm _
+    _ ≤ ∑ h₁ ∈ Hset, ‖∑ h₂ ∈ Hset.erase h₁,
+        ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ :=
+        norm_sum_le _ _
+    _ ≤ ∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
+        ‖∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ :=
+        Finset.sum_le_sum (fun h₁ _ => norm_sum_le _ _)
+    _ ≤ ∑ h₁ ∈ Hset, ∑ _h₂ ∈ Hset.erase h₁, (δ * ↑N) := by
+        apply Finset.sum_le_sum; intro h₁ hh₁
+        apply Finset.sum_le_sum; intro h₂ hh₂
+        exact hcross_bound h₁ hh₁ h₂ (Finset.mem_of_mem_erase hh₂)
+          (Finset.ne_of_mem_erase hh₂).symm
+    _ = ∑ h₁ ∈ Hset, ↑(Hset.erase h₁).card * (δ * ↑N) := by
+        simp_rw [Finset.sum_const, nsmul_eq_mul]
+    _ = ∑ _h₁ ∈ Hset, ↑H * (δ * ↑N) := by
+        apply Finset.sum_congr rfl; intro h₁ hh₁; congr 1
+        have : (Hset.erase h₁).card = H := by
+          rw [Finset.card_erase_of_mem hh₁, hHset_def, Finset.card_range, Nat.add_sub_cancel]
+        exact_mod_cast this
+    _ = ↑(H + 1) * (↑H * (δ * ↑N)) := by
+        rw [Finset.sum_const, hHset_def, Finset.card_range, nsmul_eq_mul]
+    _ = ↑H * (↑H + 1) * δ * ↑N := by push_cast; ring
+
+/-- **Van der Corput bound** (proved): the finite Van der Corput inequality
+    for bounded sequences with small autocorrelations.
+
+    Proof uses the Iwaniec-Kowalski averaging trick: define w(j) = ∑_{h≤H} g(j-h)
+    where g is the zero extension of f. Then ∑w = (H+1)S, and Cauchy-Schwarz gives
+    (H+1)^2 * ‖S‖^2 ≤ (N+H) * ∑‖w(j)‖^2. The energy ∑‖w(j)‖^2 expands via double sum
+    into autocorrelations and is bounded by (H+1)N(1+Hδ). -/
+theorem vanDerCorputBound : VanDerCorputBound := by
+  intro N f hf H hH1 hHN δ hδ hR
+  have hN_pos : 0 < N := lt_of_lt_of_le hH1 hHN
+  have hNr : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN_pos
+  have hH1r : (0 : ℝ) < (H : ℝ) + 1 := by positivity
+  set S := ∑ n ∈ Finset.range N, f n with hS_def
+  -- Step 1: Reduce to IK inequality via algebraic helper
+  apply vdc_ik_reduction hH1r hδ
+  -- Step 2: Set up windowed sums
+  set g : ℤ → ℂ := fun n => if 0 ≤ n ∧ n < (N : ℤ) then f n.toNat else 0 with hg_def
+  set w : ℤ → ℂ := fun j => ∑ h ∈ Finset.range (H + 1), g (j - ↑h) with hw_def
+  set Jset := (Finset.Ico (0 : ℤ) (↑N + ↑H)) with hJset_def
+  set Hset := Finset.range (H + 1) with hHset_def
+  -- Step 3: Sum identity via helper
+  have hsum_identity : ∑ j ∈ Jset, w j = (↑(H + 1) : ℂ) * S :=
+    vdc_sum_identity g hg_def w hw_def Jset hJset_def S hS_def
+  -- Step 4: Cauchy-Schwarz
+  have hcard_Jset : Jset.card = N + H := by
+    simp [hJset_def, Int.card_Ico]; omega
+  have hCS : ‖∑ j ∈ Jset, w j‖ ^ 2 ≤ (↑(N + H) : ℝ) * ∑ j ∈ Jset, ‖w j‖ ^ 2 := by
+    calc ‖∑ j ∈ Jset, w j‖ ^ 2
+        ≤ (∑ j ∈ Jset, ‖w j‖) ^ 2 := by gcongr; exact norm_sum_le _ _
+      _ = (∑ j ∈ Jset, 1 * ‖w j‖) ^ 2 := by simp
+      _ ≤ (∑ _j ∈ Jset, (1 : ℝ) ^ 2) * (∑ j ∈ Jset, ‖w j‖ ^ 2) :=
+          Finset.sum_mul_sq_le_sq_mul_sq Jset (fun _ => 1) (fun j => ‖w j‖)
+      _ = (↑(N + H) : ℝ) * ∑ j ∈ Jset, ‖w j‖ ^ 2 := by simp [hcard_Jset]
+  have hLHS : ((H : ℝ) + 1) ^ 2 * ‖S‖ ^ 2 = ‖∑ j ∈ Jset, w j‖ ^ 2 := by
+    rw [hsum_identity, norm_mul, Complex.norm_natCast, sq, sq]; push_cast; ring
+  -- Step 5: Energy bound
+  suffices hEnergy : (∑ j ∈ Jset, ‖w j‖ ^ 2 : ℝ) ≤
+      (↑H + 1) * ↑N * (1 + ↑H * δ) by
+    rw [hLHS]
+    calc ‖∑ j ∈ Jset, w j‖ ^ 2
+        ≤ (↑(N + H) : ℝ) * ∑ j ∈ Jset, ‖w j‖ ^ 2 := hCS
+      _ ≤ (↑(N + H) : ℝ) * ((↑H + 1) * ↑N * (1 + ↑H * δ)) := by gcongr
+      _ ≤ (2 * (↑N : ℝ)) * ((↑H + 1) * ↑N * (1 + ↑H * δ)) := by
+          gcongr; push_cast
+          have : (H : ℝ) ≤ (N : ℝ) := Nat.cast_le.mpr hHN
+          linarith
+      _ = 2 * ↑N * (↑H + 1) * ↑N * (1 + ↑H * δ) := by ring
+  -- Step 6: Expand energy as double sum and split diagonal/off-diagonal
+  have hnorm_sq_w : ∀ j : ℤ, (‖w j‖ ^ 2 : ℝ) =
+      (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re := by
+    intro j
+    rw [complex_norm_sq_eq_re_mul_conj (w j)]
+    simp only [hw_def, map_sum, Finset.mul_sum, Finset.sum_mul]
+    congr 1; rw [Finset.sum_comm]
+  have henergy_expand : (∑ j ∈ Jset, ‖w j‖ ^ 2 : ℝ) =
+      (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset,
+        ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re := by
+    simp_rw [hnorm_sq_w]; rw [Complex.re_sum]; simp_rw [Complex.re_sum]
+    rw [Finset.sum_comm (s := Jset) (t := Hset)]
+    simp_rw [Finset.sum_comm (s := Jset) (t := Hset)]
   rw [henergy_expand]
   have hsplit : ∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset,
       ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂)) =
@@ -821,51 +886,10 @@ theorem vanDerCorputBound : VanDerCorputBound := by
     apply Finset.sum_congr rfl; intro h₁ hh₁
     rw [← Finset.add_sum_erase Hset _ hh₁]
   rw [hsplit, Complex.add_re]
-  -- Diagonal bound
-  have hdiag_bound : (∑ h₁ ∈ Hset, ∑ j ∈ Jset,
-      g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₁))).re ≤ (↑H + 1) * ↑N := by
-    have hrewr : ∑ h₁ ∈ Hset, ∑ j ∈ Jset,
-        g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₁)) =
-        ∑ _h₁ ∈ Hset, ∑ n ∈ Finset.range N, (‖f n‖ ^ 2 : ℂ) :=
-      Finset.sum_congr rfl (fun h hh => hdiag_eq h hh)
-    rw [hrewr, Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-    rw [show (↑(H + 1) : ℂ) * ∑ n ∈ Finset.range N, (‖f n‖ ^ 2 : ℂ) =
-        (↑((↑(H + 1) : ℝ) * ∑ n ∈ Finset.range N, ‖f n‖ ^ 2) : ℂ) from by
-      push_cast; simp]
-    rw [Complex.ofReal_re]
-    calc (↑(H + 1) : ℝ) * ∑ n ∈ Finset.range N, ‖f n‖ ^ 2
-        ≤ (↑(H + 1) : ℝ) * ↑N := by gcongr
-      _ = (↑H + 1) * ↑N := by push_cast; ring
-  -- Off-diagonal bound
-  have hoffdiag_bound : (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
-      ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re ≤
-      ↑H * (↑H + 1) * δ * ↑N := by
-    calc (∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
-          ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))).re
-        ≤ ‖∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
-          ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ :=
-          Complex.re_le_norm _
-      _ ≤ ∑ h₁ ∈ Hset, ‖∑ h₂ ∈ Hset.erase h₁,
-          ∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ :=
-          norm_sum_le _ _
-      _ ≤ ∑ h₁ ∈ Hset, ∑ h₂ ∈ Hset.erase h₁,
-          ‖∑ j ∈ Jset, g (j - ↑h₁) * starRingEnd ℂ (g (j - ↑h₂))‖ :=
-          Finset.sum_le_sum (fun h₁ _ => norm_sum_le _ _)
-      _ ≤ ∑ h₁ ∈ Hset, ∑ _h₂ ∈ Hset.erase h₁, (δ * ↑N) := by
-          apply Finset.sum_le_sum; intro h₁ hh₁
-          apply Finset.sum_le_sum; intro h₂ hh₂
-          exact hcross_bound h₁ hh₁ h₂ (Finset.mem_of_mem_erase hh₂)
-            (Finset.ne_of_mem_erase hh₂).symm
-      _ = ∑ h₁ ∈ Hset, ↑(Hset.erase h₁).card * (δ * ↑N) := by
-          simp_rw [Finset.sum_const, nsmul_eq_mul]
-      _ = ∑ _h₁ ∈ Hset, ↑H * (δ * ↑N) := by
-          apply Finset.sum_congr rfl; intro h₁ hh₁; congr 1
-          have : (Hset.erase h₁).card = H := by
-            rw [Finset.card_erase_of_mem hh₁, Finset.card_range, Nat.add_sub_cancel]
-          exact_mod_cast this
-      _ = ↑(H + 1) * (↑H * (δ * ↑N)) := by
-          rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-      _ = ↑H * (↑H + 1) * δ * ↑N := by push_cast; ring
+  -- Step 7: Apply diagonal and off-diagonal bounds via helpers
+  have hdiag := vdc_diagonal_bound hf g hg_def Jset hJset_def Hset hHset_def
+  have hcross := vdc_cross_bound hHN hR g hg_def Jset hJset_def Hset hHset_def
+  have hoffdiag := vdc_offdiag_bound g Jset Hset hHset_def hcross
   linarith [show (↑H + 1) * ↑N + ↑H * (↑H + 1) * δ * ↑N =
       (↑H + 1) * ↑N * (1 + ↑H * δ) from by ring]
 
@@ -1039,6 +1063,8 @@ has equidistributed character values CONDITIONAL on the walk position w(n).
 
 section ConditionalMultiplierEquidist
 
+open Classical
+
 /-- **Conditional Multiplier Equidistribution**: for any prime q not in the EM
     sequence, any nontrivial character chi, and any walk position a in (ZMod q)^*,
     the multiplier character sum restricted to steps where w(n) = a is o(N).
@@ -1095,7 +1121,6 @@ theorem mult_char_sum_eq_fiber_sum (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime 
   rw [← Finset.sum_fiberwise (Finset.range N) (emWalkUnit q hq hne)
     (fun n => (χ (emMultUnit q hq hne n) : ℂ))]
 
-open Classical in
 /-- **CME implies DecorrelationHypothesis**: the total multiplier character sum
     decomposes as a sum over walk positions. By triangle inequality and the
     conditional bound from CME, the total sum is o(N).
@@ -1174,7 +1199,6 @@ theorem walk_mult_product_fiber_decomp (q : Nat) [Fact (Nat.Prime q)] (hq : IsPr
   intro n hn
   rw [(Finset.mem_filter.mp hn).2]
 
-open Classical in
 /-- **CME implies CCSB**: Conditional Multiplier Equidistribution implies
     the Complex Character Sum Bound, via the telescoping identity and
     fiber decomposition.
@@ -1333,6 +1357,8 @@ CCSB approaches.
 
 section FiberEnergyBounds
 
+open Classical
+
 /-- **Fiber Energy Bound**: for every missing prime q, every nontrivial character χ,
     and ε > 0, eventually ∑_a ‖fiberMultCharSum q χ a N‖² ≤ ε · N².
 
@@ -1356,7 +1382,6 @@ def FiberEnergyBound : Prop :=
   ∃ N₀ : ℕ, ∀ N ≥ N₀,
     ∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N‖ ^ 2 ≤ ε * (N : ℝ) ^ 2
 
-open Classical in
 /-- **CME implies FEB**: Conditional Multiplier Equidistribution implies
     Fiber Energy Bound. This is the L^∞ to L² implication.
 
@@ -1404,7 +1429,6 @@ theorem cme_implies_feb (hcme : ConditionalMultiplierEquidist) : FiberEnergyBoun
     _ = ε * (N : ℝ) ^ 2 := by
         field_simp
 
-open Classical in
 /-- **FEB implies CCSB**: Fiber Energy Bound implies Complex Character Sum Bound,
     via Cauchy-Schwarz instead of the triangle inequality.
 
@@ -1563,6 +1587,8 @@ These complete the bidirectional picture: SVE ⟺ MMCSB ⟺ CCSB (modulo Q₀ th
 
 section HierarchyConnectors
 
+open Classical
+
 /-- **CCSB → MMCSB**: ComplexCharSumBound implies MultiModularCSB with threshold
     Q₀ = 0 (i.e., for ALL primes). This is immediate since CCSB is the universal
     version of MMCSB without a threshold. -/
@@ -1579,7 +1605,6 @@ theorem cme_implies_mmcsb (hcme : ConditionalMultiplierEquidist) : MultiModularC
 theorem feb_implies_mmcsb (hfeb : FiberEnergyBound) : MultiModularCSB :=
   ccsb_implies_mmcsb (feb_implies_ccsb hfeb)
 
-open Classical in
 /-- **CCSB → SVE**: ComplexCharSumBound implies SubquadraticVisitEnergy.
 
     Proof: CCSB gives ‖S_χ‖ ≤ ε'·N for each nontrivial χ. The excess energy
@@ -1762,12 +1787,12 @@ This reformulates SVE as a single-step visit-count condition. -/
 section EnergyIncrementDynamics
 
 open Finset DirichletCharacter
+open Classical
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
 private instance neZeroP75 : NeZero p := ⟨hp.out.ne_zero⟩
 
-open Classical in
 /-- **Nontrivial character orthogonality for walk sums**:
     `sum_{chi != 1} conj(chi(a)) * S_chi(N) = (p-1) * V_N(a) - N`.
 
@@ -1813,7 +1838,6 @@ theorem nontrivial_char_walk_sum {N : ℕ} (w : Fin N → (ZMod p)ˣ)
   -- From hsplit': nontrivial = (p-1)*V - N
   exact eq_sub_of_add_eq' hsplit'.symm
 
-open Classical in
 /-- **Energy increment identity (character-sum form)**:
     The total "energy change" from adding one step at position `a` is
     `2(p-1) V_N(a) - 2N + (p-2)`.
@@ -1956,6 +1980,8 @@ and PED constrains `μ` away from 1 via the escape-density root-of-unity argumen
 
 section VanishingConditionalBias
 
+open Classical
+
 /-- **VanishingConditionalBias**: for any prime q not in the EM sequence and any
     nontrivial character χ, the fiber character sums F(a) are approximately
     proportional to the visit counts V(a) with a common ratio μ.
@@ -1973,7 +1999,6 @@ def VanishingConditionalBias : Prop :=
     ‖fiberMultCharSum q hq hne χ a N -
       μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ ≤ ε * N
 
-open Classical in
 /-- **CME implies VCB**: Conditional Multiplier Equidistribution implies
     VanishingConditionalBias, by taking μ = 0 everywhere.
 
@@ -2016,19 +2041,216 @@ theorem unit_norm_re_le_of_dist {z : ℂ} (hz : ‖z‖ = 1) {η₀ : ℝ} (hη�
   have hsq : η₀ ^ 2 ≤ ‖z - 1‖ ^ 2 := sq_le_sq' (by linarith) hdist
   linarith
 
+/-- **Step 9 helper**: Given the VCB per-fiber bound, the product sum P_N
+    satisfies `‖P_N - μ * S_N‖ ≤ C * η * N` where C = #(ZMod q)ˣ.
+
+    Proof: expand both P_N and S_N via fiber decomposition, factor out χ(a),
+    use `‖χ(a)‖ = 1` to reduce to the per-fiber VCB bound, then sum over all fibers. -/
+private theorem vcb_fiber_error_bound {q : ℕ} [Fact (Nat.Prime q)]
+    {hq : IsPrime q} {hne : ∀ k, seq k ≠ q} {χ : (ZMod q)ˣ →* ℂˣ} {N : ℕ}
+    {μ : ℂ} {η : ℝ}
+    (hμ_bound : ∀ a : (ZMod q)ˣ,
+      ‖fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ ≤ η * N) :
+    ‖∑ n ∈ Finset.range N,
+        ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ)) -
+      μ * ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤
+    Fintype.card (ZMod q)ˣ * η * N := by
+  set C := Fintype.card (ZMod q)ˣ
+  rw [walk_mult_product_fiber_decomp q hq hne χ N]
+  have hSN_fiber : ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
+      ∑ a : (ZMod q)ˣ, (χ a : ℂ) *
+      ∑ n ∈ (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a), (1 : ℂ) := by
+    rw [← Finset.sum_fiberwise (Finset.range N) (emWalkUnit q hq hne)
+      (fun n => (χ (emWalkUnit q hq hne n) : ℂ))]
+    congr 1; ext a; rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intro n hn
+    rw [(Finset.mem_filter.mp hn).2, mul_one]
+  rw [hSN_fiber, Finset.mul_sum]
+  simp_rw [Finset.sum_const, nsmul_eq_mul, mul_one]
+  rw [show ∑ a : (ZMod q)ˣ, (χ a : ℂ) *
+        ∑ n ∈ (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a),
+          (χ (emMultUnit q hq hne n) : ℂ) -
+      ∑ a : (ZMod q)ˣ, μ * ((χ a : ℂ) *
+        ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card) =
+      ∑ a : (ZMod q)ˣ, (χ a : ℂ) * (fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)
+    from by simp only [fiberMultCharSum]; rw [← Finset.sum_sub_distrib]; congr 1; ext a; ring]
+  calc ‖∑ a : (ZMod q)ˣ, (χ a : ℂ) * (fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)‖
+      ≤ ∑ a : (ZMod q)ˣ, ‖(χ a : ℂ) * (fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)‖ :=
+          norm_sum_le _ _
+    _ ≤ ∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ := by
+          apply Finset.sum_le_sum; intro a _
+          rw [norm_mul]
+          calc ‖(χ a : ℂ)‖ * _ ≤ 1 * _ := by
+                apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+                exact le_of_eq (walkTelescope_char_norm_one χ a)
+            _ = _ := one_mul _
+    _ ≤ ∑ _a : (ZMod q)ˣ, η * ↑N := by
+          apply Finset.sum_le_sum; intro a _; exact hμ_bound a
+    _ = C * η * N := by
+          rw [Finset.sum_const, nsmul_eq_mul, Finset.card_univ]; ring
+
+/-- **Step 10 helper**: The aggregate multiplier character sum M_N satisfies
+    `‖M_N - μ * N‖ ≤ C * η * N`.
+
+    Proof: decompose M_N = ∑_a F(a) via `mult_char_sum_eq_fiber_sum`, decompose
+    N = ∑_a V(a), then each summand `F(a) - μ·V(a)` is bounded by VCB. -/
+private theorem vcb_aggregate_error_bound {q : ℕ} [Fact (Nat.Prime q)]
+    {hq : IsPrime q} {hne : ∀ k, seq k ≠ q} {χ : (ZMod q)ˣ →* ℂˣ} {N : ℕ}
+    {μ : ℂ} {η : ℝ}
+    (hμ_bound : ∀ a : (ZMod q)ˣ,
+      ‖fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ ≤ η * N) :
+    ‖∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) - μ * ↑N‖ ≤
+    Fintype.card (ZMod q)ˣ * η * N := by
+  set C := Fintype.card (ZMod q)ˣ
+  rw [mult_char_sum_eq_fiber_sum q hq hne χ N]
+  have hV_sum_nat : ∑ a : (ZMod q)ˣ,
+      ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card = N := by
+    have := Finset.card_eq_sum_card_fiberwise (s := Finset.range N) (t := Finset.univ)
+      (f := emWalkUnit q hq hne) (fun _ _ => Finset.mem_univ _)
+    simp only [Finset.card_range] at this; exact this.symm
+  have hV_sum_C : (N : ℂ) = ∑ a : (ZMod q)ˣ,
+      (((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card : ℂ) := by
+    have : (N : ℂ) = ↑(∑ a : (ZMod q)ˣ,
+        ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card : ℕ) := by
+      push_cast; exact_mod_cast hV_sum_nat.symm
+    rw [this]; push_cast; rfl
+  conv_lhs => rw [hV_sum_C]
+  rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+  calc ‖∑ a : (ZMod q)ˣ, (fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)‖
+      ≤ ∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N -
+        μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ :=
+          norm_sum_le _ _
+    _ ≤ ∑ _a : (ZMod q)ˣ, η * ↑N := by
+          apply Finset.sum_le_sum; intro a _; exact hμ_bound a
+    _ = C * η * N := by
+          rw [Finset.sum_const, nsmul_eq_mul, Finset.card_univ]; ring
+
+/-- **Step 11 helper**: PED real-part lower bound: `c₀ * N ≤ ‖M_N - N‖`.
+
+    Each term χ(m(n)) has |χ(m(n))| = 1, so Re(χ(m(n)) - 1) ≤ 0.
+    For escape terms (χ(m(n)) ≠ 1), `escape_min_dist_pos` gives
+    `‖χ(m(n)) - 1‖ ≥ η₀`, hence Re(χ(m(n)) - 1) ≤ -η₀²/2.
+    PED provides ≥ δN escape terms, yielding -Re(M_N - N) ≥ δ·η₀²/2·N = c₀·N.
+    Then ‖M_N - N‖ ≥ |Re(M_N - N)| ≥ c₀·N. -/
+private theorem ped_real_part_lower_bound {q : ℕ} [Fact (Nat.Prime q)]
+    {hq : IsPrime q} {hne : ∀ k, seq k ≠ q}
+    {χ : (ZMod q)ˣ →* ℂˣ} (hχ : χ ≠ 1) {N : ℕ}
+    {δ : ℝ} (hδ_pos : 0 < δ)
+    {η₀ : ℝ} (hη₀_pos : 0 < η₀)
+    (hη₀_bound : ∀ u : (ZMod q)ˣ, (χ u : ℂ) ≠ 1 → η₀ ≤ ‖(χ u : ℂ) - 1‖)
+    (hped_N : δ * ↑N ≤
+      ↑((Finset.filter (fun k => χ (emMultUnit q hq hne k) ≠ 1)
+        (Finset.range N)).card)) :
+    δ * η₀ ^ 2 / 2 * ↑N ≤
+    ‖∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) - ↑N‖ := by
+  have hMN_sub : ∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) - ↑N =
+      ∑ n ∈ Finset.range N, ((χ (emMultUnit q hq hne n) : ℂ) - 1) := by
+    rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one]
+  rw [hMN_sub]
+  set S := ∑ n ∈ Finset.range N, ((χ (emMultUnit q hq hne n) : ℂ) - 1) with hS_def
+  have hterm_re_le : ∀ n ∈ Finset.range N,
+      ((χ (emMultUnit q hq hne n) : ℂ) - 1).re ≤ 0 := by
+    intro n _
+    simp only [Complex.sub_re, Complex.one_re]
+    have h1 := Complex.abs_re_le_norm (χ (emMultUnit q hq hne n) : ℂ)
+    rw [walkTelescope_char_norm_one χ] at h1
+    linarith [abs_le.mp h1]
+  have hesc_term : ∀ n ∈ (Finset.range N).filter
+      (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
+      ((χ (emMultUnit q hq hne n) : ℂ) - 1).re ≤ -(η₀ ^ 2 / 2) := by
+    intro n hn
+    have hne_val := (Finset.mem_filter.mp hn).2
+    simp only [Complex.sub_re, Complex.one_re]
+    have hn1 : ‖(χ (emMultUnit q hq hne n) : ℂ)‖ = 1 :=
+      walkTelescope_char_norm_one χ _
+    have hdist : η₀ ≤ ‖(χ (emMultUnit q hq hne n) : ℂ) - 1‖ :=
+      hη₀_bound _ hne_val
+    have hre := unit_norm_re_le_of_dist hn1 (le_of_lt hη₀_pos) hdist
+    linarith
+  have hfilter_eq : (Finset.range N).filter
+      (fun k => χ (emMultUnit q hq hne k) ≠ 1) =
+      (Finset.range N).filter
+      (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1) := by
+    congr 1; ext n; simp only [ne_eq, Units.val_eq_one]
+  have hesc_count : δ * ↑N ≤
+      ((Finset.range N).filter
+        (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1)).card := by
+    rw [← hfilter_eq]; exact_mod_cast hped_N
+  have hS_re_lower : δ * η₀ ^ 2 / 2 * ↑N ≤ -S.re := by
+    rw [hS_def, Complex.re_sum, ← Finset.sum_neg_distrib]
+    have hsplit := (Finset.sum_filter_add_sum_filter_not (Finset.range N)
+      (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1)
+      (fun n => -((χ (emMultUnit q hq hne n) : ℂ) - 1).re)).symm
+    rw [hsplit]
+    have hker_sum : 0 ≤ ∑ n ∈ (Finset.range N).filter
+        (fun k => ¬((χ (emMultUnit q hq hne k) : ℂ) ≠ 1)),
+        -((χ (emMultUnit q hq hne n) : ℂ) - 1).re := by
+      apply Finset.sum_nonneg; intro n hn
+      simp only [ne_eq, Decidable.not_not, Finset.mem_filter] at hn
+      rw [hn.2]; simp
+    have hesc_sum :
+        δ * η₀ ^ 2 / 2 * ↑N ≤ ∑ n ∈ (Finset.range N).filter
+          (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
+          -((χ (emMultUnit q hq hne n) : ℂ) - 1).re := by
+      calc δ * η₀ ^ 2 / 2 * ↑N
+          ≤ ((Finset.range N).filter
+              (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1)).card * (η₀ ^ 2 / 2) := by
+            nlinarith [hesc_count]
+        _ ≤ ∑ _n ∈ (Finset.range N).filter
+              (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
+              (η₀ ^ 2 / 2 : ℝ) := by
+            rw [Finset.sum_const, nsmul_eq_mul]
+        _ ≤ ∑ n ∈ (Finset.range N).filter
+              (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
+              -((χ (emMultUnit q hq hne n) : ℂ) - 1).re :=
+            Finset.sum_le_sum (fun n hn => by linarith [hesc_term n hn])
+    linarith
+  calc δ * η₀ ^ 2 / 2 * ↑N ≤ -S.re := hS_re_lower
+    _ ≤ |S.re| := le_abs_self (-S.re) |>.trans (by rw [abs_neg])
+    _ ≤ ‖S‖ := Complex.abs_re_le_norm S
+
+/-- **Step 12 helper**: If `‖M_N - N‖ ≥ c₀·N` and `‖M_N - μ·N‖ ≤ C·η·N`
+    with `C·η ≤ c₀/4`, then `c₀/2 ≤ ‖1 - μ‖`.
+
+    Proof by contradiction: if `‖1-μ‖ < c₀/2`, then
+    `‖M_N - N‖ ≤ ‖M_N - μN‖ + ‖μN - N‖ < CηN + c₀/2·N ≤ 3c₀/4·N < c₀·N`. -/
+private theorem vcb_mu_away_from_one {μ : ℂ} {c₀ C η : ℝ} {N : ℕ}
+    (hc₀_pos : 0 < c₀) (hN_pos : (0 : ℝ) < N)
+    {M_N : ℂ}
+    (hMN_N_lower : c₀ * ↑N ≤ ‖M_N - ↑N‖)
+    (hMN_muN : ‖M_N - μ * ↑N‖ ≤ C * η * N)
+    (hCη_le : C * η ≤ c₀ / 4) : c₀ / 2 ≤ ‖1 - μ‖ := by
+  by_contra h_not
+  push_neg at h_not
+  have hmuN_N : ‖μ * ↑N - ↑N‖ < c₀ / 2 * N := by
+    rw [show μ * (↑N : ℂ) - ↑N = (μ - 1) * ↑N from by ring, norm_mul]
+    simp only [Complex.norm_natCast]
+    calc ‖μ - 1‖ * ↑N = ‖1 - μ‖ * ↑N := by rw [norm_sub_rev]
+      _ < c₀ / 2 * ↑N := mul_lt_mul_of_pos_right h_not hN_pos
+  have h1 : ‖M_N - ↑N‖ ≤ C * η * N + c₀ / 2 * N := by
+    calc ‖M_N - (↑N : ℂ)‖ = ‖(M_N - μ * ↑N) + (μ * ↑N - ↑N)‖ := by ring_nf
+      _ ≤ ‖M_N - μ * ↑N‖ + ‖μ * ↑N - ↑N‖ := norm_add_le _ _
+      _ ≤ C * η * N + c₀ / 2 * N := by linarith [hMN_muN, hmuN_N.le]
+  nlinarith [hMN_N_lower, hN_pos]
+
 set_option maxHeartbeats 400000 in
-open Classical in
 /-- **VCB + PED implies CCSB**: VanishingConditionalBias combined with
     PositiveEscapeDensity implies ComplexCharSumBound.
 
-    **Proof**: By the telescoping identity, `P_N - S_N = O(1)` where
-    `P_N = ∑ χ(w(n))·χ(m(n))` and `S_N = ∑ χ(w(n))`.  VCB with ratio μ gives
-    `P_N ≈ μ · S_N + O(η·N·C)`, hence `(μ - 1)·S_N = O(1) + O(η·N·C)`.
-
-    PED + `escape_min_dist_pos` give a real-part lower bound
-    `Re(∑ χ(m(n))) ≤ N - δ·η₀²·N/2`, hence `‖M_N - N‖ ≥ c₀·N` with
-    `c₀ = δ·η₀²/2`.  The VCB aggregate identity gives `|μ - 1| ≥ c₀/2`
-    when η is chosen small enough.  Dividing yields `‖S_N‖ ≤ ε·N`.
+    **Proof outline**: Steps 1-5 extract constants and choose parameters.
+    Step 6 establishes the telescoping identity `S_N = P_N - boundary`.
+    Steps 9-10 (`vcb_fiber_error_bound`, `vcb_aggregate_error_bound`) give
+    `‖P_N - μ·S_N‖ ≤ CηN` and `‖M_N - μN‖ ≤ CηN`.
+    Step 11 (`ped_real_part_lower_bound`) gives `c₀·N ≤ ‖M_N - N‖`.
+    Step 12 (`vcb_mu_away_from_one`) gives `c₀/2 ≤ ‖1-μ‖`.
+    Step 13 divides the telescoping bound by `‖1-μ‖` to get `‖S_N‖ ≤ εN`.
 
     Position in hierarchy: VCB + PED → CCSB → MC. -/
 theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
@@ -2038,7 +2260,6 @@ theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
   -- Step 1: Extract constants from PED and escape_min_dist_pos
   obtain ⟨δ, hδ_pos, N₁, hN₁⟩ := hped q hq hne χ hχ
   obtain ⟨η₀, hη₀_pos, hη₀_bound⟩ := escape_min_dist_pos χ hχ
-  -- c₀ = δ · η₀² / 2 — the real-part defect constant
   set c₀ := δ * η₀ ^ 2 / 2 with hc₀_def
   have hc₀_pos : 0 < c₀ := by positivity
   -- Step 2: Set up group cardinality
@@ -2047,26 +2268,22 @@ theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
   -- Step 3: Choose η for VCB — small enough for both μ-recovery and final bound
   set η := min (c₀ / (4 * C)) (ε * c₀ / (8 * C)) with hη_def
   have hη_pos : 0 < η := by
-    simp only [hη_def]
-    exact lt_min (by positivity) (by positivity)
+    simp only [hη_def]; exact lt_min (by positivity) (by positivity)
   -- Step 4: Get N₀ and μ from VCB
   obtain ⟨N₂, hN₂⟩ := hvcb q hq hne χ hχ η hη_pos
-  -- Step 5: Also need N large enough to absorb boundary term
+  -- Step 5: N large enough to absorb boundary term
   set N₃ := Nat.ceil (8 / (c₀ * ε))
   set N₀ := max (max N₁ N₂) N₃
   refine ⟨N₀, fun N hN => ?_⟩
-  -- Extract the VCB ratio μ for this N
   have hN₂' : N₂ ≤ N := le_trans (le_max_right N₁ N₂ |>.trans (le_max_left _ N₃)) hN
   obtain ⟨μ, hμ_bound⟩ := hN₂ N hN₂'
-  -- Extract the PED bound for this N
   have hN₁' : N₁ ≤ N := le_trans (le_max_left N₁ N₂ |>.trans (le_max_left _ N₃)) hN
   have hped_N := hN₁ N hN₁'
-  -- N ≥ 1 (and hence N > 0 as real)
   have hN_pos : (0 : ℝ) < N := by
     have : N₃ ≤ N := le_max_right _ N₃ |>.trans hN
     have : 0 < Nat.ceil (8 / (c₀ * ε)) := Nat.ceil_pos.mpr (by positivity)
     exact Nat.cast_pos.mpr (by omega)
-  -- Step 6: The telescoping identity — P_N - S_N = boundary
+  -- Step 6: Telescoping identity — S_N = P_N - boundary
   have htelescope := walk_telescope_identity q hq hne χ N
   set S_N := ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) with hSN_def
   set P_N := ∑ n ∈ Finset.range N,
@@ -2077,210 +2294,42 @@ theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
     rw [hSN_def, hPN_def, hbdry_def]
     have hsub : P_N - S_N = boundary := by
       rw [hPN_def, hSN_def, hbdry_def, ← Finset.sum_sub_distrib]
-      convert htelescope using 1
-      congr 1; ext n; ring
+      convert htelescope using 1; congr 1; ext n; ring
     linear_combination -hsub
-  -- Step 7: Boundary norm bound ≤ 2
+  -- Step 7: Boundary norm ≤ 2
   have hboundary_le : ‖boundary‖ ≤ 2 := by
     rw [hbdry_def]
     calc ‖(χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)‖
         ≤ ‖(χ (emWalkUnit q hq hne N) : ℂ)‖ + ‖(χ (emWalkUnit q hq hne 0) : ℂ)‖ :=
           norm_sub_le _ _
-      _ = 1 + 1 := by
-          rw [walkTelescope_char_norm_one χ _, walkTelescope_char_norm_one χ _]
+      _ = 1 + 1 := by rw [walkTelescope_char_norm_one χ _, walkTelescope_char_norm_one χ _]
       _ = 2 := by ring
-  -- Step 8: Fiber decomposition: P_N = ∑_a χ(a) * F(a)
-  have hfiber := walk_mult_product_fiber_decomp q hq hne χ N
-  -- Step 9: VCB error bound: ‖P_N - μ * S_N‖ ≤ C * η * N
+  -- Step 9: VCB fiber error bound (via helper)
   have hPN_muSN : ‖P_N - μ * S_N‖ ≤ C * η * N := by
-    rw [hPN_def, hfiber, hSN_def]
-    -- Rewrite S_N via fiber decomposition
-    have hSN_fiber : ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
-        ∑ a : (ZMod q)ˣ, (χ a : ℂ) *
-        ∑ n ∈ (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a), (1 : ℂ) := by
-      rw [← Finset.sum_fiberwise (Finset.range N) (emWalkUnit q hq hne)
-        (fun n => (χ (emWalkUnit q hq hne n) : ℂ))]
-      congr 1; ext a; rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl; intro n hn
-      rw [(Finset.mem_filter.mp hn).2, mul_one]
-    rw [hSN_fiber, Finset.mul_sum]
-    -- Each inner sum = card of fiber
-    simp_rw [Finset.sum_const, nsmul_eq_mul, mul_one]
-    -- Now: ∑_a χ(a)*F(a) - ∑_a μ*(χ(a)*V(a)) = ∑_a χ(a)*(F(a) - μ*V(a))
-    rw [show ∑ a : (ZMod q)ˣ, (χ a : ℂ) *
-          ∑ n ∈ (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a),
-            (χ (emMultUnit q hq hne n) : ℂ) -
-        ∑ a : (ZMod q)ˣ, μ * ((χ a : ℂ) *
-          ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card) =
-        ∑ a : (ZMod q)ˣ, (χ a : ℂ) * (fiberMultCharSum q hq hne χ a N -
-          μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)
-      from by simp only [fiberMultCharSum]; rw [← Finset.sum_sub_distrib]; congr 1; ext a; ring]
-    calc ‖∑ a : (ZMod q)ˣ, (χ a : ℂ) * (fiberMultCharSum q hq hne χ a N -
-          μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)‖
-        ≤ ∑ a : (ZMod q)ˣ, ‖(χ a : ℂ) * (fiberMultCharSum q hq hne χ a N -
-          μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)‖ :=
-            norm_sum_le _ _
-      _ ≤ ∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N -
-          μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ := by
-            apply Finset.sum_le_sum; intro a _
-            rw [norm_mul]
-            calc ‖(χ a : ℂ)‖ * _ ≤ 1 * _ := by
-                  apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-                  exact le_of_eq (walkTelescope_char_norm_one χ a)
-              _ = _ := one_mul _
-      _ ≤ ∑ _a : (ZMod q)ˣ, η * ↑N := by
-            apply Finset.sum_le_sum; intro a _; exact hμ_bound a
-      _ = C * η * N := by
-            rw [Finset.sum_const, nsmul_eq_mul, hC_def, Finset.card_univ]; ring
-  -- Step 10: Aggregate VCB bound: ‖M_N - μ*N‖ ≤ C*η*N
+    rw [hPN_def, hSN_def]; exact vcb_fiber_error_bound hμ_bound
+  -- Step 10: Aggregate VCB bound (via helper)
   set M_N := ∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) with hMN_def
   have hMN_muN : ‖M_N - μ * ↑N‖ ≤ C * η * N := by
-    rw [hMN_def, mult_char_sum_eq_fiber_sum q hq hne χ N]
-    -- ∑_a V(a) = N
-    have hV_sum_nat : ∑ a : (ZMod q)ˣ,
-        ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card = N := by
-      have := Finset.card_eq_sum_card_fiberwise (s := Finset.range N) (t := Finset.univ)
-        (f := emWalkUnit q hq hne) (fun _ _ => Finset.mem_univ _)
-      simp only [Finset.card_range] at this; exact this.symm
-    -- Rewrite ↑N as ∑_a ↑V(a) (as complex)
-    have hV_sum_C : (N : ℂ) = ∑ a : (ZMod q)ˣ,
-        (((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card : ℂ) := by
-      have : (N : ℂ) = ↑(∑ a : (ZMod q)ˣ,
-          ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card : ℕ) := by
-        push_cast; exact_mod_cast hV_sum_nat.symm
-      rw [this]; push_cast; rfl
-    conv_lhs => rw [hV_sum_C]
-    rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
-    calc ‖∑ a : (ZMod q)ˣ, (fiberMultCharSum q hq hne χ a N -
-          μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card)‖
-        ≤ ∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N -
-          μ * ↑((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ :=
-            norm_sum_le _ _
-      _ ≤ ∑ _a : (ZMod q)ˣ, η * ↑N := by
-            apply Finset.sum_le_sum; intro a _; exact hμ_bound a
-      _ = C * η * N := by
-            rw [Finset.sum_const, nsmul_eq_mul, hC_def, Finset.card_univ]; ring
-  -- Step 11: PED real-part bound: ‖M_N - N‖ ≥ c₀ * N
-  -- M_N - N = ∑(χ(m(n)) - 1); kernel terms give 0, escape terms give Re ≤ -η₀²/2
+    rw [hMN_def]; exact vcb_aggregate_error_bound hμ_bound
+  -- Step 11: PED real-part lower bound (via helper)
   have hMN_N_lower : c₀ * ↑N ≤ ‖M_N - ↑N‖ := by
-    rw [hMN_def]
-    -- M_N - N = ∑ (χ(m(n)) - 1)
-    have hMN_sub : ∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) - ↑N =
-        ∑ n ∈ Finset.range N, ((χ (emMultUnit q hq hne n) : ℂ) - 1) := by
-      rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one]
-    rw [hMN_sub]
-    -- Real part approach: -Re(∑(χ(m(n))-1)) ≥ E*η₀²/2 ≥ c₀*N
-    -- Then ‖sum‖ ≥ |Re(sum)| ≥ c₀*N
-    set S := ∑ n ∈ Finset.range N, ((χ (emMultUnit q hq hne n) : ℂ) - 1) with hS_def
-    -- Each term has Re ≤ 0 (since Re(χ(m(n))) ≤ 1 and |χ(m(n))| = 1)
-    have hterm_re_le : ∀ n ∈ Finset.range N,
-        ((χ (emMultUnit q hq hne n) : ℂ) - 1).re ≤ 0 := by
-      intro n _
-      simp only [Complex.sub_re, Complex.one_re]
-      have h1 := Complex.abs_re_le_norm (χ (emMultUnit q hq hne n) : ℂ)
-      rw [walkTelescope_char_norm_one χ] at h1
-      linarith [abs_le.mp h1]
-    -- -Re(S) ≥ 0
-    have hS_re_nonpos : S.re ≤ 0 := by
-      rw [hS_def, Complex.re_sum]
-      exact Finset.sum_nonpos hterm_re_le
-    -- Escape terms have stronger bound: Re(χ(m(n)) - 1) ≤ -η₀²/2
-    have hesc_term : ∀ n ∈ (Finset.range N).filter
-        (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
-        ((χ (emMultUnit q hq hne n) : ℂ) - 1).re ≤ -(η₀ ^ 2 / 2) := by
-      intro n hn
-      have hne_val := (Finset.mem_filter.mp hn).2
-      simp only [Complex.sub_re, Complex.one_re]
-      have hn1 : ‖(χ (emMultUnit q hq hne n) : ℂ)‖ = 1 :=
-        walkTelescope_char_norm_one χ _
-      have hdist : η₀ ≤ ‖(χ (emMultUnit q hq hne n) : ℂ) - 1‖ :=
-        hη₀_bound _ hne_val
-      have hre := unit_norm_re_le_of_dist hn1 (le_of_lt hη₀_pos) hdist
-      linarith
-    -- PED gives escape filter eq (bridge ℂˣ ≠ 1 ↔ (: ℂ) ≠ 1)
-    have hfilter_eq : (Finset.range N).filter
-        (fun k => χ (emMultUnit q hq hne k) ≠ 1) =
-        (Finset.range N).filter
-        (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1) := by
-      congr 1; ext n; simp only [ne_eq, Units.val_eq_one]
-    -- PED gives ≥ δ*N escape terms
-    have hesc_count : δ * ↑N ≤
-        ((Finset.range N).filter
-          (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1)).card := by
-      rw [← hfilter_eq]; exact_mod_cast hped_N
-    -- -Re(S) ≥ c₀*N: each escape term contributes ≥ η₀²/2 to -Re(S)
-    have hS_re_lower : c₀ * ↑N ≤ -S.re := by
-      -- -S.re = -∑ Re(χ(m(n))-1) = ∑ -Re(χ(m(n))-1)
-      rw [hS_def, Complex.re_sum, ← Finset.sum_neg_distrib]
-      -- Each -Re(χ(m(n))-1) ≥ 0 (since Re(χ(m(n))) ≤ 1)
-      -- For escape terms: -Re(χ(m(n))-1) ≥ η₀²/2
-      -- Split sum by escape/kernel
-      have hsplit := (Finset.sum_filter_add_sum_filter_not (Finset.range N)
-        (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1)
-        (fun n => -((χ (emMultUnit q hq hne n) : ℂ) - 1).re)).symm
-      rw [hsplit]
-      -- Kernel terms: χ(m(n)) = 1, so -Re(χ(m(n))-1) = 0
-      have hker_sum : 0 ≤ ∑ n ∈ (Finset.range N).filter
-          (fun k => ¬((χ (emMultUnit q hq hne k) : ℂ) ≠ 1)),
-          -((χ (emMultUnit q hq hne n) : ℂ) - 1).re := by
-        apply Finset.sum_nonneg; intro n hn
-        simp only [ne_eq, Decidable.not_not, Finset.mem_filter] at hn
-        rw [hn.2]; simp
-      -- Escape terms: -Re(χ(m(n))-1) ≥ η₀²/2
-      have hesc_sum :
-          c₀ * ↑N ≤ ∑ n ∈ (Finset.range N).filter
-            (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
-            -((χ (emMultUnit q hq hne n) : ℂ) - 1).re := by
-        calc c₀ * ↑N = δ * η₀ ^ 2 / 2 * ↑N := by rw [hc₀_def]
-          _ ≤ ((Finset.range N).filter
-                (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1)).card * (η₀ ^ 2 / 2) := by
-              nlinarith [hesc_count]
-          _ ≤ ∑ _n ∈ (Finset.range N).filter
-                (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
-                (η₀ ^ 2 / 2 : ℝ) := by
-              rw [Finset.sum_const, nsmul_eq_mul]
-          _ ≤ ∑ n ∈ (Finset.range N).filter
-                (fun k => (χ (emMultUnit q hq hne k) : ℂ) ≠ 1),
-                -((χ (emMultUnit q hq hne n) : ℂ) - 1).re :=
-              Finset.sum_le_sum (fun n hn => by linarith [hesc_term n hn])
-      linarith
-    -- ‖S‖ ≥ |Re(S)| ≥ -Re(S) ≥ c₀*N
-    calc c₀ * ↑N ≤ -S.re := hS_re_lower
-      _ ≤ |S.re| := le_abs_self (-S.re) |>.trans (by rw [abs_neg])
-      _ ≤ ‖S‖ := Complex.abs_re_le_norm S
-  -- Step 12: Triangle inequality: |1 - μ| ≥ c₀/2
+    rw [hMN_def, hc₀_def]; exact ped_real_part_lower_bound hχ hδ_pos hη₀_pos hη₀_bound hped_N
+  -- Step 12: μ away from 1 (via helper)
   have hη_le1 : η ≤ c₀ / (4 * C) := min_le_left _ _
   have hη_le2 : η ≤ ε * c₀ / (8 * C) := min_le_right _ _
-  have hmu_away : c₀ / 2 ≤ ‖1 - μ‖ := by
-    by_contra h_not
-    push_neg at h_not
-    -- ‖μN - N‖ = |1-μ|·N < c₀/2 · N
-    have hmuN_N : ‖μ * ↑N - ↑N‖ < c₀ / 2 * N := by
-      rw [show μ * (↑N : ℂ) - ↑N = (μ - 1) * ↑N from by ring, norm_mul]
-      simp only [Complex.norm_natCast]
-      calc ‖μ - 1‖ * ↑N = ‖1 - μ‖ * ↑N := by rw [norm_sub_rev]
-        _ < c₀ / 2 * ↑N := mul_lt_mul_of_pos_right h_not hN_pos
-    -- Triangle: ‖M_N - N‖ ≤ ‖M_N - μN‖ + ‖μN - N‖ < CηN + c₀/2·N
-    have h1 : ‖M_N - ↑N‖ ≤ C * η * N + c₀ / 2 * N := by
-      calc ‖M_N - (↑N : ℂ)‖ = ‖(M_N - μ * ↑N) + (μ * ↑N - ↑N)‖ := by ring_nf
-        _ ≤ ‖M_N - μ * ↑N‖ + ‖μ * ↑N - ↑N‖ := norm_add_le _ _
-        _ ≤ C * η * N + c₀ / 2 * N := by linarith [hMN_muN, hmuN_N.le]
-    have h2 : C * η ≤ c₀ / 4 := by
-      calc C * η ≤ C * (c₀ / (4 * C)) :=
-            mul_le_mul_of_nonneg_left hη_le1 (le_of_lt hC_pos)
-        _ = c₀ / 4 := by field_simp
-    nlinarith [hMN_N_lower, hN_pos]
-  -- Step 13: Final bound
-  -- From telescope + VCB: (μ-1)*S_N = boundary - error
+  have hCη_le : C * η ≤ c₀ / 4 := by
+    calc C * η ≤ C * (c₀ / (4 * C)) :=
+          mul_le_mul_of_nonneg_left hη_le1 (le_of_lt hC_pos)
+      _ = c₀ / 4 := by field_simp
+  have hmu_away : c₀ / 2 ≤ ‖1 - μ‖ :=
+    vcb_mu_away_from_one hc₀_pos hN_pos hMN_N_lower hMN_muN hCη_le
+  -- Step 13: Final bound — divide telescoping bound by ‖1-μ‖
   have hmu1SN_bound : ‖(μ - 1) * S_N‖ ≤ 2 + C * η * N := by
-    have hmu1SN : (μ - 1) * S_N = boundary - (P_N - μ * S_N) := by
-      rw [hSN_eq]; ring
+    have hmu1SN : (μ - 1) * S_N = boundary - (P_N - μ * S_N) := by rw [hSN_eq]; ring
     rw [hmu1SN]
     calc ‖boundary - (P_N - μ * S_N)‖
         ≤ ‖boundary‖ + ‖P_N - μ * S_N‖ := norm_sub_le _ _
       _ ≤ 2 + C * η * N := by linarith [hboundary_le, hPN_muSN]
-  -- ‖S_N‖ ≤ (2 + C*η*N) / (c₀/2)
-  have hmu1_pos : (0 : ℝ) < ‖1 - μ‖ := by linarith [hmu_away]
   have hSN_bound : ‖S_N‖ ≤ (2 + ↑C * η * ↑N) / (c₀ / 2) := by
     rw [norm_mul] at hmu1SN_bound
     rw [show ‖μ - 1‖ = ‖1 - μ‖ from norm_sub_rev μ 1] at hmu1SN_bound
@@ -2288,11 +2337,6 @@ theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
     calc ‖S_N‖ * (c₀ / 2) ≤ ‖1 - μ‖ * ‖S_N‖ := by
           nlinarith [hmu_away, norm_nonneg S_N]
       _ ≤ 2 + ↑C * η * ↑N := hmu1SN_bound
-  -- (2 + C*η*N)/(c₀/2) ≤ ε*N
-  -- Final calc: ‖S_N‖ ≤ ε * N
-  -- We have ‖S_N‖ ≤ (2 + C*η*N)/(c₀/2)
-  -- C*η ≤ ε*c₀/8, so (2 + C*η*N)/(c₀/2) ≤ (2 + ε*c₀*N/8)/(c₀/2) = 4/c₀ + ε*N/4
-  -- For N ≥ 8/(c₀*ε): 4/c₀ ≤ ε*N/2, so total ≤ 3ε*N/4 ≤ ε*N
   have hCη : C * η ≤ ε * c₀ / 8 := by
     calc C * η ≤ C * (ε * c₀ / (8 * C)) :=
           mul_le_mul_of_nonneg_left hη_le2 (le_of_lt hC_pos)
@@ -2300,22 +2344,16 @@ theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
   have hN_big : 8 / (c₀ * ε) ≤ N := by
     calc 8 / (c₀ * ε) ≤ ↑(Nat.ceil (8 / (c₀ * ε))) := Nat.le_ceil _
       _ ≤ ↑N := by exact_mod_cast le_max_right _ N₃ |>.trans hN
-  -- Numerator bound: 2 + C*η*N ≤ 2 + ε*c₀/8*N
   have hnum : 2 + ↑C * η * ↑N ≤ 2 + ε * c₀ / 8 * ↑N := by
-    have : (0 : ℝ) ≤ (N : ℝ) := Nat.cast_nonneg N
-    nlinarith
-  -- 4/c₀ ≤ ε/2 * N (from N ≥ 8/(c₀*ε))
+    have : (0 : ℝ) ≤ (N : ℝ) := Nat.cast_nonneg N; nlinarith
   have h4c : 4 / c₀ ≤ ε / 2 * ↑N := by
     rw [div_le_iff₀ hc₀_pos]
-    have := (div_le_iff₀ (by positivity : (0:ℝ) < c₀ * ε)).mp hN_big
-    linarith
-  -- Main bound
+    have := (div_le_iff₀ (by positivity : (0:ℝ) < c₀ * ε)).mp hN_big; linarith
   calc ‖S_N‖ ≤ (2 + ↑C * η * ↑N) / (c₀ / 2) := hSN_bound
     _ ≤ (2 + ε * c₀ / 8 * ↑N) / (c₀ / 2) := by
         apply div_le_div_of_nonneg_right hnum (by positivity)
     _ = 4 / c₀ + ε / 4 * ↑N := by
-        have hc₀_ne : c₀ ≠ 0 := ne_of_gt hc₀_pos
-        field_simp; ring
+        have hc₀_ne : c₀ ≠ 0 := ne_of_gt hc₀_pos; field_simp; ring
     _ ≤ ε / 2 * ↑N + ε / 4 * ↑N := by linarith [h4c]
     _ ≤ ε * ↑N := by nlinarith [hε, hN_pos]
 

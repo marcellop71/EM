@@ -129,7 +129,7 @@ section MMCSBReduction
 
     Specializes `dirichlet_char_sum_le_of_unit_bound` (in EquidistFourier.lean)
     with the per-prime bound extracted from `MultiModularCSB`. -/
-private lemma dirichlet_char_sum_le_of_mmcsb
+private theorem dirichlet_char_sum_le_of_mmcsb
     (hmmcsb : MultiModularCSB)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (hge : q ≥ hmmcsb.choose)
@@ -1393,7 +1393,7 @@ theorem telescope_constrains_walk :
 
 /-- Auxiliary: for a nontrivial MonoidHom χ : (ZMod q)ˣ →* ℂˣ, the sum ∑ a, (χ a : ℂ) = 0.
     Uses the standard trick: pick b with χ(b) ≠ 1, then χ(b) · S = S implies S = 0. -/
-private lemma unit_char_sum_eq_zero {q : ℕ} [Fact (Nat.Prime q)]
+private theorem unit_char_sum_eq_zero {q : ℕ} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (hχ : χ ≠ 1) :
     ∑ a : (ZMod q)ˣ, (χ a : ℂ) = 0 := by
   -- Since χ ≠ 1, there exists b with χ(b) ≠ 1
@@ -1418,7 +1418,7 @@ private lemma unit_char_sum_eq_zero {q : ℕ} [Fact (Nat.Prime q)]
 
 /-- Auxiliary: the multiplier character sum decomposes as ∑_a χ(a) · V_N(a)
     where V_N(a) = #{n < N : m(n) = a}. -/
-private lemma mult_char_sum_fiber {q : ℕ} [Fact (Nat.Prime q)]
+private theorem mult_char_sum_fiber {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (χ : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
     ∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) =
@@ -1438,7 +1438,7 @@ private lemma mult_char_sum_fiber {q : ℕ} [Fact (Nat.Prime q)]
   rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul, mul_comm]
 
 /-- Auxiliary: the total multiplier hit count sums to N. -/
-private lemma mult_hit_count_sum {q : ℕ} [Fact (Nat.Prime q)]
+private theorem mult_hit_count_sum {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (N : ℕ) :
     ∑ a : (ZMod q)ˣ,
       ((Finset.range N).filter (fun n => emMultUnit q hq hne n = a)).card = N := by
@@ -1450,7 +1450,7 @@ private lemma mult_hit_count_sum {q : ℕ} [Fact (Nat.Prime q)]
   simpa using h.symm
 
 /-- Auxiliary: ‖(χ a : ℂ)‖ = 1 for a MonoidHom χ : (ZMod q)ˣ →* ℂˣ. -/
-private lemma unit_monoidHom_norm_one {q : ℕ} [Fact (Nat.Prime q)]
+private theorem unit_monoidHom_norm_one {q : ℕ} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (a : (ZMod q)ˣ) :
     ‖(χ a : ℂ)‖ = 1 := by
   have hfin : IsOfFinOrder a := isOfFinOrder_of_finite a

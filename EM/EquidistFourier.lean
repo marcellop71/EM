@@ -1149,7 +1149,7 @@ theorem dirichlet_char_sum_le_of_unit_bound
 
 /-- Bounding non-trivial `DirichletCharacter ℂ q` sums via `ComplexCharSumBound`.
     Specializes `dirichlet_char_sum_le_of_unit_bound` with the global CCSB hypothesis. -/
-private lemma dirichlet_char_sum_le_of_csb
+private theorem dirichlet_char_sum_le_of_csb
     (hcsb : ComplexCharSumBound)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)

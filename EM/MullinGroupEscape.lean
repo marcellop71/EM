@@ -17,7 +17,7 @@ subgroups of (ZMod q)×, giving concrete SE instances:
 
 namespace MullinGroup
 
-open Mullin Euclid
+open Mullin Euclid Classical
 
 /-! ## Helper lemmas for natCast ≠ 1 and natCast ≠ -1
 
@@ -277,7 +277,6 @@ theorem multZ_injOn_six {q : Nat} [Fact (Nat.Prime q)] (hq59 : q ≥ 59)
     rfl | rfl | rfl | rfl | rfl | rfl <;>
   first | rfl | (exfalso; exact absurd heq ‹_›) | (exfalso; exact absurd heq.symm ‹_›)
 
-open Classical in
 /-- **Six multipliers escape subgroups of order ≤ 5**: for q ≥ 59 prime
     and q ∉ seq, any subgroup H ≤ (ZMod q)× with at most 5 elements
     fails to contain all six multiplier residues.
@@ -424,7 +423,6 @@ from 1, and from -1 (`mults_product_ne_one`, `mults_product_ne_neg_one`,
 in H. Together with `six_mults_escape_card_le_five`, this shows: for q ≥ 59,
 any proper subgroup of order ≤ 7 is escaped. -/
 
-open Classical in
 /-- **Eight elements escape subgroups of order ≤ 7**: for q ≥ 59 prime
     and q ∉ seq, any subgroup of order ≤ 7 cannot contain all 6 multiplier
     residues. Proof: the 8 pairwise distinct elements {1, m0, ..., m5, m0*m1}
@@ -502,7 +500,6 @@ theorem eight_elts_escape_order_le_seven {q : Nat} [Fact (Nat.Prime q)]
       _ = Fintype.card H := Finset.card_univ
   omega
 
-open Classical in
 /-- **Maximal subgroup escape implies SE**: in any finite group, to prove
     that a set of elements generates the whole group, it suffices to show
     they escape every maximal proper subgroup (coatom in the subgroup lattice).
@@ -535,7 +532,6 @@ This gives a clean framework for finite verification: for each prime q in a
 given range, find a multiplier index n such that `orderOf (multZ q n) = q-1`,
 and conclude SE holds at q. -/
 
-open Classical in
 /-- An element of full order in a finite group cannot belong to any proper subgroup.
     If `orderOf g = |G|`, then `g` generates the whole group, so `g ∉ H` for
     any proper `H < G`. -/
@@ -562,7 +558,6 @@ theorem not_mem_proper_subgroup_of_full_order [Group G] [Fintype G]
     Finset.eq_univ_of_card _ (by rw [Set.toFinset_card]; exact h_eq)
   exact Set.mem_toFinset.mp (hfs ▸ Finset.mem_univ x)
 
-open Classical in
 /-- If some multiplier is a primitive root mod q (order = q-1), then
     SubgroupEscape holds at q: no proper subgroup contains that multiplier. -/
 theorem se_at_of_prim_root {q : Nat} [inst : Fact (Nat.Prime q)]
@@ -574,7 +569,6 @@ theorem se_at_of_prim_root {q : Nat} [inst : Fact (Nat.Prime q)]
   refine ⟨n, not_mem_proper_subgroup_of_full_order ?_ hH⟩
   rw [hord, ← Nat.totient_prime inst.out]; exact (ZMod.card_units_eq_totient q).symm
 
-open Classical in
 /-- **Concrete SE helper**: verify SubgroupEscape at prime q by finding a multiplier
     that is a primitive root. The primitive root property is verified via power checks:
     `v^((q-1)/p) ≠ 1` for each prime p | (q-1). Uses `native_decide`. -/

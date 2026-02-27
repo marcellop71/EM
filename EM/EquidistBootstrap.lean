@@ -33,6 +33,7 @@ ingredient for a full inductive proof of MC is the dynamical component
 -/
 
 section InductiveBootstrap
+open Classical
 
 /-- MC holds for all primes below p: every prime r < p appears in the
     Euclid-Mullin sequence. -/
@@ -170,7 +171,6 @@ private theorem odd_unit_mem_of_odd_primes_mem {p : Nat} [Fact (Nat.Prime p)]
           rw [← Nat.cast_mul]; congr 1; exact hab.symm
         rw [heq]; exact H.mul_mem ha_mem hb_mem
 
-open Classical in
 /-- If every prime r < p maps into H, then H = ⊤.
     Uses a cardinality argument: the map k ↦ Units.mk0 (k+1) for k ∈ {0,...,p−2}
     injects into H, giving |H| ≥ p−1 = |(ZMod p)ˣ|. -/
@@ -260,7 +260,6 @@ theorem prime_residue_escape : PrimeResidueEscape := by
   · subst hr2; convert h2_mem using 1
   · exact hodd r hr hrp (by have := hr.two_le; omega) hr0
 
-open Classical in
 /-- **Inductive bootstrap for SE**: if MC holds for all primes below p
     and PrimeResidueEscape holds, then SubgroupEscape holds at p.
 
@@ -410,6 +409,7 @@ remaining open hypothesis is DynamicalHitting. The algebraic component (SE)
 is derived automatically from the induction at each step. -/
 
 section IrreducibleCore
+open Classical
 
 /-- **Dynamical Hitting Hypothesis**: if SubgroupEscape holds at q (all
     multiplier residues escape every proper subgroup of (ZMod q)ˣ), then
@@ -468,7 +468,6 @@ theorem dynamical_hitting_implies_mixing (hdh : DynamicalHitting) :
   obtain ⟨n, hn, hdvd⟩ := hdh q hq hne hse N
   exact ⟨n, hn, (walkZ_eq_neg_one_iff n).mpr hdvd⟩
 
-open Classical in
 /-- **The one-hypothesis reduction**: DynamicalHitting + PrimeResidueEscape
     imply Mullin's Conjecture, by strong induction on p.
 
@@ -542,6 +541,7 @@ Both extras are harmless in the inductive proof but make SHH genuinely
 weaker as a standalone mathematical statement. -/
 
 section SingleHit
+open Classical
 
 /-- **Single Hit Hypothesis**: for every missing prime q, if MC(< q) holds
     and SubgroupEscape holds at q, then there is at least one hit on -1
@@ -573,7 +573,6 @@ theorem hh_implies_single_hit (hhh : HittingHypothesis) : SingleHitHypothesis :=
   intro q _ hq hne _hmc _hse N₀ _hN₀
   exact hhh q hq hne N₀
 
-open Classical in
 /-- **The Single Hit Theorem**: SingleHitHypothesis + PrimeResidueEscape
     imply Mullin's Conjecture, by strong induction on p.
 
