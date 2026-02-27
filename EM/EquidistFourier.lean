@@ -281,7 +281,7 @@ open MullinGroup
     subgroup at any modulus.
 
     GlobalTailSE decomposes into large q (sieve content) and small q
-    (vacuously true from concrete_mc_below_11). -/
+    (vacuously true from concrete_mcBelow_11). -/
 def GlobalTailSE : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
     TailSubgroupEscape q hq hne
@@ -313,12 +313,12 @@ theorem tail_se_decomposition_at (B : Nat)
   · exact hsmall q hq hne (by omega)
 
 /-- **TailSE below 11 is vacuously true**: all primes < 11 appear in the
-    EM sequence (concrete_mc_below_11), so the hypothesis hne : ∀ k, seq k ≠ q
+    EM sequence (concrete_mcBelow_11), so the hypothesis hne : ∀ k, seq k ≠ q
     is FALSE. TailSE follows from exfalso. -/
 theorem tail_se_below_11 (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (hlt : q < 11) : TailSubgroupEscape q hq hne := by
   exfalso
-  obtain ⟨n, hn⟩ := concrete_mc_below_11 _ (IsPrime.toNatPrime hq) hlt
+  obtain ⟨n, hn⟩ := concrete_mcBelow_11 _ (IsPrime.toNatPrime hq) hlt
   exact hne n hn
 
 /-- **TailSEAlmostAll**: TailSE fails for at most finitely many primes.
@@ -340,7 +340,7 @@ def TailSEAlmostAll : Prop :=
     converts GlobalTailSE to MC.
 
     This eliminates the finite verification step: no computation is needed
-    for primes < 11 because mc_below_11 provides exfalso. -/
+    for primes < 11 because mcBelow_11 provides exfalso. -/
 theorem tail_se_almost_all_11_chain
     (hlarge : ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
       (hne : ∀ k, seq k ≠ q), 11 ≤ q → TailSubgroupEscape q hq hne)
@@ -675,10 +675,10 @@ This section formalises:
 * `WalkHitCount`: the count `#{n < N : emWalkUnit q n = t}`.
 * `CharSumBound`: the o(N) cancellation property for non-trivial characters,
   stated as an open Prop (requires ℂ-valued character theory not yet in Mathlib).
-* `hitCount_lower_bound`: an open Prop encapsulating the Fourier inversion
+* `HitCountLowerBound`: an open Prop encapsulating the Fourier inversion
   consequence — the walk hits every target at linear rate.
-* `hitCount_lower_bound_implies_we`: the proved reduction
-  `hitCount_lower_bound → WalkEquidistribution`.
+* `hitCountLowerBound_implies_we`: the proved reduction
+  `HitCountLowerBound → WalkEquidistribution`.
 * `char_sum_bound_mc`: the full chain to MullinConjecture.
 
 The key structural result is `cofinal_of_hitCount_unbounded`:
@@ -838,7 +838,7 @@ open Classical in
     `CharSumBound` is stated purely group-theoretically to avoid requiring
     `ℂ` in the formal development.
 
-    Combined with `hitCount_lower_bound`, this implies `WalkEquidistribution`
+    Combined with `HitCountLowerBound`, this implies `WalkEquidistribution`
     and hence MullinConjecture. -/
 def CharSumBound : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
@@ -848,7 +848,7 @@ def CharSumBound : Prop :=
     ((Finset.range N).filter (fun n => χ (emWalkUnit q hq hne n) ≠ 1)).card * ε_den ≤
     ε_num * N
 
-/-- **hitCount_lower_bound**: the consequence of Fourier inversion that
+/-- **HitCountLowerBound**: the consequence of Fourier inversion that
     every walk target is hit at linear rate.
 
     This encapsulates the content of the character orthogonality counting
@@ -860,21 +860,21 @@ def CharSumBound : Prop :=
     characters and the Plancherel identity on finite abelian groups, which
     is not yet available in the Mathlib ZMod API.  Together with
     `CharSumBound`, it implies `WalkEquidistribution`. -/
-def hitCount_lower_bound : Prop :=
+def HitCountLowerBound : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
   ∀ (t : (ZMod q)ˣ),
   ∃ N₀ : ℕ, ∀ N ≥ N₀,
     WalkHitCount q hq hne t N * (2 * (q - 1)) ≥ N
 
-/-- **hitCount_lower_bound → WalkEquidistribution**: a linear lower bound on
+/-- **HitCountLowerBound → WalkEquidistribution**: a linear lower bound on
     the hitting count implies that every target is visited cofinally.
 
     The proof chains:
     - linear lower bound → WalkHitCount is unbounded (arithmetic)
     - unbounded WalkHitCount → cofinal hitting (`cofinal_of_hitCount_unbounded`)
     - cofinal hitting of every target = WalkEquidistribution -/
-theorem hitCount_lower_bound_implies_we
-    (hlb : hitCount_lower_bound) :
+theorem hitCountLowerBound_implies_we
+    (hlb : HitCountLowerBound) :
     WalkEquidistribution := by
   intro q _ hq hne t N₀
   -- Build the unboundedness of WalkHitCount from the linear lower bound
@@ -883,32 +883,32 @@ theorem hitCount_lower_bound_implies_we
   -- Conclude cofinal hitting
   exact cofinal_of_hitCount_unbounded q hq hne t hunbd N₀
 
-/-- **CharSumBound + hitCount_lower_bound → WalkEquidistribution**:
+/-- **CharSumBound + HitCountLowerBound → WalkEquidistribution**:
     the bridge between the two open analytic Props and walk equidistribution.
 
     - `CharSumBound` (analytic): non-trivial character sums are `o(N)`.
-    - `hitCount_lower_bound` (algebraic/Fourier): this cancellation implies
+    - `HitCountLowerBound` (algebraic/Fourier): this cancellation implies
       the walk hits every target at rate `≥ N/(2*(q-1))`.
     Together they give cofinal hitting of every target ∈ (ZMod q)ˣ. -/
 theorem char_sum_bound_implies_we
     (_hcsb : CharSumBound)
-    (hlb : hitCount_lower_bound) :
+    (hlb : HitCountLowerBound) :
     WalkEquidistribution :=
-  hitCount_lower_bound_implies_we hlb
+  hitCountLowerBound_implies_we hlb
 
-/-- **CharSumBound + hitCount_lower_bound → DynamicalHitting**: the key
+/-- **CharSumBound + HitCountLowerBound → DynamicalHitting**: the key
     implication for Mullin's Conjecture via walk equidistribution. -/
 theorem char_sum_bound_implies_dh
     (hcsb : CharSumBound)
-    (hlb : hitCount_lower_bound) :
+    (hlb : HitCountLowerBound) :
     DynamicalHitting :=
   walk_equidist_implies_dh (char_sum_bound_implies_we hcsb hlb)
 
-/-- **CharSumBound + hitCount_lower_bound → MullinConjecture**:
+/-- **CharSumBound + HitCountLowerBound → MullinConjecture**:
     the complete analytic reduction chain.
 
     ```
-    CharSumBound + hitCount_lower_bound
+    CharSumBound + HitCountLowerBound
         →[§29]→ WalkEquidistribution
         →[proved]→ DynamicalHitting
         →[proved]→ MullinConjecture
@@ -916,13 +916,13 @@ theorem char_sum_bound_implies_dh
 
     The two open Props encapsulate all analytic content:
     - `CharSumBound`: the hard analysis — non-trivial character sums cancel.
-    - `hitCount_lower_bound`: the algebra bridge — Fourier inversion converts
+    - `HitCountLowerBound`: the algebra bridge — Fourier inversion converts
       character cancellation into a linear lower bound on hitting frequency.
     All logical implications between these Props and MullinConjecture are
     formally verified. -/
 theorem char_sum_bound_mc
     (hcsb : CharSumBound)
-    (hlb : hitCount_lower_bound) :
+    (hlb : HitCountLowerBound) :
     MullinConjecture :=
   walk_equidist_mc (char_sum_bound_implies_we hcsb hlb)
 
@@ -942,7 +942,7 @@ WalkHitCount q t N = (1/(q-1)) · Σ_χ χ(t)⁻¹ · [Σ_{n<N} χ(emWalkUnit q 
 The trivial character (χ = 1) contributes exactly N/(q-1).  If for each
 non-trivial χ : (ZMod q)ˣ →* ℂˣ the partial sum has `‖Σ_{n<N} χ(w(n))‖ = o(N)`,
 then the hitting count is `N/(q-1) + o(N)`, which is `≥ N/(2*(q-1))` for
-large N.  This gives `hitCount_lower_bound`, and hence `WalkEquidistribution`.
+large N.  This gives `HitCountLowerBound`, and hence `WalkEquidistribution`.
 
 **`ComplexCharSumBound`** is the analytically correct open Prop.
 **`complex_csb_implies_hitCount_lb`** is the open Prop encapsulating the
@@ -972,7 +972,7 @@ def ComplexCharSumBound : Prop :=
   ∃ N₀ : ℕ, ∀ N ≥ N₀,
     ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ ε * N
 
-/-- **ComplexCharSumBound implies hitCount_lower_bound**: the open Prop
+/-- **ComplexCharSumBound implies HitCountLowerBound**: the open Prop
     encapsulating the Fourier inversion step.
 
     By the Plancherel/orthogonality formula on the finite abelian group
@@ -992,7 +992,7 @@ def ComplexCharSumBound : Prop :=
 
     Both are standard but require non-trivial formalization work. -/
 def ComplexCSBImpliesHitCountLB : Prop :=
-  ComplexCharSumBound → hitCount_lower_bound
+  ComplexCharSumBound → HitCountLowerBound
 
 /-- **WalkHitCountFourierStep**: the exact Fourier expansion of WalkHitCount via
     Dirichlet character orthogonality.
@@ -1097,8 +1097,8 @@ theorem walk_hit_count_fourier_step : WalkHitCountFourierStep := by
   simp_rw [eq_comm (a := t)]
   rw [← Finset.sum_filter, Finset.sum_const, smul_eq_mul]
 
-/-- Helper: a non-trivial `DirichletCharacter` has non-trivial `toUnitHom`. -/
-private lemma dirichlet_ne_one_iff_toUnitHom_ne_one {q : ℕ}
+/-- A non-trivial `DirichletCharacter` has non-trivial `toUnitHom`. -/
+theorem dirichlet_ne_one_iff_toUnitHom_ne_one {q : ℕ}
     (ψ : DirichletCharacter ℂ q) :
     ψ ≠ 1 ↔ ψ.toUnitHom ≠ 1 := by
   -- Use DirichletCharacter.toUnitHom_inj: toUnitHom χ = toUnitHom ψ ↔ χ = ψ
@@ -1112,24 +1112,32 @@ private lemma dirichlet_ne_one_iff_toUnitHom_ne_one {q : ℕ}
   rw [h1] at key
   exact key.not
 
-/-- Helper: for a `DirichletCharacter ℂ q` and unit `u : (ZMod q)ˣ`, the character
+/-- For a `DirichletCharacter ℂ q` and unit `u : (ZMod q)ˣ`, the character
     value (coerced to ℂ) equals the `toUnitHom` value coerced from `ℂˣ`. -/
-private lemma dirichlet_val_eq_toUnitHom {q : ℕ}
+theorem dirichlet_val_eq_toUnitHom {q : ℕ}
     (ψ : DirichletCharacter ℂ q) (u : (ZMod q)ˣ) :
     ψ ↑u = (ψ.toUnitHom u : ℂ) :=
   (MulChar.coe_toUnitHom ψ u).symm
 
-/-- Helper: bounding non-trivial `DirichletCharacter ℂ q` sums via `ComplexCharSumBound`. -/
-private lemma dirichlet_char_sum_le_of_csb
-    (hcsb : ComplexCharSumBound)
+/-- Bounding non-trivial `DirichletCharacter ℂ q` sums given a per-prime bound
+    on the underlying `(ZMod q)ˣ →* ℂˣ` character sums along the EM walk.
+
+    This is the shared core used by both `dirichlet_char_sum_le_of_csb`
+    (which obtains the unit-hom bound from `ComplexCharSumBound`) and
+    `dirichlet_char_sum_le_of_mmcsb` in `LargeSieve.lean`
+    (which obtains it from `MultiModularCSB`). -/
+theorem dirichlet_char_sum_le_of_unit_bound
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+    (hbound : ∀ (χ : (ZMod q)ˣ →* ℂˣ) (_hχ : χ ≠ 1),
+      ∀ (ε : ℝ) (_hε : 0 < ε),
+      ∃ N₀ : ℕ, ∀ N ≥ N₀,
+        ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ ε * N)
     (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)
     (ε : ℝ) (hε : 0 < ε) :
     ∃ N₀ : ℕ, ∀ N ≥ N₀,
       ‖∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n)‖ ≤ ε * N := by
-  -- Apply CCSB to ψ.toUnitHom (which is non-trivial)
   have hψ' : ψ.toUnitHom ≠ 1 := (dirichlet_ne_one_iff_toUnitHom_ne_one ψ).mp hψ
-  obtain ⟨N₀, hN₀⟩ := hcsb q hq hne ψ.toUnitHom hψ' ε hε
+  obtain ⟨N₀, hN₀⟩ := hbound ψ.toUnitHom hψ' ε hε
   refine ⟨N₀, fun N hN => ?_⟩
   have heq : ∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n) =
       ∑ n ∈ Finset.range N, (ψ.toUnitHom (emWalkUnit q hq hne n) : ℂ) := by
@@ -1138,6 +1146,17 @@ private lemma dirichlet_char_sum_le_of_csb
     exact dirichlet_val_eq_toUnitHom ψ (emWalkUnit q hq hne n)
   rw [heq]
   exact hN₀ N hN
+
+/-- Bounding non-trivial `DirichletCharacter ℂ q` sums via `ComplexCharSumBound`.
+    Specializes `dirichlet_char_sum_le_of_unit_bound` with the global CCSB hypothesis. -/
+private lemma dirichlet_char_sum_le_of_csb
+    (hcsb : ComplexCharSumBound)
+    {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+    (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ N₀ : ℕ, ∀ N ≥ N₀,
+      ‖∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n)‖ ≤ ε * N :=
+  dirichlet_char_sum_le_of_unit_bound hq hne (hcsb q hq hne) ψ hψ ε hε
 
 /-- **WalkHitCountFourierStep → ComplexCSBImpliesHitCountLB**:
     given the Fourier expansion identity for `WalkHitCount`, the complex
@@ -1272,14 +1291,14 @@ theorem complex_csb_implies_we
     (hcsb : ComplexCharSumBound)
     (hfourier : ComplexCSBImpliesHitCountLB) :
     WalkEquidistribution :=
-  hitCount_lower_bound_implies_we (hfourier hcsb)
+  hitCountLowerBound_implies_we (hfourier hcsb)
 
 /-- **ComplexCharSumBound + Fourier step → MullinConjecture**:
     the complete analytic reduction chain via complex character sums.
 
     ```
     ComplexCharSumBound + ComplexCSBImpliesHitCountLB
-        →[§30]→ hitCount_lower_bound
+        →[§30]→ HitCountLowerBound
         →[proved]→ WalkEquidistribution
         →[proved]→ DynamicalHitting
         →[proved]→ MullinConjecture

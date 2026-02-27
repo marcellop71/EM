@@ -1149,7 +1149,7 @@ section QuadraticBlockAlternation
 
 /-- For an order-2 character, if a character value is not 1 then it must be −1.
     This is the dichotomy from `IsOrder2` with the first branch excluded. -/
-lemma order2_not_one_eq_neg_one {q : Nat} [Fact (Nat.Prime q)]
+theorem order2_not_one_eq_neg_one {q : Nat} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (hord2 : IsOrder2 χ) (u : (ZMod q)ˣ)
     (hne : (χ u : ℂ) ≠ 1) :
     (χ u : ℂ) = -1 := by

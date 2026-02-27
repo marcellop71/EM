@@ -36,7 +36,7 @@ section InductiveBootstrap
 
 /-- MC holds for all primes below p: every prime r < p appears in the
     Euclid-Mullin sequence. -/
-def mc_below (p : Nat) : Prop :=
+def MCBelow (p : Nat) : Prop :=
   ∀ r, Nat.Prime r → r < p → ∃ k, seq k = r
 
 /-- A prime r < p maps to a nonzero element of ZMod p. -/
@@ -265,12 +265,12 @@ open Classical in
     and PrimeResidueEscape holds, then SubgroupEscape holds at p.
 
     Proof: each prime r ∈ [3, p) appears as seq(k) for some k ≥ 1
-    (by mc_below, noting seq(0) = 2 ≠ r since r ≥ 3). Then
+    (by MCBelow, noting seq(0) = 2 ≠ r since r ≥ 3). Then
     multZ(p, k−1) = seq(k) mod p = r mod p.  PrimeResidueEscape gives
     an r outside any given proper subgroup H, so H is escaped. -/
-theorem mc_below_pre_implies_se (hpre : PrimeResidueEscape)
+theorem mcBelow_pre_implies_se (hpre : PrimeResidueEscape)
     {p : Nat} [inst : Fact (Nat.Prime p)] (hp : IsPrime p) (hne : ∀ k, seq k ≠ p)
-    (hmc : mc_below p) :
+    (hmc : MCBelow p) :
     ∀ H : Subgroup (ZMod p)ˣ, H ≠ ⊤ →
       ∃ n, (Units.mk0 (multZ p n) (multZ_ne_zero hp hne n)) ∉ H := by
   intro H hH
@@ -473,7 +473,7 @@ open Classical in
     imply Mullin's Conjecture, by strong induction on p.
 
     At each prime p: the induction hypothesis gives MC(< p), the inductive
-    bootstrap (`mc_below_pre_implies_se`) gives SE(p) from PrimeResidueEscape,
+    bootstrap (`mcBelow_pre_implies_se`) gives SE(p) from PrimeResidueEscape,
     and DynamicalHitting gives HH(p). Then `captures_target` turns the
     hitting event into seq(n+1) = p.
 
@@ -497,10 +497,10 @@ theorem dynamical_hitting_pre_implies_mullin
       by_contra hnotexists
       have hne : ∀ m, seq m ≠ q := fun m heq => hnotexists ⟨m, heq⟩
       -- IH gives MC(< q)
-      have hmc : mc_below q := fun r hr hrq => ih r (by omega) hr.toIsPrime
+      have hmc : MCBelow q := fun r hr hrq => ih r (by omega) hr.toIsPrime
       -- Bootstrap: MC(< q) + PrimeResidueEscape → SE(q)
       haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
-      have hse := mc_below_pre_implies_se hpre hq hne hmc
+      have hse := mcBelow_pre_implies_se hpre hq hne hmc
       -- DynamicalHitting: SE(q) → HH(q)
       obtain ⟨N, hN⟩ := exists_bound q (fun p hpq hp => ih p (by omega) hp)
       obtain ⟨n, hn_ge, hn_dvd⟩ := hdh q hq hne hse N
@@ -525,18 +525,18 @@ end IrreducibleCore
 
 The weakest hitting condition in the "hitting family" that suffices for MC:
 `SingleHitHypothesis` asks for a single hit on -1 past the sieve gap,
-with `mc_below q` as an additional hypothesis.
+with `MCBelow q` as an additional hypothesis.
 
 Comparison with the two neighbouring hypotheses:
 - **DynamicalHitting**: SE(q) → ∀ N, ∃ n ≥ N, q ∣ prod(n)+1.
-  Cofinal hitting, does NOT require mc_below q.
-- **SingleHitHypothesis**: mc_below(q) → SE(q) →
+  Cofinal hitting, does NOT require MCBelow q.
+- **SingleHitHypothesis**: MCBelow(q) → SE(q) →
   ∀ N₀ with sieve-gap property, ∃ n ≥ N₀, q ∣ prod(n)+1.
-  Single hit past the sieve gap; requires mc_below q (available from induction).
+  Single hit past the sieve gap; requires MCBelow q (available from induction).
 - **HittingHypothesis**: hne → ∀ N, ∃ n ≥ N, q ∣ prod(n)+1.
-  Cofinal hitting; neither SE nor mc_below; strongest but hardest to verify.
+  Cofinal hitting; neither SE nor MCBelow; strongest but hardest to verify.
 
-SHH is strictly weaker than DH in two ways: (1) it assumes mc_below q,
+SHH is strictly weaker than DH in two ways: (1) it assumes MCBelow q,
 (2) it asks for one hit past a specific bound rather than cofinal hitting.
 Both extras are harmless in the inductive proof but make SHH genuinely
 weaker as a standalone mathematical statement. -/
@@ -555,20 +555,20 @@ section SingleHit
     genuinely weaker as a standalone mathematical statement. -/
 def SingleHitHypothesis : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-    mc_below q →
+    MCBelow q →
     (∀ H : Subgroup (ZMod q)ˣ, H ≠ ⊤ →
       ∃ n, (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ∉ H) →
     ∀ (N₀ : Nat), (∀ p, p < q → IsPrime p → ∃ m, m ≤ N₀ ∧ seq m = p) →
       ∃ n, N₀ ≤ n ∧ q ∣ (prod n + 1)
 
 /-- **DH implies SingleHitHypothesis**: DynamicalHitting is strictly stronger
-    because it does not require mc_below q and gives cofinal hitting. -/
+    because it does not require MCBelow q and gives cofinal hitting. -/
 theorem dh_implies_single_hit (hdh : DynamicalHitting) : SingleHitHypothesis := by
   intro q _ hq hne _hmc hse N₀ _hN₀
   exact hdh q hq hne hse N₀
 
 /-- **HH implies SingleHitHypothesis**: HittingHypothesis does not need SE
-    or mc_below at all, so it trivially implies SingleHitHypothesis. -/
+    or MCBelow at all, so it trivially implies SingleHitHypothesis. -/
 theorem hh_implies_single_hit (hhh : HittingHypothesis) : SingleHitHypothesis := by
   intro q _ hq hne _hmc _hse N₀ _hN₀
   exact hhh q hq hne N₀
@@ -577,7 +577,7 @@ open Classical in
 /-- **The Single Hit Theorem**: SingleHitHypothesis + PrimeResidueEscape
     imply Mullin's Conjecture, by strong induction on p.
 
-    At each prime p: the induction hypothesis gives mc_below p, the
+    At each prime p: the induction hypothesis gives MCBelow p, the
     bootstrap gives SE(p) from PRE, and SingleHitHypothesis gives a
     hit past the sieve gap. captures_target finishes. -/
 theorem single_hit_pre_implies_mullin
@@ -597,10 +597,10 @@ theorem single_hit_pre_implies_mullin
       by_contra hnotexists
       have hne : ∀ m, seq m ≠ q := fun m heq => hnotexists ⟨m, heq⟩
       -- IH gives MC(< q)
-      have hmc : mc_below q := fun r hr hrq => ih r (by omega) hr.toIsPrime
+      have hmc : MCBelow q := fun r hr hrq => ih r (by omega) hr.toIsPrime
       -- Bootstrap: MC(< q) + PrimeResidueEscape → SE(q)
       haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
-      have hse := mc_below_pre_implies_se hpre hq hne hmc
+      have hse := mcBelow_pre_implies_se hpre hq hne hmc
       -- exists_bound: uniform bound N₀ such that all primes < q appear by N₀
       obtain ⟨N, hN⟩ := exists_bound q (fun p hpq hp => ih p (by omega) hp)
       -- SingleHitHypothesis: MC(< q) + SE(q) + sieve gap → ∃ n ≥ N, q ∣ prod n + 1

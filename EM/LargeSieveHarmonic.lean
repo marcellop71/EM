@@ -68,7 +68,7 @@ open Classical in
 
     This is a direct corollary of `AddChar.sum_mulShift` applied to
     the primitive character `stdAddChar` on `ZMod N`. -/
-lemma stdAddChar_sum_eq (a : ZMod N) :
+theorem stdAddChar_sum_eq (a : ZMod N) :
     ∑ k : ZMod N, ZMod.stdAddChar (a * k) =
     if a = (0 : ZMod N) then (N : ℂ) else 0 := by
   have hprim := ZMod.isPrimitive_stdAddChar N
@@ -330,7 +330,7 @@ variable {p : ℕ} [Fact (Nat.Prime p)]
 /-- Values of a multiplicative character χ on (ZMod p)ˣ have norm 1 in ℂ.
     This is because character values are roots of unity of order dividing |(ZMod p)ˣ|,
     and roots of unity have norm 1 in ℂ. -/
-lemma mulChar_norm_one_of_unit (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
+theorem mulChar_norm_one_of_unit (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
     ‖χ a‖ = 1 := by
   have hfin : IsOfFinOrder a := isOfFinOrder_of_finite a
   have hfin' : IsOfFinOrder ((MulChar.equivToUnitHom χ) a) :=
@@ -346,7 +346,7 @@ lemma mulChar_norm_one_of_unit (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
 
 /-- Conjugate of a multiplicative character value equals the inverse character value.
     For a : (ZMod p)ˣ, conj(χ a) = χ⁻¹ a. -/
-lemma mulChar_conj_eq_inv (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
+theorem mulChar_conj_eq_inv (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
     starRingEnd ℂ (χ (a : ZMod p)) = χ⁻¹ (a : ZMod p) := by
   rw [MulChar.inv_apply_eq_inv']
   rw [starRingEnd_apply, Complex.star_def]
@@ -354,7 +354,7 @@ lemma mulChar_conj_eq_inv (χ : MulChar (ZMod p) ℂ) (a : (ZMod p)ˣ) :
 
 /-- Conjugate of a multiplicative character value equals the inverse character value
     for all elements of ZMod p (including 0). -/
-lemma mulChar_conj_eq_inv' (χ : MulChar (ZMod p) ℂ) (a : ZMod p) :
+theorem mulChar_conj_eq_inv' (χ : MulChar (ZMod p) ℂ) (a : ZMod p) :
     starRingEnd ℂ (χ a) = χ⁻¹ a := by
   by_cases ha : IsUnit a
   · obtain ⟨u, rfl⟩ := ha

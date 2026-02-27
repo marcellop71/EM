@@ -91,19 +91,19 @@ theorem se_implies_nao (hse : SubgroupEscape) (q : ℕ) (hq : Nat.Prime q)
 
     A more useful form: if MC holds below q and PRE holds (both proved for
     concrete instances), then NAO holds for emSDDS at q. This composes
-    `mc_below_pre_implies_se` with `se_implies_nao`. -/
-theorem mc_below_pre_implies_nao
+    `mcBelow_pre_implies_se` with `se_implies_nao`. -/
+theorem mcBelow_pre_implies_nao
     (hpre : PrimeResidueEscape)
     {q : ℕ} (hq : Nat.Prime q) (hiq : IsPrime q) (hne : ∀ k, seq k ≠ q)
-    (hmc : mc_below q) :
+    (hmc : MCBelow q) :
     NoAlgebraicObstruction (emSDDS q hq) := by
   haveI : Fact (Nat.Prime q) := ⟨hq⟩
   unfold NoAlgebraicObstruction
   show Subgroup.closure
     { u : (ZMod q)ˣ | ∃ n : ℕ, (u : ZMod q) = (emSDDS q hq).mult n } = ⊤
   rw [nao_set_eq_range hiq hne]
-  -- Use mc_below_pre_implies_se to get SE at q, then se_implies_full_generation
-  have hse_q := mc_below_pre_implies_se hpre hiq hne hmc
+  -- Use mcBelow_pre_implies_se to get SE at q, then se_implies_full_generation
+  have hse_q := mcBelow_pre_implies_se hpre hiq hne hmc
   -- se_implies_full_generation needs the global SE, but we only have SE at q.
   -- Instead, directly prove closure = top from hse_q using the same contradiction argument.
   by_contra h
@@ -277,7 +277,7 @@ theorem death_channel_nonempty (p q : ℕ) (hp : p.Prime) (hq : q.Prime) (hpq : 
 ### Part 1 (NoAlgebraicObstruction):
 - `nao_set_eq_range` : NAO generating set = Set.range of multZ units
 - `se_implies_nao` : SubgroupEscape -> NoAlgebraicObstruction (emSDDS q hq)
-- `mc_below_pre_implies_nao` : MCBelow + PRE -> NoAlgebraicObstruction
+- `mcBelow_pre_implies_nao` : MCBelow + PRE -> NoAlgebraicObstruction
 
 ### Part 2 (CRT Independence):
 - `crt_pair_surjective` : CRT surjectivity for two distinct primes

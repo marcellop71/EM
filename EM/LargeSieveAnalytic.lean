@@ -1170,7 +1170,7 @@ private instance neZeroP64 : NeZero p := ⟨hp.out.ne_zero⟩
 
     Proof: both sides are equal to `eAN(val(b * ↑n) / p)` via `stdAddChar_val_eq_eAN`,
     and `val(b * ↑n) / p` and `val(b) * n / p` differ by an integer (ℤ-periodicity). -/
-lemma stdAddChar_mul_intCast_eq_eAN (b : ZMod p) (n : ℤ) :
+theorem stdAddChar_mul_intCast_eq_eAN (b : ZMod p) (n : ℤ) :
     (ZMod.stdAddChar (N := p) (b * (n : ZMod p)) : ℂ) =
     eAN ((n : ℝ) * (ZMod.val b : ℝ) / (p : ℝ)) := by
   rw [stdAddChar_val_eq_eAN]
@@ -1209,7 +1209,7 @@ lemma stdAddChar_mul_intCast_eq_eAN (b : ZMod p) (n : ℤ) :
     `∑_{n:Fin N} a(n) χ(↑n) = τ⁻¹ ∑_b χ̄(b) ∑_n a(n) ψ(b·↑n)`
 
     where τ = gaussSum χ⁻¹ ψ. -/
-lemma char_sum_gauss_expansion (N : ℕ) (a : Fin N → ℂ)
+theorem char_sum_gauss_expansion (N : ℕ) (a : Fin N → ℂ)
     (χ : MulChar (ZMod p) ℂ) (hχ : χ ≠ 1) :
     ∑ n : Fin N, a n * χ ((↑(↑n : ℤ) : ZMod p)) =
     (gaussSum χ⁻¹ (ZMod.stdAddChar (N := p)))⁻¹ *

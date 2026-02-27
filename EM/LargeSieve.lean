@@ -114,7 +114,7 @@ The key reduction: if `ComplexCharSumBound` holds for all primes q >= Q_0
 
 The per-prime chain is:
 ```
-CCSB at q → hitCount_lower_bound at q → WalkEquidistribution at q
+CCSB at q → HitCountLowerBound at q → WalkEquidistribution at q
           → cofinal hitting of -1 at q → ThresholdHitting at q
 ```
 
@@ -127,8 +127,8 @@ section MMCSBReduction
     at a prime q >= Q_0, the MMCSB data gives the norm bound on the character
     sum along the EM walk.
 
-    This replicates `dirichlet_char_sum_le_of_csb` (which is private in
-    EquidistFourier.lean) using per-prime MMCSB data instead of global CCSB. -/
+    Specializes `dirichlet_char_sum_le_of_unit_bound` (in EquidistFourier.lean)
+    with the per-prime bound extracted from `MultiModularCSB`. -/
 private lemma dirichlet_char_sum_le_of_mmcsb
     (hmmcsb : MultiModularCSB)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
@@ -136,25 +136,8 @@ private lemma dirichlet_char_sum_le_of_mmcsb
     (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)
     (ε : ℝ) (hε : 0 < ε) :
     ∃ N₀ : ℕ, ∀ N ≥ N₀,
-      ‖∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n)‖ ≤ ε * N := by
-  -- MMCSB gives per-prime data for χ : (ZMod q)ˣ →* ℂˣ
-  have hcsb_q := hmmcsb.choose_spec q hge hq hne
-  -- ψ.toUnitHom is a non-trivial (ZMod q)ˣ →* ℂˣ
-  have hψ' : ψ.toUnitHom ≠ 1 := by
-    intro h
-    apply hψ
-    have h1 : (1 : DirichletCharacter ℂ q).toUnitHom = 1 := by
-      ext a; simp [MulChar.one_apply_coe]
-    exact (DirichletCharacter.toUnitHom_inj (χ := ψ) 1).mp (h.trans h1.symm)
-  obtain ⟨N₀, hN₀⟩ := hcsb_q ψ.toUnitHom hψ' ε hε
-  refine ⟨N₀, fun N hN => ?_⟩
-  have heq : ∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n) =
-      ∑ n ∈ Finset.range N, (ψ.toUnitHom (emWalkUnit q hq hne n) : ℂ) := by
-    apply Finset.sum_congr rfl
-    intro n _
-    exact (MulChar.coe_toUnitHom ψ (emWalkUnit q hq hne n)).symm
-  rw [heq]
-  exact hN₀ N hN
+      ‖∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n)‖ ≤ ε * N :=
+  dirichlet_char_sum_le_of_unit_bound hq hne (hmmcsb.choose_spec q hge hq hne) ψ hψ ε hε
 
 /-- Per-prime hit count lower bound from MMCSB: if MultiModularCSB holds with
     threshold Q_0, then for any prime q >= Q_0 not in the sequence, the walk
@@ -314,7 +297,7 @@ open Classical in
     1. `mmcsb_implies_threshold`: MMCSB → ThresholdHitting(Q_0)
     2. `threshold_finite_implies_mullin`: ThresholdHitting(B) + FiniteMCBelow(B) → MC
 
-    For Q_0 <= 11, the finite verification is already done (`finite_mc_below_11`).
+    For Q_0 <= 11, the finite verification is already done (`finite_mcBelow_11`).
     For Q_0 > 11, `FiniteMCBelow(Q_0)` requires verifying that all primes below
     Q_0 appear in the EM sequence (a finite computation in principle). -/
 theorem mmcsb_implies_mc
@@ -333,7 +316,7 @@ theorem mmcsb_small_threshold_mc
     MullinConjecture := by
   apply mmcsb_implies_mc hmmcsb
   intro q hq hlt
-  exact finite_mc_below_11 q hq (by omega)
+  exact finite_mcBelow_11 q hq (by omega)
 
 end MMCSBReduction
 

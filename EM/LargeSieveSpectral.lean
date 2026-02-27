@@ -333,7 +333,7 @@ def WalkEquidistCondition {N : ℕ} (w : Fin N → (ZMod p)ˣ) (ε : ℝ) : Prop
 /-- Character orthogonality on units: ∑_χ χ(a⁻¹) · χ(x) = (p-1) · [x = a].
     This is the indicator function expansion for units of (ZMod p).
     Uses `DirichletCharacter.sum_char_inv_mul_char_eq` from Mathlib. -/
-private lemma char_indicator_expansion (a x : (ZMod p)ˣ) :
+theorem char_indicator_expansion (a x : (ZMod p)ˣ) :
     ∑ χ : DirichletCharacter ℂ p, χ (↑a⁻¹ : ZMod p) * χ (↑x : ZMod p) =
     if x = a then ((p : ℂ) - 1) else 0 := by
   have ha : IsUnit (↑a : ZMod p) := Units.isUnit a
@@ -1767,21 +1767,6 @@ variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
 private instance neZeroP75 : NeZero p := ⟨hp.out.ne_zero⟩
 
-/-- Character orthogonality on units (local copy for §75):
-    `sum_chi chi(a^{-1}) * chi(x) = (p-1) * [x = a]`. -/
-private lemma char_indicator_expansion_75 (a x : (ZMod p)ˣ) :
-    ∑ χ : DirichletCharacter ℂ p, χ (↑a⁻¹ : ZMod p) * χ (↑x : ZMod p) =
-    if x = a then ((p : ℂ) - 1) else 0 := by
-  have ha : IsUnit (↑a : ZMod p) := Units.isUnit a
-  have hmathlib := DirichletCharacter.sum_char_inv_mul_char_eq ℂ ha (↑x : ZMod p)
-  have hinv : (↑a : ZMod p)⁻¹ = ↑a⁻¹ := (Units.val_inv_eq_inv_val a).symm
-  simp_rw [hinv] at hmathlib
-  rw [hmathlib]
-  simp only [Units.val_injective.eq_iff, eq_comm (a := a) (b := x)]
-  split_ifs
-  · rw [Nat.totient_prime hp.out, Nat.cast_sub hp.out.one_le]; norm_cast
-  · rfl
-
 open Classical in
 /-- **Nontrivial character orthogonality for walk sums**:
     `sum_{chi != 1} conj(chi(a)) * S_chi(N) = (p-1) * V_N(a) - N`.
@@ -1801,7 +1786,7 @@ theorem nontrivial_char_walk_sum {N : ℕ} (w : Fin N → (ZMod p)ˣ)
     ((p : ℂ) - 1) * (walkVisitCount w a : ℂ) := by
     simp_rw [Finset.mul_sum]
     rw [Finset.sum_comm]
-    simp_rw [char_indicator_expansion_75 a]
+    simp_rw [char_indicator_expansion a]
     rw [← Finset.sum_filter]
     simp only [walkVisitCount, Finset.sum_const, nsmul_eq_mul]
     ring
