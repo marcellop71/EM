@@ -24,7 +24,7 @@ Below is a curated list of results organized by topic.
 | 10 | `als_implies_prime_arith_ls` | `LargeSieveAnalytic.lean` | 1358 | thm | Analytic large sieve implies prime arithmetic large sieve |
 | | **Van der Corput** | | | | |
 | 11 | `VanDerCorputBound` | `LargeSieveSpectral.lean` | 557 | def | Statement of the finite Van der Corput inequality |
-| 12 | `vanDerCorputBound` | `LargeSieveSpectral.lean` | 591 | thm | Proof: `‖∑ f(n)‖² ≤ 2N²/(H+1) + 2δN²` (~280 lines) |
+| 12 | `van_der_corput_bound` | `LargeSieveSpectral.lean` | 591 | thm | Proof: `‖∑ f(n)‖² ≤ 2N²/(H+1) + 2δN²` (~280 lines) |
 | | **Harmonic analysis on finite groups** | | | | |
 | 13 | `zmod_dft_parseval` | `LargeSieveHarmonic.lean` | 135 | thm | Parseval for `ZMod.dft`: `∑ ‖𝓕Φ(k)‖² = N·∑ ‖Φ(j)‖²` |
 | 14 | `zmod_dft_plancherel_complex` | `LargeSieveHarmonic.lean` | 416 | thm | Plancherel (bilinear Parseval) for `ZMod.dft` |
@@ -189,7 +189,7 @@ These files formalize key parts of Chapter 7 of Iwaniec-Kowalski and develop the
 
 **File: `LargeSieveSpectral.lean:591`**
 
-- **Finite Van der Corput bound** (`vanDerCorputBound`): For a bounded sequence `f` with autocorrelations `|R_h| ≤ δN` for lags `1 ≤ h ≤ H`: `‖∑_{n<N} f(n)‖² ≤ 2N²/(H+1) + 2δN²`. This is a ~280-line fully proved theorem, one of the most important techniques in analytic number theory for bounding exponential/character sums. Not in Mathlib.
+- **Finite Van der Corput bound** (`van_der_corput_bound`): For a bounded sequence `f` with autocorrelations `|R_h| ≤ δN` for lags `1 ≤ h ≤ H`: `‖∑_{n<N} f(n)‖² ≤ 2N²/(H+1) + 2δN²`. This is a ~280-line fully proved theorem, one of the most important techniques in analytic number theory for bounding exponential/character sums. Not in Mathlib.
 
 ---
 

@@ -99,7 +99,7 @@ $\gcd(\Prod(n), \Prod(n)+1) = 1$).  This is the \textbf{sieve gap}:
 past~$N_0$, the only primes that can divide $\Prod(n)+1$ are
 $\geq q$.
 
-\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_implies\_seq\_ge}]\label{thm:roughness}
+\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_implies\_seq\_ge}]\label{thm:roughness}
 If $\MC({<}\,q)$ holds, then $\exists\, N_0$ such that
 $\seq(n{+}1) \geq q$ for all $n \geq N_0$.
 \end{theorem}
@@ -107,7 +107,7 @@ $\seq(n{+}1) \geq q$ for all $n \geq N_0$.
 \noindent The sieve gap transforms hitting~$-1$ from a necessary condition into
 a sufficient one:
 
-\begin{theorem}[\defname{Lethal hit} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_hit\_is\_lethal}]\label{thm:lethal-hit}
+\begin{theorem}[\defname{Lethal hit} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_hit\_is\_lethal}]\label{thm:lethal-hit}
 If $\MC({<}\,q)$ holds and $\walkZ{q}{n} = -1$ for some $n$ past the
 sieve gap, then $\seq(n{+}1) = q$.
 \end{theorem}
@@ -127,7 +127,7 @@ A prime~$q$ is \textbf{missing} if $\seq(n) \neq q$ for all~$n$.
 Under $\MC({<}\,q)$, the first hit on~$-1$ past the sieve gap is
 lethal.  This immediately constrains missing primes:
 
-\begin{theorem}[\lean{EM/EquidistThreshold.lean}{mc\_below\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
+\begin{theorem}[\lean{EM/EquidistThreshold.lean}{mcBelow\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
 If $\MC({<}\,q)$ holds and $q$ is missing, then the walk \emph{never}
 hits~$-1$ past the sieve gap: $\exists\, N_0$ such that
 $\walkZ{q}{n} \neq -1$ for all $n \geq N_0$.

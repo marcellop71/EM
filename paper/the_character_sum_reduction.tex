@@ -352,7 +352,7 @@ constant cannot equal~1; the telescope then forces the walk character
 sum to be $o(N)$, ruling out the sustained bias needed for permanent
 avoidance.
 
-\begin{proposition}[\lean{EM/LargeSieveSpectral.lean\#L1997}{cme\_implies\_vcb}]
+\begin{proposition}[\lean{EM/LargeSieveSpectral.lean\#L2007}{cme\_implies\_vcb}]
 $\mathrm{CME} \Rightarrow \mathrm{VCB}$ with $\mu = 0$.
 Conversely, $\mathrm{VCB} + \mathrm{Dec} \Rightarrow \mathrm{CME}$.
 Thus CME decomposes as $\mathrm{CME} = \mathrm{VCB} + \mathrm{Dec}$.
@@ -360,7 +360,7 @@ VCB alone is strictly weaker than CME: it permits the fiber sums to
 be $\Theta(N)$, provided they are proportional to the visit counts.
 \end{proposition}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2049}{vcbPedImpliesCcsb}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2256}{vcb\_ped\_implies\_ccsb}]
 \label{thm:vcb-ped-ccsb}
 $\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \mathrm{CCSB}$.
 \end{theorem}
@@ -376,8 +376,8 @@ that at least $\delta N$ multipliers escape $\ker(\chi)$.  For each
 escaping multiplier, $\chi(m(n))$ is a non-trivial $d$-th root of
 unity, satisfying $\mathrm{Re}(\chi(m(n))) \leq 1 - \eta_0^2/2$
 where $\eta_0 = \min_{\zeta \in \mu_d \setminus \{1\}} |\zeta - 1| > 0$
-(\lean{EM/LargeSieveSpectral.lean\#L2014}{norm\_sub\_one\_sq\_eq},
-\lean{EM/LargeSieveSpectral.lean\#L2027}{unit\_norm\_re\_le\_of\_dist}).
+(\lean{EM/LargeSieveSpectral.lean\#L2024}{norm\_sub\_one\_sq\_eq},
+\lean{EM/LargeSieveSpectral.lean\#L2037}{unit\_norm\_re\_le\_of\_dist}).
 This real-part defect accumulates over $\delta N$ escaping steps,
 forcing $|\sum \chi(m(n)) - N| \geq c_0 N$ for
 $c_0 = \delta \eta_0^2 / 2$.  Combined with VCB's control
@@ -386,7 +386,7 @@ triangle inequality gives $|1 - \mu| \geq c_0/2$ for small
 $\varepsilon$.
 \end{proof}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2343}{vcb\_ped\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2366}{vcb\_ped\_implies\_mc}]
 $\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
@@ -515,7 +515,7 @@ exceptional primes below~$Q_0$.  This weakening is crucial because
 averaged results like BV naturally produce bounds that fail for
 finitely many moduli.
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L320}{mmcsb\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L303}{mmcsb\_implies\_mc}]
 \label{thm:mmcsb-mc}
 $\mathrm{MultiModularCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -539,7 +539,7 @@ the expected $\pi(x)/\phi(q)$.  If this applies to the EM multipliers,
 the death channel---a single progression---gets its fair share of
 multipliers, breaking the avoidance.
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L379}{bv\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L362}{bv\_chain\_mc}]
 $\mathrm{BV} + \mathrm{BVImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 The transfer hypothesis BVImpliesMMCSB is a \textbf{genuine frontier}:
@@ -564,7 +564,7 @@ where EMMultCSB bounds the \emph{multiplier} character sums)
 from the dynamical content (EMMultCSB~$\Rightarrow$~MMCSB, converting
 multiplier bounds to \emph{walk} bounds).  However, the walk bridge
 \textbf{MultCSBImpliesMMCSB is false in general}
-(\lean{EM/LargeSieve.lean\#L1243}{MultCSBImpliesMMCSB}):
+(\lean{EM/LargeSieve.lean\#L1226}{MultCSBImpliesMMCSB}):
 the walk character sum $\sum \chi(w(n))$ is a \emph{partial product}
 $\prod_{k<n} \chi(m(k))$ of the multiplier characters, and partial
 products of equidistributed unit complex numbers need not cancel---they

@@ -377,7 +377,7 @@ constant `N * (δ⁻¹ + 1)`.
 
 We use the `LargeSieveAnalytic.eAN` normalization `e(α) = exp(2π i α)`.
 -/
-theorem weakAdditiveLargeSieve
+theorem weak_additive_large_sieve
     (N : ℕ) (hN : 0 < N) (a : Fin N → ℂ)
     (R : ℕ) (α : Fin R → ℝ) (δ : ℝ) (hδ : 0 < δ)
     (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|) :
@@ -452,7 +452,7 @@ theorem off_diag_sum_le {R : ℕ} (w : Fin R → ℝ) (_hw : ∀ r, 0 ≤ w r) :
 theorem schur_quadratic_form_bound {R : ℕ}
     (G : Fin R → Fin R → ℂ)
     (b : Fin R → ℂ)
-    (D B : ℝ) (hD : 0 ≤ D) (hB : 0 ≤ B)
+    (D B : ℝ) (_hD : 0 ≤ D) (hB : 0 ≤ B)
     (hdiag : ∀ r, ‖G r r‖ ≤ D)
     (hoffdiag : ∀ r s, r ≠ s → ‖G r s‖ ≤ B) :
     ‖∑ r, ∑ s, b r * starRingEnd ℂ (b s) * G r s‖ ≤
@@ -2372,7 +2372,7 @@ theorem sieveWeightProd_coprime_mul {ω : ℕ → ℕ} {p q' : ℕ}
 /-- `IsSifted` for `(p * q').primeFactors` implies `IsSifted` for `q'.primeFactors`
     when p is prime and coprime to q'. -/
 theorem isSifted_of_mul_left {N : ℕ} {a : Fin N → ℂ} {p q' : ℕ} {Ω : ℕ → Finset ℕ}
-    (hp : Nat.Prime p) (hq' : q' ≠ 0) (hcop : Nat.Coprime p q')
+    (hp : Nat.Prime p) (hq' : q' ≠ 0) (_hcop : Nat.Coprime p q')
     (h : IsSifted a (p * q').primeFactors Ω) :
     IsSifted a q'.primeFactors Ω := by
   intro n ⟨p', hp', hn⟩

@@ -29,11 +29,15 @@ structure RotorState (G : Type*) (k : ℕ) where
 
 variable {G : Type*} {k : ℕ} [NeZero k]
 
+/-- One step of the rotor-router walk: multiply the current position by the generator
+    indicated by its rotor, then advance that rotor by one. -/
 def rotorStep [DecidableEq G] [Mul G] (gens : Fin k → G)
     (s : RotorState G k) : RotorState G k where
   pos := s.pos * gens (s.rotors s.pos)
   rotors := Function.update s.rotors s.pos (s.rotors s.pos + 1)
 
+/-- The state after `n` steps of the rotor-router walk starting from `s₀`,
+    defined as `n`-fold iteration of `rotorStep`. -/
 def rotorRun [DecidableEq G] [Mul G] (gens : Fin k → G)
     (s₀ : RotorState G k) (n : ℕ) : RotorState G k :=
   (rotorStep gens)^[n] s₀
@@ -41,11 +45,14 @@ def rotorRun [DecidableEq G] [Mul G] (gens : Fin k → G)
 @[simp] theorem rotorRun_zero [DecidableEq G] [Mul G] (gens : Fin k → G)
     (s₀ : RotorState G k) : rotorRun gens s₀ 0 = s₀ := rfl
 
+/-- Running for `n + 1` steps is the same as running for `n` steps and then taking one more step. -/
 theorem rotorRun_succ [DecidableEq G] [Mul G] (gens : Fin k → G)
     (s₀ : RotorState G k) (n : ℕ) :
     rotorRun gens s₀ (n + 1) = rotorStep gens (rotorRun gens s₀ n) :=
   Function.iterate_succ_apply' ..
 
+/-- Additivity of `rotorRun`: running for `m + n` steps equals running `m` steps
+    then continuing for `n` more steps from the resulting state. -/
 theorem rotorRun_add [DecidableEq G] [Mul G] (gens : Fin k → G)
     (s₀ : RotorState G k) (m n : ℕ) :
     rotorRun gens s₀ (m + n) = rotorRun gens (rotorRun gens s₀ m) n := by
@@ -76,12 +83,16 @@ theorem exists_lt_map_eq [Finite α] (f : ℕ → α) :
   · exact ⟨a, b, hlt, hab⟩
   · exact ⟨b, a, hgt, hab.symm⟩
 
+/-- Any iteration of a function on a finite type is eventually periodic:
+    there exist a tail length `μ` and period `T > 0` such that `f^[μ + T] x = f^[μ] x`. -/
 theorem eventually_periodic [Finite α] (f : α → α) (x : α) :
     ∃ μ T, 0 < T ∧ f^[μ + T] x = f^[μ] x := by
   obtain ⟨m, n, hmn, heq⟩ := exists_lt_map_eq (fun i => f^[i] x)
   refine ⟨m, n - m, Nat.sub_pos_of_lt hmn, ?_⟩
   rw [Nat.add_sub_cancel' hmn.le]; exact heq.symm
 
+/-- Once eventual periodicity is witnessed at step `μ`, the period `T` holds for all
+    later steps: if `f^[μ + T] x = f^[μ] x` and `μ ≤ n`, then `f^[n + T] x = f^[n] x`. -/
 theorem periodic_of_eq {α : Type*} (f : α → α) (x : α) {μ T : ℕ}
     (h : f^[μ + T] x = f^[μ] x) {n : ℕ} (hn : μ ≤ n) :
     f^[n + T] x = f^[n] x := by
@@ -100,20 +111,25 @@ section RotorTracking
 
 variable [DecidableEq G] [Mul G] (gens : Fin k → G)
 
+/-- A rotor at position `x` is unchanged by a step taken from a different position. -/
 theorem rotor_unchanged (s : RotorState G k) {x : G} (hne : s.pos ≠ x) :
     (rotorStep gens s).rotors x = s.rotors x := by
   show (Function.update s.rotors s.pos _ ) x = s.rotors x
   exact Function.update_of_ne hne.symm _ _
 
+/-- After a step, the rotor at the current position advances by one. -/
 theorem rotor_at_pos (s : RotorState G k) :
     (rotorStep gens s).rotors s.pos = s.rotors s.pos + 1 := by
   show (Function.update s.rotors s.pos _) s.pos = s.rotors s.pos + 1
   exact Function.update_self _ _ _
 
+/-- Variant of `rotor_at_pos` with an explicit equality hypothesis `s.pos = x`. -/
 theorem rotor_at_eq (s : RotorState G k) {x : G} (h : s.pos = x) :
     (rotorStep gens s).rotors x = s.rotors x + 1 := by
   subst h; exact rotor_at_pos gens s
 
+/-- The number of times position `x` is visited during the first `n` steps of the walk
+    starting from `s₀`. -/
 def visitCount (s₀ : RotorState G k) (x : G) : ℕ → ℕ
   | 0 => 0
   | n + 1 => visitCount s₀ x n + if (rotorRun gens s₀ n).pos = x then 1 else 0
@@ -121,16 +137,19 @@ def visitCount (s₀ : RotorState G k) (x : G) : ℕ → ℕ
 @[simp] theorem visitCount_zero (s₀ : RotorState G k) (x : G) :
     visitCount gens s₀ x 0 = 0 := rfl
 
+/-- The visit count increments by one when the walk is at position `x` at step `n`. -/
 theorem visitCount_succ_of_eq (s₀ : RotorState G k) {x : G} {n : ℕ}
     (h : (rotorRun gens s₀ n).pos = x) :
     visitCount gens s₀ x (n + 1) = visitCount gens s₀ x n + 1 := by
   simp [visitCount, h]
 
+/-- The visit count is unchanged when the walk is not at position `x` at step `n`. -/
 theorem visitCount_succ_of_ne (s₀ : RotorState G k) {x : G} {n : ℕ}
     (h : (rotorRun gens s₀ n).pos ≠ x) :
     visitCount gens s₀ x (n + 1) = visitCount gens s₀ x n := by
   simp [visitCount, h]
 
+/-- The visit count is monotone in the number of steps. -/
 theorem visitCount_mono (s₀ : RotorState G k) (x : G) {m n : ℕ} (h : m ≤ n) :
     visitCount gens s₀ x m ≤ visitCount gens s₀ x n := by
   obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le h
@@ -148,6 +167,8 @@ private theorem fin_val_add_one (a : Fin k) :
     (a + 1 : Fin k).val = (a.val + 1) % k := by
   simp [Fin.val_add]
 
+/-- The rotor value at `x` after `n` steps equals the initial rotor plus the visit count,
+    modulo `k`. This is the key invariant linking rotor state to visit history. -/
 theorem rotor_tracks_visits (s₀ : RotorState G k) (x : G) (n : ℕ) :
     ((rotorRun gens s₀ n).rotors x).val =
     ((s₀.rotors x).val + visitCount gens s₀ x n) % k := by
@@ -164,6 +185,8 @@ theorem rotor_tracks_visits (s₀ : RotorState G k) (x : G) (n : ℕ) :
       rw [mod_add]; congr 1
     · rw [visitCount_succ_of_ne gens s₀ h, rotor_unchanged gens (rotorRun gens s₀ n) h, ih]
 
+/-- In one full period of a periodic rotor-router walk, the visit count at every position
+    is divisible by `k` (the number of generators). Proved via `rotor_tracks_visits`. -/
 theorem visit_count_dvd_of_periodic (s₀ : RotorState G k) (x : G)
     {μ T : ℕ} (hperiod : rotorRun gens s₀ (μ + T) = rotorRun gens s₀ μ) :
     k ∣ visitCount gens (rotorRun gens s₀ μ) x T := by
@@ -179,6 +202,8 @@ theorem visit_count_dvd_of_periodic (s₀ : RotorState G k) (x : G)
   rw [Nat.modEq_iff_dvd' (Nat.le_add_right _ _)] at hmod
   simpa using hmod
 
+/-- If a position is visited at least once during one period, it is visited at least `k` times.
+    Immediate from `visit_count_dvd_of_periodic` and positivity. -/
 theorem visit_count_ge_k (s₀ : RotorState G k) (x : G)
     {μ T : ℕ} (hperiod : rotorRun gens s₀ (μ + T) = rotorRun gens s₀ μ)
     (hvisited : 0 < visitCount gens (rotorRun gens s₀ μ) x T) :
@@ -193,6 +218,8 @@ section GeneratorCoverage
 
 variable [DecidableEq G] [Mul G] (gens : Fin k → G)
 
+/-- Addition by a fixed element in `Fin k` is surjective: for any `j`, there exists `i`
+    with `r₀ + i = j`. Used to show that every generator is eventually selected by a rotor. -/
 theorem fin_add_surj (r₀ : Fin k) : ∀ j : Fin k, ∃ i : Fin k, r₀ + i = j :=
   fun j => ⟨j - r₀, by abel⟩
 
@@ -202,12 +229,17 @@ end GeneratorCoverage
 
 section SemigroupGroup
 
+/-- In a finite group, if `S` generates the full subgroup, then every element lies in the
+    submonoid closure of `S`. This uses the fact that in a finite group, subgroup and
+    submonoid closures coincide (`Subgroup.closure_toSubmonoid_of_finite`). -/
 theorem mem_submonoid_closure_of_subgroup_top [Group G] [Finite G] (S : Set G)
     (h : Subgroup.closure S = ⊤) (g : G) :
     g ∈ Submonoid.closure S := by
   have : g ∈ (Subgroup.closure S).toSubmonoid := by simp [h]
   rwa [Subgroup.closure_toSubmonoid_of_finite] at this
 
+/-- If a set `V` contains `1` and is closed under right-multiplication by elements of `S`,
+    then `V` contains the submonoid closure of `S`. Proved by induction on submonoid closure. -/
 theorem submonoid_closure_subset_of_mul_closed [Monoid G] (V : Set G) (S : Set G)
     (h1 : (1 : G) ∈ V) (hmul : ∀ g ∈ V, ∀ s ∈ S, g * s ∈ V) :
     ↑(Submonoid.closure S) ⊆ V := by
@@ -228,6 +260,8 @@ section MainTheorem
 
 variable [Group G] [Fintype G] [DecidableEq G]
 
+/-- A rotor-router walk on a finite group eventually becomes periodic:
+    there exist `μ` (tail length) and `T > 0` (period) with `rotorRun s₀ (μ+T) = rotorRun s₀ μ`. -/
 theorem walk_eventually_periodic (gens : Fin k → G) (s₀ : RotorState G k) :
     ∃ μ T, 0 < T ∧ rotorRun gens s₀ (μ + T) = rotorRun gens s₀ μ :=
   eventually_periodic (rotorStep gens) s₀

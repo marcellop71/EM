@@ -211,7 +211,7 @@ content in each route is the orbit-specificity transfer.
 
 \subsection*{Arithmetic Large Sieve Route}
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L420}{arith\_ls\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve.lean\#L403}{arith\_ls\_chain\_mc}]
 $\mathrm{ArithLS} + \mathrm{ArithLSImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 The arithmetic large sieve gives character sum bounds for Dirichlet
@@ -291,7 +291,7 @@ For every missing prime~$q$ and $\varepsilon > 0$, there exists
 $N_0$ such that for $N \geq N_0$: $E(N) \leq \varepsilon N^2$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L240}{sve\_implies\_mmcsb}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L238}{sve\_implies\_mmcsb}]
 \label{thm:sve-mc}
 $\mathrm{SVE} \Longrightarrow \mathrm{MMCSB} \Longrightarrow \MC$.
 \end{theorem}
@@ -299,7 +299,7 @@ $\mathrm{SVE} \Longrightarrow \mathrm{MMCSB} \Longrightarrow \MC$.
 \paragraph{Van der Corput and higher-order decorrelation.}
 The van der Corput inequality bounds $|\sum z_n|$ via autocorrelations:
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L591}{vanDerCorputBound}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L826}{van\_der\_corput\_bound}]
 \label{thm:vdc}
 $\left\|\sum_{n \leq N} z_n\right\|^2
 \leq \frac{N + H}{H+1}\bigl(N + 2\sum_{h=1}^{H}
@@ -318,7 +318,7 @@ $N \geq N_0$ and all $1 \leq h \leq H$:
 $\|R_h(N)\| \leq \varepsilon N$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L1014}{hod\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L1038}{hod\_implies\_ccsb}]
 \label{thm:hod-mc}
 $\mathrm{HOD} \Longrightarrow \mathrm{CCSB} \Longrightarrow \MC$.
 \end{theorem}

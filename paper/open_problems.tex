@@ -161,7 +161,7 @@ DecorrelationHypothesis as output.  The full chain
 \mathrm{MC}
 \]
 is formalized, with the first two arrows machine-verified
-(\lean{EM/LargeSieve.lean\#L1634}{sieve\_equidist\_implies\_decorrelation},
+(\lean{EM/LargeSieve.lean\#L1617}{sieve\_equidist\_implies\_decorrelation},
 \lean{EM/EquidistSelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
 The sieve route achieves SieveEquidist~$\Rightarrow$~Dec via a
 counting-to-character-sum bridge: SieveEquidistribution produces
@@ -315,10 +315,10 @@ current analytic number theory does not.
 \midrule
 \multicolumn{3}{l}{\emph{Inductive bootstrap}} \\
 \quad PrimeResidueEscape (elementary) & Proved & \code{prime\_residue\_escape} \\
-\quad MC($<\!p$) + PRE $\Rightarrow$ SE($p$) & Proved & \code{mc\_below\_pre\_implies\_se} \\
-\quad $q$-roughness from MC($<\!q$) & Proved & \code{mc\_below\_implies\_seq\_ge} \\
-\quad One-prime gap & Proved & \code{mc\_below\_cofinal\_hit\_implies\_mc\_at} \\
-\quad mc\_below 11 & Proved & \code{concrete\_mc\_below\_11} \\
+\quad MC($<\!p$) + PRE $\Rightarrow$ SE($p$) & Proved & \code{mcBelow\_pre\_implies\_se} \\
+\quad $q$-roughness from MC($<\!q$) & Proved & \code{mcBelow\_implies\_seq\_ge} \\
+\quad One-prime gap & Proved & \code{mcBelow\_cofinal\_hit\_implies\_mc\_at} \\
+\quad mcBelow 11 & Proved & \code{concrete\_mcBelow\_11} \\
 \midrule
 \multicolumn{3}{l}{\emph{Algebraic framework}} \\
 \quad Confinement Theorem & Proved & \code{confinement\_forward/reverse} \\

@@ -29,11 +29,17 @@ For each multiplier prime p ∈ {3, 5, 7, 13, 43, 53}:
 This section formalizes the individual QR conditions. -/
 
 -- Fact instances for multiplier primes
+/-- Registers 3 as a known prime. -/
 instance fact_prime_3 : Fact (Nat.Prime 3) := ⟨by decide⟩
+/-- Registers 5 as a known prime. -/
 instance fact_prime_5 : Fact (Nat.Prime 5) := ⟨by decide⟩
+/-- Registers 7 as a known prime. -/
 instance fact_prime_7 : Fact (Nat.Prime 7) := ⟨by decide⟩
+/-- Registers 13 as a known prime. -/
 instance fact_prime_13 : Fact (Nat.Prime 13) := ⟨by decide⟩
+/-- Registers 43 as a known prime. -/
 instance fact_prime_43 : Fact (Nat.Prime 43) := ⟨by decide⟩
+/-- Registers 53 as a known prime. -/
 instance fact_prime_53 : Fact (Nat.Prime 53) := ⟨by decide⟩
 
 /-! ### Helper lemmas for quadratic reciprocity -/
@@ -169,26 +175,32 @@ private theorem legendreSym_seven_neg_one_mod4_3 {q : ℕ} [Fact (Nat.Prime q)]
   rw [legendreSym_seven_reduce hq2, neg_one_pow_half_eq_neg_one' hmod4,
     legendreSym.mod 7 (q : ℤ), hr, hqr, mul_one]
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 5`, i.e., `q ≡ 1 mod 4` and `q ≡ 5 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_5 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 5) : legendreSym q 7 = -1 :=
   legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 5 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 11`, i.e., `q ≡ 3 mod 4` and `q ≡ 4 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_11 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 11) : legendreSym q 7 = -1 :=
   legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 4 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 13`, i.e., `q ≡ 1 mod 4` and `q ≡ 6 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_13 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 13) : legendreSym q 7 = -1 :=
   legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 6 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 15`, i.e., `q ≡ 3 mod 4` and `q ≡ 1 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_15 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 15) : legendreSym q 7 = -1 :=
   legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 1 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 17`, i.e., `q ≡ 1 mod 4` and `q ≡ 3 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_17 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 17) : legendreSym q 7 = -1 :=
   legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 3 (by omega) (by native_decide)
 
+/-- `legendreSym q 7 = -1` when `q % 28 = 23`, i.e., `q ≡ 3 mod 4` and `q ≡ 2 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_23 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 23) : legendreSym q 7 = -1 :=
   legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 2 (by omega) (by native_decide)
@@ -649,6 +661,10 @@ Uses the new `se_of_prime_index_escape` framework with manual witnesses. -/
 
 instance fact_prime_131 : Fact (Nat.Prime 131) := ⟨by decide⟩
 
+/-- SubgroupEscape at `q = 131` via multi-witness strategy. Since all six standard
+    multipliers {3,5,7,13,43,53} are quadratic residues mod 131, no single one is a
+    primitive root. Instead, for each prime factor of `130 = 2 * 5 * 13`, a different
+    multiplier escapes the corresponding maximal subgroup. -/
 theorem se_at_131 (hq : IsPrime 131) (hne : ∀ k, seq k ≠ 131) :
     ∀ H : Subgroup (ZMod 131)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 131 m) (multZ_ne_zero hq hne m)) ∉ H := by

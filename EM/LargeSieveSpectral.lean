@@ -12,7 +12,7 @@ energy increment dynamics.
 
 * `walk_energy_parseval` : Parseval identity for walk character sums (PROVED)
 * `subquadraticVisitEnergy_implies_mmcsb` : subquadratic energy ⟹ MMCSB (PROVED)
-* `vanDerCorputBound` : van der Corput inequality for character sums (PROVED)
+* `van_der_corput_bound` : van der Corput inequality for character sums (PROVED)
 * `cme_implies_ccsb` : CME ⟹ CCSB bypassing BRE (PROVED)
 * `cme_implies_mc` : CME ⟹ MC (PROVED)
 * `ccsb_implies_mmcsb` : CCSB ⟹ MMCSB with Q₀ = 0 (PROVED)
@@ -823,7 +823,7 @@ private theorem vdc_offdiag_bound {N H : ℕ} {δ : ℝ}
     where g is the zero extension of f. Then ∑w = (H+1)S, and Cauchy-Schwarz gives
     (H+1)^2 * ‖S‖^2 ≤ (N+H) * ∑‖w(j)‖^2. The energy ∑‖w(j)‖^2 expands via double sum
     into autocorrelations and is bounded by (H+1)N(1+Hδ). -/
-theorem vanDerCorputBound : VanDerCorputBound := by
+theorem van_der_corput_bound : VanDerCorputBound := by
   intro N f hf H hH1 hHN δ hδ hR
   have hN_pos : 0 < N := lt_of_lt_of_le hH1 hHN
   have hNr : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN_pos
@@ -1036,17 +1036,17 @@ section HODSimplified
 /-- **HOD → CCSB** (simplified): Since VanDerCorputBound is proved,
     HigherOrderDecorrelation alone implies ComplexCharSumBound. -/
 theorem hod_implies_ccsb (h : HigherOrderDecorrelation) : ComplexCharSumBound :=
-  hod_vdc_implies_ccsb h vanDerCorputBound
+  hod_vdc_implies_ccsb h van_der_corput_bound
 
 /-- **HOD → MC** (simplified): HigherOrderDecorrelation alone implies
     Mullin's Conjecture, via the chain HOD → CCSB → MC. -/
 theorem hod_chain_mc (h : HigherOrderDecorrelation) : MullinConjecture :=
-  hod_vdc_chain_mc h vanDerCorputBound
+  hod_vdc_chain_mc h van_der_corput_bound
 
 /-- **HOD → MMCSB** (simplified): HigherOrderDecorrelation alone implies
     MultiModularCSB with Q₀ = 0. -/
 theorem hod_implies_mmcsb (h : HigherOrderDecorrelation) : MultiModularCSB :=
-  hod_vdc_implies_mmcsb h vanDerCorputBound
+  hod_vdc_implies_mmcsb h van_der_corput_bound
 
 end HODSimplified
 
@@ -2141,8 +2141,8 @@ private theorem vcb_aggregate_error_bound {q : ℕ} [Fact (Nat.Prime q)]
     Then ‖M_N - N‖ ≥ |Re(M_N - N)| ≥ c₀·N. -/
 private theorem ped_real_part_lower_bound {q : ℕ} [Fact (Nat.Prime q)]
     {hq : IsPrime q} {hne : ∀ k, seq k ≠ q}
-    {χ : (ZMod q)ˣ →* ℂˣ} (hχ : χ ≠ 1) {N : ℕ}
-    {δ : ℝ} (hδ_pos : 0 < δ)
+    {χ : (ZMod q)ˣ →* ℂˣ} (_hχ : χ ≠ 1) {N : ℕ}
+    {δ : ℝ} (_hδ_pos : 0 < δ)
     {η₀ : ℝ} (hη₀_pos : 0 < η₀)
     (hη₀_bound : ∀ u : (ZMod q)ˣ, (χ u : ℂ) ≠ 1 → η₀ ≤ ‖(χ u : ℂ) - 1‖)
     (hped_N : δ * ↑N ≤
@@ -2253,7 +2253,7 @@ set_option maxHeartbeats 400000 in
     Step 13 divides the telescoping bound by `‖1-μ‖` to get `‖S_N‖ ≤ εN`.
 
     Position in hierarchy: VCB + PED → CCSB → MC. -/
-theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
+theorem vcb_ped_implies_ccsb (hvcb : VanishingConditionalBias)
     (hped : PositiveEscapeDensity) : ComplexCharSumBound := by
   intro q inst hq hne χ hχ ε hε
   haveI : Fact (Nat.Prime q) := inst
@@ -2366,7 +2366,7 @@ theorem vcbPedImpliesCcsb (hvcb : VanishingConditionalBias)
 theorem vcb_ped_implies_mc
     (hvcb : VanishingConditionalBias) (hped : PositiveEscapeDensity) :
     MullinConjecture :=
-  complex_csb_mc' (vcbPedImpliesCcsb hvcb hped)
+  complex_csb_mc' (vcb_ped_implies_ccsb hvcb hped)
 
 end VanishingConditionalBias
 

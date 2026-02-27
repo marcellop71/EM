@@ -806,7 +806,7 @@ theorem quadratic_autocorrelation_eq_mult_product
     this is equivalent to saying the walk autocorrelation R_h = o(N) for all h,
     via `quadratic_autocorrelation_eq_mult_product`.
 
-    Combined with the Van der Corput inequality (§69, `vanDerCorputBound`),
+    Combined with the Van der Corput inequality (§69, `van_der_corput_bound`),
     this implies `QuadraticCCSB`.
 
     This is weaker than `HigherOrderDecorrelation` (§69) which applies to all
@@ -872,7 +872,7 @@ theorem escape_dec_implies_walk_autocorr_bound (hed : EscapeDecorrelation)
     bounded by ε·N (for 1 ≤ h ≤ H) and H is large enough, then |S_N|² ≤ C·ε·N²
     for large N.
 
-    This is the content of `vanDerCorputBound` (§69, `LargeSieveAnalytic.lean`),
+    This is the content of `van_der_corput_bound` (§69, `LargeSieveAnalytic.lean`),
     specialized to order-2 characters where the autocorrelation equals the
     multiplier product sum.
 

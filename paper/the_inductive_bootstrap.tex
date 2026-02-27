@@ -26,7 +26,7 @@ even number in $[1, p)$ is in~$H$ as well.  Hence
 $H = (\ZZ/p\ZZ)^\times$, contradicting $H$ proper.
 \end{proof}
 
-\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{mc\_below\_pre\_implies\_se}]
+\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{mcBelow\_pre\_implies\_se}]
 \label{thm:bootstrap}
 $\MC({<}\,p) + \PRE \;\Longrightarrow\; \SE(p)$.
 \end{theorem}
@@ -293,7 +293,7 @@ selectability problem described in Section~\ref{sec:intro}: past the
 sieve gap, $q$ is the smallest available factor whenever it divides
 the Euclid number.  This gives the one-prime gap:
 
-\begin{theorem}[\defname{One-prime gap} --- \lean{EM/EquidistThreshold.lean}{mc\_below\_cofinal\_hit\_implies\_mc\_at}]
+\begin{theorem}[\defname{One-prime gap} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_cofinal\_hit\_implies\_mc\_at}]
 \label{thm:one-prime-gap}
 $\MC({<}\,q)$ plus a single hitting event
 $q \mid \Prod(n)+1$ for some $n$ past the sieve gap
