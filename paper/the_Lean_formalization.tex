@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.27.0 across 35~files
-totaling ${\sim}26{,}900$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.27.0 across 42~files
+totaling ${\sim}29{,}600$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \begin{center}
@@ -25,36 +25,43 @@ three leaf modules:
 \code{MullinDWH.lean} & DivisorWalkHypothesis (leaf) & 547 \\
 \code{MullinResidueWalk.lean} & WalkCoverage, residue walk, concrete MC & 603 \\
 \code{MullinGroupCore.lean} & walkZ, multZ, confinement, SE & 422 \\
-\code{MullinGroupEscape.lean} & Escape lemmas, 8-element argument & 673 \\
+\code{MullinGroupEscape.lean} & Escape lemmas, 8-element argument & 630 \\
 \code{MullinGroupSEInstances.lean} & 29 concrete SE instances ($q \leq 157$) & 364 \\
 \code{MullinGroupPumping.lean} & Gordon sequenceability (leaf) & 343 \\
-\code{MullinGroupQR.lean} & QR obstruction ($\leq 1.6\%$) (leaf) & 683 \\
+\code{MullinGroupQR.lean} & QR obstruction ($\leq 1.6\%$) (leaf) & 684 \\
 \code{MullinCRT.lean} & CRT multiplier invariance, walk recurrence & 160 \\
-\code{MullinDepartureGraph.lean} & Departure graph, infinite recurrence, safe prime lattice & 393 \\
-\code{RotorRouter.lean} & Scheduled walk coverage (standalone) & 421 \\
+\code{MullinDepartureGraph.lean} & Departure graph, infinite recurrence, safe prime lattice & 641 \\
+\code{RotorRouter.lean} & Scheduled walk coverage (standalone) & 455 \\
 \code{MullinRotorBridge.lean} & EMPR + SE $\Rightarrow$ MC bridge & 87 \\
 \code{EquidistPreamble.lean} & PE $\Rightarrow$ MC, bootstrapping & 234 \\
 \code{EquidistSieve.lean} & Sieve, WHP $\Leftrightarrow$ HH, forbidden multiplier, M\"obius death & 755 \\
 \code{EquidistSelfAvoidance.lean} & Self-avoidance, periodicity & 450 \\
-\code{EquidistCharPRE.lean} & Character non-vanishing, PRE $\Leftrightarrow$ SE & 811 \\
-\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 617 \\
-\code{EquidistThreshold.lean} & Sieve gap, one-prime gap, cofinal pair avoidance & 325 \\
-\code{EquidistOrbitAnalysis.lean} & Cofinal orbits, quotient walk, sieve, selectability & 1441 \\
-\code{EquidistFourier.lean} & Character sums, Fourier bridge & 1298 \\
+\code{EquidistCharPRE.lean} & Character non-vanishing, PRE $\Leftrightarrow$ SE & 807 \\
+\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 721 \\
+\code{EquidistThreshold.lean} & Sieve gap, one-prime gap, cofinal pair avoidance & 321 \\
+\code{EquidistOrbitAnalysis.lean} & Cofinal orbits, quotient walk, sieve, selectability & 1429 \\
+\code{EquidistFourier.lean} & Character sums, Fourier bridge & 1317 \\
 \code{EquidistSelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel (\S31--\S37, \S72) & 1163 \\
 \code{EquidistSieveTransfer.lean} & Sieve transfer, coprimality, neg-inv involution (\S38--\S78) & 1457 \\
 \code{CMEVariants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 113 \\
-\code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, sieve bridge (\S41--\S52, \S79) & 1812 \\
-\code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel (\S53--\S55) & 892 \\
+\code{SieveDefinedDynamics.lean} & Abstract SDDS framework, factoring rules & 195 \\
+\code{SDDSBridge.lean} & SDDS $\leftrightarrow$ EM bridge, orbit/walk/mult correspondence & 311 \\
+\code{SDDSReduction.lean} & StrongSME $\Rightarrow$ MC via sieve-map equidist.\ & 126 \\
+\code{ExcursionIndependence.lean} & Walk excursions, char.\ sum independence, avoidance discrepancy & 461 \\
+\code{CRTFiberIndependence.lean} & SE $\Rightarrow$ NAO, CRT independence, death channel & 296 \\
+\code{WeakMullin.lean} & Missing primes, Weak Mullin, reciprocal divergence, EMBV $\Rightarrow$ MC & 363 \\
+\code{CMEDecomposition.lean} & CME $=$ A $+$ B decomposition, surjection lemma (\S90--\S92) & 199 \\
+\code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, sieve bridge (\S41--\S52, \S79) & 1795 \\
+\code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel (\S53--\S55) & 899 \\
 \code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT, dead ends (\S56--\S65, \S81--\S82) & 1683 \\
-\code{LargeSieveSpectral.lean} & Walk energy, HOD, VdC, CME, VCB, SVE, transition matrix (\S66--\S86) & 2670 \\
+\code{LargeSieveSpectral.lean} & Walk energy, HOD, VdC, CME, VCB, SVE, transition matrix (\S66--\S86) & 2693 \\
 \midrule
 \code{IKCh1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 437 \\
 \code{IKCh2.lean} & Iwaniec--Kowalski Ch.\,2: summation formulas & 270 \\
 \code{IKCh3.lean} & Iwaniec--Kowalski Ch.\,3: combinatorial sieve & 557 \\
 \code{IKCh4.lean} & Iwaniec--Kowalski Ch.\,4: summation formulas & 593 \\
 \code{IKCh5.lean} & Iwaniec--Kowalski Ch.\,5: Kloosterman sums & 877 \\
-\code{IKCh7.lean} & Iwaniec--Kowalski Ch.\,7: bilinear forms, duality, Gram, MLS, sieve & 2269 \\
+\code{IKCh7.lean} & Iwaniec--Kowalski Ch.\,7: bilinear forms, duality, Gram, MLS, sieve & 2722 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -105,12 +112,12 @@ The formalization draws on several Mathlib libraries:
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}26{,}900$ \\
-Files & 35 \\
-Theorems/lemmas & ${\sim}910$ \\
-Definitions & ${\sim}460$ \\
+Lines of Lean code & ${\sim}29{,}600$ \\
+Files & 42 \\
+Theorems/lemmas & ${\sim}1{,}000$ \\
+Definitions & ${\sim}500$ \\
 \code{sorry} occurrences & \textbf{0} \\
-Open hypotheses (stated as \code{def}) & ${\sim}26$ \\
+Open hypotheses (stated as \code{def}) & ${\sim}35$ \\
 Mathlib version & v4.27.0 \\
 \bottomrule
 \end{tabular}
