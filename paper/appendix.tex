@@ -88,6 +88,215 @@ about the sequence's long-term dynamics---which is precisely what the
 formalization in the body of this paper provides.
 
 %% =========================================================================
+\section{The Bag-Theoretic Structure of the Euclid--Mullin Dynamics}
+\label{app:bag}
+%% =========================================================================
+
+\paragraph{The EM sequence as a dynamical system on bags of primes.}
+The state of the Euclid--Mullin construction at step~$n$ is fully captured
+by the \emph{bag} (finite set) of primes collected so far:
+$S_n = \{\seq(0), \seq(1), \ldots, \seq(n)\}$.
+The dynamics is a deterministic map on finite subsets of primes:
+\[
+S_{n+1} = S_n \cup \{\min \mathcal{F}(S_n)\},
+\]
+where $\mathcal{F}(S) = \text{PrimeFactors}(\prod S + 1)$ produces the
+\emph{factor bag} of the Euclid number $E_n = \Prod(n) + 1$.
+
+The trajectory is entirely determined by $S_0 = \{2\}$.  The Markov
+property holds: the future depends only on the current bag, not on the
+order in which its elements were assembled.  The product
+$\Prod(n) = \prod S_n$ is a \emph{lossless encoding} of the bag (by
+unique factorization of the squarefree integer~$\Prod(n)$), and the
+order of insertion is forgotten.
+
+\paragraph{The pipeline: from bag to next prime.}
+The selection of the next prime passes through a pipeline of operations,
+each with distinct information-theoretic character:
+\[
+S_n \;\xrightarrow[\text{lossless}]{\prod(\cdot)}\;
+\Prod(n) \;\xrightarrow[+1]{\text{shift}}\;
+\Prod(n)+1 \;\xrightarrow[\text{factor}]{}\;
+\mathcal{F}(S_n) \;\xrightarrow[\text{compress}]{\min}\;
+\seq(n+1).
+\]
+
+\emph{Stage~1: Product (lossless).}  The map $S_n \mapsto \Prod(n)$ is
+an injection (on sets of distinct primes), encoding ${\sim}\, n \log n$
+bits of bag information into a single integer of ${\sim}\, 2^n$ digits.
+This stage \emph{expands} the representation while preserving all
+information.
+
+\emph{Stage~2: The $+1$ shift (multiplicative $\to$ additive).}  The map
+$\Prod(n) \mapsto \Prod(n)+1$ is the critical bridge between two worlds.
+The integer~$\Prod(n)$ lives in the multiplicative world: its structure
+(as a product of known primes) is completely understood.  The
+integer~$\Prod(n)+1$ lives in the additive world: its factorization
+bears no algebraic relationship to that of~$\Prod(n)$, beyond the
+guaranteed coprimality $\gcd(\Prod(n),\, \Prod(n)+1) = 1$.  This shift
+is the \emph{source of mixing} in the dynamics.
+
+\emph{Stage~3: Factorization (revealing the new bag).}  The factorization
+$\Prod(n)+1 = p_1^{a_1} \cdots p_k^{a_k}$ reveals the factor bag
+$\mathcal{F}(S_n) = \{p_1, \ldots, p_k\}$.  This step is formally
+lossless, but computationally opaque: predicting $\mathcal{F}(S_n)$ from
+$S_n$ requires factoring a number of ${\sim}\, 2^n$ digits.
+
+\emph{Stage~4: Minimum (catastrophic compression).}  The map
+$\mathcal{F}(S_n) \mapsto \min \mathcal{F}(S_n)$ discards all but the
+smallest element of the factor bag.  The compression ratio is
+exponential: the input has ${\sim}\, 2^n$ bits; the output has $O(n)$
+bits.  The composition of stages~2--4 is the \emph{minFac bottleneck}:
+an information-destroying channel that maps ${\sim}\, 2^n$ bits to
+$O(n)$ bits through arithmetically chaotic operations.
+
+\paragraph{The orthogonal bag property.}
+A fundamental structural fact distinguishes the factor bag
+$\mathcal{F}(S_n)$ from the current bag~$S_n$:
+
+\begin{proposition}[Orthogonal bags]
+$\mathcal{F}(S_n) \cap S_n = \emptyset$.
+That is, the primes dividing $\Prod(n)+1$ are entirely disjoint from
+the primes in the current bag.
+\end{proposition}
+
+\begin{proof}
+For any $p \in S_n$: $p \mid \Prod(n)$, hence
+$\Prod(n)+1 \equiv 1 \pmod{p}$, so $p \nmid \Prod(n)+1$, i.e.\
+$p \notin \mathcal{F}(S_n)$.
+\end{proof}
+
+This is the Euclidean coprimality at the heart of the construction, but
+its bag-theoretic formulation reveals its dynamical significance: at each
+step, the factorization produces a \emph{fresh sample} from the
+complementary set $\mathbb{P} \setminus S_n$.  The new bag
+$\mathcal{F}(S_n)$ contains no ``recycled'' primes---every element is
+drawn from the universe of primes not yet seen.
+
+Moreover, $\Prod(n)$ is \emph{squarefree} (a product of distinct primes),
+so $S_n$ is genuinely an unordered set with no multiplicities.  The
+accumulator~$\Prod(n)$ is the unique squarefree integer with prime
+support exactly~$S_n$.
+
+\paragraph{The CRT perspective.}
+The Chinese Remainder Theorem provides the natural coordinate system for
+the bag dynamics.  The integer $\Prod(n)$ is determined by its CRT
+vector:
+\[
+\mathbf{c}(n) = (\Prod(n) \bmod 2,\;
+\Prod(n) \bmod 3,\; \Prod(n) \bmod 5,\; \ldots)
+\]
+indexed by all primes.  For primes $p \in S_n$:
+$\Prod(n) \bmod p = 0$ (since $p \mid \Prod(n)$).  For primes
+$r \notin S_n$: $\Prod(n) \bmod r = \prod_{p \in S_n} (p \bmod r)
+\in (\ZZ/r\ZZ)^\times$.
+
+The $+1$ shift maps $\mathbf{c}(n) \mapsto \mathbf{c}(n) + \mathbf{1}$
+componentwise.  The factorization of $\Prod(n)+1$ is determined by which
+components satisfy $c_r(n) + 1 \equiv 0 \pmod{r}$, i.e., $c_r(n) = -1$.
+The minFac is the \emph{winner of a race} across CRT coordinates: the
+smallest prime $r \notin S_n$ for which $c_r(n) = -1$.  This race
+depends on all coordinates simultaneously, but each coordinate is
+determined independently (by CRT) from every other.
+
+\paragraph{Fiber structure and non-reconstructibility.}
+A natural question is whether the output of minFac carries information
+about the bag that produced it.  The answer is: almost none.
+
+\begin{proposition}[Massive many-to-one]
+For any prime~$q$ and any set size~$k$, the number of bags $T$ of $k$
+distinct primes satisfying $\minFac(\prod T + 1) = q$ grows
+exponentially in~$k$.
+\end{proposition}
+
+The constraints on such a bag~$T$ are purely modular:
+$\prod T \equiv -1 \pmod{q}$ (one congruence condition), plus
+$\prod T \not\equiv -1 \pmod{p}$ for each prime $p < q$ with
+$p \notin T$ (at most $\pi(q)$ non-congruence conditions).  The total
+information content of the output is $O(q)$~bits, while the bag carries
+${\sim}\, 2^k$~bits.  The fraction of information preserved is
+$O(q / 2^k) \to 0$ super-exponentially.  Consequently, the map
+$S \mapsto \minFac(\prod S + 1)$ is an \emph{exponentially lossy
+summarization} of the bag.
+
+\paragraph{MinFac as a greedy algorithm.}
+The minimum operation in Stage~4 admits a natural optimization
+interpretation.  Among all prime factors of $\Prod(n)+1$, the minFac
+rule selects the one that increases $\log \Prod$ by the least amount:
+\[
+\seq(n+1) = \arg\min_{p \in \mathcal{F}(S_n)} \log p.
+\]
+This is a \emph{greedy algorithm for slow growth}: at each step, the
+accumulator grows as slowly as possible (given the constraint of
+selecting a prime factor of $\Prod(n)+1$).
+
+Slow growth has a dynamical consequence.  Since $\Prod(n)$ grows slowly
+(relative to the maxFac alternative), each target prime~$q$ receives
+\emph{more trials}---more steps during which $\Prod(n)+1$ might be
+divisible by~$q$---before the accumulator becomes so large that the
+probability of $q$-divisibility becomes negligible.  The minFac rule
+maximizes the number of opportunities each prime has to enter the
+sequence.
+
+By contrast, the maxFac rule (selecting the largest prime factor) causes
+$\Prod(n)$ to grow so rapidly that small primes quickly lose any chance
+of being selected, which is why the second Euclid--Mullin sequence
+provably misses infinitely many primes
+(Cox--van der Poorten~\cite{CoxVdP1968}, Booker~\cite{BoSa2012}).
+
+\paragraph{The $0$-accessibility of minFac.}
+We formalize the advantage of minFac over other selection rules.  Define
+a selection rule $\sigma\colon 2^{\mathbb{P}} \to \mathbb{P}$ mapping a
+nonempty set of primes to one of its elements.  Say $\sigma$ is
+\emph{$0$-accessible} for a prime~$q$ past the sieve gap if: whenever
+$q \in F$ and all primes $p < q$ have been screened, $\sigma(F) = q$.
+
+MinFac is $0$-accessible for every~$q$: past the sieve gap, all primes
+below~$q$ are excluded from $\mathcal{F}(S_n)$, so if
+$q \in \mathcal{F}(S_n)$, then $q = \min \mathcal{F}(S_n)$.  The event
+``$q$ divides $\Prod(n)+1$'' is \emph{sufficient} for~$q$ to enter the
+sequence.
+
+MaxFac is not $0$-accessible: even if $q \mid \Prod(n)+1$, a larger
+factor is selected instead, and the probability that~$q$ is the largest
+factor of a number of size ${\sim}\, 2^{2^n}$ decays faster than any
+polynomial.
+
+The $0$-accessibility of minFac ensures that the walk mod~$q$ hitting
+$-1$ is both necessary and sufficient for~$q$ to enter the sequence
+(past the sieve gap).  This reduces the question of whether~$q$ appears
+to a question about the walk alone, with no additional selection barrier.
+
+\paragraph{Deterministic pseudorandomness.}
+The EM sequence is fully deterministic, yet exhibits pseudorandom
+behavior.  The pseudorandomness arises from the composition of two
+sources of arithmetic opacity:
+\begin{enumerate}[nosep]
+\item \emph{The $+1$ shift} moves from the multiplicative world (where
+  $\Prod(n)$ is fully understood) to the additive world (where
+  $\Prod(n)+1$ is arithmetically opaque).  The relationship between the
+  multiplicative structures of consecutive integers is the central
+  mystery of analytic number theory.
+\item \emph{The factoring step} reveals the prime structure of
+  $\Prod(n)+1$, but this structure is computationally hard to predict
+  from~$\Prod(n)$.  The computational difficulty of factoring is, in a
+  precise sense, the \emph{source of pseudorandomness} for the EM
+  sequence.
+\end{enumerate}
+Small changes to the bag (adding one prime~$p$) transform $\Prod(n)$ to
+$\Prod(n) \cdot p$ and hence $\Prod(n)+1$ to $\Prod(n) \cdot p + 1$, a
+completely different integer with a completely different factorization.
+The dynamics is \emph{sensitive to the bag contents}, analogous to
+sensitive dependence on initial conditions in chaotic systems, but
+operating through number-theoretic rather than geometric mechanisms.
+
+The orthogonal bag property reinforces this pseudorandomness: at each
+step, the factor bag is drawn from $\mathbb{P} \setminus S_n$, a set
+that has never been ``used'' in the construction.  Each step provides a
+genuinely fresh arithmetic input, preventing the buildup of systematic
+correlations.
+
+%% =========================================================================
 \section{Analogies and Context}
 \label{app:analogies}
 %% =========================================================================

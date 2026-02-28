@@ -138,6 +138,34 @@ def SuperExponentialGrowth (s : ℕ → ℕ) : Prop :=
 def CoprimeCascade (S : SDDS) : Prop :=
   ∀ m n : ℕ, m < n → S.Φ.apply (S.orbit m + 1) ∣ S.orbit n
 
+/-- The orbit is monotonically divisible: orbit(k) divides orbit(k+1).
+    This follows immediately from the recurrence orbit(k+1) = orbit(k) * Φ(orbit(k) + 1). -/
+theorem SDDS.orbit_dvd_orbit_succ (S : SDDS) (k : ℕ) :
+    S.orbit k ∣ S.orbit (k + 1) :=
+  ⟨S.Φ.apply (S.orbit k + 1), (S.orbit_succ k).symm⟩
+
+/-- The orbit is transitively divisible: orbit(k) divides orbit(n) for k ≤ n. -/
+theorem SDDS.orbit_dvd_orbit (S : SDDS) {k n : ℕ} (hkn : k ≤ n) :
+    S.orbit k ∣ S.orbit n := by
+  obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hkn
+  induction d with
+  | zero => simp
+  | succ d ih => exact dvd_trans (ih (Nat.le_add_right k d)) (S.orbit_dvd_orbit_succ (k + d))
+
+/-- The multiplier at step m divides orbit(m+1), since
+    orbit(m+1) = orbit(m) * Φ(orbit(m) + 1). -/
+theorem SDDS.mult_dvd_orbit_succ (S : SDDS) (m : ℕ) :
+    S.Φ.apply (S.orbit m + 1) ∣ S.orbit (m + 1) :=
+  ⟨S.orbit m, by rw [S.orbit_succ m]; ring⟩
+
+/-- **CoprimeCascade holds for every SDDS.**
+    For m < n, Φ(orbit(m) + 1) divides orbit(n).
+    Proof: Φ(orbit(m) + 1) divides orbit(m+1) as a factor of the product,
+    and orbit(m+1) divides orbit(n) by transitivity of the divisibility chain. -/
+theorem SDDS.coprimeCascade (S : SDDS) : CoprimeCascade S := by
+  intro m n hmn
+  exact dvd_trans (S.mult_dvd_orbit_succ m) (S.orbit_dvd_orbit hmn)
+
 /-- **Sieve regularity**: the factoring rule distributes "uniformly" modulo q.
     Abstractly, this asserts that the factoring rule does not systematically
     avoid certain residue classes mod q. The precise formulation involves
