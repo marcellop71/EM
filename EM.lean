@@ -41,3 +41,5 @@ import EM.CRTFiberIndependence
 import EM.WeakMullin
 import EM.CMEDecomposition
 import EM.WeakErgodicity
+import EM.PopulationEquidistProof
+import EM.ReciprocalSumDivergence

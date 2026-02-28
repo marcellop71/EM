@@ -79,31 +79,37 @@ end ShiftedSquarefreePopulation
 
 section PopulationDecomposition
 
-/-- **Population Equidistribution (PE)**: among shifted squarefree numbers,
-    the smallest prime factor is equidistributed in residue classes modulo
-    any prime q.
+/-- **Population Equidistribution (PE)**: among q-rough shifted squarefree
+    numbers (those with minFac > q), the smallest prime factor is
+    equidistributed in residue classes modulo any prime q.
 
     Concretely: the ratio
-      |{m ∈ S ∩ [2,X] : minFac(m) ≡ a (mod q)}| / |S ∩ [2,X]|
-    tends to 1/(q−1) as X → ∞, for each a coprime to q.
+      |{m ∈ S_q ∩ [2,X] : minFac(m) ≡ a (mod q)}| / |S_q ∩ [2,X]|
+    tends to 1/(q−1) as X → ∞, for each 0 < a < q, where
+    S_q = {m ∈ S : minFac(m) > q} is the q-rough shifted squarefree population.
 
-    This is provable by the Selberg sieve and Dirichlet's theorem on primes
-    in arithmetic progressions. The proof uses:
-    1. **Sieve axiom** for S: divisibility by r has density g(r) = r/(r²−1) ≈ 1/r.
+    The restriction to minFac(m) > q is essential: small primes (e.g., p = 2)
+    create asymmetry across residue classes mod q. For instance, 2/3 of
+    shifted squarefree numbers are even (minFac = 2), so the unrestricted
+    ratio is biased toward a ≡ 2 (mod 3). Conditioning on minFac > q
+    removes the finitely many small primes that break symmetry.
+
+    This is provable from:
+    1. **Sieve axiom** for S: divisibility by r has density g(r) = r/(r²−1).
     2. **Buchstab identity**: minFac(m) = p has density g(p) · ∏_{r<p}(1−g(r)).
-    3. **Dirichlet**: primes p ≡ a (mod q) have density 1/(q−1) among all primes.
-    4. **Summation**: sieve weights are smooth in p and do not depend on p mod q.
+    3. **Key fact**: d_S(p) depends on p only through its size, not p mod q.
+    4. **Dirichlet's theorem**: primes in APs are equidistributed.
 
-    Stated as a hypothesis because the full sieve proof requires infrastructure
-    (Barban-Davenport-Halberstam, Buchstab identity) beyond current Mathlib. -/
+    Proved from `QRoughShiftedSquarefreeDensity` and `MinFacResidueEquidist`
+    in `PopulationEquidistProof.lean`. -/
 def PopulationEquidist : Prop :=
   ∀ (q : Nat), Nat.Prime q →
   ∀ (a : Nat), 0 < a → a < q →
   Filter.Tendsto
     (fun X : Nat =>
       (((Finset.Icc 2 X).filter
-        (fun m => Squarefree (m - 1) ∧ Nat.minFac m % q = a)).card : ℝ) /
-      ((Finset.Icc 2 X).filter (fun m => Squarefree (m - 1))).card)
+        (fun m => Squarefree (m - 1) ∧ q < Nat.minFac m ∧ Nat.minFac m % q = a)).card : ℝ) /
+      ((Finset.Icc 2 X).filter (fun m => Squarefree (m - 1) ∧ q < Nat.minFac m)).card)
     Filter.atTop
     (nhds (1 / (q - 1 : ℝ)))
 
