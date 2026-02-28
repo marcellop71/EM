@@ -38,3 +38,5 @@ import EM.SDDSBridge
 import EM.SDDSReduction
 import EM.ExcursionIndependence
 import EM.CRTFiberIndependence
+import EM.WeakMullin
+import EM.CMEDecomposition
