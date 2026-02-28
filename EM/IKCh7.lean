@@ -2149,6 +2149,180 @@ def FareyLargeSieveProper : Prop :=
           ‖∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * (b : ℝ) / (q : ℝ))‖ ^ 2 ≤
       ((Q : ℝ) ^ 2 + ↑N - 1) * l2NormSq a
 
+/-- **Coprime fraction uniqueness**: If `b/q = b'/q'` as rationals with
+    `gcd(b,q) = gcd(b',q') = 1` and `q, q' > 0`, then `q = q'` and `b = b'`. -/
+private theorem coprime_frac_unique {br qr bs qs : ℕ}
+    (hqr_pos : 0 < qr) (hqs_pos : 0 < qs)
+    (hbr_cop : Nat.Coprime br qr) (hbs_cop : Nat.Coprime bs qs)
+    (heq : (br : ℚ) / qr = (bs : ℚ) / qs) : qr = qs ∧ br = bs := by
+  have hqr_ne : (qr : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+  have hqs_ne : (qs : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+  rw [div_eq_div_iff hqr_ne hqs_ne] at heq
+  have heq_nat : br * qs = bs * qr := by exact_mod_cast heq
+  have h_qr_dvd_qs : qr ∣ qs := by
+    have h : qr ∣ br * qs := ⟨bs, by linarith [heq_nat]⟩
+    exact hbr_cop.symm.dvd_of_dvd_mul_left h
+  have h_qs_dvd_qr : qs ∣ qr := by
+    have h : qs ∣ bs * qr := ⟨br, by linarith [heq_nat]⟩
+    exact hbs_cop.symm.dvd_of_dvd_mul_left h
+  have hqeq : qr = qs := Nat.le_antisymm (Nat.le_of_dvd hqs_pos h_qr_dvd_qs)
+    (Nat.le_of_dvd hqr_pos h_qs_dvd_qr)
+  refine ⟨hqeq, ?_⟩
+  exact Nat.mul_right_cancel hqs_pos (hqeq ▸ heq_nat)
+
+/-- **ALS implies Farey LS**: The additive large sieve (Theorem 7.7) implies the
+    Farey large sieve (Theorem 7.11).
+
+    The Farey fractions `b/q` with `(b,q) = 1`, `0 ≤ b < q`, `1 ≤ q ≤ Q` are
+    `(1/Q²)`-spaced. Applying the ALS with `δ = 1/Q²` gives the bound
+    `(Q² + N − 1) · ‖a‖²`.
+
+    The proof enumerates the Farey pairs as `Fin R`, shows the points are spaced
+    using the classical mediant property (Farey spacing), and applies the ALS. -/
+theorem als_implies_farey_large_sieve_proper (hals : AdditiveLargeSieve) :
+    FareyLargeSieveProper := by
+  intro N Q hN hQ a
+  -- Define the Farey finset as a sigma type
+  let Qs := (Finset.range (Q + 1)).filter (0 < ·)
+  let Bs : ℕ → Finset ℕ := fun q => (Finset.range q).filter (Nat.Coprime · q)
+  let S := Qs.sigma Bs
+  -- Convert the double sum to a sum over the sigma finset
+  have hdouble : ∑ q ∈ Qs, ∑ b ∈ Bs q,
+      ‖∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * (b : ℝ) / (q : ℝ))‖ ^ 2 =
+    ∑ x ∈ S, ‖∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * (x.2 : ℝ) / (x.1 : ℝ))‖ ^ 2 :=
+    Finset.sum_sigma' Qs Bs _
+  -- Show the double sum is what we want
+  show ∑ q ∈ Qs, ∑ b ∈ Bs q,
+      ‖∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * (b : ℝ) / (q : ℝ))‖ ^ 2 ≤
+    ((Q : ℝ) ^ 2 + ↑N - 1) * l2NormSq a
+  -- Get the cardinality and enumeration
+  set R := S.card
+  -- Use the Finset equivalence to Fin R
+  let e := S.equivFin
+  -- Define the evaluation points
+  let α : Fin R → ℝ := fun i =>
+    let x := e.symm i
+    (x.val.2 : ℝ) / (x.val.1 : ℝ)
+  -- Step 1: Convert sigma sum to Fin sum
+  have hfin_sum : ∑ x ∈ S,
+      ‖∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * (x.2 : ℝ) / (x.1 : ℝ))‖ ^ 2 =
+    ∑ i : Fin R,
+      ‖∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * α i)‖ ^ 2 := by
+    rw [← Finset.sum_coe_sort S]
+    apply Fintype.sum_equiv e
+    intro x
+    simp only [α, Equiv.symm_apply_apply]
+    congr 1; congr 1; apply Finset.sum_congr rfl; intro n _
+    congr 1; congr 1; rw [mul_div_assoc]
+  -- Step 2: Match the ALS format (α r * ↑n = ↑n * α r)
+  have hals_sum : ∑ i : Fin R,
+      ‖∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * α i)‖ ^ 2 =
+    ∑ i : Fin R,
+      ‖∑ n : Fin N, a n * eAN (α i * ↑(n : ℕ))‖ ^ 2 := by
+    congr 1; ext i; congr 2; congr 1; ext n; congr 1; congr 1; ring
+  -- Step 3: Handle Q = 1 separately (δ = 1/Q² = 1 > 1/2 violates ALS hypothesis)
+  by_cases hQ1 : Q = 1
+  · -- For Q = 1: only one Farey pair (q=1, b=0), bound by Cauchy-Schwarz
+    subst hQ1
+    simp only [Qs, Bs]
+    have hQs : (Finset.range 2).filter (0 < ·) = {1} := by decide
+    rw [hQs, Finset.sum_singleton]
+    have hBs : (Finset.range 1).filter (Nat.Coprime · 1) = {0} := by decide
+    rw [hBs, Finset.sum_singleton]
+    -- eAN(n * 0 / 1) = eAN(0) = 1, so a n * eAN(...) = a n
+    have hsimp_exp : ∀ n : Fin N,
+        a n * eAN ((↑(n : ℕ) : ℝ) * ((0 : ℕ) : ℝ) / ((1 : ℕ) : ℝ)) = a n := by
+      intro n
+      have : ((↑(n : ℕ) : ℝ) * ((0 : ℕ) : ℝ) / ((1 : ℕ) : ℝ)) = 0 := by simp
+      rw [this, eAN_eq_root_eAN, _root_.eAN_zero, mul_one]
+    conv_lhs => rw [show ∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * ((0 : ℕ) : ℝ) / ((1 : ℕ) : ℝ)) =
+        ∑ n : Fin N, a n from Finset.sum_congr rfl (fun n _ => hsimp_exp n)]
+    -- Need: ‖∑ a_n‖² ≤ (↑1 ^ 2 + ↑N - 1) * l2NormSq a
+    -- The coefficient (↑1)^2 + ↑N - 1 = ↑N
+    have hcoeff : ((1 : ℕ) : ℝ) ^ 2 + (N : ℝ) - 1 = (N : ℝ) := by push_cast; ring
+    rw [hcoeff]
+    -- Triangle inequality + Chebyshev: ‖∑ a_n‖² ≤ (∑ ‖a_n‖)² ≤ N * ∑ ‖a_n‖²
+    calc ‖∑ n : Fin N, a n‖ ^ 2
+        ≤ (∑ n : Fin N, ‖a n‖) ^ 2 := by
+          gcongr; exact norm_sum_le _ _
+      _ ≤ ↑(Finset.univ : Finset (Fin N)).card * (∑ n : Fin N, ‖a n‖ ^ 2) :=
+          sq_sum_le_card_mul_sum_sq
+      _ = (N : ℝ) * l2NormSq a := by
+          simp [l2NormSq]
+  · -- For Q ≥ 2: use ALS with δ = 1/Q²
+    have hQ2 : 2 ≤ Q := by omega
+    have hQ_pos : (0 : ℝ) < (Q : ℝ) := Nat.cast_pos.mpr (by omega)
+    have hQsq_pos : (0 : ℝ) < (Q : ℝ) ^ 2 := sq_pos_of_pos hQ_pos
+    have hδ : (0 : ℝ) < 1 / (Q : ℝ) ^ 2 := div_pos one_pos hQsq_pos
+    have hδ_le : 1 / (Q : ℝ) ^ 2 ≤ 1 / 2 := by
+      rw [div_le_div_iff₀ hQsq_pos (by norm_num : (0 : ℝ) < 2)]
+      simp only [one_mul]
+      have : (4 : ℝ) ≤ (Q : ℝ) ^ 2 := by
+        have : (2 : ℝ) ≤ (Q : ℝ) := by exact_mod_cast hQ2
+        nlinarith
+      linarith
+    -- Show the Farey points are spaced
+    have hspaced : IsSpaced α (1 / (Q : ℝ) ^ 2) := by
+      intro r s hrs
+      have hne : (e.symm r) ≠ (e.symm s) :=
+        fun h => hrs (e.symm.injective h ▸ rfl)
+      have hne' : (e.symm r).val ≠ (e.symm s).val :=
+        fun h => hne (Subtype.val_injective h)
+      -- Both pairs are in S
+      have hmr := (e.symm r).prop
+      have hms := (e.symm s).prop
+      rw [Finset.mem_sigma] at hmr hms
+      have hqr_mem := Finset.mem_filter.mp hmr.1
+      have hqs_mem := Finset.mem_filter.mp hms.1
+      have hqr_pos : 0 < (e.symm r).val.1 := hqr_mem.2
+      have hqs_pos : 0 < (e.symm s).val.1 := hqs_mem.2
+      have hqr_le : (e.symm r).val.1 ≤ Q := Nat.lt_succ_iff.mp (Finset.mem_range.mp hqr_mem.1)
+      have hqs_le : (e.symm s).val.1 ≤ Q := Nat.lt_succ_iff.mp (Finset.mem_range.mp hqs_mem.1)
+      have hbr_mem := Finset.mem_filter.mp hmr.2
+      have hbs_mem := Finset.mem_filter.mp hms.2
+      have hbr_lt : (e.symm r).val.2 < (e.symm r).val.1 := Finset.mem_range.mp hbr_mem.1
+      have hbs_lt : (e.symm s).val.2 < (e.symm s).val.1 := Finset.mem_range.mp hbs_mem.1
+      have hbr_cop : Nat.Coprime (e.symm r).val.2 (e.symm r).val.1 := hbr_mem.2
+      have hbs_cop : Nat.Coprime (e.symm s).val.2 (e.symm s).val.1 := hbs_mem.2
+      -- Abbreviate
+      set qr := (e.symm r).val.1
+      set br := (e.symm r).val.2
+      set qs := (e.symm s).val.1
+      set bs := (e.symm s).val.2
+      -- Int.fract(b/q) = b/q since 0 ≤ b/q < 1
+      have hqr_pos_r : (0 : ℝ) < (qr : ℝ) := Nat.cast_pos.mpr hqr_pos
+      have hqs_pos_r : (0 : ℝ) < (qs : ℝ) := Nat.cast_pos.mpr hqs_pos
+      have hfr : Int.fract ((br : ℝ) / (qr : ℝ)) = (br : ℝ) / (qr : ℝ) := by
+        rw [Int.fract_eq_self]
+        exact ⟨div_nonneg (Nat.cast_nonneg _) (le_of_lt hqr_pos_r),
+          by rw [div_lt_one hqr_pos_r]; exact_mod_cast hbr_lt⟩
+      have hfs : Int.fract ((bs : ℝ) / (qs : ℝ)) = (bs : ℝ) / (qs : ℝ) := by
+        rw [Int.fract_eq_self]
+        exact ⟨div_nonneg (Nat.cast_nonneg _) (le_of_lt hqs_pos_r),
+          by rw [div_lt_one hqs_pos_r]; exact_mod_cast hbs_lt⟩
+      show 1 / (Q : ℝ) ^ 2 ≤ |Int.fract (α r) - Int.fract (α s)|
+      simp only [α]
+      rw [hfr, hfs]
+      -- The fractions br/qr ≠ bs/qs: coprimality forces uniqueness
+      have hfrac_ne : ((br : ℤ) : ℚ) / (qr : ℚ) ≠ ((bs : ℤ) : ℚ) / (qs : ℚ) := by
+        intro heq
+        -- Convert the ℤ/ℚ fractions to ℕ/ℚ fractions
+        have heq' : (br : ℚ) / qr = (bs : ℚ) / qs := by push_cast at heq ⊢; exact heq
+        have ⟨hqeq, hbeq⟩ := coprime_frac_unique hqr_pos hqs_pos hbr_cop hbs_cop heq'
+        exact hne' (Sigma.ext_iff.mpr ⟨hqeq, heq_of_eq hbeq⟩)
+      -- Apply Farey spacing
+      exact farey_spacing_proved Q (by omega) qr qs hqr_pos hqr_le hqs_pos hqs_le
+        (br : ℤ) (bs : ℤ) hfrac_ne
+    -- Apply ALS
+    have hals_bound := hals R N α a (1 / (Q : ℝ) ^ 2) hδ hδ_le hN hspaced
+    -- Simplify 1/(1/Q²) = Q²
+    have hsimp : 1 / (1 / (Q : ℝ) ^ 2) + ↑N - 1 = (Q : ℝ) ^ 2 + ↑N - 1 := by
+      rw [one_div_one_div]
+    rw [hsimp] at hals_bound
+    -- Chain: double sum = Fin sum ≤ (Q² + N - 1) * ‖a‖²
+    rw [hdouble, hfin_sum, hals_sum]
+    exact hals_bound
+
 /-- **Reduction**: Lemma 7.15 + Farey large sieve → Theorem 7.14 (large sieve as sieve).
 
     Proof: For each squarefree q ≤ Q with prime factors in P, Lemma 7.15 gives
