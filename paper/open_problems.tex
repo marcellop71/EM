@@ -7,7 +7,7 @@ The formalization certifies the reductions above and pinpoints the
 frontier.  This section identifies the open problems whose resolution
 would close Mullin's Conjecture.
 
-\subsection{CCSB as the Precise Frontier}
+\paragraph{CCSB as the Precise Frontier}
 
 The formalization identifies \textbf{ComplexCharSumBound} as the
 irreducible analytic content.  The question:
@@ -30,7 +30,7 @@ $S_N$ and the multiplier sum $M_N = \sum_n \chi(m(n))$ satisfy
 $S_N \approx S_N + (M_N - S_N) = M_N + O(1)$ only in the crude sense;
 the telescoping does \emph{not} separate them.
 
-\subsection{Connection to Bombieri--Vinogradov}
+\paragraph{Connection to Bombieri--Vinogradov}
 
 A Bombieri--Vinogradov type result for EM walk residues would give:
 \[
@@ -51,7 +51,7 @@ self-referential: the walk at step~$n$ depends on the factorization
 of~$\Prod(n)+1$, which depends on all previous walk values.  Standard
 BV does not apply.
 
-\subsection{Connection to Chebotarev}
+\paragraph{Connection to Chebotarev}
 
 The \textbf{EffectiveKummerEscape} hypothesis asserts: for each
 prime~$\ell$, there exists~$B$ such that for $q \geq B$ with
@@ -70,7 +70,7 @@ The Chebotarev approach would give a stronger \emph{effective}
 bound on how quickly SE kicks in, refining the density argument of
 \S\ref{sec:bootstrap}.
 
-\subsection{The Sieve-Theoretic Approach}
+\paragraph{The Sieve-Theoretic Approach}
 
 \textbf{Mertens\-Escape}: for any prime~$q$ and proper
 subgroup~$H$, infinitely many primes outside~$H$ exist
@@ -132,6 +132,7 @@ proved by pigeonhole and block-counting respectively
 \lean{EM/EquidistSieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
 
 \paragraph{The genuine frontier.}
+
 \textbf{SieveTransfer} is the critical open hypothesis: does the
 equidistribution of $\minFac$ residues for generic integers transfer
 to the specific EM orbit?  Everything above SieveTransfer is known
@@ -146,6 +147,7 @@ walk history.  Transferring the generic equidistribution to this
 specific orbit is the open step.
 
 \paragraph{Sieve-to-harmonic convergence.}
+
 The sieve hierarchy (\S36--\S39 of \code{EquidistSelfCorrecting.lean})
 and the harmonic hierarchy (\S30--\S35) converge: both produce
 DecorrelationHypothesis as output.  The full chain
@@ -175,7 +177,7 @@ cancellation?  Any proof of SieveEquidistribution (e.g., from PNT
 in APs $+$ Alladi's theorem) would immediately yield Dec and PED
 for free, isolating this single bridge as the only open step.
 
-\subsection{What Would Close the Conjecture}
+\paragraph{What Would Close the Conjecture}
 
 The cleanest paths to MC:
 \begin{enumerate}
@@ -226,7 +228,7 @@ The cleanest paths to MC:
   mathematical toolkit.
 \end{enumerate}
 
-\subsection{Does the Walk Hit $-1$?}
+\paragraph{Does the Walk Hit $-1$?}
 
 The irreducible open question is not whether DH holds (cofinal
 hitting is a convenient sufficient condition) but whether the walk
