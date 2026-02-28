@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.27.0 across 42~files
-totaling ${\sim}29{,}600$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.27.0 across 43~files
+totaling ${\sim}29{,}800$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \begin{center}
@@ -51,6 +51,7 @@ three leaf modules:
 \code{CRTFiberIndependence.lean} & SE $\Rightarrow$ NAO, CRT independence, death channel & 296 \\
 \code{WeakMullin.lean} & Missing primes, Weak Mullin, reciprocal divergence, EMBV $\Rightarrow$ MC & 363 \\
 \code{CMEDecomposition.lean} & CME $=$ A $+$ B decomposition, surjection lemma (\S90--\S92) & 199 \\
+\code{WeakErgodicity.lean} & Squarefree accumulator, shifted squarefree population, PE+PT (\S93--\S95) & 154 \\
 \code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, sieve bridge (\S41--\S52, \S79) & 1795 \\
 \code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel (\S53--\S55) & 899 \\
 \code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT, dead ends (\S56--\S65, \S81--\S82) & 1683 \\
@@ -112,8 +113,8 @@ The formalization draws on several Mathlib libraries:
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}29{,}600$ \\
-Files & 42 \\
+Lines of Lean code & ${\sim}29{,}800$ \\
+Files & 43 \\
 Theorems/lemmas & ${\sim}1{,}000$ \\
 Definitions & ${\sim}500$ \\
 \code{sorry} occurrences & \textbf{0} \\

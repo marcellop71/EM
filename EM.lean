@@ -40,3 +40,4 @@ import EM.ExcursionIndependence
 import EM.CRTFiberIndependence
 import EM.WeakMullin
 import EM.CMEDecomposition
+import EM.WeakErgodicity

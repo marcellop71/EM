@@ -745,6 +745,57 @@ chain.  This connects the ``missing primes'' picture to the spectral
 route: bounding the total confined energy across primes is equivalent
 to the multi-modular character sum bound.
 
+\paragraph{The shifted squarefree population.}
+The EM accumulator $\Prod(n)$ is a product of distinct primes and is
+therefore squarefree:
+
+\begin{theorem}[\lean{EM/WeakErgodicity.lean}{prod\_squarefree}]
+$\Prod(n)$ is squarefree for all~$n$.
+\end{theorem}
+
+\begin{proof}
+By induction.  The base case $\Prod(0) = 2$ is prime, hence
+squarefree.  For the inductive step, $\Prod(n{+}1) = \Prod(n) \cdot
+\seq(n{+}1)$.  The new factor $\seq(n{+}1)$ divides $\Prod(n)+1$
+and is therefore coprime to~$\Prod(n)$ (consecutive integers share no
+common factor).  Since both $\Prod(n)$ (by induction) and $\seq(n{+}1)$
+(a prime) are squarefree, and they are coprime, their product is
+squarefree.
+\end{proof}
+
+Consequently, every Euclid number $\Prod(n)+1$ belongs to the
+\emph{shifted squarefree population}
+$\mathcal{S} = \{m \geq 2 : m{-}1 \text{ squarefree}\}$, which has
+density $6/\pi^2 \approx 0.608$ among the positive integers.
+
+This gives a decomposition of WE~(= EMDirichlet) into two components:
+\begin{itemize}[nosep]
+\item \textbf{Population Equidistribution (PE):} among elements of
+  $\mathcal{S}$, the smallest prime factor is equidistributed modulo
+  any prime~$q$.  This is provable by the Selberg sieve and
+  Dirichlet's theorem: the sieve weights
+  $g(p) \prod_{r<p}(1{-}g(r))$ are smooth in~$p$ and do not depend
+  on $p \bmod q$, so summing over primes in each residue class gives
+  density $1/(q{-}1)$.
+\item \textbf{Population Transfer (PT):} the EM trajectory samples
+  $\mathcal{S}$ without introducing mod-$q$ bias.  Formally:
+  $\mathrm{PE} \Rightarrow \mathrm{EMDirichlet}$.  This is the open
+  content, structurally supported by
+  \texttt{crt\_multiplier\_invariance} (the sampling rule is $q$-blind).
+\end{itemize}
+
+\begin{theorem}[\lean{EM/WeakErgodicity.lean}{pe\_transfer\_cme\_implies\_mc}]
+$\mathrm{PE} + \mathrm{PT} + \mathrm{EMDImpliesCME}
+\;\Longrightarrow\; \MC$.
+\end{theorem}
+
+The chain is: PE~$+$~PT gives EMDirichlet, which with EMDImpliesCME
+gives CME, which implies CCSB, which implies MC\@.  The open content
+is isolated in PT (the trajectory-to-population transfer) and
+EMDImpliesCME (the unconditional-to-conditional transfer).  Both gaps
+are instances of the orbit-specificity barrier: transferring population
+statistics to a specific deterministic trajectory.
+
 %% =========================================================================
 \section{Methodology: Human--AI Collaboration}
 \label{app:agents}
@@ -913,6 +964,12 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
 --- & JointSVE
     & Joint subquadratic visit energy; JointSVE $\Rightarrow$ MMCSB (proved)
     & App.~\ref{app:weak-mullin} \\
+--- & PopulationEquidist
+    & minFac equidist mod $q$ in shifted squarefree population (provable by sieve)
+    & App.~\ref{app:weak-mullin} \\
+--- & PopulationTransfer
+    & PE $\Rightarrow$ EMDirichlet (open = unbiased sampling); PE+PT $\Rightarrow$ MC
+    & App.~\ref{app:weak-mullin} \\
 --- & ExcursionIndependence
     & Excursion char sums approximately independent; EIP + BME $\Rightarrow$ MC
     & App.~\ref{app:routes} \\
@@ -940,6 +997,9 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
 --- & One-prime gap
     & $\MC({<}\,q)$ + cofinal hit $\Rightarrow$ $\MC(q)$
     & Thm.~\ref{thm:one-prime-gap} \\
+--- & Squarefree Accumulator
+    & $\Prod(n)$ is squarefree (product of distinct primes); proved
+    & App.~\ref{app:weak-mullin} \\
 --- & QR Obstruction
     & SE failure has density $O(2^{-k})$ by CRT + quadratic reciprocity
     & \S\ref{sec:bootstrap} \\
