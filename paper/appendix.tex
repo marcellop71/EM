@@ -603,6 +603,149 @@ CME~$\to$~CCSB arrow is proved for all character orders.  CME is the
 to imply MC.
 
 %% =========================================================================
+\section{Weak Mullin and Confined Energy}
+\label{app:weak-mullin}
+%% =========================================================================
+
+The formalization explores what can be said about the ``missing
+primes''---those primes that never appear in the EM sequence---without
+assuming MC outright.
+
+\paragraph{Missing primes and Weak Mullin.}
+Define the set of \emph{missing primes}
+\[
+M = \{p \in \mathbb{P} : p \neq \seq(k) \text{ for all } k\}.
+\]
+MC is the assertion $M = \emptyset$.  A natural weakening asks only that
+$M$ is \emph{small} in an analytic sense:
+
+\begin{definition}[\defname{WeakMullin} (\abbr{WM})]
+\lean{EM/WeakMullin.lean}{WeakMullin}
+The reciprocal sum over missing primes converges:
+$\sum_{q \in M} 1/q < \infty$.
+\end{definition}
+
+This is strictly weaker than MC (which gives $M = \emptyset$ and hence
+a trivially convergent empty sum) but strong enough to have a nontrivial
+consequence:
+
+\begin{definition}[\defname{ReciprocalDivergence} (\abbr{RD})]
+\lean{EM/WeakMullin.lean}{ReciprocalDivergence}
+The reciprocal sum over EM primes diverges:
+$\sum_{k=0}^{\infty} 1/\seq(k) = \infty$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/WeakMullin.lean}{mc\_implies\_wm}]
+$\MC \Longrightarrow \mathrm{WM}$.
+\end{theorem}
+
+\begin{theorem}[\lean{EM/WeakMullin.lean}{wm\_implies\_rd}]
+\label{thm:wm-rd}
+$\mathrm{WM} \Longrightarrow \mathrm{RD}$.
+\end{theorem}
+
+\begin{proof}
+Partition the primes into two disjoint sets:
+$\mathbb{P} = A \cup M$,
+where $A = \{\seq(k) : k \in \NN\}$ is the set of appeared primes.
+The sets are disjoint since every missing prime is, by definition, not
+in~$A$.  Consider the indicator sums
+$\Sigma_A = \sum_{p \in A} 1/p$ and
+$\Sigma_M = \sum_{q \in M} 1/q$.
+
+Suppose for contradiction that $\sum_k 1/\seq(k)$ converges.  Since
+$\seq$ is injective (the EM sequence never repeats a prime), the map
+$k \mapsto \seq(k)$ is an injection into~$A$, so $\Sigma_A$ converges.
+WM gives that $\Sigma_M$ converges.  But then
+$\sum_{p \in \mathbb{P}} 1/p = \Sigma_A + \Sigma_M$ converges,
+contradicting the divergence of the sum of prime
+reciprocals~\textup(\texttt{not\_summable\_one\_div\_on\_primes} in
+Mathlib\textup).
+\end{proof}
+
+The chain $\MC \Rightarrow \mathrm{WM} \Rightarrow \mathrm{RD}$ gives a proved
+consequence of MC: if every prime appears, then the reciprocal sum of
+the sequence diverges.  Contrapositively, if $\sum 1/\seq(k)$
+converged, some primes would be missing with divergent reciprocal
+sum---i.e., the missing set would be ``large'' in the harmonic sense.
+
+\paragraph{Product divergence.}
+The negation of WM has a quantitative consequence for products over
+missing primes.
+
+\begin{theorem}[\lean{EM/WeakMullin.lean}{safe\_fraction\_exp\_bound}]
+For a finite set $Q$ of reals with $q \geq 2$ for each $q \in Q$:
+\[
+\prod_{q \in Q} \frac{q-2}{q-1}
+\;\leq\; \exp\!\Bigl(-\sum_{q \in Q} \frac{1}{q-1}\Bigr).
+\]
+\end{theorem}
+
+\begin{theorem}[\lean{EM/WeakMullin.lean}{not\_wm\_product\_diverges}]
+If\/ $\neg\mathrm{WM}$, then for every $C \in \mathbb{R}$ there exists a finite
+subset $F \subseteq M$ with
+$\prod_{q \in F} \tfrac{q-1}{q-2} \geq C$.
+\end{theorem}
+
+The product $\prod (q{-}1)/(q{-}2)$ over missing primes measures
+the ``confinement cost'': each missing prime~$q$ confines the walk
+to $q-2$ of the $q-1$ units in $(\ZZ/q\ZZ)^\times$ (avoiding~$-1$).
+If WM fails, this confinement cost is unbounded, meaning that avoiding
+more and more primes imposes an exponentially growing constraint.
+
+\paragraph{EMBV and confined energy.}
+The confined-energy perspective connects the missing primes to the
+spectral route via visit counts.
+
+\begin{definition}[\defname{EMBV}]
+\lean{EM/WeakMullin.lean}{EMBV}
+An alias for $\mathrm{MMCSB}$, emphasizing the
+Bombieri--Vinogradov analogy: the EM walk satisfies multi-modular
+character sum bounds.
+\end{definition}
+
+\begin{theorem}[\lean{EM/WeakMullin.lean}{embv\_implies\_mc}]
+$\mathrm{EMBV} \Longrightarrow \MC$ \textup(conditional on the
+sieve-gap threshold $Q_0 \leq 11$\textup).
+\end{theorem}
+
+For a missing prime $q \geq 3$, the walk avoids $-1$ entirely, so the
+$N$ visits are distributed among only $q-2$ residues instead of the
+full $q-1$.  A pigeonhole argument gives:
+
+\begin{theorem}[\lean{EM/WeakMullin.lean}{per\_prime\_confined\_energy\_lb}]
+For a missing prime $q \geq 3$ and $N$ steps:
+\[
+\frac{N^2}{q-2}
+\;\leq\;
+(q{-}1) \sum_{a \in (\ZZ/q\ZZ)^\times} V_N(a)^2,
+\]
+where $V_N(a) = |\{n < N : \walkZ{q}{n} = a\}|$ is the visit count.
+\end{theorem}
+
+Compare this with the equidistributed baseline $N^2/(q{-}1)$: the
+confined-to-equidistributed energy ratio is $(q{-}1)/(q{-}2)$, which
+is bounded away from~$1$ for all~$q$.  This excess energy is precisely
+what SVE forbids: subquadratic visit energy requires the walk to
+spread evenly, but a missing prime forces concentration.
+
+\begin{definition}[\defname{JointSVE}]
+\lean{EM/WeakMullin.lean}{JointSVE}
+Joint subquadratic visit energy: the sum of excess energies over any
+finite set of missing primes is $o(N^2)$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/WeakMullin.lean}{jointSVE\_implies\_mmcsb}]
+$\mathrm{JointSVE} \Longrightarrow \mathrm{MMCSB}$.
+\end{theorem}
+
+The proof reduces JointSVE to per-prime SVE (by instantiating with
+singleton sets), then applies the proved SVE~$\Rightarrow$~MMCSB
+chain.  This connects the ``missing primes'' picture to the spectral
+route: bounding the total confined energy across primes is equivalent
+to the multi-modular character sum bound.
+
+%% =========================================================================
 \section{Methodology: Human--AI Collaboration}
 \label{app:agents}
 %% =========================================================================
@@ -760,10 +903,16 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & App.~\ref{app:routes} \\
 \abbr{WM} & WeakMullin
     & $\sum_{q \in M} 1/q < \infty$; MC $\Rightarrow$ WM $\Rightarrow$ RD (proved)
-    & App.~\ref{app:routes} \\
+    & App.~\ref{app:weak-mullin} \\
+\abbr{RD} & ReciprocalDivergence
+    & $\sum_k 1/\seq(k) = \infty$; WM $\Rightarrow$ RD (proved)
+    & App.~\ref{app:weak-mullin} \\
 \abbr{EMBV} & EM Bombieri--Vinogradov
     & Multi-modular char sum bound (alias for MMCSB); EMBV $\Rightarrow$ MC
-    & App.~\ref{app:routes} \\
+    & App.~\ref{app:weak-mullin} \\
+--- & JointSVE
+    & Joint subquadratic visit energy; JointSVE $\Rightarrow$ MMCSB (proved)
+    & App.~\ref{app:weak-mullin} \\
 --- & ExcursionIndependence
     & Excursion char sums approximately independent; EIP + BME $\Rightarrow$ MC
     & App.~\ref{app:routes} \\
