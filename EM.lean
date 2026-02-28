@@ -43,3 +43,4 @@ import EM.CMEDecomposition
 import EM.WeakErgodicity
 import EM.PopulationEquidistProof
 import EM.ReciprocalSumDivergence
+import EM.PopulationTransferStrategy
