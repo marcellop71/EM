@@ -32,13 +32,15 @@ The variance bound follows:
 * `EnsembleCharSumConcentration` — concentration for character sums
 
 ### Proved Theorems
-* `char_variance_implies_char_concentration` — VB → concentration (PROVED)
-* `char_concentration_implies_ensemble_eqd` — concentration → equidist (PROVED)
-* `decorrelation_chain`        — full chain StepDecorrelation → ... → Eqd (PROVED)
+* `genSeqCharEnergy_nonneg`    — character energy is non-negative (PROVED)
+* `finset_markov_density`      — discrete Markov inequality in density form (PROVED)
+* `char_variance_density_bound`— Markov bound on bad density: ≤ C/(ε²K) (PROVED)
+* `char_concentration_implies_cancellation` — concentration → cancellation (PROVED)
 
 ### Open Hypotheses
 * `StepDecorrelation`          — CRT-based decorrelation (provable from CRT + PE)
 * `CharSumVarianceBound`       — variance bound (follows from decorrelation)
+* `CharVarianceImpliesConcentration` — VB → concentration (Markov bound proved, Tendsto gap open)
 -/
 
 noncomputable section
@@ -162,6 +164,106 @@ def EnsembleCharSumConcentration : Prop :=
 def CharVarianceImpliesConcentration : Prop :=
   ∀ (C : ℝ), 0 < C →
     CharSumVarianceBound C → EnsembleCharSumConcentration
+
+/-- The character energy `genSeqCharEnergy` is non-negative (it's a norm squared). -/
+theorem genSeqCharEnergy_nonneg (n K q : Nat) (χ : Nat → ℂ) :
+    0 ≤ genSeqCharEnergy n K q χ :=
+  Complex.normSq_nonneg _
+
+/-- **Markov density bound** (Finset version): if the average of a non-negative
+    function f over squarefree n in [1,X] is at most M, and a subset B of those
+    squarefree n has f(n) ≥ t for all n ∈ B (with t > 0), then |B|/|SF| ≤ M/t.
+
+    This is the discrete Markov/Chebyshev inequality in density form. -/
+theorem finset_markov_density {X : Nat} {f : Nat → ℝ} {M t : ℝ}
+    (hf_nn : ∀ n ∈ (Finset.Icc 1 X).filter Squarefree, 0 ≤ f n)
+    (ht : 0 < t)
+    (hM_nn : 0 ≤ M)
+    (havg : ensembleAvg X f ≤ M)
+    (B : Finset Nat)
+    (hB_sub : B ⊆ (Finset.Icc 1 X).filter Squarefree)
+    (hB_threshold : ∀ n ∈ B, t ≤ f n) :
+    (B.card : ℝ) / ((Finset.Icc 1 X).filter Squarefree).card ≤ M / t := by
+  set S := (Finset.Icc 1 X).filter Squarefree
+  by_cases hsf : S.card = 0
+  · -- S is empty, so B is empty too
+    have hB_empty : B = ∅ := by
+      have := Finset.card_eq_zero.mp hsf
+      exact Finset.subset_empty.mp (this ▸ hB_sub)
+    simp [hB_empty, hsf, div_nonneg hM_nn (le_of_lt ht)]
+  · have hS_pos : (0 : ℝ) < S.card := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hsf)
+    -- Step 1: ∑_{n ∈ S} f(n) ≤ M * |S|
+    have hsum_bound : ∑ n ∈ S, f n ≤ M * S.card := by
+      have h := havg
+      unfold ensembleAvg sqfreeCount at h
+      rwa [div_le_iff₀ hS_pos] at h
+    -- Step 2: |B| * t ≤ ∑_{n ∈ B} f(n)
+    have hB_lower : (B.card : ℝ) * t ≤ ∑ n ∈ B, f n := by
+      calc (B.card : ℝ) * t = ∑ _ ∈ B, t := by rw [Finset.sum_const, nsmul_eq_mul]
+        _ ≤ ∑ n ∈ B, f n := Finset.sum_le_sum (fun n hn => hB_threshold n hn)
+    -- Step 3: ∑_{n ∈ B} f(n) ≤ ∑_{n ∈ S} f(n)
+    have hB_sum_le : ∑ n ∈ B, f n ≤ ∑ n ∈ S, f n :=
+      Finset.sum_le_sum_of_subset_of_nonneg hB_sub (fun n hn _ => hf_nn n hn)
+    -- Combine: |B| * t ≤ M * |S|
+    have : (B.card : ℝ) * t ≤ M * S.card := by linarith
+    -- Conclude: |B|/|S| ≤ M/t
+    exact (div_le_div_iff₀ hS_pos ht).mpr this
+
+/-- **Markov bound on bad density**: for X ≥ X₀, the density of squarefree
+    starting points with large character energy is bounded by C/(ε²K).
+
+    This is the quantitative content of the Chebyshev/Markov inequality
+    applied to the ensemble average from `CharSumVarianceBound`. -/
+theorem char_variance_density_bound (C : ℝ) (hC : 0 < C)
+    (hvb : CharSumVarianceBound C) (q : Nat) (hq : Nat.Prime q)
+    (χ : Nat → ℂ) (ε : ℝ) (hε : 0 < ε) :
+    ∃ X₀ : Nat, ∀ K ≥ 1, ∀ X ≥ X₀,
+      (((Finset.Icc 1 X).filter
+        (fun n => Squarefree n ∧
+          genSeqCharEnergy n K q χ > (ε * ↑K) ^ 2)).card : ℝ) /
+      ((Finset.Icc 1 X).filter Squarefree).card ≤
+      C * ↑K / (ε * ↑K) ^ 2 := by
+  obtain ⟨X₀, hX₀⟩ := hvb q hq χ
+  refine ⟨X₀, fun K hK X hX => ?_⟩
+  have hK_pos : (0 : ℝ) < K := Nat.cast_pos.mpr (by omega)
+  have hεK_sq_pos : (0 : ℝ) < (ε * ↑K) ^ 2 := sq_pos_of_pos (mul_pos hε hK_pos)
+  exact finset_markov_density
+    (fun n hn => by
+      simp only [Finset.mem_filter] at hn
+      exact genSeqCharEnergy_nonneg _ _ _ _)
+    hεK_sq_pos
+    (mul_nonneg (le_of_lt hC) (le_of_lt hK_pos))
+    (hX₀ K X hX)
+    _
+    (fun n hn => by
+      simp only [Finset.mem_filter] at hn ⊢
+      exact ⟨hn.1, hn.2.1⟩)
+    (fun n hn => by
+      simp only [Finset.mem_filter] at hn
+      exact le_of_lt hn.2.2)
+
+/-! ### Gap Analysis: CharSumVarianceBound → EnsembleCharSumConcentration
+
+The Markov bound (proved as `char_variance_density_bound`) gives for each X ≥ X₀:
+
+    density(X, K) ≤ C · K / (ε · K)² = C / (ε² · K)
+
+This uniform-in-X bound is proved. The proved infrastructure:
+
+1. `genSeqCharEnergy_nonneg`: energy ≥ 0 (from normSq)
+2. `finset_markov_density`: discrete Markov inequality
+3. `char_variance_density_bound`: density ≤ C/(ε²K) for X ≥ X₀
+
+The gap to `EnsembleCharSumConcentration` is: the concentration definition
+requires `Tendsto density(·, K) atTop (nhds 0)` for each fixed K ≥ K₀.
+The Markov bound gives density(X, K) ∈ [0, C/(ε²K)] for X ≥ X₀, but for
+fixed K this is a *constant* bound — it doesn't show convergence to 0.
+
+Closing this gap requires showing that the proportion of bad starting points
+*stabilizes* as X → ∞, which is an ergodic-type density stabilization
+statement beyond the pointwise Markov bound.
+
+This gap is captured by `CharVarianceImpliesConcentration` (open hypothesis). -/
 
 end CharConcentration
 
