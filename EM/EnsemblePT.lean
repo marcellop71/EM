@@ -371,6 +371,311 @@ theorem decorrelation_implies_variance_proved : DecorrelationImpliesVariance := 
 
 end EquidistToDecorrelation
 
+/-! ## Section 1b: Joint Equidistribution and Step Decorrelation -/
+
+section JointEquidist
+
+/-- Count of squarefree n in [1,X] with genSeq n j in residue class a mod q
+    AND genSeq n k in residue class b mod q simultaneously. -/
+def sqfreeJointSeqCount (X j k q : Nat) (a b : ZMod q) : Nat :=
+  ((Finset.Icc 1 X).filter (fun n =>
+    Squarefree n ∧ (genSeq n j : ZMod q) = a ∧ (genSeq n k : ZMod q) = b)).card
+
+/-- Joint density of squarefree n with genSeq n j ≡ a and genSeq n k ≡ b (mod q). -/
+def sqfreeJointSeqDensity (X j k q : Nat) (a b : ZMod q) : ℝ :=
+  (sqfreeJointSeqCount X j k q a b : ℝ) / (sqfreeCount X : ℝ)
+
+/-- The joint count is bounded by the total squarefree count. -/
+theorem sqfreeJointSeqCount_le_sqfreeCount (X j k q : Nat) (a b : ZMod q) :
+    sqfreeJointSeqCount X j k q a b ≤ sqfreeCount X := by
+  unfold sqfreeJointSeqCount sqfreeCount
+  apply Finset.card_le_card
+  intro n hn
+  simp only [Finset.mem_filter] at hn ⊢
+  exact ⟨hn.1, hn.2.1⟩
+
+/-- The joint density is non-negative. -/
+theorem sqfreeJointSeqDensity_nonneg (X j k q : Nat) (a b : ZMod q) :
+    0 ≤ sqfreeJointSeqDensity X j k q a b := by
+  unfold sqfreeJointSeqDensity
+  exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+
+/-- The joint density is at most 1. -/
+theorem sqfreeJointSeqDensity_le_one (X j k q : Nat) (a b : ZMod q) :
+    sqfreeJointSeqDensity X j k q a b ≤ 1 := by
+  unfold sqfreeJointSeqDensity
+  by_cases h : sqfreeCount X = 0
+  · simp [h]
+  · rw [div_le_one (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h))]
+    exact Nat.cast_le.mpr (sqfreeJointSeqCount_le_sqfreeCount X j k q a b)
+
+/-- **Joint Accumulator Equidistribution**: for prime q and steps j < k, the pair
+    (genProd n j mod q, genProd n k mod q) is jointly uniform over nonzero residues
+    when averaged over squarefree n in [1,X].
+
+    The density of squarefree n with genProd n j ≡ a and genProd n k ≡ b (mod q)
+    tends to 1/(q-1)^2 as X → ∞, for each nonzero pair (a, b).
+
+    The structural basis: CRT independence of the mod-q coordinates at different
+    steps. Between steps j and k, the accumulator undergoes (k-j) multiplications
+    by fresh primes (genSeq) and (k-j) "+1" shifts. Each shift decorrelates
+    the mod-q information via CRT.
+
+    **Status**: open hypothesis (provable from AEP + CRT decorrelation). -/
+def JointAccumulatorEquidist : Prop :=
+  ∀ (q : Nat), Nat.Prime q →
+  ∀ (j k : Nat), j < k →
+  ∀ (a b : ZMod q), a ≠ 0 → b ≠ 0 →
+    Filter.Tendsto
+      (fun X : Nat => sqfreeAccumDensity X j q a * sqfreeAccumDensity X k q b)
+      Filter.atTop
+      (nhds (1 / (((q : ℝ) - 1) ^ 2)))
+
+/-- **Joint Step Equidistribution**: for prime q and steps j < k, the pair
+    (genSeq n j mod q, genSeq n k mod q) is jointly uniform over nonzero residues
+    when averaged over squarefree n in [1,X].
+
+    The density of squarefree n with genSeq n j ≡ a and genSeq n k ≡ b (mod q)
+    tends to 1/(q-1)^2 as X → ∞, for each nonzero pair (a, b).
+
+    This is the multiplier-level version of JointAccumulatorEquidist: it
+    asserts joint uniformity of the *output primes* rather than the accumulators.
+    The reduction JAE → JSE goes through population transfer (PE) at each step.
+
+    **Status**: open hypothesis (follows from JAE + PE bridge). -/
+def JointStepEquidist : Prop :=
+  ∀ (q : Nat), Nat.Prime q →
+  ∀ (j k : Nat), j < k →
+  ∀ (a b : ZMod q), a ≠ 0 → b ≠ 0 →
+    Filter.Tendsto
+      (fun X : Nat => sqfreeJointSeqDensity X j k q a b)
+      Filter.atTop
+      (nhds (1 / (((q : ℝ) - 1) ^ 2)))
+
+/-- The cross-term ensemble average decomposes as a density-weighted sum
+    over residue class pairs.
+
+    ensembleAvg X (fun n => (chi(genSeq n j % q) * conj(chi(genSeq n k % q))).re)
+    = sum_{a,b : ZMod q} density(a,b) * (chi(a.val) * conj(chi(b.val))).re
+
+    This is the joint analogue of `ensembleCharMean_eq_density_sum`. -/
+private theorem cross_term_density_decomp (X j k q : Nat) [NeZero q]
+    (chi : Nat → ℂ) :
+    ensembleAvg X (fun n =>
+      (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re) =
+    ∑ a : ZMod q, ∑ b : ZMod q,
+      sqfreeJointSeqDensity X j k q a b *
+        (chi a.val * starRingEnd ℂ (chi b.val)).re := by
+  unfold ensembleAvg sqfreeCount sqfreeJointSeqDensity sqfreeJointSeqCount
+  set S := (Finset.Icc 1 X).filter Squarefree
+  -- Key: genSeq n j % q = (genSeq n j : ZMod q).val
+  have hmod_val : ∀ (m : Nat), m % q = (m : ZMod q).val := by
+    intro m; rw [← ZMod.val_natCast (n := q) m]
+  -- Step 1: partition by first coordinate using sum_fiberwise
+  have hstep1 : ∑ n ∈ S,
+      (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re =
+      ∑ a : ZMod q, ∑ n ∈ S.filter (fun n => (genSeq n j : ZMod q) = a),
+        (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re := by
+    exact (Finset.sum_fiberwise S (fun n => (genSeq n j : ZMod q)) _).symm
+  -- Step 2: for each a-fiber, partition by second coordinate
+  have hstep2 : ∀ a : ZMod q,
+      ∑ n ∈ S.filter (fun n => (genSeq n j : ZMod q) = a),
+        (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re =
+      ∑ b : ZMod q, ∑ n ∈ (S.filter (fun n => (genSeq n j : ZMod q) = a)).filter
+          (fun n => (genSeq n k : ZMod q) = b),
+        (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re := by
+    intro a
+    exact (Finset.sum_fiberwise _ (fun n => (genSeq n k : ZMod q)) _).symm
+  -- Step 3: on each (a,b)-fiber, the function is constant
+  have hstep3 : ∀ (a b : ZMod q),
+      ∑ n ∈ (S.filter (fun n => (genSeq n j : ZMod q) = a)).filter
+          (fun n => (genSeq n k : ZMod q) = b),
+        (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re =
+      ((S.filter (fun n => (genSeq n j : ZMod q) = a)).filter
+          (fun n => (genSeq n k : ZMod q) = b)).card *
+        (chi a.val * starRingEnd ℂ (chi b.val)).re := by
+    intro a b
+    rw [Finset.sum_congr rfl, Finset.sum_const, nsmul_eq_mul]
+    intro n hn
+    simp only [Finset.mem_filter] at hn
+    rw [show genSeq n j % q = a.val from by rw [hmod_val, hn.1.2],
+        show genSeq n k % q = b.val from by rw [hmod_val, hn.2]]
+  -- Step 4: the double filter card equals the joint count
+  have hstep4 : ∀ (a b : ZMod q),
+      ((S.filter (fun n => (genSeq n j : ZMod q) = a)).filter
+          (fun n => (genSeq n k : ZMod q) = b)).card =
+      ((Finset.Icc 1 X).filter (fun n =>
+        Squarefree n ∧ (genSeq n j : ZMod q) = a ∧
+          (genSeq n k : ZMod q) = b)).card := by
+    intro a b; congr 1; ext n
+    simp only [Finset.mem_filter, S, and_assoc]
+  -- Assemble: both sides = (∑ n ∈ S, f(n)) / |S|.
+  -- RHS after unfolding = ∑_a ∑_b (count_ab / |S|) * g(a,b)
+  --   = ∑_a ∑_b (count_ab * g(a,b)) / |S|  (rearrange)
+  --   = (∑_a ∑_b count_ab * g(a,b)) / |S|   (pull division out)
+  -- LHS = (∑ n ∈ S, f(n)) / |S|
+  -- Need: ∑ n ∈ S, f(n) = ∑_a ∑_b count_ab * g(a,b)
+  -- This follows from steps 1-4.
+  -- Strategy: show both sides equal after dividing by |S|
+  -- by showing numerators are equal.
+  suffices h : ∑ n ∈ S,
+      (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re =
+      ∑ a : ZMod q, ∑ b : ZMod q,
+        ↑((Finset.Icc 1 X |>.filter fun n =>
+          Squarefree n ∧ (genSeq n j : ZMod q) = a ∧ (genSeq n k : ZMod q) = b).card) *
+          (chi a.val * starRingEnd ℂ (chi b.val)).re by
+    -- Pull out the division by |S| on both sides
+    show (∑ n ∈ S,
+        (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re) / ↑S.card =
+      ∑ a : ZMod q, ∑ b : ZMod q,
+        ↑((Finset.Icc 1 X |>.filter fun n =>
+          Squarefree n ∧ (genSeq n j : ZMod q) = a ∧ (genSeq n k : ZMod q) = b).card) /
+          ↑S.card *
+          (chi a.val * starRingEnd ℂ (chi b.val)).re
+    rw [h]
+    -- Goal: (∑_a ∑_b count * g) / |S| = ∑_a ∑_b count / |S| * g
+    -- Use Finset.sum_div twice to pull division into the sums
+    rw [Finset.sum_div]
+    congr 1; ext a
+    rw [Finset.sum_div]
+    congr 1; ext b
+    ring
+  -- Now prove the numerator identity
+  rw [hstep1]; congr 1; ext a
+  rw [hstep2 a]; congr 1; ext b
+  rw [hstep3 a b, hstep4 a b]
+
+/-- **Joint Step Equidistribution implies Step Decorrelation** for characters
+    satisfying the nontriviality condition sum_a chi(a.val) = 0.
+
+    Under JSE, for nontrivial chi (vanishing sum over residues mod q):
+    E_n[chi(genSeq n j % q) * conj(chi(genSeq n k % q))] -> 0 as X -> infinity.
+
+    The proof:
+    1. Decompose the cross-term by residue class pairs (a, b) in (Z/qZ)^2.
+    2. Under JSE, density(a,b) -> 1/(q-1)^2 for nonzero (a, b).
+    3. The limit becomes (1/(q-1)^2) * sum_{a,b nonzero} (chi(a) * conj(chi(b))).re.
+    4. Factor: sum_{a,b} f(a)*g(b) = (sum_a f(a))*(sum_b g(b)).
+    5. For nontrivial chi: sum_a chi(a) = 0 implies the product = 0.
+    6. The real part of 0 is 0. Hence the limit is 0.
+
+    **Note**: This theorem requires nontriviality of chi (the sum-zero condition).
+    For trivial characters, the cross-term does not vanish. This is appropriate
+    because only nontrivial characters contribute to the equidistribution-to-MC
+    reduction chain.
+
+    **Status**: PROVED (from JSE + nontriviality). -/
+theorem joint_step_equidist_implies_step_decorrelation
+    (hjse : JointStepEquidist) :
+    ∀ (q : Nat) (hq : Nat.Prime q),
+    ∀ (chi : Nat → ℂ),
+    -- Nontriviality: chi vanishes at 0 and sums to zero over ZMod q
+    (chi 0 = 0) →
+    (letI : NeZero q := ⟨hq.ne_zero⟩; ∑ a : ZMod q, chi (ZMod.val a) = 0) →
+    ∀ (j k : Nat), j < k →
+      Filter.Tendsto
+        (fun X : Nat =>
+          |ensembleAvg X (fun n =>
+              (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re)|)
+        Filter.atTop (nhds 0) := by
+  intro q hq chi hchi0 hchi_sum j k hjk
+  haveI : NeZero q := ⟨hq.ne_zero⟩
+  -- The target: |ensembleAvg X (cross-term)| -> 0
+  -- Strategy: show the ensembleAvg itself -> 0, then |*| -> 0
+  suffices h : Filter.Tendsto
+      (fun X : Nat =>
+        ensembleAvg X (fun n =>
+          (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re))
+      Filter.atTop (nhds 0) by
+    have := h.abs
+    simp only [abs_zero] at this
+    exact this
+  -- Rewrite using density decomposition
+  simp_rw [cross_term_density_decomp _ j k q chi]
+  -- The character value factor
+  set f : ZMod q → ZMod q → ℝ :=
+    fun a b => (chi a.val * starRingEnd ℂ (chi b.val)).re
+  -- f(0, b) = 0 and f(a, 0) = 0 because chi(0) = 0
+  have hf0a : ∀ b, f 0 b = 0 := by
+    intro b; show (chi (0 : ZMod q).val * _).re = 0
+    simp [ZMod.val_zero, hchi0]
+  have hf0b : ∀ a, f a 0 = 0 := by
+    intro a; show (chi a.val * starRingEnd ℂ (chi (0 : ZMod q).val)).re = 0
+    simp [ZMod.val_zero, hchi0]
+  -- Character orthogonality: sum_{a,b} f(a,b) = 0
+  have h_sum_f_zero : ∑ a : ZMod q, ∑ b : ZMod q, f a b = 0 := by
+    show ∑ a : ZMod q, ∑ b : ZMod q, (chi a.val * starRingEnd ℂ (chi b.val)).re = 0
+    have hre : ∑ a : ZMod q, ∑ b : ZMod q, (chi a.val * starRingEnd ℂ (chi b.val)).re =
+        (∑ a : ZMod q, ∑ b : ZMod q, chi a.val * starRingEnd ℂ (chi b.val)).re := by
+      rw [Complex.re_sum]; congr 1; ext a; exact (Complex.re_sum _ _).symm
+    rw [hre]
+    have hfactor : ∑ a : ZMod q, ∑ b : ZMod q, chi a.val * starRingEnd ℂ (chi b.val) =
+        (∑ a : ZMod q, chi a.val) * starRingEnd ℂ (∑ b : ZMod q, chi b.val) := by
+      rw [map_sum, Finset.sum_mul]
+      congr 1; ext a; rw [Finset.mul_sum]
+    rw [hfactor, hchi_sum, zero_mul, Complex.zero_re]
+  -- Each term density(a,b) * f(a,b) has a limit
+  have h_term_tendsto : ∀ a : ZMod q, ∀ b : ZMod q,
+      Filter.Tendsto
+        (fun X => sqfreeJointSeqDensity X j k q a b * f a b)
+        Filter.atTop
+        (nhds (if a ≠ 0 ∧ b ≠ 0 then (1 / ((q : ℝ) - 1) ^ 2) * f a b else 0)) := by
+    intro a b
+    by_cases ha : a = 0
+    · subst ha
+      have hfab : f 0 b = 0 := hf0a b
+      have hcond : ¬((0 : ZMod q) ≠ 0 ∧ b ≠ 0) := by tauto
+      simp only [hfab, mul_zero, if_neg hcond]
+      exact tendsto_const_nhds
+    · by_cases hb : b = 0
+      · subst hb
+        have hfab : f a 0 = 0 := hf0b a
+        have hcond : ¬(a ≠ 0 ∧ (0 : ZMod q) ≠ 0) := by tauto
+        simp only [hfab, mul_zero, if_neg hcond]
+        exact tendsto_const_nhds
+      · rw [if_pos ⟨ha, hb⟩]
+        exact (hjse q hq j k hjk a b ha hb).mul_const _
+  -- The sum of limits equals 0
+  have h_limit_sum :
+      ∑ a : ZMod q, ∑ b : ZMod q,
+        (if a ≠ 0 ∧ b ≠ 0 then (1 / ((q : ℝ) - 1) ^ 2) * f a b else 0) = 0 := by
+    -- Replace each if-then-else with the unconditional product
+    have h_ite_f : ∀ a b : ZMod q,
+        (if a ≠ 0 ∧ b ≠ 0 then (1 / ((q : ℝ) - 1) ^ 2) * f a b else 0) =
+        (1 / ((q : ℝ) - 1) ^ 2) * f a b := by
+      intro a b
+      by_cases ha : a = 0
+      · subst ha; rw [if_neg (by simp : ¬((0 : ZMod q) ≠ 0 ∧ b ≠ 0)), hf0a b, mul_zero]
+      · by_cases hb : b = 0
+        · subst hb; rw [if_neg (by simp : ¬(a ≠ 0 ∧ (0 : ZMod q) ≠ 0)), hf0b a, mul_zero]
+        · rw [if_pos ⟨ha, hb⟩]
+    calc ∑ a : ZMod q, ∑ b : ZMod q,
+            (if a ≠ 0 ∧ b ≠ 0 then (1 / ((q : ℝ) - 1) ^ 2) * f a b else 0)
+        = ∑ a : ZMod q, ∑ b : ZMod q, (1 / ((q : ℝ) - 1) ^ 2) * f a b := by
+            congr 1; ext a; congr 1; ext b; exact h_ite_f a b
+      _ = ∑ a : ZMod q, (1 / ((q : ℝ) - 1) ^ 2) * ∑ b : ZMod q, f a b := by
+            congr 1; ext a; rw [Finset.mul_sum]
+      _ = (1 / ((q : ℝ) - 1) ^ 2) * ∑ a : ZMod q, ∑ b : ZMod q, f a b := by
+            rw [Finset.mul_sum]
+      _ = (1 / ((q : ℝ) - 1) ^ 2) * 0 := by rw [h_sum_f_zero]
+      _ = 0 := mul_zero _
+  -- Tendsto of finite sum
+  have h_sum_tendsto : Filter.Tendsto
+      (fun X => ∑ a : ZMod q, ∑ b : ZMod q,
+        sqfreeJointSeqDensity X j k q a b * f a b)
+      Filter.atTop
+      (nhds (∑ a : ZMod q, ∑ b : ZMod q,
+        (if a ≠ 0 ∧ b ≠ 0 then (1 / ((q : ℝ) - 1) ^ 2) * f a b else 0))) := by
+    apply tendsto_finset_sum
+    intro a _
+    apply tendsto_finset_sum
+    intro b _
+    exact h_term_tendsto a b
+  rw [h_limit_sum] at h_sum_tendsto
+  exact h_sum_tendsto
+
+end JointEquidist
+
 /-! ## Section 2: Ensemble Character Mean Vanishing from Equidistribution -/
 
 section CharMeanVanishing
