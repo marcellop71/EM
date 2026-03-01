@@ -42,7 +42,9 @@ The ensemble population transfer strategy proceeds in five layers:
 * `full_crt_chain_implies_cancellation`  -- SRE+CRT+bridges => char sum cancellation (a.a.)
 * `ensemble_crt_equidist_chain`          -- SRE+CRT+bridge => EME (composition)
 * `ensemble_decorrelation_chain`         -- EME+decorr+var+conc => char cancellation
-* `ensemble_pt_master`                   -- all hypotheses => char cancellation for a.a.
+* `sd_implies_cancellation`              -- SD alone => char cancellation (PROVED, composes 3 reductions)
+* `ensemble_pt_master`                   -- all 6 hypotheses => char cancellation for a.a.
+* `ensemble_pt_master_simplified`        -- 4 hypotheses => char cancellation (var+conc inlined, PROVED)
 * `ensemble_pt_standard_em`              -- all hypotheses + DSL => MC for standard EM
 * `gen_hitting_implies_gen_mc_proved`    -- cofinal walk hitting => gen. MC (PROVED)
 * `gen_captures_target`                  -- generalized capture lemma (PROVED)
@@ -453,6 +455,70 @@ theorem ensemble_decorrelation_chain
 
 end CRTToCancellation
 
+/-! ## Section 3b: SD Alone Implies Cancellation -/
+
+section SDToCancellation
+
+/-- **StepDecorrelation alone implies character sum cancellation.**
+
+    This theorem composes the three proved reductions in the concentration chain:
+    1. `decorrelation_implies_variance_proved`: SD → ∃ C, CharSumVarianceBound C
+    2. `char_variance_implies_concentration_proved`: CharSumVarianceBound C → EnsembleCharSumConcentration
+    3. `char_concentration_implies_cancellation`: EnsembleCharSumConcentration → cancellation
+
+    **StepDecorrelation is the SOLE remaining gap in the concentration chain.**
+    Once SD is proved, the entire chain from decorrelation to almost-all
+    character sum cancellation is complete with zero open hypotheses. -/
+theorem sd_implies_cancellation (hsd : StepDecorrelation) :
+    ∀ (q : Nat), Nat.Prime q →
+    ∀ (χ : Nat → ℂ), (∀ a, Complex.normSq (χ a) ≤ 1) →
+    ∀ (ε : ℝ), 0 < ε →
+      Filter.Tendsto
+        (fun X : Nat =>
+          (((Finset.Icc 1 X).filter
+            (fun n => Squarefree n ∧
+              ∀ K, genSeqCharEnergy n K q χ > (ε * K) ^ 2)).card : ℝ) /
+          ((Finset.Icc 1 X).filter Squarefree).card)
+        Filter.atTop (nhds 0) := by
+  -- Step 1: SD → ∃ C, CharSumVarianceBound C
+  obtain ⟨C, hCpos, hvb⟩ := decorrelation_implies_variance_proved hsd
+  -- Step 2: CharSumVarianceBound C → EnsembleCharSumConcentration
+  have hconc := char_variance_implies_concentration_proved C hCpos hvb
+  -- Step 3: EnsembleCharSumConcentration → cancellation (PROVED)
+  exact char_concentration_implies_cancellation hconc
+
+/-- **Simplified Ensemble PT Master Theorem (4 hypotheses).**
+
+    This is `ensemble_pt_master` with the two proved reductions
+    (`DecorrelationImpliesVariance` and `CharVarianceImpliesConcentration`)
+    inlined. Only 4 open hypotheses remain:
+    1. `SquarefreeResidueEquidist` — standard ANT
+    2. `CRTPropagationStep` — CRT independence
+    3. `AccumEquidistImpliesMultEquidist` — population transfer bridge
+    4. `EnsembleEquidistImpliesDecorrelation` — EME → SD bridge
+
+    The chain: SRE + CRT + AccumBridge → EME → (DecorrBridge) → SD
+    → (PROVED: variance) → (PROVED: concentration) → cancellation. -/
+theorem ensemble_pt_master_simplified
+    (hsre : SquarefreeResidueEquidist)
+    (hcrt : CRTPropagationStep)
+    (hbridge : AccumEquidistImpliesMultEquidist)
+    (hdecorr : EnsembleEquidistImpliesDecorrelation) :
+    ∀ (q : Nat), Nat.Prime q →
+    ∀ (chi : Nat → ℂ), (∀ a, Complex.normSq (chi a) ≤ 1) →
+    ∀ (eps : ℝ), 0 < eps →
+      Filter.Tendsto
+        (fun X : Nat =>
+          (((Finset.Icc 1 X).filter
+            (fun n => Squarefree n ∧
+              ∀ K, genSeqCharEnergy n K q chi > (eps * K) ^ 2)).card : ℝ) /
+          ((Finset.Icc 1 X).filter Squarefree).card)
+        Filter.atTop (nhds 0) :=
+  -- Chain: SRE+CRT+bridge → EME → (decorr) → SD → (proved) → cancellation
+  sd_implies_cancellation (hdecorr (ensemble_crt_equidist_chain hsre hcrt hbridge))
+
+end SDToCancellation
+
 /-! ## Section 4: Generalized MC from Walk Hitting -/
 
 section GenMC
@@ -722,21 +788,24 @@ Layer 2: Decorrelation
     + EnsembleEquidistImpliesDecorrelation (open)
     => StepDecorrelation
 
-Layer 3: Variance and Concentration
+Layer 3: Variance and Concentration (ALL PROVED)
   StepDecorrelation
-    + DecorrelationImpliesVariance (open)
-    => CharSumVarianceBound C
-    + CharVarianceImpliesConcentration (open)
-    => EnsembleCharSumConcentration
+    => CharSumVarianceBound C (decorrelation_implies_variance_proved, PROVED)
+    => EnsembleCharSumConcentration (char_variance_implies_concentration_proved, PROVED)
 
 Layer 4: Cancellation (PROVED)
   EnsembleCharSumConcentration
     => a.a. squarefree n: character sums cancel
     (char_concentration_implies_cancellation, PROVED)
 
+Direct composition (sd_implies_cancellation, PROVED):
+  StepDecorrelation alone => a.a. character sum cancellation
+  (composes all three Layer 3-4 reductions, zero open hypotheses)
+
 Assembly (PROVED):
-  Layers 1-4 compose to give `ensemble_pt_master`:
-    all hypotheses => character cancellation for a.a. squarefree n
+  Layers 1-4 compose to give `ensemble_pt_master_simplified` (4 hypotheses):
+    SRE + CRT + AccumBridge + DecorrBridge => char cancellation for a.a.
+  Original `ensemble_pt_master` (6 hypotheses) still available.
 
 Standard EM (PROVED):
   DSL alone => MC for the standard sequence starting from n=2
@@ -745,17 +814,19 @@ Standard EM (PROVED):
 
 ### Open Hypotheses in This File
 1. `EnsembleEquidistImpliesDecorrelation` -- EME => StepDecorrelation
-2. `DecorrelationImpliesVariance` -- SD => CharSumVarianceBound
 
 ### Proved in This File
-3. `EquidistImpliesCharMeanVanishing` -- EME => vanishing char means (PROVED, = EnsembleMultEquidistImpliesCharMeanZero)
+2. `DecorrelationImpliesVariance` -- SD => CharSumVarianceBound (PROVED, C=2)
+3. `EquidistImpliesCharMeanVanishing` -- EME => vanishing char means (PROVED)
 4. `GenHittingImpliesGenMC` -- cofinal walk hitting => gen. MC (PROVED)
+5. `sd_implies_cancellation` -- SD alone => char cancellation (PROVED, 3-step composition)
+6. `ensemble_pt_master_simplified` -- 4 hypotheses => char cancellation (PROVED)
 
 ### What Would Close the Ensemble Gap
-The two remaining open hypotheses above are consequences of standard analytic
-arguments (CRT independence, Chebyshev inequality, character orthogonality,
-combinatorial prime tracking). None requires deep analytic number theory
-beyond what is already formalized.
+`EnsembleEquidistImpliesDecorrelation` is the sole remaining open hypothesis
+in this file. Once `StepDecorrelation` is established (either directly or via
+the EME bridge), `sd_implies_cancellation` immediately gives character sum
+cancellation for almost all squarefree starting points.
 
 The DSL (from `PopulationTransferStrategy.lean`) provides a stronger,
 trajectory-level version that gives MC for the specific starting point n=2
