@@ -40,7 +40,9 @@ The variance bound follows:
 ### Open Hypotheses
 * `StepDecorrelation`          — CRT-based decorrelation (provable from CRT + PE)
 * `CharSumVarianceBound`       — variance bound (follows from decorrelation)
-* `CharVarianceImpliesConcentration` — VB → concentration (Markov bound proved, Tendsto gap open)
+
+### Proved Reductions
+* `char_variance_implies_concentration_proved` — VB → concentration (PROVED, Markov + Metric.tendsto_atTop)
 -/
 
 noncomputable section
@@ -116,8 +118,8 @@ section VarianceBound
     **Status**: open hypothesis, follows from StepDecorrelation + summable decay. -/
 def CharSumVarianceBound (C : ℝ) : Prop :=
   ∀ (q : Nat), Nat.Prime q →
-  ∀ (χ : Nat → ℂ),
-  ∃ X₀ : Nat, ∀ K : Nat, ∀ X ≥ X₀,
+  ∀ (χ : Nat → ℂ), (∀ a, Complex.normSq (χ a) ≤ 1) →
+  ∀ K : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
     ensembleAvg X (fun n => genSeqCharEnergy n K q χ) ≤ C * K
 
 end VarianceBound
@@ -127,40 +129,36 @@ end VarianceBound
 section CharConcentration
 
 /-- **Ensemble Character Sum Concentration**: for each prime q, character χ,
-    and ε > 0, eventually (in K), the density of squarefree n with
-    |∑_{k<K} χ(genSeq n k)| > ε·K tends to 0 as X → ∞.
+    threshold ε > 0, and density target δ > 0, there exists K₀ such that
+    for all K ≥ K₀, there exists X₀ such that for all X ≥ X₀, the density
+    of squarefree n in [1,X] with |∑_{k<K} χ(genSeq n k)|² > (ε·K)² is at most δ.
 
-    This is the Chebyshev consequence of `CharSumVarianceBound`:
-    Pr[|∑χ| > εK] ≤ E[|∑χ|²]/(εK)² ≤ CK/(ε²K²) = C/(ε²K) → 0.
+    This is the pointwise Chebyshev/Markov consequence of `CharSumVarianceBound`:
+    Pr[|∑χ|² > (εK)²] ≤ E[|∑χ|²]/(εK)² ≤ CK/(ε²K²) = C/(ε²K).
+    Choosing K ≥ C/(ε²δ) makes this ≤ δ.
 
-    The residue-equidistribution conclusion follows because character sum
-    cancellation (|∑χ| = o(K)) implies equidistribution of residues
-    (via orthogonality of characters). -/
+    The two-parameter (ε, δ) formulation separates the threshold from the
+    density bound, allowing the downstream `char_concentration_implies_cancellation`
+    to drive δ → 0 and recover Tendsto(nhds 0) for the "∀ K" deviant set. -/
 def EnsembleCharSumConcentration : Prop :=
   ∀ (q : Nat), Nat.Prime q →
-  ∀ (χ : Nat → ℂ),
+  ∀ (χ : Nat → ℂ), (∀ a, Complex.normSq (χ a) ≤ 1) →
   ∀ (ε : ℝ), 0 < ε →
+  ∀ (δ : ℝ), 0 < δ →
   ∃ K₀ : Nat,
-    ∀ K ≥ K₀,
-      Filter.Tendsto
-        (fun X : Nat =>
-          (((Finset.Icc 1 X).filter
-            (fun n => Squarefree n ∧
-              genSeqCharEnergy n K q χ > (ε * K) ^ 2)).card : ℝ) /
-          ((Finset.Icc 1 X).filter Squarefree).card)
-        Filter.atTop
-        (nhds 0)
+    ∀ K ≥ K₀, ∃ X₀ : Nat, ∀ X ≥ X₀,
+      (((Finset.Icc 1 X).filter
+        (fun n => Squarefree n ∧
+          genSeqCharEnergy n K q χ > (ε * K) ^ 2)).card : ℝ) /
+      ((Finset.Icc 1 X).filter Squarefree).card ≤ δ
 
-/-- **CharSumVarianceBound → EnsembleCharSumConcentration.**
+/-- **CharSumVarianceBound → EnsembleCharSumConcentration.** PROVED.
 
     By Chebyshev/Markov: if E[|∑χ|²] ≤ CK, then
     Pr[|∑χ|² > (εK)²] ≤ CK/(εK)² = C/(ε²K).
 
-    For K ≥ C/ε², this is < 1 and → 0 as K → ∞. The Markov bound
-    gives a subset relation, and the density bound follows.
-
-    This is stated as a definition (the open hypothesis `CharSumVarianceBound`
-    implies the conclusion) to keep the chain explicit. -/
+    For K ≥ ⌈C/(ε²δ)⌉ + 1, this bound is ≤ δ. The X₀ for each K comes
+    from `char_variance_density_bound` (the proved Markov inequality). -/
 def CharVarianceImpliesConcentration : Prop :=
   ∀ (C : ℝ), 0 < C →
     CharSumVarianceBound C → EnsembleCharSumConcentration
@@ -216,15 +214,17 @@ theorem finset_markov_density {X : Nat} {f : Nat → ℝ} {M t : ℝ}
     applied to the ensemble average from `CharSumVarianceBound`. -/
 theorem char_variance_density_bound (C : ℝ) (hC : 0 < C)
     (hvb : CharSumVarianceBound C) (q : Nat) (hq : Nat.Prime q)
-    (χ : Nat → ℂ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ X₀ : Nat, ∀ K ≥ 1, ∀ X ≥ X₀,
+    (χ : Nat → ℂ) (hχ : ∀ a, Complex.normSq (χ a) ≤ 1)
+    (ε : ℝ) (hε : 0 < ε) :
+    ∀ K ≥ 1, ∃ X₀ : Nat, ∀ X ≥ X₀,
       (((Finset.Icc 1 X).filter
         (fun n => Squarefree n ∧
           genSeqCharEnergy n K q χ > (ε * ↑K) ^ 2)).card : ℝ) /
       ((Finset.Icc 1 X).filter Squarefree).card ≤
       C * ↑K / (ε * ↑K) ^ 2 := by
-  obtain ⟨X₀, hX₀⟩ := hvb q hq χ
-  refine ⟨X₀, fun K hK X hX => ?_⟩
+  intro K hK
+  obtain ⟨X₀, hX₀⟩ := hvb q hq χ hχ K
+  refine ⟨X₀, fun X hX => ?_⟩
   have hK_pos : (0 : ℝ) < K := Nat.cast_pos.mpr (by omega)
   have hεK_sq_pos : (0 : ℝ) < (ε * ↑K) ^ 2 := sq_pos_of_pos (mul_pos hε hK_pos)
   exact finset_markov_density
@@ -233,7 +233,7 @@ theorem char_variance_density_bound (C : ℝ) (hC : 0 < C)
       exact genSeqCharEnergy_nonneg _ _ _ _)
     hεK_sq_pos
     (mul_nonneg (le_of_lt hC) (le_of_lt hK_pos))
-    (hX₀ K X hX)
+    (hX₀ X hX)
     _
     (fun n hn => by
       simp only [Finset.mem_filter] at hn ⊢
@@ -242,28 +242,71 @@ theorem char_variance_density_bound (C : ℝ) (hC : 0 < C)
       simp only [Finset.mem_filter] at hn
       exact le_of_lt hn.2.2)
 
-/-! ### Gap Analysis: CharSumVarianceBound → EnsembleCharSumConcentration
+/-- **CharVarianceImpliesConcentration is PROVED.**
 
-The Markov bound (proved as `char_variance_density_bound`) gives for each X ≥ X₀:
-
-    density(X, K) ≤ C · K / (ε · K)² = C / (ε² · K)
-
-This uniform-in-X bound is proved. The proved infrastructure:
-
-1. `genSeqCharEnergy_nonneg`: energy ≥ 0 (from normSq)
-2. `finset_markov_density`: discrete Markov inequality
-3. `char_variance_density_bound`: density ≤ C/(ε²K) for X ≥ X₀
-
-The gap to `EnsembleCharSumConcentration` is: the concentration definition
-requires `Tendsto density(·, K) atTop (nhds 0)` for each fixed K ≥ K₀.
-The Markov bound gives density(X, K) ∈ [0, C/(ε²K)] for X ≥ X₀, but for
-fixed K this is a *constant* bound — it doesn't show convergence to 0.
-
-Closing this gap requires showing that the proportion of bad starting points
-*stabilizes* as X → ∞, which is an ergodic-type density stabilization
-statement beyond the pointwise Markov bound.
-
-This gap is captured by `CharVarianceImpliesConcentration` (open hypothesis). -/
+    The proof strategy: given CharSumVarianceBound C, for any ε, δ > 0,
+    the Markov bound gives density ≤ C·K/(ε·K)² = C/(ε²·K) for X ≥ X₀(K).
+    Choose K₀ so that C/(ε²·K₀) ≤ δ; then for K ≥ K₀, the bound C/(ε²·K) ≤ δ.
+    The X₀ for each K comes from char_variance_density_bound. -/
+theorem char_variance_implies_concentration_proved :
+    CharVarianceImpliesConcentration := by
+  intro C hC hvb q hq χ hχ ε hε δ hδ
+  -- We need: ∃ K₀, ∀ K ≥ K₀, ∃ X₀, ∀ X ≥ X₀, density ≤ δ
+  -- The Markov bound gives: for K ≥ 1, ∃ X₀(K), ∀ X ≥ X₀(K), density ≤ C·K/(ε·K)²
+  -- C·K/(ε·K)² = C/(ε²·K), so we need C/(ε²·K) ≤ δ, i.e., K ≥ C/(ε²·δ)
+  set K₀ := Nat.max 1 (Nat.ceil (C / (ε ^ 2 * δ)) + 1)
+  refine ⟨K₀, fun K hK => ?_⟩
+  -- K ≥ K₀ ≥ 1
+  have hK_ge_one : K ≥ 1 := le_trans (Nat.le_max_left 1 _) hK
+  have hK_pos : (0 : ℝ) < (K : ℝ) := Nat.cast_pos.mpr (by omega)
+  -- Get X₀ from the variance bound for this specific K
+  obtain ⟨X₀, hX₀⟩ := hvb q hq χ hχ K
+  -- For any X ≥ X₀, the Markov bound gives density ≤ C·K/(ε·K)² = C/(ε²·K)
+  refine ⟨X₀, fun X hX => ?_⟩
+  -- First, get the Markov bound: density ≤ C·K/(ε·K)²
+  have hεK_sq_pos : (0 : ℝ) < (ε * ↑K) ^ 2 := sq_pos_of_pos (mul_pos hε hK_pos)
+  have h_markov : (((Finset.Icc 1 X).filter
+      (fun n => Squarefree n ∧
+        genSeqCharEnergy n K q χ > (ε * ↑K) ^ 2)).card : ℝ) /
+    ((Finset.Icc 1 X).filter Squarefree).card ≤
+    C * ↑K / (ε * ↑K) ^ 2 := by
+    exact finset_markov_density
+      (fun n hn => genSeqCharEnergy_nonneg _ _ _ _)
+      hεK_sq_pos
+      (mul_nonneg (le_of_lt hC) (le_of_lt hK_pos))
+      (hX₀ X hX)
+      _
+      (fun n hn => by
+        simp only [Finset.mem_filter] at hn ⊢
+        exact ⟨hn.1, hn.2.1⟩)
+      (fun n hn => by
+        simp only [Finset.mem_filter] at hn
+        exact le_of_lt hn.2.2)
+  -- Now show C·K/(ε·K)² = C/(ε²·K) ≤ δ
+  have h_simplify : C * ↑K / (ε * ↑K) ^ 2 = C / (ε ^ 2 * ↑K) := by
+    rw [mul_pow]; field_simp
+  rw [h_simplify] at h_markov
+  -- Show C/(ε²·K) ≤ δ, i.e., C ≤ δ · (ε²·K)
+  have h_bound : C / (ε ^ 2 * ↑K) ≤ δ := by
+    rw [div_le_iff₀ (mul_pos (sq_pos_of_pos hε) hK_pos)]
+    -- Need: C ≤ δ * (ε²·K), equivalently K ≥ C/(ε²·δ)
+    have hε2δ_pos : (0 : ℝ) < ε ^ 2 * δ := mul_pos (sq_pos_of_pos hε) hδ
+    -- K ≥ K₀ ≥ ⌈C/(ε²δ)⌉ + 1 > C/(ε²δ)
+    have hK_large : (K : ℝ) ≥ C / (ε ^ 2 * δ) := by
+      have hK₀_large : (K₀ : ℝ) ≥ Nat.ceil (C / (ε ^ 2 * δ)) + 1 := by
+        exact_mod_cast Nat.le_max_right 1 _
+      have : (K : ℝ) ≥ K₀ := by exact_mod_cast hK
+      have hceil : (Nat.ceil (C / (ε ^ 2 * δ)) : ℝ) ≥ C / (ε ^ 2 * δ) := Nat.le_ceil _
+      linarith
+    -- C ≤ (ε²δ) · K ≤ (ε²δ) · C/(ε²δ) = C ... wait, direction is:
+    -- K ≥ C/(ε²δ) => ε²δ · K ≥ C => δ · (ε²K) ≥ C
+    have hkey : ε ^ 2 * δ * ↑K ≥ C := by
+      calc ε ^ 2 * δ * ↑K
+          ≥ ε ^ 2 * δ * (C / (ε ^ 2 * δ)) :=
+            mul_le_mul_of_nonneg_left hK_large (le_of_lt hε2δ_pos)
+        _ = C := by field_simp
+    linarith
+  linarith
 
 end CharConcentration
 
@@ -288,11 +331,16 @@ private theorem forall_char_deviant_subset (q : Nat) (χ : Nat → ℂ) (ε : �
     If EnsembleCharSumConcentration holds, then for almost all squarefree n,
     the character sums satisfy |∑_{k<K} χ(genSeq n k)| = o(K).
 
-    Same `squeeze_zero` proof pattern as `concentration_implies_rsd`. -/
+    Proof strategy: for any target δ > 0, the concentration hypothesis with
+    density parameter δ/2 gives K₀ and X₀ such that for K ≥ K₀ and X ≥ X₀,
+    density of the K-specific deviant set ≤ δ/2. The "∀ K" set is a subset
+    of the K₀-specific set (by `forall_char_deviant_subset`), so its density
+    ≤ δ/2 < δ. Since this works for all δ > 0, we get Tendsto(nhds 0)
+    via Metric.tendsto_atTop. -/
 theorem char_concentration_implies_cancellation
     (hconc : EnsembleCharSumConcentration) :
     ∀ (q : Nat), Nat.Prime q →
-    ∀ (χ : Nat → ℂ),
+    ∀ (χ : Nat → ℂ), (∀ a, Complex.normSq (χ a) ≤ 1) →
     ∀ (ε : ℝ), 0 < ε →
       Filter.Tendsto
         (fun X : Nat =>
@@ -301,15 +349,34 @@ theorem char_concentration_implies_cancellation
               ∀ K, genSeqCharEnergy n K q χ > (ε * K) ^ 2)).card : ℝ) /
           ((Finset.Icc 1 X).filter Squarefree).card)
         Filter.atTop (nhds 0) := by
-  intro q hq χ ε hε
-  obtain ⟨K₀, hK₀⟩ := hconc q hq χ ε hε
-  have h_tendsto := hK₀ K₀ (le_refl _)
-  refine squeeze_zero
-    (fun X => div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _))
-    ?_ h_tendsto
-  intro X
+  intro q hq χ hχ ε hε
+  rw [Metric.tendsto_atTop]
+  intro δ hδ
+  -- Get K₀ from concentration with density target δ/2
+  obtain ⟨K₀, hK₀⟩ := hconc q hq χ hχ ε hε (δ / 2) (by linarith)
+  -- For K = K₀, get X₀
+  obtain ⟨X₀, hX₀⟩ := hK₀ K₀ (le_refl _)
+  refine ⟨X₀, fun X hX => ?_⟩
+  -- The density of the K₀-specific set is ≤ δ/2
+  have h_K₀_bound := hX₀ X hX
+  -- The "∀ K" set is a subset of the K₀-specific set
   have h_card := Finset.card_le_card (forall_char_deviant_subset q χ ε X K₀)
-  exact div_le_div_of_nonneg_right (by exact_mod_cast h_card) (Nat.cast_nonneg _)
+  -- So density of "∀ K" set ≤ density of K₀-specific set ≤ δ/2
+  have h_density_bound : (((Finset.Icc 1 X).filter
+      (fun n => Squarefree n ∧
+        ∀ K, genSeqCharEnergy n K q χ > (ε * ↑K) ^ 2)).card : ℝ) /
+    ((Finset.Icc 1 X).filter Squarefree).card ≤ δ / 2 :=
+    le_trans (div_le_div_of_nonneg_right (by exact_mod_cast h_card) (Nat.cast_nonneg _))
+      h_K₀_bound
+  -- dist f(X) 0 = |f(X)| = f(X) (since f ≥ 0) ≤ δ/2 < δ
+  rw [Real.dist_eq]
+  have h_nn : 0 ≤ (((Finset.Icc 1 X).filter
+      (fun n => Squarefree n ∧
+        ∀ K, genSeqCharEnergy n K q χ > (ε * ↑K) ^ 2)).card : ℝ) /
+    ((Finset.Icc 1 X).filter Squarefree).card :=
+    div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+  rw [abs_of_nonneg (by linarith)]
+  linarith
 
 end ConcentrationToEqd
 
