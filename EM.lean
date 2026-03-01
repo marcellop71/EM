@@ -44,3 +44,10 @@ import EM.WeakErgodicity
 import EM.PopulationEquidistProof
 import EM.ReciprocalSumDivergence
 import EM.PopulationTransferStrategy
+import EM.EnsembleStructure
+import EM.ShiftedSquarefreeDensity
+import EM.VisitEquidistribution
+import EM.EnsembleFirstMoment
+import EM.EnsembleDecorrelation
+import EM.MasterReduction
+import EM.DSLInfrastructure

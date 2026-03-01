@@ -289,6 +289,70 @@ theorem em_super_exponential_growth : SuperExponentialGrowth Mullin.prod := by
 
 end SuperExponentialGrowth
 
+/-! ## Walk telescoping and return products
+
+For any SDDS, the walk satisfies a telescoping identity:
+  walk(m + k) = walk(m) * ∏_{i<k} mult(m + i)
+
+When the walk returns (walk(start) = walk(stop)), and the walk value is
+nonzero (i.e., a unit in ZMod q), the product of intervening multipliers
+equals 1. This is the SDDS analogue of `walk_return_product` from
+`EquidistSelfAvoidance.lean`.
+-/
+
+section WalkReturn
+
+/-- **Walk telescoping**: `walk(m + k) = walk(m) * ∏_{i<k} mult(m + i)`.
+    The SDDS walk position at step m+k is the step-m position times all
+    intervening multipliers. Proved by induction on k using `walk_succ`. -/
+theorem SDDS.walk_telescope (S : SDDS) (m : ℕ) :
+    ∀ k, S.walk (m + k) = S.walk m * (Finset.range k).prod (fun i => S.mult (m + i)) := by
+  intro k
+  induction k with
+  | zero => simp [Finset.range_zero, Finset.prod_empty, mul_one]
+  | succ k ih =>
+    have hstep : S.walk (m + (k + 1)) = S.walk (m + k) * S.mult (m + k) := by
+      rw [show m + (k + 1) = (m + k) + 1 from by omega]
+      exact S.walk_succ (m + k)
+    rw [hstep, ih, Finset.prod_range_succ, mul_assoc]
+
+/-- **SDDS walk return product**: if `walk(m) = walk(m+k)` and `walk(m) ≠ 0`,
+    then the product of the `k` intervening multipliers equals 1 in `ZMod q`.
+
+    Proof: from telescoping, `walk(m+k) = walk(m) * ∏ mult(m+i)`.
+    Since `walk(m) = walk(m+k)`, we get `walk(m) = walk(m) * ∏ mult(m+i)`.
+    Since `walk(m) ≠ 0` in the field `ZMod q` (for prime q), cancel to get
+    `∏ mult(m+i) = 1`. -/
+theorem SDDS.walk_return_product_one (S : SDDS) {m k : ℕ}
+    (hret : S.walk m = S.walk (m + k))
+    (hne : S.walk m ≠ 0) :
+    (Finset.range k).prod (fun i => S.mult (m + i)) = 1 := by
+  have htele := S.walk_telescope m k
+  rw [hret] at htele
+  -- htele : S.walk (m + k) = S.walk (m + k) * ∏ mult(m + i)
+  -- From hret: walk(m) = walk(m+k), so walk(m+k) ≠ 0
+  have hne' : S.walk (m + k) ≠ 0 := hret ▸ hne
+  haveI : Fact (Nat.Prime S.q) := ⟨S.q_prime⟩
+  have heq : S.walk (m + k) * (Finset.range k).prod (fun i => S.mult (m + i)) =
+             S.walk (m + k) * 1 := by rw [mul_one]; exact htele.symm
+  exact mul_left_cancel₀ hne' heq
+
+/-- **EM SDDS walk return product**: specialization to the Euclid-Mullin SDDS.
+    When the EM walk returns mod q (with walk nonzero), the product of
+    intervening multipliers is 1. Combines the abstract SDDS result with
+    the EM bridge lemmas. -/
+theorem emSDDS_walk_return_product_one (q : ℕ) (hq : Nat.Prime q)
+    [Fact (Nat.Prime q)]
+    {m k : ℕ}
+    (hret : MullinGroup.walkZ q m = MullinGroup.walkZ q (m + k))
+    (hne : MullinGroup.walkZ q m ≠ 0) :
+    (Finset.range k).prod (fun i => (emSDDS q hq).mult (m + i)) = 1 := by
+  apply (emSDDS q hq).walk_return_product_one
+  · rwa [emSDDS_walk_eq_walkZ, emSDDS_walk_eq_walkZ]
+  · rwa [emSDDS_walk_eq_walkZ]
+
+end WalkReturn
+
 /-! ## SME implies walk hits -1
 
 If SieveMapEquidistribution holds for the EM SDDS, then the walk hits
