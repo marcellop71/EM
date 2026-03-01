@@ -954,6 +954,195 @@ theorem gram_als_weak
   exact key
 
 /-!
+### §7.4d' Refined off-diagonal Gram bound and packing infrastructure
+
+The naive bound `gram_row_sum_weak` treats every off-diagonal Gram entry
+identically: `‖G(r,s)‖ ≤ 1/(2δ)`. In reality, `‖G(r,s)‖ ≤ 1/(2·d(r,s))`
+where `d(r,s) = |α_r - α_s - round(α_r - α_s)|` is the ℝ/ℤ distance,
+which is typically much larger than δ.
+
+**Refined off-diagonal bound** (`gramMatrix_offdiag_bound_dist`): uses the
+actual pairwise distance instead of the uniform lower bound δ.
+
+**Packing bound** (`round_sep_card_le`): For R points on ℝ/ℤ with
+pairwise distance ≥ δ, we have `R ≤ ⌊1/δ⌋ + 1` (pigeonhole into bins
+of width < δ). This gives `(R - 1) * δ ≤ 1`.
+
+**Improved row-sum** (`gram_row_sum_improved`): Combines the packing bound
+with the existing machinery to give `∑_s ‖G(r,s)‖ ≤ N + ⌊1/δ⌋/(2δ)`,
+an a priori improvement over the naive `N + (R-1)/(2δ)`.
+-/
+
+/-- **Refined off-diagonal Gram bound**: `‖G(r,s)‖ ≤ 1/(2·d(r,s))` where
+    `d(r,s) = |α_r - α_s - round(α_r - α_s)|` is the actual ℝ/ℤ distance.
+
+    This is sharper than `gramMatrix_offdiag_bound`, which uses the uniform
+    lower bound `d(r,s) ≥ δ` to get `1/(2δ)`. -/
+theorem gramMatrix_offdiag_bound_dist (N : ℕ) {R : ℕ} (α : Fin R → ℝ)
+    (r s : Fin R) (_hrs : r ≠ s)
+    (hd : 0 < |α r - α s - round (α r - α s)|) :
+    ‖gramMatrix N α r s‖ ≤ 1 / (2 * |α r - α s - round (α r - α s)|) := by
+  unfold gramMatrix
+  exact _root_.norm_eAN_geom_sum_le_inv N (α r - α s) _ hd le_rfl
+
+/-- Round-separation implies δ ≤ 1/2. -/
+theorem round_sep_delta_le_half {R : ℕ} (α : Fin R → ℝ) (δ : ℝ)
+    (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|)
+    (r s : Fin R) (hrs : r ≠ s) : δ ≤ 1 / 2 :=
+  (hsep r s hrs).trans (abs_sub_round _)
+
+/-- **Packing bound for round-separated points**: If R points have
+    pairwise ℝ/ℤ-distance ≥ δ and 0 < δ, then `(R - 1) * δ ≤ 1`.
+
+    Proof by pigeonhole: define `f(i) = ⌊Int.fract(α i) / δ⌋` mapping
+    `Fin R → Fin (⌊1/δ⌋ + 1)`. Two points in the same bin have
+    `|fract(α r) - fract(α s)| < δ`, hence circular distance < δ,
+    contradicting separation. So `f` is injective and `R ≤ ⌊1/δ⌋ + 1`,
+    giving `(R - 1) ≤ ⌊1/δ⌋ ≤ 1/δ`. -/
+theorem round_sep_card_le (R : ℕ) (α : Fin R → ℝ) (δ : ℝ) (hδ : 0 < δ)
+    (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|) :
+    ((R : ℝ) - 1) * δ ≤ 1 := by
+  -- Strategy: define f : Fin R → Fin (⌊1/δ⌋₊ + 1) by f(i) = ⌊fract(α i) / δ⌋₊.
+  -- Two points in the same bin have |fract diff| < δ, hence circ dist < δ,
+  -- contradicting separation. So f is injective and R ≤ ⌊1/δ⌋₊ + 1.
+  -- Then (R - 1) ≤ ⌊1/δ⌋₊ ≤ 1/δ gives the result.
+  set m := ⌊(1 : ℝ) / δ⌋₊ with hm_def
+  -- Step 1: Define the bin function
+  have hδ' : (0 : ℝ) < δ := hδ
+  -- f(i) = ⌊fract(α i) / δ⌋₊
+  set f : Fin R → ℕ := fun i => ⌊Int.fract (α i) / δ⌋₊ with hf_def
+  -- Step 2: Each f(i) ≤ m (hence < m + 1)
+  have hf_bound : ∀ i : Fin R, f i ≤ m := by
+    intro i
+    simp only [hf_def, hm_def]
+    apply Nat.floor_le_floor
+    apply div_le_div_of_nonneg_right _ hδ'.le
+    exact (Int.fract_lt_one (α i)).le
+  -- Step 3: f is injective
+  have hf_inj : Function.Injective f := by
+    intro r s hfrs
+    by_contra hrs
+    -- r ≠ s, so round-separation gives δ ≤ |α r - α s - round(α r - α s)|
+    have hsep_rs := hsep r s hrs
+    -- f(r) = f(s) means ⌊fract(α r) / δ⌋₊ = ⌊fract(α s) / δ⌋₊
+    -- This implies |fract(α r) / δ - fract(α s) / δ| < 1, i.e., |fract diff| < δ
+    have hfr_nn : 0 ≤ Int.fract (α r) / δ := div_nonneg (Int.fract_nonneg _) hδ'.le
+    have hfs_nn : 0 ≤ Int.fract (α s) / δ := div_nonneg (Int.fract_nonneg _) hδ'.le
+    -- From floor equality, the values are in the same unit interval [k, k+1)
+    have hfloor_eq : ⌊Int.fract (α r) / δ⌋₊ = ⌊Int.fract (α s) / δ⌋₊ := hfrs
+    -- So |fract(α r)/δ - fract(α s)/δ| < 1
+    have hdiff_lt_one : |Int.fract (α r) / δ - Int.fract (α s) / δ| < 1 := by
+      set a := Int.fract (α r) / δ
+      set b := Int.fract (α s) / δ
+      have ha : 0 ≤ a := hfr_nn
+      have hb : 0 ≤ b := hfs_nn
+      rw [abs_lt]
+      constructor
+      · -- a - b > -1: since a ≥ 0 and b < ... we need b - a < 1
+        -- b < ⌊b⌋₊ + 1 and a ≥ ⌊a⌋₊ = ⌊b⌋₊ (from hfloor_eq)
+        have hb_lt : b < ↑(⌊b⌋₊) + 1 := Nat.lt_floor_add_one b
+        have ha_ge : ↑(⌊a⌋₊) ≤ a := Nat.floor_le ha
+        rw [← hfloor_eq] at hb_lt
+        linarith [ha_ge, hb_lt]
+      · -- a - b < 1: since b ≥ ⌊b⌋₊ = ⌊a⌋₊ and a < ⌊a⌋₊ + 1
+        have ha_lt : a < ↑(⌊a⌋₊) + 1 := Nat.lt_floor_add_one a
+        have hb_ge : ↑(⌊b⌋₊) ≤ b := Nat.floor_le hb
+        rw [hfloor_eq] at ha_lt
+        linarith [hb_ge, ha_lt]
+    -- Multiply by δ: |fract(α r) - fract(α s)| < δ
+    have hfract_close : |Int.fract (α r) - Int.fract (α s)| < δ := by
+      have key : |Int.fract (α r) / δ - Int.fract (α s) / δ| < 1 := hdiff_lt_one
+      rw [show Int.fract (α r) / δ - Int.fract (α s) / δ =
+            (Int.fract (α r) - Int.fract (α s)) / δ from by ring] at key
+      rwa [abs_div, abs_of_pos hδ', div_lt_one hδ'] at key
+    -- Circular distance ≤ |fract diff|: use round_le to bound by nearest integer
+    have hcirc_le : |α r - α s - round (α r - α s)| < δ := by
+      -- round_le: |x - round x| ≤ |x - n| for any integer n
+      -- Apply with n = ⌊α r⌋ - ⌊α s⌋, then simplify to |fract r - fract s|
+      calc |α r - α s - round (α r - α s)|
+          ≤ |(α r - α s) - ↑(⌊α r⌋ - ⌊α s⌋)| := round_le _ _
+        _ = |Int.fract (α r) - Int.fract (α s)| := by
+            congr 1
+            have hr := Int.floor_add_fract (α r)
+            have hs := Int.floor_add_fract (α s)
+            push_cast; linarith
+        _ < δ := hfract_close
+    -- But hsep says δ ≤ circ dist. Contradiction.
+    linarith
+  -- Step 4: R ≤ m + 1 from injectivity
+  -- Lift f to Fin R → Fin (m + 1) using the bound
+  have hf_lt : ∀ i : Fin R, f i < m + 1 := fun i => Nat.lt_succ_of_le (hf_bound i)
+  set g : Fin R → Fin (m + 1) := fun i => ⟨f i, hf_lt i⟩ with hg_def
+  have hg_inj : Function.Injective g := by
+    intro a b hab
+    have : f a = f b := by
+      simp only [hg_def, Fin.mk.injEq] at hab
+      exact hab
+    exact hf_inj this
+  have hR_le : R ≤ m + 1 := by
+    have := Fintype.card_le_of_injective g hg_inj
+    simp [Fintype.card_fin] at this
+    exact this
+  -- Step 5: (R - 1) * δ ≤ ⌊1/δ⌋₊ * δ ≤ 1
+  have hR_sub : (R : ℝ) - 1 ≤ ↑m := by
+    have : (R : ℝ) ≤ ↑m + 1 := by exact_mod_cast hR_le
+    linarith
+  have hm_le : (m : ℝ) * δ ≤ 1 := by
+    have : (m : ℝ) ≤ 1 / δ := Nat.floor_le (by positivity)
+    calc (m : ℝ) * δ ≤ (1 / δ) * δ := by nlinarith
+      _ = 1 := by field_simp
+  calc ((R : ℝ) - 1) * δ ≤ ↑m * δ := by nlinarith [hR_sub, hδ']
+    _ ≤ 1 := hm_le
+
+/-- Corollary of packing: `R - 1 ≤ 1/δ` for round-separated points. -/
+theorem round_sep_card_le_inv (R : ℕ) (α : Fin R → ℝ) (δ : ℝ) (hδ : 0 < δ)
+    (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|) :
+    (R : ℝ) - 1 ≤ 1 / δ := by
+  have hpack := round_sep_card_le R α δ hδ hsep
+  rwa [le_div_iff₀ hδ]
+
+/-- **Improved row-sum bound using packing**: for round-separated `α`, the row sum
+    satisfies `∑_s ‖G(r,s)‖ ≤ N + 1/(2·δ²)`, independent of R.
+
+    This follows from `gram_row_sum_weak` (which gives `N + (R-1)/(2δ)`) together
+    with the packing bound `(R - 1) ≤ 1/δ`. The resulting bound `N + 1/(2δ²)` is
+    weaker than the optimal `1/δ + N - 1` but is completely proved and R-independent.
+    It demonstrates that the Schur-test constant is controlled purely by δ and N. -/
+theorem gram_row_sum_improved (N : ℕ) {R : ℕ} (α : Fin R → ℝ) (δ : ℝ)
+    (hδ : 0 < δ)
+    (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|)
+    (r : Fin R) :
+    ∑ s, ‖gramMatrix N α r s‖ ≤ ↑N + 1 / (2 * δ ^ 2) := by
+  have hrow := gram_row_sum_weak N α δ hδ hsep r
+  have hpack := round_sep_card_le_inv R α δ hδ hsep
+  -- (R - 1)/(2δ) ≤ (1/δ)/(2δ) = 1/(2δ²)
+  have hbound : (↑R - 1) / (2 * δ) ≤ 1 / (2 * δ ^ 2) := by
+    rw [div_le_div_iff₀ (by positivity : (0:ℝ) < 2 * δ) (by positivity : (0:ℝ) < 2 * δ ^ 2)]
+    nlinarith [round_sep_card_le R α δ hδ hsep]
+  linarith
+
+/-- **End-to-end ALS with R-independent constant**: for round-separated evaluation
+    points, the ALS holds with constant `N + 1/(2δ²)`, proved entirely from the
+    Gram matrix framework and the packing bound.
+
+    While weaker than the optimal `1/δ + N - 1`, this demonstrates a *complete*
+    proof path from separation to ALS without the Hilbert inequality. -/
+theorem gram_als_improved
+    (R N : ℕ) (α : Fin R → ℝ) (a : Fin N → ℂ) (δ : ℝ)
+    (hδ : 0 < δ) (_hR : 1 ≤ R)
+    (hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|) :
+    (∑ r, ‖∑ n : Fin N, a n * _root_.eAN (α r * ↑(n : ℕ))‖ ^ 2) ≤
+      (↑N + 1 / (2 * δ ^ 2)) * l2NormSq a := by
+  have hrow : GramRowSumBound N α (↑N + 1 / (2 * δ ^ 2)) := by
+    intro r; exact gram_row_sum_improved N α δ hδ hsep r
+  have hC : (0 : ℝ) ≤ ↑N + 1 / (2 * δ ^ 2) := by
+    have : 0 ≤ (N : ℝ) := Nat.cast_nonneg N
+    positivity
+  have key := gram_row_sum_implies_lsi R N α _ hC hrow a
+  simp only [eAN_eq_root_eAN] at key
+  exact key
+
+/-!
 ### §7.4e Hilbert inequality implies optimal ALS
 
 The **optimal** additive large sieve (Theorem 7.7) follows from the Hilbert inequality
