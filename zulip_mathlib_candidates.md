@@ -1,7 +1,7 @@
 # Mathlib Contribution Candidates from the Euclid-Mullin Formalization
 
-The repository [EM](https://github.com/mparis-est/EM) (~39,600 lines, 62 files, zero sorry)
-formalizes reductions of the Mullin Conjecture in Lean 4 / Mathlib v4.27.0.
+The repository [EM](https://github.com/mparis-est/EM) (~43,500 lines, 71 files, zero sorry)
+formalizes reductions of the Mullin Conjecture in Lean 4 / Mathlib v4.29.0-rc1.
 Along the way it developed general-purpose mathematics that fills genuine gaps in Mathlib.
 Below are the strongest candidates, filtered for non-trivial proofs of well-established
 results that are missing from the current library.
@@ -184,3 +184,54 @@ Cesaro sense to `π·csc(π(α_r − α_s))` using the Mittag-Leffler expansion.
 | `cross_r_cesaro_convergence_proved` | thm | Full proof (~490 lines) |
 | `same_r_antisymmetry` | thm | Self-interaction terms cancel by antisymmetry |
 | `hilbert_lifted_bound` | thm | HilbertInequality applied to lifted point system |
+
+---
+
+## 11. One-Sided Tauberian Lemma
+
+**File:** `OneSidedTauberian.lean:59` (~50 lines)
+
+For nonneg `bₙ ≥ 0`, the partial sum `∑_{n≤N} bₙ` is bounded by
+`N^ε · ∑_n bₙ/n^ε` for any `ε > 0`. Elementary proof via `n^ε ≤ N^ε`.
+
+This is the key one-sided bound that, combined with Mathlib's L-function
+infrastructure, reduces `WeightedPNTinAP` to a real-variable
+Wiener-Ikehara hypothesis. Not in Mathlib.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `one_sided_tauberian_upper` | thm | `∑_{n≤N} bₙ ≤ N^ε · ∑_n bₙ/n^ε` for `bₙ ≥ 0` |
+| `one_sided_tauberian_dirichlet` | thm | Applied to Dirichlet series: partial sum ≤ N^ε · L(1+ε) |
+
+---
+
+## 12. L-series Upper Bound for Residue Classes
+
+**File:** `OneSidedTauberian.lean:146` (~40 lines)
+
+Mathlib's `PrimesInAP.lean` proves a *lower* bound on `∑ Λ(n)·1_{n≡a}/n^x`
+near `x = 1` (via `LSeries_residueClass_lower_bound`), but does not export
+the corresponding *upper* bound. This file extracts the identity
+
+    tsum = LFunctionResidueClassAux(a, x).re + (φ(q))⁻¹/(x−1)
+
+from Mathlib's proof and derives both bounds, enabling Tauberian applications.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `residueClass_tsum_eq_aux_plus_pole` | thm | Identity: tsum = aux.re + pole |
+| `residueClass_tsum_upper_bound` | thm | Upper bound: tsum ≤ (φ(q))⁻¹/(x−1) + C |
+| `residueClass_tsum_both_bounds` | thm | Two-sided: pole − C ≤ tsum ≤ pole + C |
+
+---
+
+## 13. Doubly Stochastic Transition on Finite Groups
+
+**File:** `SelfCorrectingDrift.lean:616` (~20 lines)
+
+For a finite group `G` and uniform measure on `G`, the random walk
+transition matrix is doubly stochastic: each row and column sums to 1.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `group_walk_doubly_stochastic` | thm | Uniform multiplier gives doubly stochastic transitions |
