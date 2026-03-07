@@ -109,10 +109,26 @@ $\mathrm{SCRTI} + \mathrm{SRE}$ implies
 $\mathrm{AccumulatorEquidistPropagation}$.
 \end{theorem}
 
-\noindent This provides a clean decomposition: SRE is the base case (standard
-analytic number theory, hereafter \emph{ANT}),
+\noindent This provides a clean decomposition: SRE is the base case
+(a consequence of standard analytic number theory),
 SquarefreeCRTIndependence is the inductive step (CRT structure), and
 AccumulatorEquidistPropagation is the output.
+
+\paragraph{Standard analytic number theory (ANT).}
+\label{sec:ant-def}
+Throughout this paper, \textbf{ANT} denotes the conjunction of two
+classical results: (i)~Dirichlet's theorem on primes in arithmetic
+progressions, and (ii)~sieve estimates for shifted squarefree
+integers.  Together they imply
+\defname{MinFacResidueEquidist}~(\abbr{MFRE}): among $q$-rough
+shifted squarefree integers $m$ (those with $\mu^2(m{-}1)=1$ and
+$\minFac(m) > q$), the smallest prime factor $\minFac(m)$ is
+equidistributed modulo~$q$
+(\lean{EM/PopulationEquidistProof.lean}{MinFacResidueEquidist}).
+MFRE in turn implies PopulationEquidist~(PE) via
+\code{pe\_of\_equidist}.  ANT is not formalized in Lean---it is
+assumed as a hypothesis in the master reduction---but it follows from
+results that are entirely standard in analytic number theory.
 
 \subsection{The Decorrelation--Variance--Concentration Chain}
 \label{sec:decorr-chain}
@@ -1138,18 +1154,16 @@ $n = 2$.
   provedbox/.style={box, draw=leanink, fill=blue!5},
   goalbox/.style={box, draw=black, fill=green!8, line width=1pt},
 ]
-% --- Row 1: ANT ---
-\node[provedbox] (ant) {ANT};
+% --- Row 1: ANT (standard analytic number theory) ---
+\node[provedbox] (ant) {ANT\rlap{\;\scriptsize(MFRE + SRE)}};
 
-% --- Row 2: SRE ---
-\node[below=of ant, provedbox] (sre) {SRE};
+% --- Row 2: PE and AccumEquidist (parallel outputs of ANT) ---
+\node[below left=0.85cm and 0.6cm of ant, provedbox] (pe) {PE};
+\node[below right=0.85cm and 0.6cm of ant, provedbox] (ae) {AccumEquidist};
 
-% --- Row 3: AccumEquidist ---
-\node[below=of sre, provedbox] (ae) {AccumEquidist};
-
-% --- Row 4: EME ---open--> DSL ---
+% --- Row 3: EME ---open--> DSL ---
 \node[below=of ae, provedbox] (eme) {EME};
-\node[right=2.8cm of eme, openbox] (dsl) {\textbf{DSL}};
+\node[right=2.0cm of eme, openbox] (dsl) {\textbf{DSL}};
 
 % --- Row 5: SD, CME, SVE <-> VE, HOD, TWD ---
 \node[below=of dsl, provedbox] (cme) {CME};
@@ -1175,10 +1189,13 @@ $n = 2$.
 \node[below=1.0cm of hits, goalbox] (mc) {\textbf{MC}};
 
 % --- Arrows ---
-% Ensemble column
-\draw[proved] (ant) -- (sre);
-\draw[proved] (sre) -- (ae) node[midway, right, font=\tiny] {CRT};
+% ANT splits into PE and AccumEquidist
+\draw[proved] (ant) -- (pe) node[midway, left, font=\tiny] {MFRE};
+\draw[proved] (ant) -- (ae) node[midway, right, font=\tiny] {SRE+CRT};
 \draw[proved] (ae) -- (eme);
+
+% PE feeds into DSL (PE + DSL → CME)
+\draw[proved] (pe) |- (dsl.west);
 \draw[open] (eme) -- (dsl) node[midway, above, font=\tiny] {open};
 
 % DSL -> CME -> CCSB -> Hits -> MC
@@ -1227,7 +1244,7 @@ The \emph{left path} (PRE~$\to$~SE~$\to$~SHH~$\to$~MC) is the
 inductive bootstrap of Section~\ref{sec:bootstrap}, proved
 unconditionally---it reduces MC to producing one hit on~$-1$ at each
 prime.  The \emph{central path}
-(ANT~$\to$~SRE~$\to$~AccumEquidist~$\to$~EME~$\dashrightarrow$~DSL~$\to$~CME~$\to$~CCSB~$\to$~hits~$\to$~MC)
+(ANT~$\to$~PE~$\to$~DSL~$\to$~CME~$\to$~CCSB~$\to$~hits~$\to$~MC)
 is the ensemble route of this section---it produces the required hit
 via harmonic analysis, conditional on DSL\@.  The \emph{right path}
 (SVE~$\leftrightarrow$~VE, Weyl~$\to$~DH~$\to$~MC) provides an
