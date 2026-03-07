@@ -133,8 +133,11 @@ An investigation of the formalization gap
 (\S\ref{sec:ant-formalization}) shows that ${\sim}92\%$ of the
 required Mathlib infrastructure already exists (including Dirichlet's
 theorem via $L$-series, Abel summation, and $L$-function
-non-vanishing); the sole blocking dependency is a one-sided Tauberian
-lemma converting $L$-series behavior near $s = 1$ into partial sum
+non-vanishing).  The one-sided Tauberian lemma and the
+prime power stripping step are now machine-verified
+(\code{OneSidedTauberian.lean}, 557~lines); the sole remaining
+blocking dependency is the real-variable Wiener--Ikehara bridge
+converting $L$-series behavior near $s = 1$ into partial sum
 asymptotics.
 
 \subsection{The Decorrelation--Variance--Concentration Chain}

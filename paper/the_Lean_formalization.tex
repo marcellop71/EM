@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 70~files
-totaling ${\sim}43{,}200$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 71~files
+totaling ${\sim}43{,}800$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -79,6 +79,7 @@ three leaf modules:
 \code{PopulationEquidistProof.lean} & MinFacResidueEquidist $\Rightarrow$ PE (analytic) & 187 \\
 \code{ReciprocalSumDivergence.lean} & Generalized EM reciprocal sum divergence & 289 \\
 \code{PopulationTransferStrategy.lean} & PE + DSL $\Rightarrow$ MC, ensemble concentration & 273 \\
+\code{OneSidedTauberian.lean} & One-sided Tauberian, L-series bounds, prime power stripping & 557 \\
 \midrule
 \multicolumn{3}{l}{\emph{Ensemble framework (new)}} \\
 \code{EnsembleStructure.lean} & Generalized EM: genProd, genSeq, injectivity & 247 \\
@@ -180,24 +181,46 @@ MFRE\@.  The chain is
   \;\xrightarrow{\text{proved}}\;
   \text{PE}.
 \]
-Only the last arrow is machine-verified (\code{pe\_of\_equidist}).
+The last arrow is machine-verified (\code{pe\_of\_equidist}), and
+the file \code{OneSidedTauberian.lean} (557~lines, zero
+\code{sorry}) now proves several intermediate steps:
+\begin{itemize}
+\item \textbf{One-sided Tauberian lemma}
+(\lean{EM/OneSidedTauberian.lean}{one\_sided\_tauberian\_upper}):
+for nonnegative $b_n \geq 0$,
+$\sum_{n \leq N} b_n \leq N^\varepsilon \cdot \sum_n b_n / n^\varepsilon$.
+Elementary proof via $n^\varepsilon \leq N^\varepsilon$.
+\item \textbf{L-series upper bound}
+(\lean{EM/OneSidedTauberian.lean}{residueClass\_tsum\_upper\_bound}):
+companion to Mathlib's \code{LSeries\_residueClass\_lower\_bound},
+giving both sides of the pole near $s = 1$.
+\item \textbf{Prime power stripping}
+(\lean{EM/OneSidedTauberian.lean}{prime\_power\_stripping\_proved}):
+$\text{WeightedPNTinAP} \Rightarrow \text{PrimeLogSumEquidist}$,
+removing the bounded prime power contribution from the von Mangoldt
+sum.  This reduces the gap: what remains is the Tauberian bridge
+from $L$-series behavior to the weighted sum, plus Abel
+summation from log-weighted to reciprocal-weighted equidistribution.
+\end{itemize}
 Mathlib~v4.29.0 already provides ${\sim}92\%$ of the required
 infrastructure: qualitative Dirichlet (via $L$-functions and
 non-vanishing on $\operatorname{Re}(s) \geq 1$), Abel summation,
 Chebyshev bounds, Dirichlet character orthogonality, and the von
-Mangoldt function.  The sole blocking dependency is a \emph{one-sided
-Tauberian lemma} converting the behavior of
+Mangoldt function.  The sole remaining blocking dependency is a
+\emph{real-variable Wiener--Ikehara} hypothesis converting the behavior of
 $\sum \Lambda(n)\mathbf{1}_{n \equiv a}/n^{1+\varepsilon}$ near
 $\varepsilon = 0$ into partial sum asymptotics.  Because $\Lambda
-\geq 0$, this does not require the full Wiener--Ikehara theorem: an
-elementary monotonicity argument suffices.
+\geq 0$, this does not require the full Wiener--Ikehara theorem: the
+one-sided Tauberian lemma (proved above) already gives
+$O(N^\varepsilon)$ bounds; what remains is the asymptotic.
 
-We estimate ${\sim}2{,}000$--$3{,}500$ lines to close the full
-chain, with the Tauberian lemma and its Mathlib connection requiring
-${\sim}300$--$500$ lines.  No external Lean project currently
-provides this: the PNT+ project
+We estimate ${\sim}1{,}500$--$3{,}000$ lines to close the full
+chain (down from the original estimate of $2{,}000$--$3{,}500$
+after the Tauberian and prime-power-stripping steps were proved).
+No external Lean project currently
+provides the quantitative PNT in APs: the PNT+ project
 (Kontorovich--Tao~et~al.)\ has partial Wiener--Ikehara but not
-quantitative PNT in arithmetic progressions; the \textsc{Gauss}
+in arithmetic progressions; the \textsc{Gauss}
 project (Math,~Inc.) formalizes the strong PNT but not in APs.
 Formalizing ANT is feasible future work but does not affect
 the paper's contribution, since the reduction DSL~$\Rightarrow$~MC
@@ -206,8 +229,8 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}43{,}000$ \\
-Files & 69 \\
+Lines of Lean code & ${\sim}43{,}800$ \\
+Files & 71 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\
 \code{sorry} occurrences & \textbf{0} \\
@@ -442,6 +465,13 @@ Mathlib version & v4.29.0-rc1 \\
 \quad SelfCorrectingDrift ($R(N) = o(N^2)$) & \textbf{Open} & \code{SelfCorrectingDrift} \\
 \quad TailWindowDecorrelation (cross terms vanish) & \textbf{Open} & \code{TailWindowDecorrelation} \\
 \quad TWDImpliesCCSB (TWD $\Rightarrow$ CCSB bridge) & \textbf{Open} & \code{TWDImpliesCCSB} \\
+\midrule
+\multicolumn{3}{l}{\emph{ANT infrastructure (one-sided Tauberian)}} \\
+\quad One-sided Tauberian upper bound & Proved & \code{one\_sided\_tauberian\_upper} \\
+\quad L-series upper bound (residue classes) & Proved & \code{residueClass\_tsum\_upper\_bound} \\
+\quad L-series both bounds (residue classes) & Proved & \code{residueClass\_tsum\_both\_bounds} \\
+\quad WeightedPNTinAP $\Rightarrow$ PrimeLogSumEquidist & Proved & \code{prime\_power\_stripping\_proved} \\
+\quad Dirichlet's theorem (from Mathlib) & Proved & \code{dirichlet\_primes\_in\_ap} \\
 \midrule
 \multicolumn{3}{l}{\emph{Known theorems --- not yet in Mathlib}} \\
 \quad PrimeDensityEquipartition (PNT in APs) & Known & \code{PrimeDensityEquipartition} \\
