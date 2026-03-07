@@ -42,5 +42,18 @@ via a separate machine-verified chain, bypassing CME entirely.
 
 Over 121~dead ends are
 documented, trying to delineate the boundary of current methods as precisely as possible.
+
+\medskip\noindent\textbf{Statements and proofs.}
+Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
+are formally verified in Lean~4; clicking the identifier links to the
+source code.
+Most proofs are sketched rather than fully reported;
+correctness is guaranteed by the type-checker.
+Some misalignment may exist between what is stated here and what is
+proved in the formalization; the Lean source is the authoritative reference.
+To mitigate this risk, we used
+LeanArchitect~\cite{LeanArchitect2026} to cross-check the 20~key
+declarations against the paper's theorem statements;
+this process uncovered one missing precondition, now corrected.
 \end{abstract}
 

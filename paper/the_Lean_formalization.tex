@@ -163,6 +163,46 @@ The formalization draws on several Mathlib libraries:
   groups, trigonometric exponentials, geometric series identities.
 \end{itemize}
 
+\subsection{ANT Formalization Status}
+\label{sec:ant-formalization}
+
+The sole unformalized input to the master reduction is ANT
+(\S\ref{sec:ant-def}): the standard analytic number theory implying
+MFRE\@.  The chain is
+\[
+  \underbrace{\text{Dirichlet} + \text{Sieve}}_{\text{ANT}}
+  \;\xrightarrow{\text{Tauberian}}\;
+  \text{WeightedPNTinAP}
+  \;\xrightarrow{\text{Abel}}\;
+  \text{Alladi}
+  \;\xrightarrow{\text{CRT}}\;
+  \text{MFRE}
+  \;\xrightarrow{\text{proved}}\;
+  \text{PE}.
+\]
+Only the last arrow is machine-verified (\code{pe\_of\_equidist}).
+Mathlib~v4.29.0 already provides ${\sim}92\%$ of the required
+infrastructure: qualitative Dirichlet (via $L$-functions and
+non-vanishing on $\operatorname{Re}(s) \geq 1$), Abel summation,
+Chebyshev bounds, Dirichlet character orthogonality, and the von
+Mangoldt function.  The sole blocking dependency is a \emph{one-sided
+Tauberian lemma} converting the behavior of
+$\sum \Lambda(n)\mathbf{1}_{n \equiv a}/n^{1+\varepsilon}$ near
+$\varepsilon = 0$ into partial sum asymptotics.  Because $\Lambda
+\geq 0$, this does not require the full Wiener--Ikehara theorem: an
+elementary monotonicity argument suffices.
+
+We estimate ${\sim}2{,}000$--$3{,}500$ lines to close the full
+chain, with the Tauberian lemma and its Mathlib connection requiring
+${\sim}300$--$500$ lines.  No external Lean project currently
+provides this: the PNT+ project
+(Kontorovich--Tao~et~al.)\ has partial Wiener--Ikehara but not
+quantitative PNT in arithmetic progressions; the \textsc{Gauss}
+project (Math,~Inc.) formalizes the strong PNT but not in APs.
+Formalizing ANT is feasible future work but does not affect
+the paper's contribution, since the reduction DSL~$\Rightarrow$~MC
+is the novel content.
+
 \begin{center}
 \begin{tabular}{lr}
 \toprule

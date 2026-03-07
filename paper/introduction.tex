@@ -225,27 +225,6 @@ equivalent formulations catalogued in \S\ref{sec:character},
 \S\ref{sec:open}, and the glossary (Appendix~\ref{sec:glossary}),
 and the rest follows by machine-checked deduction.
 
-\paragraph{Proofs.}
-Most proofs in this paper are sketched rather than fully reported.
-Because every result is formalized in Lean~4, correctness is
-guaranteed by the type-checker: a formally verified theorem cannot be
-wrong, though it can of course be uninteresting or vacuous.
-The reader should be aware, however, that some misalignment may exist
-between what is stated here in plain English and formulas and what is
-actually stated and proved in the formalization; the Lean source
-(linked throughout) is the authoritative reference.
-To mitigate this risk, we used
-LeanArchitect~\cite{LeanArchitect2026} to annotate the 20~key
-declarations with blueprint metadata and cross-check the
-generated LaTeX against the paper's theorem statements;
-this process uncovered one missing precondition
-(Theorem~\ref{thm:gen-mc}), now corrected.
-
-\paragraph{Notation.}
-Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
-are formally verified in Lean~4; clicking the identifier links to the
-source code.
-
 \paragraph{Organization.}
 Section~\ref{app:bag} analyzes the bag-theoretic and
 information-theoretic structure of the EM dynamics.
