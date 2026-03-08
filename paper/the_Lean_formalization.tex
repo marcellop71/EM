@@ -177,21 +177,21 @@ MFRE\@.  The chain is
   \text{WeightedPNTinAP}
   \;\xrightarrow[\text{\small \checkmark}]{\text{strip}}\;
   \text{PrimeLogSum}
-  \;\xrightarrow[\text{\small $\sim$\checkmark}]{\text{Abel}}\;
+  \;\xrightarrow[\text{\small \checkmark}]{\text{Abel}}\;
   \text{PrimesEquidist}
   \;\xrightarrow[\text{\small open}]{\text{Alladi}}\;
   \text{MFRE}
   \;\xrightarrow[\text{\small \checkmark}]{\text{}}\;
   \text{PE}
 \]
-where ``\checkmark'' denotes machine-verified arrows,
-``$\sim$\checkmark'' denotes arrows with proved infrastructure
-awaiting final assembly, and ``open'' denotes unformalized steps.
+where ``\checkmark'' denotes machine-verified arrows and
+``open'' denotes unformalized steps.
 Two files provide the ANT infrastructure:
 \code{OneSidedTauberian.lean} (557~lines, zero \code{sorry})
 proves the Tauberian and stripping steps, and
-\code{AbelChain.lean} (1{,}261~lines) provides the analytic
-infrastructure for the Abel summation chain.
+\code{AbelChain.lean} (651~lines, zero \code{sorry}) proves the
+full discrete Abel summation chain converting log-weighted prime
+sums into reciprocal-weighted sums.
 
 \paragraph{Proved steps.}
 \begin{itemize}
@@ -222,19 +222,27 @@ This 250-line proof strips the higher prime powers and
 converts the $\Lambda$-weighted sum into a $(\log p)/p$
 sum over primes only.
 
-\item \textbf{Abel chain infrastructure}
-(\code{AbelChain.lean}, 1{,}261~lines):
-  derivative identities $(\log\log t)' = 1/(t\log t)$ and
-  $(-1/\log t)' = 1/(t(\log t)^2)$; integral evaluations
-  $\int_a^b dt/(t\log t) = \log\log b - \log\log a$ and
-  $\int_a^b dt/(t(\log t)^2) = 1/\log a - 1/\log b$ via the
-  fundamental theorem of calculus; the sandwich bound
+\item \textbf{Abel summation chain}
+(\lean{EM/AbelChain.lean}{prime\_log\_to\_reciprocal\_proved},
+651~lines):
+  $\text{PrimeLogSumEquidist} \Rightarrow
+  \text{PrimesEquidistributedInAP}$.
+  Discrete Abel summation (summation by parts) converts the
+  log-weighted prime sum $\sum (\log p)/p$ into the
+  reciprocal-weighted sum $\sum 1/p$.
+  The proof includes derivative identities
+  $(\log\log t)' = 1/(t\log t)$ and
+  $(-1/\log t)' = 1/(t(\log t)^2)$; integral evaluations via FTC;
+  the sandwich bound
   $|\sum_{k=2}^{m-1}(\log(k{+}1) - \log k)/\log(k{+}1)
   - (\log\log m - \log\log 2)| \leq 1/(\log 2)^2$;
-  and twenty supporting lemmas on telescoping, monotonicity,
-  and convergence of $\sum 1/k^2$ and $\sum 1/(k(k{-}1))$.
-  The final discrete Abel summation identity
-  (Fubini step for double-sum reindexing) is in progress.
+  and the discrete Fubini step (double-sum reindexing).
+
+\item \textbf{Full composed chain}
+(\lean{EM/AbelChain.lean}{wpnt\_implies\_primes\_equidist\_proved}):
+  $\text{WeightedPNTinAP} \Rightarrow
+  \text{PrimesEquidistributedInAP}$,
+  composing prime power stripping with discrete Abel summation.
 
 \item \textbf{Dirichlet's theorem}
 (\lean{EM/OneSidedTauberian.lean}{dirichlet\_primes\_in\_ap}):
@@ -248,7 +256,7 @@ infrastructure: qualitative Dirichlet (via $L$-functions and
 non-vanishing on $\operatorname{Re}(s) \geq 1$), Abel summation
 (\code{AbelSummation.lean}),
 Chebyshev bounds, Dirichlet character orthogonality, and the von
-Mangoldt function.  Three gaps remain:
+Mangoldt function.  Two gaps remain:
 
 \begin{enumerate}
 \item \textbf{Wiener--Ikehara bridge} (sole blocker, ${\sim}300$--$500$~lines):
@@ -270,17 +278,6 @@ Mangoldt function.  Three gaps remain:
   If a W-I formalization lands in Mathlib, the gap closes
   immediately via the L-series identity above.
 
-\item \textbf{Abel summation chain} (near-complete, ${\sim}100$~lines remaining):
-  convert the log-weighted sum $\sum (\log p)/p$ into the
-  reciprocal-weighted sum $\sum 1/p$ via discrete Abel summation
-  (summation by parts).
-  \code{AbelChain.lean} proves all analytic infrastructure
-  (integral evaluations, telescoping bounds, main-term sandwich);
-  what remains is the discrete Fubini step that swaps
-  summation order in the Abel identity,
-  plus the final assembly connecting the bound to
-  PrimesEquidistributedInAP.
-
 \item \textbf{Alladi chain} (${\sim}1{,}000$--$1{,}800$~lines):
   Alladi's formula~\cite{Alladi1977} for the density of
   $\{m : \minFac(m) = p\}$ combined with CRT sieving gives
@@ -298,9 +295,10 @@ Mangoldt function.  Three gaps remain:
 \end{enumerate}
 
 \noindent
-We estimate ${\sim}1{,}400$--$2{,}400$ lines to close the full
-chain (reduced from ${\sim}1{,}500$--$2{,}700$ by the Abel
-infrastructure in \code{AbelChain.lean}).
+We estimate ${\sim}1{,}300$--$2{,}300$ lines to close the full
+chain.  The Abel summation step is now complete
+(\code{AbelChain.lean}), leaving Wiener--Ikehara and
+Alladi as the two remaining components.
 Formalizing ANT is feasible future work but does not affect
 the paper's contribution, since the reduction DSL~$\Rightarrow$~MC
 is the novel content.
@@ -308,7 +306,7 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}45{,}000$ \\
+Lines of Lean code & ${\sim}44{,}500$ \\
 Files & 72 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\

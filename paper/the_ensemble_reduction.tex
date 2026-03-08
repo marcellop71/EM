@@ -133,12 +133,16 @@ An investigation of the formalization gap
 (\S\ref{sec:ant-formalization}) shows that ${\sim}92\%$ of the
 required Mathlib infrastructure already exists (including Dirichlet's
 theorem via $L$-series, Abel summation, and $L$-function
-non-vanishing).  The one-sided Tauberian lemma and the
-prime power stripping step are now machine-verified
-(\code{OneSidedTauberian.lean}, 557~lines); the sole remaining
-blocking dependency is the real-variable Wiener--Ikehara bridge
-converting $L$-series behavior near $s = 1$ into partial sum
-asymptotics.
+non-vanishing).  The one-sided Tauberian lemma, prime power stripping, and
+the discrete Abel summation chain are now machine-verified
+(\code{OneSidedTauberian.lean}, 557~lines;
+\code{AbelChain.lean}, 651~lines), giving the full composed arrow
+WeightedPNTinAP~$\Rightarrow$~PrimesEquidistributedInAP.
+The two remaining blocking dependencies are the
+real-variable Wiener--Ikehara bridge
+(converting $L$-series behavior near $s = 1$ into partial sum
+asymptotics) and the Alladi density formula
+(converting prime equidistribution into minFac equidistribution).
 
 \subsection{The Decorrelation--Variance--Concentration Chain}
 \label{sec:decorr-chain}
