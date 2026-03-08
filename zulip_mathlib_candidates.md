@@ -1,6 +1,6 @@
 # Mathlib Contribution Candidates from the Euclid-Mullin Formalization
 
-The repository [EM](https://github.com/mparis-est/EM) (~43,800 lines, 71 files, zero sorry)
+The repository [EM](https://github.com/mparis-est/EM) (~45,000 lines, 72 files, zero sorry)
 formalizes reductions of the Mullin Conjecture in Lean 4 / Mathlib v4.29.0-rc1.
 Along the way it developed general-purpose mathematics that fills genuine gaps in Mathlib.
 Below are the strongest candidates, filtered for non-trivial proofs of well-established

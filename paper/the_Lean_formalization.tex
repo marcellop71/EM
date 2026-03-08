@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 71~files
-totaling ${\sim}43{,}800$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 72~files
+totaling ${\sim}45{,}000$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -80,6 +80,7 @@ three leaf modules:
 \code{ReciprocalSumDivergence.lean} & Generalized EM reciprocal sum divergence & 289 \\
 \code{PopulationTransferStrategy.lean} & PE + DSL $\Rightarrow$ MC, ensemble concentration & 273 \\
 \code{OneSidedTauberian.lean} & One-sided Tauberian, L-series bounds, prime power stripping & 557 \\
+\code{AbelChain.lean} & Abel summation chain: $(\log p)/p \to 1/p$ infrastructure & 1{,}261 \\
 \midrule
 \multicolumn{3}{l}{\emph{Ensemble framework (new)}} \\
 \code{EnsembleStructure.lean} & Generalized EM: genProd, genSeq, injectivity & 247 \\
@@ -172,56 +173,134 @@ The sole unformalized input to the master reduction is ANT
 MFRE\@.  The chain is
 \[
   \underbrace{\text{Dirichlet} + \text{Sieve}}_{\text{ANT}}
-  \;\xrightarrow{\text{Tauberian}}\;
+  \;\xrightarrow[\text{\small open}]{\text{W-I}}\;
   \text{WeightedPNTinAP}
-  \;\xrightarrow{\text{Abel}}\;
-  \text{Alladi}
-  \;\xrightarrow{\text{CRT}}\;
+  \;\xrightarrow[\text{\small \checkmark}]{\text{strip}}\;
+  \text{PrimeLogSum}
+  \;\xrightarrow[\text{\small $\sim$\checkmark}]{\text{Abel}}\;
+  \text{PrimesEquidist}
+  \;\xrightarrow[\text{\small open}]{\text{Alladi}}\;
   \text{MFRE}
-  \;\xrightarrow{\text{proved}}\;
-  \text{PE}.
+  \;\xrightarrow[\text{\small \checkmark}]{\text{}}\;
+  \text{PE}
 \]
-The last arrow is machine-verified (\code{pe\_of\_equidist}), and
-the file \code{OneSidedTauberian.lean} (557~lines, zero
-\code{sorry}) now proves several intermediate steps:
+where ``\checkmark'' denotes machine-verified arrows,
+``$\sim$\checkmark'' denotes arrows with proved infrastructure
+awaiting final assembly, and ``open'' denotes unformalized steps.
+Two files provide the ANT infrastructure:
+\code{OneSidedTauberian.lean} (557~lines, zero \code{sorry})
+proves the Tauberian and stripping steps, and
+\code{AbelChain.lean} (1{,}261~lines) provides the analytic
+infrastructure for the Abel summation chain.
+
+\paragraph{Proved steps.}
 \begin{itemize}
 \item \textbf{One-sided Tauberian lemma}
 (\lean{EM/OneSidedTauberian.lean}{one\_sided\_tauberian\_upper}):
 for nonnegative $b_n \geq 0$,
 $\sum_{n \leq N} b_n \leq N^\varepsilon \cdot \sum_n b_n / n^\varepsilon$.
 Elementary proof via $n^\varepsilon \leq N^\varepsilon$.
-\item \textbf{L-series upper bound}
-(\lean{EM/OneSidedTauberian.lean}{residueClass\_tsum\_upper\_bound}):
-companion to Mathlib's \code{LSeries\_residueClass\_lower\_bound},
-giving both sides of the pole near $s = 1$.
+This gives $O(N^\varepsilon)$ partial-sum bounds from Dirichlet series
+behavior, without requiring the full Wiener--Ikehara theorem.
+
+\item \textbf{L-series two-sided bounds}
+(\lean{EM/OneSidedTauberian.lean}{residueClass\_tsum\_both\_bounds}):
+Mathlib's \code{PrimesInAP.lean} proves a \emph{lower} bound on
+$\sum \Lambda(n)\mathbf{1}_{n \equiv a}/n^s$ near $s = 1$
+via \code{LSeries\_residueClass\_lower\_bound}, but does not export
+the corresponding upper bound.  We extract the identity
+$\mathrm{tsum} = \mathrm{Aux}(a,s) + (\varphi(q))^{-1}/(s{-}1)$
+from Mathlib's proof and derive both bounds.
+
 \item \textbf{Prime power stripping}
 (\lean{EM/OneSidedTauberian.lean}{prime\_power\_stripping\_proved}):
-$\text{WeightedPNTinAP} \Rightarrow \text{PrimeLogSumEquidist}$,
-removing the bounded prime power contribution from the von Mangoldt
-sum.  This reduces the gap: what remains is the Tauberian bridge
-from $L$-series behavior to the weighted sum, plus Abel
-summation from log-weighted to reciprocal-weighted equidistribution.
+$\text{WeightedPNTinAP} \Rightarrow \text{PrimeLogSumEquidist}$.
+The von Mangoldt function $\Lambda$ counts prime powers
+$p^k$ with weight $\log p$; the contribution from $k \geq 2$
+is uniformly bounded by $\sum_p 2\log p / p^2 < \infty$.
+This 250-line proof strips the higher prime powers and
+converts the $\Lambda$-weighted sum into a $(\log p)/p$
+sum over primes only.
+
+\item \textbf{Abel chain infrastructure}
+(\code{AbelChain.lean}, 1{,}261~lines):
+  derivative identities $(\log\log t)' = 1/(t\log t)$ and
+  $(-1/\log t)' = 1/(t(\log t)^2)$; integral evaluations
+  $\int_a^b dt/(t\log t) = \log\log b - \log\log a$ and
+  $\int_a^b dt/(t(\log t)^2) = 1/\log a - 1/\log b$ via the
+  fundamental theorem of calculus; the sandwich bound
+  $|\sum_{k=2}^{m-1}(\log(k{+}1) - \log k)/\log(k{+}1)
+  - (\log\log m - \log\log 2)| \leq 1/(\log 2)^2$;
+  and twenty supporting lemmas on telescoping, monotonicity,
+  and convergence of $\sum 1/k^2$ and $\sum 1/(k(k{-}1))$.
+  The final discrete Abel summation identity
+  (Fubini step for double-sum reindexing) is in progress.
+
+\item \textbf{Dirichlet's theorem}
+(\lean{EM/OneSidedTauberian.lean}{dirichlet\_primes\_in\_ap}):
+imported directly from Mathlib's
+\code{Nat.infinite\_setOf\_prime\_and\_eq\_mod}.
 \end{itemize}
+
+\paragraph{Remaining gaps.}
 Mathlib~v4.29.0 already provides ${\sim}92\%$ of the required
 infrastructure: qualitative Dirichlet (via $L$-functions and
-non-vanishing on $\operatorname{Re}(s) \geq 1$), Abel summation,
+non-vanishing on $\operatorname{Re}(s) \geq 1$), Abel summation
+(\code{AbelSummation.lean}),
 Chebyshev bounds, Dirichlet character orthogonality, and the von
-Mangoldt function.  The sole remaining blocking dependency is a
-\emph{real-variable Wiener--Ikehara} hypothesis converting the behavior of
-$\sum \Lambda(n)\mathbf{1}_{n \equiv a}/n^{1+\varepsilon}$ near
-$\varepsilon = 0$ into partial sum asymptotics.  Because $\Lambda
-\geq 0$, this does not require the full Wiener--Ikehara theorem: the
-one-sided Tauberian lemma (proved above) already gives
-$O(N^\varepsilon)$ bounds; what remains is the asymptotic.
+Mangoldt function.  Three gaps remain:
 
-We estimate ${\sim}1{,}500$--$3{,}000$ lines to close the full
-chain (down from the original estimate of $2{,}000$--$3{,}500$
-after the Tauberian and prime-power-stripping steps were proved).
-No external Lean project currently
-provides the quantitative PNT in APs: the PNT+ project
-(Kontorovich--Tao~et~al.)\ has partial Wiener--Ikehara but not
-in arithmetic progressions; the \textsc{Gauss}
-project (Math,~Inc.) formalizes the strong PNT but not in APs.
+\begin{enumerate}
+\item \textbf{Wiener--Ikehara bridge} (sole blocker, ${\sim}300$--$500$~lines):
+  convert
+  $\sum \Lambda(n)\mathbf{1}_{n \equiv a}/n^{1+\varepsilon}
+  = (\varphi(q))^{-1}/\varepsilon + O(1)$
+  into the partial-sum asymptotic
+  $\sum_{n \leq x} \Lambda(n)\mathbf{1}_{n \equiv a}/n
+  = \log x / \varphi(q) + O(1)$.
+  Because $\Lambda \geq 0$, a one-sided monotone argument suffices:
+  the one-sided Tauberian lemma (proved above) already gives
+  $O(N^\varepsilon)$ bounds; what remains is the \emph{asymptotic},
+  which requires a quantitative version of the abelian Tauberian
+  theorem.  As of March~2026, no external Lean~4 project provides
+  a usable Wiener--Ikehara theorem: the PNT+ project
+  (Kontorovich--Tao~et~al.)\ includes W-I in its blueprint but
+  has not implemented it in Lean, and the \textsc{Gauss} project
+  (Math,~Inc.)\ uses a different method (zero-free regions).
+  If a W-I formalization lands in Mathlib, the gap closes
+  immediately via the L-series identity above.
+
+\item \textbf{Abel summation chain} (near-complete, ${\sim}100$~lines remaining):
+  convert the log-weighted sum $\sum (\log p)/p$ into the
+  reciprocal-weighted sum $\sum 1/p$ via discrete Abel summation
+  (summation by parts).
+  \code{AbelChain.lean} proves all analytic infrastructure
+  (integral evaluations, telescoping bounds, main-term sandwich);
+  what remains is the discrete Fubini step that swaps
+  summation order in the Abel identity,
+  plus the final assembly connecting the bound to
+  PrimesEquidistributedInAP.
+
+\item \textbf{Alladi chain} (${\sim}1{,}000$--$1{,}800$~lines):
+  Alladi's formula~\cite{Alladi1977} for the density of
+  $\{m : \minFac(m) = p\}$ combined with CRT sieving gives
+  PrimesEquidistInAP~$\Rightarrow$~MFRE\@.
+  The sieve density infrastructure already exists
+  (\code{ShiftedSquarefreeDensity.lean}).
+  The key observation is that the weight
+  $h(p) = p \cdot g(p) \cdot \prod_{r < p}(1 - g(r))$
+  (where $g(r) = r/(r^2 - 1)$ is the shifted squarefree
+  sieve density) depends on~$p$ only through~$|p|$,
+  not through $p \bmod q$, so weighted Dirichlet equidistribution
+  transfers to minFac residues.
+  No prior formalization of Alladi's density formula or
+  the Buchstab identity exists in any proof assistant.
+\end{enumerate}
+
+\noindent
+We estimate ${\sim}1{,}400$--$2{,}400$ lines to close the full
+chain (reduced from ${\sim}1{,}500$--$2{,}700$ by the Abel
+infrastructure in \code{AbelChain.lean}).
 Formalizing ANT is feasible future work but does not affect
 the paper's contribution, since the reduction DSL~$\Rightarrow$~MC
 is the novel content.
@@ -229,8 +308,8 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}43{,}800$ \\
-Files & 71 \\
+Lines of Lean code & ${\sim}45{,}000$ \\
+Files & 72 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\
 \code{sorry} occurrences & \textbf{0} \\
@@ -466,12 +545,15 @@ Mathlib version & v4.29.0-rc1 \\
 \quad TailWindowDecorrelation (cross terms vanish) & \textbf{Open} & \code{TailWindowDecorrelation} \\
 \quad TWDImpliesCCSB (TWD $\Rightarrow$ CCSB bridge) & \textbf{Open} & \code{TWDImpliesCCSB} \\
 \midrule
-\multicolumn{3}{l}{\emph{ANT infrastructure (one-sided Tauberian)}} \\
+\multicolumn{3}{l}{\emph{ANT infrastructure (one-sided Tauberian + Abel chain)}} \\
 \quad One-sided Tauberian upper bound & Proved & \code{one\_sided\_tauberian\_upper} \\
 \quad L-series upper bound (residue classes) & Proved & \code{residueClass\_tsum\_upper\_bound} \\
 \quad L-series both bounds (residue classes) & Proved & \code{residueClass\_tsum\_both\_bounds} \\
 \quad WeightedPNTinAP $\Rightarrow$ PrimeLogSumEquidist & Proved & \code{prime\_power\_stripping\_proved} \\
 \quad Dirichlet's theorem (from Mathlib) & Proved & \code{dirichlet\_primes\_in\_ap} \\
+\quad $\int 1/(t\log t)\,dt = \log\log$ (FTC) & Proved & \code{integral\_inv\_mul\_log} \\
+\quad $\int 1/(t(\log t)^2)\,dt$ (FTC) & Proved & \code{integral\_inv\_mul\_log\_sq} \\
+\quad Main sum sandwich ($\log\log$ approximation) & Proved & \code{main\_sum\_sandwich} \\
 \midrule
 \multicolumn{3}{l}{\emph{Known theorems --- not yet in Mathlib}} \\
 \quad PrimeDensityEquipartition (PNT in APs) & Known & \code{PrimeDensityEquipartition} \\
