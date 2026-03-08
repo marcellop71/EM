@@ -44,9 +44,7 @@ def MCBelow (p : Nat) : Prop :=
 private theorem natCast_prime_ne_zero {p r : Nat} [Fact (Nat.Prime p)]
     (hr : Nat.Prime r) (hrp : r < p) : ((r : Nat) : ZMod p) ≠ 0 := by
   rw [Ne, ZMod.natCast_eq_zero_iff]
-  intro hdvd
-  have : p ≤ r := Nat.le_of_dvd (by have := hr.one_lt; omega) hdvd
-  omega
+  exact fun hdvd => absurd (Nat.le_of_dvd hr.pos hdvd) (by omega)
 
 /-- **Prime Residue Escape**: for every prime p ≥ 5 and proper subgroup
     H < (Z/pZ)×, some prime r ∈ [3, p) has residue outside H.
@@ -65,7 +63,7 @@ def PrimeResidueEscape : Prop :=
 private theorem natCast_pos_ne_zero {p m : Nat} [Fact (Nat.Prime p)]
     (hm : 1 ≤ m) (hmp : m < p) : ((m : Nat) : ZMod p) ≠ 0 := by
   rw [Ne, ZMod.natCast_eq_zero_iff]
-  intro hdvd; exact absurd (Nat.le_of_dvd (by omega) hdvd) (by omega)
+  exact fun hdvd => absurd (Nat.le_of_dvd (by omega) hdvd) (by omega)
 
 /-- If every prime r < p maps into H, then every m ∈ [1, p) maps into H.
     Proof by strong induction: m = 1 is trivial, m prime is by hypothesis,
@@ -81,14 +79,10 @@ private theorem unit_mem_of_all_primes_mem {p : Nat} [Fact (Nat.Prime p)]
     by_cases hm_one : m = 1
     · -- m = 1: the unit is 1
       subst hm_one; convert H.one_mem using 1; exact Units.ext (by simp)
-    · -- m ≥ 2
-      have hm2 : 2 ≤ m := by omega
-      by_cases hprime : Nat.Prime m
-      · -- m is prime: in H by hypothesis
-        exact hp m hprime hmp hm0
+    · by_cases hprime : Nat.Prime m
+      · exact hp m hprime hmp hm0
       · -- m is composite: factor via minFac
-        have hm2' : m ≠ 1 := by omega
-        have hfp : (Nat.minFac m).Prime := Nat.minFac_prime hm2'
+        have hfp : (Nat.minFac m).Prime := Nat.minFac_prime hm_one
         have hfd : Nat.minFac m ∣ m := Nat.minFac_dvd m
         have hfne : Nat.minFac m ≠ m := fun h => hprime (h ▸ hfp)
         have hflt : Nat.minFac m < m := lt_of_le_of_ne (Nat.minFac_le (by omega)) hfne
@@ -96,20 +90,15 @@ private theorem unit_mem_of_all_primes_mem {p : Nat} [Fact (Nat.Prime p)]
         set b := m / a with hb_def
         have hab : a * b = m := Nat.mul_div_cancel' hfd
         have hb1 : 1 ≤ b := by
-          rw [Nat.one_le_iff_ne_zero]; intro hb0
-          rw [hb0, Nat.mul_zero] at hab; omega
-        have hblt : b < m :=
-          Nat.div_lt_self (by omega) hfp.one_lt
+          rw [Nat.one_le_iff_ne_zero]; intro hb0; rw [hb0, Nat.mul_zero] at hab; omega
+        have hblt : b < m := Nat.div_lt_self (by omega) hfp.one_lt
         have hap : a < p := lt_trans hflt hmp
         have hbp : b < p := lt_trans hblt hmp
         have ha0 : ((a : Nat) : ZMod p) ≠ 0 :=
           natCast_pos_ne_zero (Nat.one_le_of_lt hfp.one_lt) hap
         have hb0 : ((b : Nat) : ZMod p) ≠ 0 := natCast_pos_ne_zero hb1 hbp
-        -- Both factors map into H
-        have ha_mem : Units.mk0 ((a : Nat) : ZMod p) ha0 ∈ H :=
-          hp a hfp hap ha0
-        have hb_mem : Units.mk0 ((b : Nat) : ZMod p) hb0 ∈ H :=
-          ih b hblt hb1 hbp hb0
+        have ha_mem := hp a hfp hap ha0
+        have hb_mem := ih b hblt hb1 hbp hb0
         -- m = a * b, so unit(m) = unit(a) * unit(b)
         have heq : Units.mk0 ((m : Nat) : ZMod p) hm0 =
             Units.mk0 ((a : Nat) : ZMod p) ha0 *
@@ -131,14 +120,11 @@ private theorem odd_unit_mem_of_odd_primes_mem {p : Nat} [Fact (Nat.Prime p)]
   | _ m ih =>
     by_cases hm_one : m = 1
     · subst hm_one; convert H.one_mem using 1; exact Units.ext (by simp)
-    · have hm2 : 2 ≤ m := by omega
-      by_cases hprime : Nat.Prime m
+    · by_cases hprime : Nat.Prime m
       · have hm3 : 3 ≤ m := by
-          by_contra h; push_neg at h
-          exact hm_odd ⟨1, by omega⟩
+          by_contra h; push_neg at h; exact hm_odd ⟨1, by omega⟩
         exact hp m hprime hmp hm3 hm0
-      · have hm2' : m ≠ 1 := by omega
-        have hfp : (Nat.minFac m).Prime := Nat.minFac_prime hm2'
+      · have hfp : (Nat.minFac m).Prime := Nat.minFac_prime hm_one
         have hfd : Nat.minFac m ∣ m := Nat.minFac_dvd m
         have hfne : Nat.minFac m ≠ m := fun h => hprime (h ▸ hfp)
         have hflt : Nat.minFac m < m := lt_of_le_of_ne (Nat.minFac_le (by omega)) hfne
@@ -146,11 +132,9 @@ private theorem odd_unit_mem_of_odd_primes_mem {p : Nat} [Fact (Nat.Prime p)]
         set b := m / a with hb_def
         have hab : a * b = m := Nat.mul_div_cancel' hfd
         have ha_odd : ¬ 2 ∣ a := fun h => hm_odd (dvd_trans h hfd)
-        have hb_odd : ¬ 2 ∣ b := by
-          intro h2b; apply hm_odd; rw [← hab]; exact dvd_mul_of_dvd_right h2b a
+        have hb_odd : ¬ 2 ∣ b := fun h2b => hm_odd (hab ▸ dvd_mul_of_dvd_right h2b a)
         have hb1 : 1 ≤ b := by
-          rw [Nat.one_le_iff_ne_zero]; intro hb0
-          rw [hb0, Nat.mul_zero] at hab; omega
+          rw [Nat.one_le_iff_ne_zero]; intro hb0; rw [hb0, Nat.mul_zero] at hab; omega
         have hblt : b < m := Nat.div_lt_self (by omega) hfp.one_lt
         have hap : a < p := lt_trans hflt hmp
         have hbp : b < p := lt_trans hblt hmp
@@ -174,7 +158,7 @@ private theorem odd_unit_mem_of_odd_primes_mem {p : Nat} [Fact (Nat.Prime p)]
 /-- If every prime r < p maps into H, then H = ⊤.
     Uses a cardinality argument: the map k ↦ Units.mk0 (k+1) for k ∈ {0,...,p−2}
     injects into H, giving |H| ≥ p−1 = |(ZMod p)ˣ|. -/
-private theorem subgroup_eq_top_of_all_primes_mem {p : Nat} [inst : Fact (Nat.Prime p)]
+private theorem subgroup_eq_top_of_all_primes_mem {p : Nat} [Fact (Nat.Prime p)]
     (H : Subgroup (ZMod p)ˣ)
     (hp : ∀ r, Nat.Prime r → r < p → (hr : ((r : Nat) : ZMod p) ≠ 0) →
       Units.mk0 ((r : Nat) : ZMod p) hr ∈ H) :
@@ -186,11 +170,8 @@ private theorem subgroup_eq_top_of_all_primes_mem {p : Nat} [inst : Fact (Nat.Pr
   set m := ZMod.val u.val with hm_def
   have hm_lt : m < p := ZMod.val_lt u.val
   have hm_pos : 0 < m := by
-    by_contra h; push_neg at h
-    have : m = 0 := by omega
-    rw [hm_def] at this
-    have : u.val = 0 := by rwa [ZMod.val_eq_zero] at this
-    exact u.ne_zero this
+    rw [Nat.pos_iff_ne_zero, hm_def]
+    exact fun h => u.ne_zero ((ZMod.val_eq_zero u.val).mp h)
   have hm0 : ((m : Nat) : ZMod p) ≠ 0 := natCast_pos_ne_zero (by omega) hm_lt
   -- Round-trip: casting m back gives u.val
   have hcast : ((m : Nat) : ZMod p) = u.val := by
@@ -268,7 +249,7 @@ theorem prime_residue_escape : PrimeResidueEscape := by
     multZ(p, k−1) = seq(k) mod p = r mod p.  PrimeResidueEscape gives
     an r outside any given proper subgroup H, so H is escaped. -/
 theorem mcBelow_pre_implies_se (hpre : PrimeResidueEscape)
-    {p : Nat} [inst : Fact (Nat.Prime p)] (hp : IsPrime p) (hne : ∀ k, seq k ≠ p)
+    {p : Nat} [Fact (Nat.Prime p)] (hp : IsPrime p) (hne : ∀ k, seq k ≠ p)
     (hmc : MCBelow p) :
     ∀ H : Subgroup (ZMod p)ˣ, H ≠ ⊤ →
       ∃ n, (Units.mk0 (multZ p n) (multZ_ne_zero hp hne n)) ∉ H := by
@@ -284,7 +265,7 @@ theorem mcBelow_pre_implies_se (hpre : PrimeResidueEscape)
   obtain ⟨r, hr_prime, hrp, hr3, hr_notin⟩ := hpre p hp5 H hH
   obtain ⟨k, hk⟩ := hmc r hr_prime hrp
   -- k ≥ 1 since seq(0) = 2 and r ≥ 3
-  have hk1 : k ≥ 1 := by
+  have hk1 : 1 ≤ k := by
     rcases k with _ | k
     · simp only [seq_zero] at hk; omega
     · omega
@@ -342,8 +323,7 @@ theorem walkZ_ne_zero_of_not_in_seq {r : Nat} (hr : IsPrime r)
     (hne : ∀ m, seq m ≠ r) (n : Nat) : walkZ r n ≠ 0 := by
   unfold walkZ
   intro h
-  have : r ∣ prod n := by rwa [ZMod.natCast_eq_zero_iff] at h
-  exact prime_not_in_seq_not_dvd_prod hr hne n this
+  exact prime_not_in_seq_not_dvd_prod hr hne n ((ZMod.natCast_eq_zero_iff ..).mp h)
 
 /-- For primes not in the EM sequence and below seq(n+1), the walk position is
     a unit: it is neither 0 nor -1 in ZMod r. -/
@@ -484,7 +464,7 @@ theorem dynamical_hitting_pre_implies_mullin
     MullinConjecture := by
   unfold MullinConjecture
   suffices ∀ k q, q ≤ k → IsPrime q → ∃ n, seq n = q by
-    intro q hq; exact this q q (Nat.le_refl q) hq
+    intro q hq; exact this q q (le_refl q) hq
   intro k
   induction k with
   | zero => intro q hle hq; exact absurd hq.1 (by omega)
@@ -584,7 +564,7 @@ theorem single_hit_pre_implies_mullin
     MullinConjecture := by
   unfold MullinConjecture
   suffices ∀ k q, q ≤ k → IsPrime q → ∃ n, seq n = q by
-    intro q hq; exact this q q (Nat.le_refl q) hq
+    intro q hq; exact this q q (le_refl q) hq
   intro k
   induction k with
   | zero => intro q hle hq; exact absurd hq.1 (by omega)
@@ -654,19 +634,16 @@ theorem walkZ_eq_zero_of_dvd {q : Nat} {n : Nat} (h : q ∣ prod n) :
     If seq(k) = q and k <= m, then q | prod(m), so walkZ(q,m) = 0. -/
 theorem walkZ_zero_after_entry {q : Nat} {k m : Nat}
     (hseq : seq k = q) (hle : k ≤ m) :
-    walkZ q m = 0 := by
-  apply walkZ_eq_zero_of_dvd
-  rw [← hseq]
-  exact seq_dvd_prod k m hle
+    walkZ q m = 0 :=
+  walkZ_eq_zero_of_dvd (hseq ▸ seq_dvd_prod k m hle)
 
 /-- After entry, the walk never hits -1 again (for q >= 3).
     Since walkZ(q,m) = 0 and 0 != -1 in ZMod q for q >= 3,
     the walk can never hit -1 after q enters the sequence. -/
 theorem walkZ_ne_neg_one_after_entry {q : Nat} [Fact (Nat.Prime q)]
     {k m : Nat} (hseq : seq k = q) (hle : k ≤ m) (hq3 : q ≥ 3) :
-    walkZ q m ≠ -1 := by
-  rw [walkZ_zero_after_entry hseq hle]
-  exact neg_one_ne_zero_of_prime_ge_three hq3 |>.symm
+    walkZ q m ≠ -1 :=
+  (walkZ_zero_after_entry hseq hle).symm ▸ (neg_one_ne_zero_of_prime_ge_three hq3).symm
 
 /-- At the capture step itself: walkZ(seq(n+1), n) = -1 (the walk hits -1),
     and then walkZ(seq(n+1), m) = 0 for all m >= n+1.
@@ -698,13 +675,9 @@ theorem seq_entry_unique {q : Nat} {j k : Nat}
     This is the "binary structure" of the walk mod q. -/
 theorem first_passage_dichotomy (q : Nat) (_hq : IsPrime q) :
     (∀ n, seq n ≠ q) ∨ (∃! k, seq k = q) := by
-  by_cases h : ∃ k, seq k = q
-  · obtain ⟨k, hk⟩ := h
-    right
-    exact ⟨k, hk, fun k' hk' => seq_entry_unique hk' hk⟩
-  · left
-    push_neg at h
-    exact h
+  rcases em (∃ k, seq k = q) with ⟨k, hk⟩ | h
+  · exact .inr ⟨k, hk, fun k' hk' => seq_entry_unique hk' hk⟩
+  · exact .inl (not_exists.mp h)
 
 /-- In the "never appears" case, walkZ(q,n) is always nonzero. -/
 theorem walkZ_always_nonzero_of_missing (q : Nat) (hq : IsPrime q)

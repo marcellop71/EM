@@ -187,14 +187,13 @@ theorem emd_vcb_implies_cme (hemd : EMDirichlet) (hvcb : VanishingConditionalBia
   haveI : Fact (Nat.Prime q) := inst
   -- C = number of walk positions = φ(q)
   set C := Fintype.card (ZMod q)ˣ with hC_def
-  have hC_pos : (0 : ℝ) < C := by
-    exact Nat.cast_pos.mpr Fintype.card_pos
+  have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos
   -- Set tolerances: ε' for VCB, δ for EMD
   -- Need: ε' + δ + C·ε' = ε, i.e., (C+1)·ε' + δ = ε
   -- Choose δ = ε/2, ε' = ε/(2·(C+1))
   set δ := ε / 2 with hδ_def
   have hδ_pos : 0 < δ := div_pos hε two_pos
-  have hC1_pos : (0 : ℝ) < C + 1 := by linarith
+  have hC1_pos : (0 : ℝ) < C + 1 := add_pos_of_pos_of_nonneg hC_pos zero_le_one
   set ε' := ε / (2 * (C + 1)) with hε'_def
   have hε'_pos : 0 < ε' := div_pos hε (mul_pos two_pos hC1_pos)
   -- Apply VCB with tolerance ε'
@@ -205,20 +204,14 @@ theorem emd_vcb_implies_cme (hemd : EMDirichlet) (hvcb : VanishingConditionalBia
   set N₀ := max (max N₀_vcb N₀_emd) 1
   refine ⟨N₀, fun N hN => ?_⟩
   -- N ≥ 1, so N > 0
-  have hN_pos : (0 : ℝ) < N := by
-    have : 1 ≤ N := le_trans (le_max_right _ _) hN
-    exact Nat.cast_pos.mpr (by omega)
+  have hN_pos : (0 : ℝ) < N :=
+    Nat.cast_pos.mpr (by omega)
   have hN_vcb : N ≥ N₀_vcb := le_trans (le_max_left _ _ |>.trans (le_max_left _ _)) hN
   have hN_emd : N ≥ N₀_emd := le_trans (le_max_right _ _ |>.trans (le_max_left _ _)) hN
   -- VCB gives μ(N) such that ‖F(a,N) - μ·V(a,N)‖ ≤ ε'·N for all a
   obtain ⟨μ, hμ⟩ := hN₀_vcb N hN_vcb
   -- EMD gives ‖S(N)‖ ≤ δ·N
   have hemd_bound := hN₀_emd N hN_emd
-  -- Visit count partition: ∑_a V(a,N) = N
-  have hV_sum : (∑ a' : (ZMod q)ˣ,
-      (((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a')).card : ℝ)) = N := by
-    have := visit_count_sum_eq q hq hne N
-    exact_mod_cast this
   -- S(N) = ∑_a F(a,N) by fiber decomposition
   have hS_decomp : ∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) =
       ∑ a' : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a' N :=
@@ -244,62 +237,40 @@ theorem emd_vcb_implies_cme (hemd : EMDirichlet) (hvcb : VanishingConditionalBia
         ≤ ∑ a' : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a' N -
             μ * ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a')).card‖ :=
           norm_sum_le _ _
-      _ ≤ ∑ _a' : (ZMod q)ˣ, ε' * N := by
-          apply Finset.sum_le_sum; intro a' _; exact hμ a'
+      _ ≤ ∑ _a' : (ZMod q)ˣ, ε' * N :=
+          Finset.sum_le_sum fun a' _ => hμ a'
       _ = C * (ε' * N) := by
           rw [Finset.sum_const, nsmul_eq_mul, hC_def, Finset.card_univ]
   -- Step 2: Bound ‖μ‖
   -- ‖μ·N‖ ≤ ‖S(N)‖ + ‖S(N) - μ·N‖ ≤ δ·N + C·ε'·N
   have hmu_bound : ‖μ‖ * N ≤ (δ + C * ε') * N := by
-    have h1 : ‖μ * N‖ ≤ ‖∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ)‖ +
+    have h1 : ‖μ * (N : ℂ)‖ ≤ ‖∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ)‖ +
         ‖∑ a' : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a' N - μ * N‖ := by
-      rw [hS_decomp]
-      calc ‖μ * ↑N‖
-          = ‖∑ a' : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a' N -
-              (∑ a' : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a' N - μ * ↑N)‖ := by
-            congr 1; ring
-          _ ≤ ‖∑ a' : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a' N‖ +
-              ‖∑ a' : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a' N - μ * ↑N‖ :=
-            norm_sub_le _ _
-    have h2 : ‖μ * ↑N‖ = ‖μ‖ * N := by
-      rw [norm_mul, Complex.norm_natCast]
+      rw [hS_decomp]; exact norm_le_insert _ _
+    rw [norm_mul, Complex.norm_natCast] at h1
     linarith [hemd_bound, hSN_minus_muN]
   have hmu_norm : ‖μ‖ ≤ δ + C * ε' := by
-    by_cases hN_zero : (N : ℝ) = 0
-    · linarith [hN_pos]
-    · nlinarith
+    have hN_ne : (N : ℝ) ≠ 0 := ne_of_gt hN_pos
+    nlinarith
   -- Step 3: Bound ‖F(a,N)‖
   -- ‖F(a,N)‖ ≤ ‖F(a) - μ·V(a)‖ + ‖μ‖·V(a) ≤ ε'·N + (δ + C·ε')·N
-  have hVa_le_N : (((Finset.range N).filter
-      (fun n => emWalkUnit q hq hne n = a)).card : ℝ) ≤ N := by
-    have h := Finset.card_filter_le (Finset.range N) (fun n => emWalkUnit q hq hne n = a)
-    rw [Finset.card_range] at h
-    exact_mod_cast h
+  set Va := ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card
+  have hVa_le_N : (Va : ℝ) ≤ N := by
+    exact_mod_cast (Finset.card_filter_le ..).trans_eq (Finset.card_range N)
   calc ‖fiberMultCharSum q hq hne χ a N‖
-      = ‖(fiberMultCharSum q hq hne χ a N -
-          μ * ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card) +
-          μ * ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ := by
-        ring_nf
-      _ ≤ ‖fiberMultCharSum q hq hne χ a N -
-          μ * ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ +
-          ‖μ * ((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card‖ :=
+      = ‖(fiberMultCharSum q hq hne χ a N - μ * Va) + μ * Va‖ := by ring_nf
+      _ ≤ ‖fiberMultCharSum q hq hne χ a N - μ * Va‖ + ‖μ * (Va : ℂ)‖ :=
         norm_add_le _ _
       _ ≤ ε' * N + ‖μ‖ * N := by
-          have h1 := hμ a
-          have h2 : ‖μ * (((Finset.range N).filter
-              (fun n => emWalkUnit q hq hne n = a)).card : ℂ)‖ ≤ ‖μ‖ * N := by
+          have h2 : ‖μ * (Va : ℂ)‖ ≤ ‖μ‖ * N := by
             rw [norm_mul, Complex.norm_natCast]
             exact mul_le_mul_of_nonneg_left hVa_le_N (norm_nonneg _)
-          linarith
+          linarith [hμ a]
       _ ≤ ε' * N + (δ + C * ε') * N := by
           linarith [mul_le_mul_of_nonneg_right hmu_norm (le_of_lt hN_pos)]
       _ = (ε' + δ + C * ε') * N := by ring
       _ = ε * N := by
-          -- ε' + δ + C·ε' = (1+C)·ε' + δ = (1+C)·ε/(2(C+1)) + ε/2 = ε/2 + ε/2 = ε
-          rw [hε'_def, hδ_def]
-          have hC1_ne : (C + 1 : ℝ) ≠ 0 := ne_of_gt hC1_pos
-          field_simp
-          ring
+          rw [hε'_def, hδ_def]; field_simp [ne_of_gt hC1_pos]; ring
 
 /-- **EMD + VCB → MC**: unconditional multiplier equidistribution combined
     with vanishing conditional bias implies Mullin's Conjecture.
@@ -343,12 +314,10 @@ theorem surjective_subgroup_coset_meets_target
     (i : ι)
     (hsurj : Function.Surjective (fun (l : Λ) => (l : ∀ i, C i) i)) :
     ∃ l : Λ, (g * (l : ∀ i, C i)) i = f i := by
-  -- Need l with (g * l) i = f i, i.e., l i = g⁻¹ i * f i
   obtain ⟨⟨l, hl⟩, hproj⟩ := hsurj (g⁻¹ i * f i)
-  refine ⟨⟨l, hl⟩, ?_⟩
-  show (g * l) i = f i
-  simp only [Pi.mul_apply, Pi.inv_apply] at hproj ⊢
-  rw [hproj, ← mul_assoc, mul_inv_cancel, one_mul]
+  exact ⟨⟨l, hl⟩, by
+    simp only [Pi.mul_apply, Pi.inv_apply] at hproj ⊢
+    rw [hproj, mul_inv_cancel_left]⟩
 
 /-- **Every coset of a surjective subgroup meets the death set.**
 

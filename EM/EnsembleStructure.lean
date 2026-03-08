@@ -49,7 +49,7 @@ theorem genProd_dvd_genProd (n k j : Nat) : genProd n k ∣ genProd n (k + j) :=
   induction j with
   | zero => exact dvd_refl _
   | succ j ih =>
-    rw [show k + (j + 1) = (k + j) + 1 from by omega, genProd_succ]
+    simp only [Nat.add_succ, genProd_succ]
     exact dvd_mul_of_dvd_left ih _
 
 /-- Each generalized EM prime divides all later accumulators:
@@ -86,8 +86,7 @@ theorem genProd_restart (n M k : Nat) :
   induction k with
   | zero => simp [genProd]
   | succ k ih =>
-    have h : M + (k + 1) = (M + k) + 1 := by omega
-    rw [genProd_succ, genSeq_def, ih, h, genProd_succ, genSeq_def]
+    simp only [Nat.add_succ, genProd_succ, genSeq_def, ih]
 
 /-- **Tail identification for sequences**: the k-th prime of the orbit
     restarted from genProd n M equals the (M+k)-th prime of orbit n. -/
@@ -107,9 +106,7 @@ section Monotonicity
 theorem genProd_strict_mono {n : Nat} (hn : 1 ≤ n) (k : Nat) :
     genProd n k < genProd n (k + 1) := by
   rw [genProd_succ]
-  exact lt_mul_of_one_lt_right
-    (by have := genProd_pos hn k; omega)
-    (by have := (genSeq_prime hn k).two_le; omega)
+  exact lt_mul_of_one_lt_right (genProd_pos hn k) (genSeq_prime hn k).one_lt
 
 end Monotonicity
 
@@ -129,31 +126,19 @@ theorem genSeq_ne_of_lt {n : Nat} (hn : Squarefree n) {j k : Nat} (hjk : j < k) 
     genSeq n j ≠ genSeq n k := by
   have hn_pos : 1 ≤ n := Nat.pos_of_ne_zero (Squarefree.ne_zero hn)
   intro heq
-  -- genSeq n j divides genProd n k (since j + 1 ≤ k)
   have h_dvd : genSeq n j ∣ genProd n k := by
     obtain ⟨d, hd⟩ := Nat.exists_eq_add_of_le (Nat.succ_le_of_lt hjk)
     rw [hd]; exact genSeq_dvd_genProd_later n j d
-  -- genSeq n k is coprime to genProd n k; substituting gives coprimality for j
-  have h_cop : Nat.Coprime (genSeq n j) (genProd n k) := by
-    rw [heq]; exact genSeq_coprime_genProd hn_pos k
-  -- genSeq n j divides gcd(genSeq n j, genProd n k) = 1
-  have h_dvd_gcd : genSeq n j ∣ Nat.gcd (genSeq n j) (genProd n k) :=
-    Nat.dvd_gcd dvd_rfl h_dvd
-  rw [h_cop] at h_dvd_gcd
-  -- genSeq n j ∣ 1 but genSeq n j ≥ 2 (prime): contradiction
-  exact absurd (Nat.le_of_dvd one_pos h_dvd_gcd)
-    (by linarith [(genSeq_prime hn_pos j).two_le])
+  have h_cop : Nat.Coprime (genSeq n j) (genProd n k) :=
+    heq ▸ genSeq_coprime_genProd hn_pos k
+  exact absurd (Nat.eq_one_of_dvd_coprimes h_cop dvd_rfl h_dvd)
+    (Nat.Prime.one_lt (genSeq_prime hn_pos j)).ne'
 
 /-- The generalized EM sequence from a squarefree starting point is injective:
     distinct steps always produce distinct primes. -/
 theorem genSeq_injective {n : Nat} (hn : Squarefree n) :
-    Function.Injective (genSeq n) := by
-  intro j k hjk
-  by_contra h
-  have : j < k ∨ k < j := by omega
-  rcases this with h' | h'
-  · exact genSeq_ne_of_lt hn h' hjk
-  · exact genSeq_ne_of_lt hn h' hjk.symm
+    Function.Injective (genSeq n) :=
+  Function.Injective.of_lt_imp_ne fun _ _ hjk => genSeq_ne_of_lt hn hjk
 
 end Distinctness
 

@@ -81,30 +81,24 @@ section RoughCounting
 
 /-- Count of integers m in [2,X] with minFac(m) > z.
     These are the z-rough integers in the interval. -/
-noncomputable def roughCount (z X : Nat) : Nat :=
+def roughCount (z X : Nat) : Nat :=
   ((Finset.Icc 2 X).filter (fun m => z < Nat.minFac m)).card
 
 /-- Count of integers m in [2,X] with minFac(m) = p.
     When p > z, these contribute to the z-rough population. -/
-noncomputable def roughLPFCount (z p X : Nat) : Nat :=
+def roughLPFCount (z p X : Nat) : Nat :=
   ((Finset.Icc 2 X).filter (fun m => z < Nat.minFac m ∧ Nat.minFac m = p)).card
 
-/-- The rough count is at most |[2,X]| = X - 1. -/
-theorem roughCount_le_card (z X : Nat) (hX : 2 ≤ X) :
+/-- The rough count is at most `X - 1`. -/
+theorem roughCount_le_card (z X : Nat) :
     roughCount z X ≤ X - 1 := by
-  unfold roughCount
-  have h1 : ((Finset.Icc 2 X).filter (fun m => z < Nat.minFac m)).card
-      ≤ (Finset.Icc 2 X).card := Finset.card_filter_le _ _
-  have h2 : (Finset.Icc 2 X).card = X + 1 - 2 := by simp [Nat.card_Icc]
-  omega
+  have := Finset.card_filter_le (Finset.Icc 2 X) (fun m => z < Nat.minFac m)
+  simp [roughCount, Nat.card_Icc] at this ⊢; omega
 
 /-- The LPF count for any specific prime is at most the rough count. -/
 theorem roughLPFCount_le_roughCount (z p X : Nat) :
-    roughLPFCount z p X ≤ roughCount z X := by
-  apply Finset.card_le_card
-  intro m
-  simp only [Finset.mem_filter, Finset.mem_Icc]
-  exact fun ⟨hm, hmin, _⟩ => ⟨hm, hmin⟩
+    roughLPFCount z p X ≤ roughCount z X :=
+  Finset.card_le_card (Finset.monotone_filter_right _ fun _ _ h => h.1)
 
 end RoughCounting
 
@@ -206,7 +200,7 @@ theorem ant_to_mfre
     (h2 : RoughLPFImpliesMFRE) :
     IK.PrimesEquidistributedInAP →
     ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q :=
-  fun hant q hq => h2 (h1 hant) q hq
+  fun hant => h2 (h1 hant)
 
 /-- **WeightedPNTinAP implies MinFacResidueEquidist via the full chain.**
 
@@ -229,7 +223,7 @@ theorem wpnt_to_mfre
     4. MinFacResidueEquidist --[proved: pe_of_equidist]--> PE
     5. PE + DSL --[proved: pe_dsl_implies_mc]--> MC
 
-    This shows that MC follows from three hypotheses:
+    This shows that MC follows from four hypotheses:
     - WeightedPNTinAP (standard ANT, external = Wiener-Ikehara)
     - PrimesEquidistImpliesRoughLPF (Alladi density, sieve theory)
     - RoughLPFImpliesMFRE (CRT independence)
@@ -266,8 +260,7 @@ theorem alladi_chain_status :
       IK.WeightedPNTinAP → ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q) ∧
     (PrimesEquidistImpliesRoughLPF → RoughLPFImpliesMFRE →
       IK.WeightedPNTinAP → DeterministicStabilityLemma → MullinConjecture) :=
-  ⟨fun h1 h2 hwpnt => wpnt_to_mfre h1 h2 hwpnt,
-   fun h1 h2 hwpnt hdsl => wpnt_dsl_implies_mc h1 h2 hwpnt hdsl⟩
+  ⟨wpnt_to_mfre, wpnt_dsl_implies_mc⟩
 
 end Reductions
 

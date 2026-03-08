@@ -28,8 +28,9 @@ the EM orbit) is in fact exactly CME.
 * `oce_implies_mc`                : OCE -> MC via CME -> CCSB -> MC
 * `oce_implies_ccsb`              : OCE -> CCSB via CME -> CCSB
 * `pce_bridge_implies_mc`         : PCE + CRTPointwiseTransferBridge -> MC
-* `pce_bridge_dsl_comparison`     : DSL = (PE -> CME), CRTPointwiseTransferBridge = (PCE -> CME)
-                                    — both are "X implies CME" for different X
+* `pce_bridge_implies_ccsb`      : PCE + CRTPointwiseTransferBridge -> CCSB
+* `dsl_implies_crt_bridge`       : DSL + PE -> CRTPointwiseTransferBridge
+* `all_routes_to_mc`             : DSL, CRT bridge, EMD routes all lead to MC
 
 ## Mathematical Context
 
@@ -48,7 +49,6 @@ automatically gives CME.
 -/
 
 noncomputable section
-open Classical
 
 open Mullin Euclid MullinGroup RotorRouter
 
@@ -86,12 +86,10 @@ theorem oce_eq_cme : OrbitConditionalEquidist = ConditionalMultiplierEquidist :=
   rfl
 
 /-- OCE implies CME (forward direction of the definitional equality). -/
-theorem oce_implies_cme (h : OrbitConditionalEquidist) : ConditionalMultiplierEquidist :=
-  oce_eq_cme ▸ h
+theorem oce_implies_cme (h : OrbitConditionalEquidist) : ConditionalMultiplierEquidist := h
 
 /-- CME implies OCE (backward direction of the definitional equality). -/
-theorem cme_implies_oce (h : ConditionalMultiplierEquidist) : OrbitConditionalEquidist :=
-  oce_eq_cme ▸ h
+theorem cme_implies_oce (h : ConditionalMultiplierEquidist) : OrbitConditionalEquidist := h
 
 end OCE
 
@@ -104,7 +102,7 @@ section ReturnVisit
     that appears in both OCE and CME.
 
     Definitionally equal to `fiberMultCharSum` from `LargeSieveSpectral.lean`. -/
-noncomputable def returnVisitCharSum (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q)
+def returnVisitCharSum (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (a : (ZMod q)ˣ) (N : ℕ) : ℂ :=
   ∑ n ∈ (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a),
     (χ (emMultUnit q hq hne n) : ℂ)
@@ -127,12 +125,12 @@ section OCEChain
 /-- **OCE implies MC** via the chain OCE = CME -> CCSB -> MC.
     Since OCE is definitionally CME, this is just `cme_implies_mc`. -/
 theorem oce_implies_mc (h : OrbitConditionalEquidist) : MullinConjecture :=
-  cme_implies_mc (oce_implies_cme h)
+  cme_implies_mc h
 
 /-- **OCE implies CCSB** via the chain OCE = CME -> CCSB.
     An intermediate stop in the reduction. -/
 theorem oce_implies_ccsb (h : OrbitConditionalEquidist) : ComplexCharSumBound :=
-  cme_implies_ccsb (oce_implies_cme h)
+  cme_implies_ccsb h
 
 end OCEChain
 
@@ -234,7 +232,7 @@ theorem dsl_implies_crt_bridge
     (hdsl : DeterministicStabilityLemma)
     (hpe : PopulationEquidist) :
     CRTPointwiseTransferBridge :=
-  fun _ => cme_implies_oce (hdsl hpe)
+  fun _ => hdsl hpe
 
 /-- **Structural comparison**: the landscape of "X implies CME" hypotheses.
 

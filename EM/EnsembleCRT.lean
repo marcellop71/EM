@@ -42,6 +42,7 @@ independence is the structural basis for equidistribution propagation.
 * `AccumulatorEquidistPropagation`      -- genProd n k equidistributes for all k
 * `EnsembleMultiplierEquidist`          -- genSeq n k equidistributes for all k
 * `AccumEquidistImpliesMultEquidist`    -- AEP implies EME (via PE)
+
 ### Proved Theorems
 * `sqfreeAccumCount_le_sqfreeCount`     -- counting bound
 * `sqfreeSeqCount_le_sqfreeCount`       -- counting bound
@@ -94,46 +95,40 @@ section CountingProps
 theorem sqfreeAccumCount_le_sqfreeCount (X k r : Nat) (a : ZMod r) :
     sqfreeAccumCount X k r a ≤ sqfreeCount X := by
   unfold sqfreeAccumCount sqfreeCount
-  apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1⟩
+  exact Finset.card_le_card fun n hn => by
+    simp only [Finset.mem_filter] at hn ⊢; exact ⟨hn.1, hn.2.1⟩
 
 /-- The sequence count is bounded by the total squarefree count. -/
 theorem sqfreeSeqCount_le_sqfreeCount (X k q : Nat) (a : ZMod q) :
     sqfreeSeqCount X k q a ≤ sqfreeCount X := by
   unfold sqfreeSeqCount sqfreeCount
-  apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1⟩
+  exact Finset.card_le_card fun n hn => by
+    simp only [Finset.mem_filter] at hn ⊢; exact ⟨hn.1, hn.2.1⟩
 
 /-- The accumulator density is non-negative. -/
 theorem sqfreeAccumDensity_nonneg (X k r : Nat) (a : ZMod r) :
-    0 ≤ sqfreeAccumDensity X k r a := by
-  unfold sqfreeAccumDensity
-  exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+    0 ≤ sqfreeAccumDensity X k r a :=
+  div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
 
 /-- The accumulator density is at most 1. -/
 theorem sqfreeAccumDensity_le_one (X k r : Nat) (a : ZMod r) :
     sqfreeAccumDensity X k r a ≤ 1 := by
   unfold sqfreeAccumDensity
-  by_cases h : sqfreeCount X = 0
+  rcases eq_or_ne (sqfreeCount X) 0 with h | h
   · simp [h]
   · exact (div_le_one (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h))).mpr
       (Nat.cast_le.mpr (sqfreeAccumCount_le_sqfreeCount X k r a))
 
 /-- The sequence density is non-negative. -/
 theorem sqfreeSeqDensity_nonneg (X k q : Nat) (a : ZMod q) :
-    0 ≤ sqfreeSeqDensity X k q a := by
-  unfold sqfreeSeqDensity
-  exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+    0 ≤ sqfreeSeqDensity X k q a :=
+  div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
 
 /-- The sequence density is at most 1. -/
 theorem sqfreeSeqDensity_le_one (X k q : Nat) (a : ZMod q) :
     sqfreeSeqDensity X k q a ≤ 1 := by
   unfold sqfreeSeqDensity
-  by_cases h : sqfreeCount X = 0
+  rcases eq_or_ne (sqfreeCount X) 0 with h | h
   · simp [h]
   · exact (div_le_one (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h))).mpr
       (Nat.cast_le.mpr (sqfreeSeqCount_le_sqfreeCount X k q a))
@@ -360,30 +355,20 @@ theorem ensembleCharMean_eq_density_sum (X k q : Nat) [NeZero q]
       ∑ a : ZMod q, ∑ n ∈ S.filter (fun n => (genSeq n k : ZMod q) = a),
         chi (genSeq n k : ZMod q) := by
     rw [← Finset.sum_biUnion]
-    · congr 1
-      ext n
-      simp only [Finset.mem_biUnion, Finset.mem_univ, Finset.mem_filter]
-      constructor
-      · intro hn
-        exact ⟨(genSeq n k : ZMod q), trivial, hn, rfl⟩
-      · intro ⟨_, _, hn, _⟩
-        exact hn
+    · congr 1; ext n
+      simp only [Finset.mem_biUnion, Finset.mem_univ, Finset.mem_filter, true_and]
+      exact ⟨fun hn => ⟨_, hn, rfl⟩, fun ⟨_, hn, _⟩ => hn⟩
     · intro a _ b _ hab
       simp only [Finset.disjoint_left, Finset.mem_filter]
-      intro n ⟨_, ha'⟩ ⟨_, hb'⟩
-      exact hab (ha'.symm.trans hb')
+      exact fun _ ⟨_, ha'⟩ ⟨_, hb'⟩ => hab (ha'.symm.trans hb')
   -- Simplify each inner sum: chi(genSeq n k) = chi(a) on the a-fiber
   have hsimp : ∀ a : ZMod q,
       ∑ n ∈ S.filter (fun n => (genSeq n k : ZMod q) = a),
         chi (genSeq n k : ZMod q) =
       ↑(S.filter (fun n => (genSeq n k : ZMod q) = a)).card * chi a := by
     intro a
-    have hsub : ∀ n ∈ S.filter (fun n => (genSeq n k : ZMod q) = a),
-        chi (genSeq n k : ZMod q) = chi a := by
-      intro n hn
-      simp only [Finset.mem_filter] at hn
-      rw [hn.2]
-    rw [Finset.sum_congr rfl hsub, Finset.sum_const, nsmul_eq_mul]
+    rw [Finset.sum_congr rfl (fun n hn => by rw [(Finset.mem_filter.mp hn).2]),
+        Finset.sum_const, nsmul_eq_mul]
   -- Rewrite using the fiber count
   have hcount : ∀ a : ZMod q,
       (S.filter (fun n => (genSeq n k : ZMod q) = a)).card =
@@ -443,31 +428,22 @@ theorem ensemble_mult_equidist_implies_char_mean_zero :
     · -- a = 0: chi(0) = 0, so the term is always 0
       simp only [ha, hchi0, mul_zero, L]
       exact tendsto_const_nhds
-    · -- a ≠ 0: density(a) → 1/(q-1) by EME
+    · -- a ≠ 0: density(a) → 1/(q-1) by EME, lift to ℂ via continuous_ofReal
       simp only [L]
-      have hd := heme q hq k a ha
-      -- Lift ℝ tendsto to ℂ tendsto via continuous_ofReal
-      have hd_C : Filter.Tendsto
-          (fun X : Nat => ((sqfreeSeqDensity X k q a : ℝ) : ℂ))
-          Filter.atTop (nhds c) := by
-        exact (Complex.continuous_ofReal.tendsto _).comp hd
-      exact Filter.Tendsto.mul hd_C tendsto_const_nhds
+      exact ((Complex.continuous_ofReal.tendsto _).comp (heme q hq k a ha)).mul
+        tendsto_const_nhds
   -- Step 3: use tendsto_finset_sum to get ∑ converges to ∑ L
   have hsum_tends : Filter.Tendsto
       (fun X : Nat => ∑ a : ZMod q, ((sqfreeSeqDensity X k q a : ℝ) : ℂ) * chi a)
       Filter.atTop (nhds (∑ a : ZMod q, L a)) :=
     tendsto_finset_sum Finset.univ (fun a _ => hterm a)
-  -- Step 4: combine: ensembleCharMean → 0
+  -- Step 4: combine: ensembleCharMean → 0, then ‖·‖ → 0
   rw [hLsum] at hsum_tends
-  have hcm_tends : Filter.Tendsto
-      (fun X : Nat => ensembleCharMean X k q chi)
-      Filter.atTop (nhds 0) := by
+  exact tendsto_zero_iff_norm_tendsto_zero.mp <| by
     rw [show (fun X => ensembleCharMean X k q chi) =
         (fun X => ∑ a : ZMod q, ((sqfreeSeqDensity X k q a : ℝ) : ℂ) * chi a)
       from funext (fun X => ensembleCharMean_eq_ofReal_density_sum X k q chi)]
     exact hsum_tends
-  -- Step 5: ‖ensembleCharMean‖ → 0
-  exact tendsto_zero_iff_norm_tendsto_zero.mp hcm_tends
 
 end CharMean
 

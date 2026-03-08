@@ -57,10 +57,8 @@ def jointResidueClassCount (X m₁ m₂ : Nat) (a₁ : ZMod m₁) (a₂ : ZMod m
 
 /-- The residue class count is at most X (trivially). -/
 theorem residue_class_count_le (X m : Nat) (a : ZMod m) :
-    residueClassCount X m a ≤ X := by
-  unfold residueClassCount
-  apply le_trans (Finset.card_filter_le _ _)
-  simp [Nat.card_Icc]
+    residueClassCount X m a ≤ X :=
+  (Finset.card_filter_le _ _).trans (by simp [Nat.card_Icc])
 
 /-- The residue class count is non-negative (real-valued). -/
 theorem residue_class_count_nonneg (X m : Nat) (a : ZMod m) :
@@ -73,32 +71,16 @@ theorem residue_class_count_nonneg (X m : Nat) (a : ZMod m) :
 theorem residue_class_count_sum_eq (X m : Nat) [NeZero m] :
     ∑ a : ZMod m, residueClassCount X m a = X := by
   unfold residueClassCount
-  rw [← Finset.card_biUnion]
-  · -- Show the biUnion equals Icc 1 X, so card = X
-    have : Finset.univ.biUnion (fun a : ZMod m =>
-        (Finset.Icc 1 X).filter (fun n : Nat => (n : ZMod m) = a)) =
-        Finset.Icc 1 X := by
-      apply Finset.ext
-      intro n
-      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and, Finset.mem_filter,
-        Finset.mem_Icc]
-      constructor
-      · intro ⟨_, hn, _⟩; exact hn
-      · intro hn; exact ⟨(n : ZMod m), hn, rfl⟩
-    rw [this]
-    simp [Nat.card_Icc]
-  · -- Disjointness of filters for different residue classes
-    intro a _ b _ hab
-    simp only [Finset.disjoint_filter]
-    intro n _ ha hb
-    exact hab (ha.symm.trans hb)
+  have h := Finset.card_eq_sum_card_fiberwise (f := fun n : Nat => (n : ZMod m))
+    (s := Finset.Icc 1 X) (t := Finset.univ)
+    (fun _ _ => Finset.mem_univ _)
+  simp only [Nat.card_Icc] at h
+  omega
 
 /-- The joint residue class count is at most X. -/
 theorem joint_residue_class_count_le (X m₁ m₂ : Nat) (a₁ : ZMod m₁) (a₂ : ZMod m₂) :
-    jointResidueClassCount X m₁ m₂ a₁ a₂ ≤ X := by
-  unfold jointResidueClassCount
-  apply le_trans (Finset.card_filter_le _ _)
-  simp [Nat.card_Icc]
+    jointResidueClassCount X m₁ m₂ a₁ a₂ ≤ X :=
+  (Finset.card_filter_le _ _).trans (by simp [Nat.card_Icc])
 
 end ResidueClassCount
 
@@ -110,29 +92,21 @@ section JointSingle
 theorem joint_count_le_first (X m₁ m₂ : Nat) (a₁ : ZMod m₁) (a₂ : ZMod m₂) :
     jointResidueClassCount X m₁ m₂ a₁ a₂ ≤ residueClassCount X m₁ a₁ := by
   unfold jointResidueClassCount residueClassCount
-  apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1⟩
+  exact Finset.card_le_card (Finset.monotone_filter_right _ fun _ _ h => h.1)
 
 /-- The joint count is at most the count restricted to the second modulus. -/
 theorem joint_count_le_second (X m₁ m₂ : Nat) (a₁ : ZMod m₁) (a₂ : ZMod m₂) :
     jointResidueClassCount X m₁ m₂ a₁ a₂ ≤ residueClassCount X m₂ a₂ := by
   unfold jointResidueClassCount residueClassCount
-  apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.2⟩
+  exact Finset.card_le_card (Finset.monotone_filter_right _ fun _ _ h => h.2)
 
 /-- The joint filter is the intersection of two filters. -/
 theorem joint_filter_eq (X m₁ m₂ : Nat) (a₁ : ZMod m₁) (a₂ : ZMod m₂) :
     (Finset.Icc 1 X).filter (fun n : Nat =>
       (n : ZMod m₁) = a₁ ∧ (n : ZMod m₂) = a₂) =
     ((Finset.Icc 1 X).filter (fun n : Nat => (n : ZMod m₁) = a₁)).filter
-      (fun n : Nat => (n : ZMod m₂) = a₂) := by
-  apply Finset.ext
-  intro n
-  simp only [Finset.mem_filter, Finset.mem_Icc, and_assoc]
+      (fun n : Nat => (n : ZMod m₂) = a₂) :=
+  (Finset.filter_filter _ _ _).symm
 
 /-- The sum of joint counts over the second modulus equals the first count.
     This is because every n with n in a class mod m₁ falls into exactly one
@@ -142,27 +116,10 @@ theorem joint_count_sum_eq_first (X m₁ m₂ : Nat) [NeZero m₂]
     ∑ b : ZMod m₂, jointResidueClassCount X m₁ m₂ a₁ b =
       residueClassCount X m₁ a₁ := by
   unfold jointResidueClassCount residueClassCount
-  -- Rewrite each term using joint_filter_eq
-  have hterm : ∀ b : ZMod m₂,
-      ((Finset.Icc 1 X).filter
-        (fun n : Nat => (n : ZMod m₁) = a₁ ∧ (n : ZMod m₂) = b)).card =
-      (((Finset.Icc 1 X).filter (fun n : Nat => (n : ZMod m₁) = a₁)).filter
-        (fun n : Nat => (n : ZMod m₂) = b)).card := by
-    intro b; congr 1; exact joint_filter_eq X m₁ m₂ a₁ b
-  simp_rw [hterm]
-  -- Sum of card of sub-filters = card of the base set (partition by ZMod m₂)
-  rw [← Finset.card_biUnion]
-  · congr 1
-    apply Finset.ext
-    intro n
-    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and, Finset.mem_filter]
-    constructor
-    · intro ⟨_, hn, _⟩; exact hn
-    · intro hn; exact ⟨(n : ZMod m₂), hn, rfl⟩
-  · intro b₁ _ b₂ _ hb
-    simp only [Finset.disjoint_filter]
-    intro n _ h1 h2
-    exact hb (h1.symm.trans h2)
+  simp_rw [(Finset.filter_filter _ _ _).symm]
+  exact Finset.card_eq_sum_card_fiberwise
+    (f := fun n : Nat => (n : ZMod m₂))
+    (fun _ _ => Finset.mem_univ _) |>.symm
 
 end JointSingle
 
@@ -174,11 +131,8 @@ section PrimeModuli
     moduli constrained by the condition genSeq n j = p (since minFac
     only involves trial division by primes at most p). -/
 theorem minFac_constraint_moduli_finite (p : Nat) :
-    Set.Finite {r : Nat | Nat.Prime r ∧ r ≤ p} := by
-  apply Set.Finite.subset (Set.finite_Icc 0 p)
-  intro r ⟨_, hr_le⟩
-  simp only [Set.mem_Icc]
-  exact ⟨Nat.zero_le r, hr_le⟩
+    Set.Finite {r : Nat | Nat.Prime r ∧ r ≤ p} :=
+  (Set.finite_le_nat p).subset fun _ h => h.2
 
 /-- Distinct primes are coprime. -/
 theorem distinct_primes_coprime {p q : Nat} (hp : Nat.Prime p) (hq : Nat.Prime q)
@@ -188,9 +142,8 @@ theorem distinct_primes_coprime {p q : Nat} (hp : Nat.Prime p) (hq : Nat.Prime q
 /-- For a prime s > p and any prime r at most p, s and r are coprime
     (since they are distinct primes). -/
 theorem minFac_constraint_coprime_to_large {p s : Nat} (hs : Nat.Prime s) (hps : p < s)
-    {r : Nat} (hr : Nat.Prime r) (hr_le : r ≤ p) : Nat.Coprime s r := by
-  apply distinct_primes_coprime hs hr
-  intro heq; omega
+    {r : Nat} (hr : Nat.Prime r) (hr_le : r ≤ p) : Nat.Coprime s r :=
+  distinct_primes_coprime hs hr (by omega)
 
 end PrimeModuli
 
@@ -251,7 +204,8 @@ theorem joint_density_ratio_le_one (X m₁ m₂ : Nat)
     (residueClassCount X m₁ a₁ : ℝ) ≤ 1 := by
   by_cases h : residueClassCount X m₁ a₁ = 0
   · simp [h]
-  · exact (div_le_one (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h))).mpr (by exact_mod_cast joint_count_le_first X m₁ m₂ a₁ a₂)
+  · exact (div_le_one (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h))).mpr
+      (by exact_mod_cast joint_count_le_first X m₁ m₂ a₁ a₂)
 
 /-- The joint count is bounded by the marginal count (real-valued version). -/
 theorem joint_density_le_marginal_density (X m₁ m₂ : Nat)
@@ -280,30 +234,23 @@ def sqfreeJointAccumCount (X k q r : Nat) (a : ZMod q) (b : ZMod r) : Nat :=
 theorem sqfreeJointAccumCount_le_sqfreeCount (X k q r : Nat) (a : ZMod q)
     (b : ZMod r) : sqfreeJointAccumCount X k q r a b ≤ sqfreeCount X := by
   unfold sqfreeJointAccumCount sqfreeCount
-  apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1⟩
+  exact Finset.card_le_card (Finset.monotone_filter_right _ fun _ _ h => h.1)
 
 /-- The joint accumulator count is bounded by the marginal accumulator count
     (projecting to the first modulus q). -/
 theorem sqfreeJointAccumCount_le_accumCount_first (X k q r : Nat) (a : ZMod q)
     (b : ZMod r) : sqfreeJointAccumCount X k q r a b ≤ sqfreeAccumCount X k q a := by
   unfold sqfreeJointAccumCount sqfreeAccumCount
-  apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1, hn.2.2.1⟩
+  exact Finset.card_le_card
+    (Finset.monotone_filter_right _ fun _ _ h => ⟨h.1, h.2.1⟩)
 
 /-- The joint accumulator count is bounded by the marginal accumulator count
     (projecting to the second modulus r). -/
 theorem sqfreeJointAccumCount_le_accumCount_second (X k q r : Nat) (a : ZMod q)
     (b : ZMod r) : sqfreeJointAccumCount X k q r a b ≤ sqfreeAccumCount X k r b := by
   unfold sqfreeJointAccumCount sqfreeAccumCount
-  apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1, hn.2.2.2⟩
+  exact Finset.card_le_card
+    (Finset.monotone_filter_right _ fun _ _ h => ⟨h.1, h.2.2⟩)
 
 /-- The sum of joint accumulator counts over the second modulus r gives
     the marginal accumulator count for the first modulus q.
@@ -314,27 +261,10 @@ theorem sqfreeJointAccumCount_sum_eq_first (X k q r : Nat) [NeZero r]
     ∑ b : ZMod r, sqfreeJointAccumCount X k q r a b =
       sqfreeAccumCount X k q a := by
   unfold sqfreeJointAccumCount sqfreeAccumCount
-  -- Rewrite joint filter as iterated filter
-  have hterm : ∀ b : ZMod r,
-      ((Finset.Icc 1 X).filter (fun n =>
-        Squarefree n ∧ (genProd n k : ZMod q) = a ∧
-        (genProd n k : ZMod r) = b)).card =
-      (((Finset.Icc 1 X).filter (fun n =>
-        Squarefree n ∧ (genProd n k : ZMod q) = a)).filter
-        (fun n => (genProd n k : ZMod r) = b)).card := by
-    intro b; congr 1; ext n
-    simp only [Finset.mem_filter, Finset.mem_Icc, and_assoc]
-  simp_rw [hterm]
-  rw [← Finset.card_biUnion]
-  · congr 1; ext n
-    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and, Finset.mem_filter]
-    constructor
-    · intro ⟨_, hn, _⟩; exact hn
-    · intro hn; exact ⟨(genProd n k : ZMod r), hn, rfl⟩
-  · intro b₁ _ b₂ _ hb
-    simp only [Finset.disjoint_filter]
-    intro n _ h1 h2
-    exact hb (h1.symm.trans h2)
+  simp_rw [(Finset.filter_filter _ _ _).symm]
+  exact Finset.card_eq_sum_card_fiberwise
+    (f := fun n : Nat => (genProd n k : ZMod r))
+    (fun _ _ => Finset.mem_univ _) |>.symm
 
 /-- The joint accumulator density: proportion of squarefree n with
     genProd n k ≡ a (mod q) among squarefree n with genProd n k ≡ b (mod r). -/
@@ -361,20 +291,10 @@ theorem sqfreeJointAccumDensity_le_one (X k q r : Nat) (a : ZMod q)
 theorem sqfreeAccumCount_sum_eq_sqfreeCount (X k r : Nat) [NeZero r] :
     ∑ a : ZMod r, sqfreeAccumCount X k r a = sqfreeCount X := by
   unfold sqfreeAccumCount sqfreeCount
-  rw [← Finset.card_biUnion]
-  · congr 1
-    apply Finset.ext
-    intro n
-    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and, Finset.mem_filter]
-    constructor
-    · intro h
-      obtain ⟨_, hmem, hsq, _⟩ := h
-      exact ⟨hmem, hsq⟩
-    · intro ⟨hn, hsq⟩; exact ⟨(genProd n k : ZMod r), hn, hsq, rfl⟩
-  · intro a _ b _ hab
-    simp only [Finset.disjoint_filter]
-    intro n _ h1 h2
-    exact hab (h1.2.symm.trans h2.2)
+  simp_rw [(Finset.filter_filter _ _ _).symm]
+  exact Finset.card_eq_sum_card_fiberwise
+    (f := fun n : Nat => (genProd n k : ZMod r))
+    (fun _ _ => Finset.mem_univ _) |>.symm
 
 /-- **Density partition**: summing sqfreeAccumDensity over all residue classes gives 1
     when the squarefree count is positive. -/
@@ -401,11 +321,7 @@ theorem sqfreeAccumDensity_zero_vanishes (k r : Nat) (hr : Nat.Prime r)
       Filter.atTop
       (nhds 0) := by
   haveI : NeZero r := ⟨hr.ne_zero⟩
-  -- Sum of all densities → 1
-  -- But we need: for large X, sqfreeCount X > 0
-  -- Strategy: show sqfreeAccumDensity(0) = 1 - ∑_{a≠0} sqfreeAccumDensity(a)
-  -- And ∑_{a≠0} → (r-1) * 1/(r-1) = 1
-  -- So sqfreeAccumDensity(0) → 0
+  -- ∑_{a≠0} sqfreeAccumDensity(a) → (r-1) · 1/(r-1) = 1
   have hsum_nonzero : Filter.Tendsto
       (fun X : Nat => ∑ a ∈ Finset.univ.filter (· ≠ (0 : ZMod r)),
         sqfreeAccumDensity X k r a)
@@ -416,7 +332,6 @@ theorem sqfreeAccumDensity_zero_vanishes (k r : Nat) (hr : Nat.Prime r)
     intro a ha
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha
     exact hnonzero a ha
-  -- ∑_{a≠0} 1/(r-1) = (r-1) * 1/(r-1) = 1
   have hcard : (Finset.univ.filter (· ≠ (0 : ZMod r))).card = r - 1 := by
     rw [Finset.filter_ne' Finset.univ (0 : ZMod r), Finset.card_erase_of_mem
       (Finset.mem_univ _)]
@@ -425,9 +340,9 @@ theorem sqfreeAccumDensity_zero_vanishes (k r : Nat) (hr : Nat.Prime r)
       (1 / ((r : ℝ) - 1)) = 1 := by
     rw [Finset.sum_const, nsmul_eq_mul, hcard]
     have hr_pos : (0 : ℝ) < (r : ℝ) - 1 := sub_pos.mpr (by exact_mod_cast hr.one_lt)
-    have : ((r - 1 : ℕ) : ℝ) = (r : ℝ) - 1 := by
-      rw [Nat.cast_sub hr.one_le]; simp
-    rw [this, one_div, mul_inv_cancel₀ hr_pos.ne']
+    rw [show ((r - 1 : ℕ) : ℝ) = (r : ℝ) - 1 from by
+          rw [Nat.cast_sub hr.one_le]; simp]
+    rw [one_div, mul_inv_cancel₀ hr_pos.ne']
   rw [hnonzero_sum_val] at hsum_nonzero
   have hdecomp : ∀ X : Nat, 0 < sqfreeCount X →
       sqfreeAccumDensity X k r 0 =
@@ -435,32 +350,17 @@ theorem sqfreeAccumDensity_zero_vanishes (k r : Nat) (hr : Nat.Prime r)
           sqfreeAccumDensity X k r a := by
     intro X hX
     have htotal := sqfreeAccumDensity_sum_eq_one X k r hX
-    have hsplit : ∑ a : ZMod r, sqfreeAccumDensity X k r a =
-        sqfreeAccumDensity X k r 0 +
-        ∑ a ∈ Finset.univ.filter (· ≠ (0 : ZMod r)),
-          sqfreeAccumDensity X k r a := by
-      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ (0 : ZMod r))]
-      congr 1
-      apply Finset.sum_congr
-      · ext a; simp [Finset.mem_erase, Finset.mem_filter, and_comm]
-      · intros; rfl
-    rw [hsplit] at htotal
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ (0 : ZMod r))] at htotal
+    rw [← Finset.filter_ne'] at htotal
     linarith
-  -- For sufficiently large X, sqfreeCount X > 0 (since there are squarefree numbers)
-  -- We know sqfreeCount X → ∞ (since density of squarefrees is 6/π² > 0)
-  -- For the tendsto argument, we use eventual equality
+  -- density(0) = 1 - ∑_{a≠0} density(a) → 1 - 1 = 0 (eventually, since sqfreeCount > 0)
   rw [show (0 : ℝ) = 1 - 1 from by ring]
   apply Filter.Tendsto.sub tendsto_const_nhds hsum_nonzero |>.congr'
   rw [Filter.EventuallyEq, Filter.eventually_atTop]
   exact ⟨1, fun X hX => (hdecomp X (by
     unfold sqfreeCount
-    apply Nat.pos_of_ne_zero
-    intro h
-    have : 1 ∈ (Finset.Icc 1 X).filter Squarefree := by
-      simp only [Finset.mem_filter, Finset.mem_Icc]
-      exact ⟨⟨le_refl _, hX⟩, squarefree_one⟩
-    rw [Finset.card_eq_zero] at h
-    simp [h] at this)).symm⟩
+    exact Finset.card_pos.mpr ⟨1, Finset.mem_filter.mpr
+      ⟨Finset.mem_Icc.mpr ⟨le_refl _, hX⟩, squarefree_one⟩⟩)).symm⟩
 
 /-- **Squarefree CRT Independence**: for distinct primes q and r, the mod-q and
     mod-r coordinates of genProd n k are approximately independent among
@@ -532,44 +432,20 @@ theorem scrti_bootstrap_all_primes
         (nhds (1 / ((q : ℝ) - 1))) := by
   haveI : NeZero r := ⟨hr.ne_zero⟩
   haveI : NeZero q := ⟨hq.ne_zero⟩
-  -- Unfold SCRTI definition so it can be applied as a function
   delta SquarefreeCRTIndependence at hscrti
   intro a ha
-  -- Step 1: Decompose sqfreeAccumDensity by the r-fiber
-  -- sqfreeAccumCount X k q a = ∑_b sqfreeJointAccumCount X k q r a b
-  -- Therefore sqfreeAccumDensity = ∑_b sqfreeJointAccumCount / sqfreeCount X
-  -- Split into nonzero b and b=0
-  -- For nonzero b: = sqfreeJointAccumDensity * sqfreeAccumDensity(r, b)
-  -- For b=0: bounded by sqfreeAccumDensity(r, 0) → 0
-  -- The target limit is 1/(q-1)
-
-  -- Step 2: Show the sum of nonzero-b terms tends to 1/(q-1)
-  -- Each nonzero-b term: joint/sqfree = (joint/accum(r,b)) * (accum(r,b)/sqfree)
-  --   → 1/(q-1) * 1/(r-1)
-  -- Sum over (r-1) nonzero b's → 1/(q-1)
-
-  -- Step 3: Show the b=0 term → 0 (by zero-class density vanishing)
-  -- sqfreeJointAccumCount(q,r,a,0) ≤ sqfreeAccumCount(r,0)
-  -- sqfreeAccumDensity(r,0) → 0
-
-  -- First establish zero-class density → 0
+  -- Zero-class density → 0
   have hzero := sqfreeAccumDensity_zero_vanishes k r hr heq_r
-
-  -- For each nonzero b, the product of limits
+  -- For each nonzero b: joint/sqfree → 1/(q-1) · 1/(r-1)
   have hnonzero_term : ∀ (b : ZMod r), b ≠ 0 →
       Filter.Tendsto
         (fun X : Nat => (sqfreeJointAccumCount X k q r a b : ℝ) / (sqfreeCount X : ℝ))
         Filter.atTop
         (nhds (1 / ((q : ℝ) - 1) * (1 / ((r : ℝ) - 1)))) := by
     intro b hb
-    -- joint/sqfree = (joint/accum(r,b)) * (accum(r,b)/sqfree)
-    -- Need: for eventually X, sqfreeAccumCount > 0 (so the factorization works)
     have hscrti_ab := hscrti q r hq hr hqr k a ha b hb
     have heq_rb := heq_r b hb
-    -- sqfreeJointAccumDensity → 1/(q-1) and sqfreeAccumDensity(r,b) → 1/(r-1)
-    -- Product → 1/(q-1) * 1/(r-1)
-    -- But the product is joint/sqfree only when sqfreeAccumCount(r,b) > 0
-    -- We show: joint/sqfree = jointDensity * accumDensity(r,b) eventually
+    -- joint/sqfree = jointDensity * accumDensity(r,b) when accumCount > 0
     have hfact : ∀ X : Nat, 0 < sqfreeAccumCount X k r b →
         (sqfreeJointAccumCount X k q r a b : ℝ) / (sqfreeCount X : ℝ) =
         sqfreeJointAccumDensity X k q r a b * sqfreeAccumDensity X k r b := by
@@ -577,7 +453,7 @@ theorem scrti_bootstrap_all_primes
       unfold sqfreeJointAccumDensity sqfreeAccumDensity
       have hne : (sqfreeAccumCount X k r b : ℝ) ≠ 0 := (Nat.cast_pos.mpr hpos).ne'
       field_simp
-    -- Eventually sqfreeAccumCount(r,b) > 0 (since its density → 1/(r-1) > 0)
+    -- Eventually positive (since density → 1/(r-1) > 0)
     have hev_pos : ∀ᶠ X in Filter.atTop, 0 < sqfreeAccumCount X k r b := by
       have hpos_limit : (0 : ℝ) < 1 / ((r : ℝ) - 1) := by
         apply div_pos one_pos
@@ -590,11 +466,10 @@ theorem scrti_bootstrap_all_primes
       push_neg at h
       have : sqfreeAccumCount X k r b = 0 := Nat.le_zero.mp h
       simp [this] at hX
-    -- Now use the factorization eventually
     apply (Filter.Tendsto.mul hscrti_ab heq_rb).congr'
     exact hev_pos.mono (fun X hX => (hfact X hX).symm)
 
-  -- Sum over nonzero b's → (r-1) * [1/(q-1) * 1/(r-1)] = 1/(q-1)
+  -- Sum over nonzero b's → 1/(q-1)
   have hnonzero_sum : Filter.Tendsto
       (fun X : Nat => ∑ b ∈ Finset.univ.filter (· ≠ (0 : ZMod r)),
         (sqfreeJointAccumCount X k q r a b : ℝ) / (sqfreeCount X : ℝ))
@@ -621,7 +496,7 @@ theorem scrti_bootstrap_all_primes
 
   rw [hnonzero_sum_val] at hnonzero_sum
 
-  -- The b=0 term: bounded by sqfreeAccumDensity(r, 0) → 0
+  -- b=0 term → 0 (squeezed by accumDensity(r, 0) → 0)
   have hzero_term : Filter.Tendsto
       (fun X : Nat => (sqfreeJointAccumCount X k q r a 0 : ℝ) / (sqfreeCount X : ℝ))
       Filter.atTop
@@ -638,11 +513,7 @@ theorem scrti_bootstrap_all_primes
     · exact hbound
     · exact hzero
 
-  -- Now: sqfreeAccumDensity(q, a) = (∑_{b≠0} joint/sqfree) + (b=0 term)/sqfree
-  -- By partition identity: sqfreeAccumCount(q, a) = ∑_b sqfreeJointAccumCount(q,r,a,b)
-  -- So sqfreeAccumDensity(q, a) = ∑_b sqfreeJointAccumCount/sqfreeCount
-  -- = (∑_{b≠0} ...) + (b=0 term)
-
+  -- Decompose: accumDensity(q, a) = (∑_{b≠0} joint/sqfree) + (b=0 term)
   have hfull_decomp : ∀ X : Nat,
       sqfreeAccumDensity X k q a =
         (∑ b ∈ Finset.univ.filter (· ≠ (0 : ZMod r)),
@@ -653,13 +524,10 @@ theorem scrti_bootstrap_all_primes
     rw [← sqfreeJointAccumCount_sum_eq_first X k q r a]
     push_cast
     rw [Finset.sum_div]
-    have herase : Finset.univ.filter (· ≠ (0 : ZMod r)) = Finset.univ.erase 0 := by
-      ext b; simp [Finset.mem_erase, Finset.mem_filter, and_comm]
-    rw [herase]
+    rw [Finset.filter_ne']
     rw [← Finset.add_sum_erase _ _ (Finset.mem_univ (0 : ZMod r))]
     ring
 
-  -- Combine: the sum → 1/(q-1) + 0 = 1/(q-1)
   have htotal := Filter.Tendsto.add hnonzero_sum hzero_term
   rw [add_zero] at htotal
   exact htotal.congr (fun X => (hfull_decomp X).symm)

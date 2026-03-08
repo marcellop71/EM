@@ -51,8 +51,7 @@ theorem integral_inv_mul_log {a b : ℝ} (ha : 1 < a) (hab : a ≤ b) :
       Real.log (Real.log b) - Real.log (Real.log a) := by
   have hmem : ∀ t ∈ Set.uIcc a b, 1 < t := by
     intro t ht; rw [Set.uIcc_of_le hab] at ht; linarith [ht.1]
-  have hint : IntervalIntegrable (fun t => 1 / (t * Real.log t))
-      MeasureTheory.MeasureSpace.volume a b := by
+  have hint : IntervalIntegrable (fun t => 1 / (t * Real.log t)) volume a b := by
     apply ContinuousOn.intervalIntegrable
     rw [Set.uIcc_of_le hab]
     apply ContinuousOn.div continuousOn_const
@@ -70,14 +69,10 @@ theorem integral_inv_mul_log_sq {a b : ℝ} (ha : 1 < a) (hab : a ≤ b) :
       (Real.log a)⁻¹ - (Real.log b)⁻¹ := by
   have hmem : ∀ t ∈ Set.uIcc a b, 1 < t := by
     intro t ht; rw [Set.uIcc_of_le hab] at ht; linarith [ht.1]
-  have hint : IntervalIntegrable (fun t => (t * (Real.log t) ^ 2)⁻¹)
-      MeasureTheory.MeasureSpace.volume a b := by
+  have hint : IntervalIntegrable (fun t => (t * (Real.log t) ^ 2)⁻¹) volume a b := by
     apply ContinuousOn.intervalIntegrable
     rw [Set.uIcc_of_le hab]
-    have heq : (fun t => (t * (Real.log t) ^ 2)⁻¹) =
-        (fun t => 1 / (t * (Real.log t) ^ 2)) := by
-      ext t; rw [one_div]
-    rw [heq]
+    simp_rw [inv_eq_one_div]
     apply ContinuousOn.div continuousOn_const
     · exact ContinuousOn.mul continuousOn_id
         ((Real.continuousOn_log.mono (fun t ht =>
@@ -616,18 +611,13 @@ theorem prime_log_to_reciprocal_proved : PrimeLogToReciprocal := by
     simp only [d_term]
     rw [abs_div, abs_of_pos hφq_pos]
     exact div_le_div_of_nonneg_right loglog2_bound hφq_pos.le
-  calc |a_term + b_term + c_term + d_term|
-      ≤ |a_term| + |b_term| + |c_term| + |d_term| := by
-        calc |a_term + b_term + c_term + d_term|
-            ≤ |a_term + b_term + c_term| + |d_term| := abs_add_le _ _
-          _ ≤ (|a_term + b_term| + |c_term|) + |d_term| := by
-              linarith [abs_add_le (a_term + b_term) c_term]
-          _ ≤ ((|a_term| + |b_term|) + |c_term|) + |d_term| := by
-              linarith [abs_add_le a_term b_term]
-    _ ≤ C / Real.log 3 + (1 / (Real.log 2) ^ 2 / φq) +
-        (C / Real.log 2) + ((1 + 1 / (Real.log 2) ^ 2) / φq) := by
-          linarith [s_over_log_bound, sigma_bound, error_bound, hd_bound]
-    _ = C / Real.log 2 + C / Real.log 3 + (1 + 2 / (Real.log 2) ^ 2) / φq := by ring
+  have tri := abs_add_le a_term b_term
+  have tri2 := abs_add_le (a_term + b_term) c_term
+  have tri3 := abs_add_le (a_term + b_term + c_term) d_term
+  linarith [s_over_log_bound, sigma_bound, error_bound, hd_bound,
+    show C / Real.log 3 + 1 / (Real.log 2) ^ 2 / φq + (C / Real.log 2) +
+        (1 + 1 / (Real.log 2) ^ 2) / φq =
+      C / Real.log 2 + C / Real.log 3 + (1 + 2 / (Real.log 2) ^ 2) / φq from by ring]
 
 end PrimeLogToReciprocal
 

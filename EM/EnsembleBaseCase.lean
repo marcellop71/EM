@@ -62,18 +62,18 @@ open Mullin Euclid MullinGroup RotorRouter
 section SmallSteps
 
 /-- genProd n 0 = n (trivial unfolding of the definition). -/
-theorem genProd_zero_eq (n : Nat) : genProd n 0 = n := rfl
+@[simp] theorem genProd_zero_eq (n : Nat) : genProd n 0 = n := rfl
 
 /-- genSeq n 0 = Nat.minFac (n + 1). This is the trivial unfolding
     of the genSeq definition at step 0. -/
-theorem genSeq_zero_eq_minFac (n : Nat) : genSeq n 0 = Nat.minFac (n + 1) := rfl
+@[simp] theorem genSeq_zero_eq_minFac (n : Nat) : genSeq n 0 = Nat.minFac (n + 1) := rfl
 
 /-- genProd n 1 = n * Nat.minFac (n + 1). -/
-theorem genProd_one_eq (n : Nat) :
+@[simp] theorem genProd_one_eq (n : Nat) :
     genProd n 1 = n * Nat.minFac (n + 1) := rfl
 
 /-- genSeq n 1 = Nat.minFac (n * Nat.minFac (n + 1) + 1). -/
-theorem genSeq_one_eq (n : Nat) :
+@[simp] theorem genSeq_one_eq (n : Nat) :
     genSeq n 1 = Nat.minFac (n * Nat.minFac (n + 1) + 1) := rfl
 
 end SmallSteps
@@ -98,20 +98,14 @@ def ConditionalSeqCount (X p q : Nat) (b : ZMod q) : Nat :=
 /-- The condition count is bounded by the total squarefree count. -/
 theorem minFacConditionCount_le (X p : Nat) :
     MinFacConditionCount X p ≤ sqfreeCount X := by
-  unfold MinFacConditionCount sqfreeCount
   apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1⟩
+    (Finset.monotone_filter_right _ fun _ _ h => h.1)
 
 /-- The conditional count is bounded by the condition count. -/
 theorem conditionalSeqCount_le (X p q : Nat) (b : ZMod q) :
     ConditionalSeqCount X p q b ≤ MinFacConditionCount X p := by
-  unfold ConditionalSeqCount MinFacConditionCount
   apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1, hn.2.2.1⟩
+    (Finset.monotone_filter_right _ fun _ _ h => ⟨h.1, h.2.1⟩)
 
 /-- The conditional count is bounded by the sqfreeCount. -/
 theorem conditionalSeqCount_le_sqfreeCount (X p q : Nat) (b : ZMod q) :
@@ -127,11 +121,8 @@ section JointBound
 /-- The joint count at (0,1) is bounded by the marginal at step 0. -/
 theorem sqfreeJointSeqCount_le_seqCount_first (X q : Nat) (a b : ZMod q) :
     sqfreeJointSeqCount X 0 1 q a b ≤ sqfreeSeqCount X 0 q a := by
-  unfold sqfreeJointSeqCount sqfreeSeqCount
   apply Finset.card_le_card
-  intro n hn
-  simp only [Finset.mem_filter] at hn ⊢
-  exact ⟨hn.1, hn.2.1, hn.2.2.1⟩
+    (Finset.monotone_filter_right _ fun _ _ h => ⟨h.1, h.2.1⟩)
 
 end JointBound
 
@@ -155,15 +146,13 @@ theorem joint_seq_density_eq_conditional_mul_marginal (X q : Nat) [NeZero q]
   unfold sqfreeJointSeqDensity sqfreeSeqDensity
   by_cases h : (sqfreeSeqCount X 0 q a : ℝ) = 0
   · -- If marginal count = 0, joint count = 0 too
-    have hle : sqfreeJointSeqCount X 0 1 q a b ≤ sqfreeSeqCount X 0 q a :=
-      sqfreeJointSeqCount_le_seqCount_first X q a b
     have hseq_zero : sqfreeSeqCount X 0 q a = 0 := by exact_mod_cast h
-    have hjoint_zero : sqfreeJointSeqCount X 0 1 q a b = 0 := by omega
+    have hjoint_zero : sqfreeJointSeqCount X 0 1 q a b = 0 := by
+      have := sqfreeJointSeqCount_le_seqCount_first X q a b; omega
     simp [hjoint_zero, hseq_zero]
   · -- joint/total = (joint * seq) / (seq * total) = (joint/seq) * (seq/total)
-    have hne : (sqfreeSeqCount X 0 q a : ℝ) ≠ 0 := h
     rw [div_mul_div_comm, mul_comm (sqfreeJointSeqCount X 0 1 q a b : ℝ),
-        mul_div_mul_left _ _ hne]
+        mul_div_mul_left _ _ h]
 
 end DensityFactorization
 
@@ -226,21 +215,12 @@ theorem jse_base_case
       (nhds (1 / (((q : ℝ) - 1) ^ 2))) := by
   haveI : NeZero q := ⟨hq.ne_zero⟩
   -- Step 1: Rewrite the target as a product 1/(q-1) * 1/(q-1)
-  have htarget : (1 : ℝ) / ((q : ℝ) - 1) ^ 2 =
-      (1 / ((q : ℝ) - 1)) * (1 / ((q : ℝ) - 1)) := by
-    rw [sq, one_div_mul_one_div_rev]
-  rw [htarget]
-  -- Step 2: Show the joint density equals conditional * marginal
-  have hfactored : (fun X : Nat => sqfreeJointSeqDensity X 0 1 q a b) =
-      (fun X : Nat =>
-        ((sqfreeJointSeqCount X 0 1 q a b : ℝ) /
-          (sqfreeSeqCount X 0 q a : ℝ)) *
-        sqfreeSeqDensity X 0 q a) := by
-    ext X
-    exact joint_seq_density_eq_conditional_mul_marginal X q a b
-  rw [hfactored]
-  -- Step 3: Apply Filter.Tendsto.mul
-  exact Filter.Tendsto.mul (hcond q hq a b ha hb) (hmarg q hq a ha)
+  rw [show (1 : ℝ) / ((q : ℝ) - 1) ^ 2 = 1 / ((q : ℝ) - 1) * (1 / ((q : ℝ) - 1))
+    from by rw [sq, one_div_mul_one_div_rev]]
+  -- Step 2: Rewrite joint density as conditional * marginal, then apply Tendsto.mul
+  exact (Filter.Tendsto.congr
+    (fun X => (joint_seq_density_eq_conditional_mul_marginal X q a b).symm)
+    (Filter.Tendsto.mul (hcond q hq a b ha hb) (hmarg q hq a ha)))
 
 /-- **Per-prime conditional equidistribution.**
 
@@ -296,7 +276,7 @@ theorem jse_base_case_instance
         (fun X : Nat => sqfreeJointSeqDensity X 0 1 q a b)
         Filter.atTop
         (nhds (1 / (((q : ℝ) - 1) ^ 2))) :=
-  fun q hq a b ha hb => jse_base_case hcond hmarg q hq a b ha hb
+  jse_base_case hcond hmarg
 
 end JSEBaseCase
 
@@ -309,27 +289,17 @@ section StructuralResults
 theorem conditionalSeqCount_sum_eq (X p q : Nat) [NeZero q] :
     ∑ b : ZMod q, ConditionalSeqCount X p q b = MinFacConditionCount X p := by
   unfold ConditionalSeqCount MinFacConditionCount
+  -- Rewrite the 3-way conjunction filter as a nested filter
   have hterm : ∀ b : ZMod q,
       ((Finset.Icc 1 X).filter (fun n =>
         Squarefree n ∧ Nat.minFac (n + 1) = p ∧ (genSeq n 1 : ZMod q) = b)).card =
       (((Finset.Icc 1 X).filter (fun n =>
         Squarefree n ∧ Nat.minFac (n + 1) = p)).filter
         (fun n => (genSeq n 1 : ZMod q) = b)).card := by
-    intro b; congr 1; ext n
-    simp only [Finset.mem_filter, and_assoc]
+    intro b; congr 1; ext n; simp only [Finset.mem_filter, and_assoc]
   simp_rw [hterm]
-  rw [← Finset.card_biUnion]
-  · congr 1
-    apply Finset.ext
-    intro n
-    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and, Finset.mem_filter]
-    constructor
-    · intro ⟨_, hn, _⟩; exact hn
-    · intro hn; exact ⟨(genSeq n 1 : ZMod q), hn, rfl⟩
-  · intro b₁ _ b₂ _ hb
-    simp only [Finset.disjoint_filter]
-    intro n _ h1 h2
-    exact hb (h1.symm.trans h2)
+  -- Apply the fiber decomposition: #S = ∑ b, #{n ∈ S | f(n) = b}
+  exact (Finset.card_eq_sum_card_fiberwise (fun _ _ => Finset.mem_univ _)).symm
 
 /-- **Conditional density nonneg**: ConditionalSeqCount / MinFacConditionCount >= 0. -/
 theorem conditionalSeqDensity_nonneg (X p q : Nat) (b : ZMod q) :

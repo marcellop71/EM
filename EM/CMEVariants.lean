@@ -5,10 +5,11 @@ import EM.LargeSieveSpectral
 
 Named Props that weaken CME in various ways: fixing parameters, averaging
 over fibers, relaxing "eventually" to "infinitely often", or allowing an
-existential fiber choice.  Each comes with a trivial implication from CME.
+existential fiber choice. Each comes with a trivial implication from CME.
 
 All definitions are abstract (no computation).
 -/
+
 open Mullin Euclid MullinGroup RotorRouter
 
 namespace Mullin
@@ -53,9 +54,8 @@ def CME_target : Prop :=
 theorem cme_implies_CME_d (hcme : ConditionalMultiplierEquidist)
     (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (χ : (ZMod q)ˣ →* ℂˣ) (hχ : χ ≠ 1) (a : (ZMod q)ˣ) :
-    CME_d q hq hne χ hχ a := by
-  intro ε hε
-  exact hcme q hq hne χ hχ a ε hε
+    CME_d q hq hne χ hχ a :=
+  fun ε hε => hcme q hq hne χ hχ a ε hε
 
 /-- CME implies `CME_subseq` ("eventually" implies "infinitely often"). -/
 theorem cme_implies_CME_subseq (hcme : ConditionalMultiplierEquidist)
@@ -64,50 +64,33 @@ theorem cme_implies_CME_subseq (hcme : ConditionalMultiplierEquidist)
     CME_subseq q hq hne χ hχ a := by
   intro ε hε N₀
   obtain ⟨M, hM⟩ := hcme q hq hne χ hχ a ε hε
-  exact ⟨max N₀ M, le_max_left _ _, hM _ (le_max_right _ _)⟩
+  exact ⟨N₀ ⊔ M, le_sup_left, hM _ le_sup_right⟩
 
 /-- CME implies `CME_target` (CME holds for all fibers, so pick any). -/
 theorem cme_implies_CME_target (hcme : ConditionalMultiplierEquidist) :
-    CME_target := by
-  intro q _inst hq hne χ hχ ε hε
-  exact ⟨1, hcme q hq hne χ hχ 1 ε hε⟩
+    CME_target :=
+  fun q _ hq hne χ hχ ε hε => ⟨1, hcme q hq hne χ hχ 1 ε hε⟩
 
 open Classical in
-/-- CME implies `CME_avg` (distribute `ε` across fibers, take max `N₀`).
-
-Follows the same choose/sup/sum_le_sum/sum_const pattern as `cme_implies_dec`
-in LargeSieveSpectral.lean. -/
+/-- CME implies `CME_avg` (distribute `ε` across fibers, take max `N₀`). -/
 theorem cme_implies_CME_avg (hcme : ConditionalMultiplierEquidist)
     (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (χ : (ZMod q)ˣ →* ℂˣ) (hχ : χ ≠ 1) :
     CME_avg q hq hne χ hχ := by
   intro ε hε
-  -- Number of fibers
-  set C := Fintype.card (ZMod q)ˣ with hC_def
-  have hC_pos : (0 : ℝ) < C := by
-    have : 0 < C := Fintype.card_pos
-    exact Nat.cast_pos.mpr this
+  set C := Fintype.card (ZMod q)ˣ
+  have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos
   -- Apply CME to each fiber with ε' = ε / C
-  set ε' := ε / C with hε'_def
-  have hε'_pos : 0 < ε' := div_pos hε hC_pos
-  have hcme_a : ∀ a : (ZMod q)ˣ, ∃ N₀ : ℕ, ∀ N ≥ N₀,
-      ‖fiberMultCharSum q hq hne χ a N‖ ≤ ε' * N :=
-    fun a => hcme q hq hne χ hχ a ε' hε'_pos
-  choose N₀_fn hN₀_fn using hcme_a
-  -- Take the max over all fibers
-  set N₀ := Finset.univ.sup N₀_fn
-  refine ⟨N₀, fun N hN => ?_⟩
-  -- Sum: ∑_a ‖F(a)‖ ≤ ∑_a ε'·N = C · ε'·N = ε·N
-  calc (∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N‖)
-      ≤ ∑ _a : (ZMod q)ˣ, ε' * N := by
-        apply Finset.sum_le_sum
-        intro a _
-        apply hN₀_fn a N
-        exact le_trans (Finset.le_sup (Finset.mem_univ a)) hN
-    _ = C * (ε' * N) := by
-        rw [Finset.sum_const, nsmul_eq_mul, hC_def, Finset.card_univ]
-    _ = ε * N := by
-        rw [hε'_def]
-        field_simp
+  have hε'_pos : 0 < ε / C := div_pos hε hC_pos
+  choose N₀_fn hN₀_fn using fun a =>
+    hcme q hq hne χ hχ a (ε / C) hε'_pos
+  -- Take the max N₀ over all fibers
+  refine ⟨Finset.univ.sup N₀_fn, fun N hN => ?_⟩
+  calc ∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N‖
+      ≤ ∑ _a : (ZMod q)ˣ, ε / C * N := Finset.sum_le_sum fun a _ =>
+        hN₀_fn a N (le_trans (Finset.le_sup (Finset.mem_univ a)) hN)
+    _ = C * (ε / C * N) := by
+        rw [Finset.sum_const, nsmul_eq_mul, Finset.card_univ]
+    _ = ε * N := by field_simp
 
 end Mullin

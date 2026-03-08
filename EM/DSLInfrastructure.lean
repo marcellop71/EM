@@ -48,13 +48,6 @@ open Mullin Euclid MullinGroup RotorRouter
 
 section EnergyEvolution
 
-/-- The squared norm expansion for inner product spaces over ℝ:
-    ‖x + y‖² = ‖x‖² + 2·⟪x,y⟫ + ‖y‖². -/
-theorem norm_sq_add_inner {F : Type*} [SeminormedAddCommGroup F]
-    [InnerProductSpace ℝ F] (x y : F) :
-    ‖x + y‖ ^ 2 = ‖x‖ ^ 2 + 2 * @inner ℝ F _ x y + ‖y‖ ^ 2 :=
-  norm_add_sq_real x y
-
 /-- The telescoping identity for squared norms: for a sequence z(0),...,z(N-1),
     the squared norm of the partial sum S(N) = ∑_{k<N} z(k) satisfies
 
@@ -71,12 +64,10 @@ theorem norm_sq_partial_sum_telescoping {F : Type*} [SeminormedAddCommGroup F]
   induction N with
   | zero => simp
   | succ N ih =>
-    rw [Finset.sum_range_succ (f := z)]
-    rw [norm_sq_add_inner]
-    rw [ih]
-    rw [Finset.sum_range_succ (f := fun k => ‖z k‖ ^ 2)]
-    rw [Finset.sum_range_succ (f := fun k =>
-      @inner ℝ F _ (∑ j ∈ Finset.range k, z j) (z k))]
+    rw [Finset.sum_range_succ (f := z), norm_add_sq_real, ih,
+      Finset.sum_range_succ (f := fun k => ‖z k‖ ^ 2),
+      Finset.sum_range_succ (f := fun k =>
+        @inner ℝ F _ (∑ j ∈ Finset.range k, z j) (z k))]
     ring
 
 end EnergyEvolution
@@ -120,7 +111,7 @@ theorem char_sum_energy_step (χ : (ZMod q)ˣ →* ℂˣ) (N : Nat) :
     ‖(χ (emMultUnit q hq hne N) : ℂ)‖ ^ 2 := by
   unfold emCharPartialSum
   rw [Finset.sum_range_succ]
-  exact norm_sq_add_inner _ _
+  exact norm_add_sq_real _ _
 
 /-- The character sum energy telescoping: ‖S(N)‖² equals the sum of
     squared norms plus twice the sum of cross terms. -/
@@ -146,25 +137,11 @@ variable {q : Nat} [Fact (Nat.Prime q)]
     unity, hence ‖χ(g)‖ = 1. -/
 theorem char_value_norm_one (χ : (ZMod q)ˣ →* ℂˣ) (u : (ZMod q)ˣ) :
     ‖(χ u : ℂ)‖ = 1 := by
-  -- Step 1: (χ u : ℂ) ^ (card G) = 1
   have hpow : (χ u : ℂ) ^ Fintype.card (ZMod q)ˣ = 1 := by
-    have h := @pow_card_eq_one _ _ _ u
-    have h2 : (χ u : ℂˣ) ^ Fintype.card (ZMod q)ˣ = 1 := by rw [← map_pow, h, map_one]
-    have h3 : ((χ u : ℂˣ) : ℂ) ^ Fintype.card (ZMod q)ˣ = 1 := by
-      rw [← Units.val_pow_eq_pow_val, h2, Units.val_one]
-    exact h3
-  -- Step 2: ‖(χ u)‖ ^ (card G) = 1
-  have h_norm_pow : ‖(χ u : ℂ)‖ ^ Fintype.card (ZMod q)ˣ = 1 := by
-    rw [← norm_pow, hpow, norm_one]
-  -- Step 3: ‖(χ u)‖ = 1 (from x ≥ 0, x^n = 1, n > 0)
-  have h_nonneg : 0 ≤ ‖(χ u : ℂ)‖ := norm_nonneg _
-  have hcard_ne : Fintype.card (ZMod q)ˣ ≠ 0 := Fintype.card_ne_zero
-  by_contra hne
-  rcases ne_iff_lt_or_gt.mp hne with h | h
-  · linarith [pow_lt_one₀ h_nonneg h hcard_ne]
-  · have : 1 < ‖(χ u : ℂ)‖ ^ Fintype.card (ZMod q)ˣ :=
-      one_lt_pow₀ h hcard_ne
-    linarith
+    have h : (χ u : ℂˣ) ^ Fintype.card (ZMod q)ˣ = 1 := by
+      rw [← map_pow, pow_card_eq_one, map_one]
+    rw [← Units.val_pow_eq_pow_val, h, Units.val_one]
+  exact Complex.norm_eq_one_of_pow_eq_one hpow Fintype.card_ne_zero
 
 /-- When character values have norm 1, the energy telescoping simplifies:
     ‖S(N)‖² = N + 2·∑ crossTerms. -/
@@ -173,11 +150,8 @@ theorem char_sum_energy_eq_N_plus_cross (χ : (ZMod q)ˣ →* ℂˣ) (N : Nat) :
     N + 2 * ∑ k ∈ Finset.range N, charSumCrossTerm hq hne χ k := by
   rw [char_sum_energy_telescoping hq hne χ N]
   congr 1
-  have : ∀ k ∈ Finset.range N,
-      ‖(χ (emMultUnit q hq hne k) : ℂ)‖ ^ 2 = 1 := by
-    intro k _
-    rw [char_value_norm_one, one_pow]
-  rw [Finset.sum_congr rfl this, Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one]
+  simp only [char_value_norm_one, one_pow, Finset.sum_const, Finset.card_range,
+    nsmul_eq_mul, mul_one]
 
 /-- **Cross term bound gives energy bound.**
     If the cumulative cross terms are bounded by B, then
@@ -187,8 +161,7 @@ theorem cross_term_bound_gives_energy_bound (χ : (ZMod q)ˣ →* ℂˣ)
     (hB : |∑ k ∈ Finset.range N, charSumCrossTerm hq hne χ k| ≤ B) :
     ‖emCharPartialSum hq hne χ N‖ ^ 2 ≤ N + 2 * B := by
   rw [char_sum_energy_eq_N_plus_cross hq hne χ N]
-  have h := abs_le.mp hB
-  linarith [h.2]
+  linarith [(abs_le.mp hB).2]
 
 /-- **Cross term cancellation controls energy growth.**
     If the cross terms are o(N), then ‖S(N)‖² ≤ (1 + 2ε)·N for all ε > 0,
@@ -347,20 +320,16 @@ theorem feb_implies_cme (hfeb : FiberEnergyBound) : ConditionalMultiplierEquidis
   -- FEB gives: ∑_a' ‖F(a')‖² ≤ ε²·N²
   have h_total := hN₀ N hN
   -- Individual bound: ‖F(a)‖² ≤ ∑_a' ‖F(a')‖² ≤ ε²·N²
-  have h_individual : ‖fiberMultCharSum q' hq' hne' χ a N‖ ^ 2 ≤ ε ^ 2 * (N : ℝ) ^ 2 := by
+  have h_individual : ‖fiberMultCharSum q' hq' hne' χ a N‖ ^ 2 ≤ (ε * ↑N) ^ 2 :=
     calc ‖fiberMultCharSum q' hq' hne' χ a N‖ ^ 2
-        ≤ ∑ a' : (ZMod q')ˣ, ‖fiberMultCharSum q' hq' hne' χ a' N‖ ^ 2 := by
-          apply Finset.single_le_sum
+        ≤ ∑ a' : (ZMod q')ˣ, ‖fiberMultCharSum q' hq' hne' χ a' N‖ ^ 2 :=
+          Finset.single_le_sum
             (f := fun a' => ‖fiberMultCharSum q' hq' hne' χ a' N‖ ^ 2)
-          · intro i _; positivity
-          · exact Finset.mem_univ a
+            (fun _ _ => by positivity) (Finset.mem_univ a)
       _ ≤ ε ^ 2 * (N : ℝ) ^ 2 := h_total
-  -- ‖F(a)‖² ≤ (ε·N)²  =>  ‖F(a)‖ ≤ ε·N
-  have h_sq_eq : ε ^ 2 * (N : ℝ) ^ 2 = (ε * ↑N) ^ 2 := by ring
-  have h_sq : ‖fiberMultCharSum q' hq' hne' χ a N‖ ^ 2 ≤ (ε * ↑N) ^ 2 := by linarith
-  have hεN_nonneg : 0 ≤ ε * (N : ℝ) := by positivity
-  rw [← Real.sqrt_sq hεN_nonneg, ← Real.sqrt_sq (norm_nonneg _)]
-  exact Real.sqrt_le_sqrt h_sq
+      _ = (ε * ↑N) ^ 2 := by ring
+  -- ‖F(a)‖² ≤ (ε·N)² ⟹ ‖F(a)‖ ≤ ε·N (since both are nonneg)
+  exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp h_individual
 
 /-- **Cauchy-Schwarz lower bound on fiber energy**: the total character sum
     energy provides a lower bound on the fiber energy.
@@ -394,10 +363,9 @@ theorem fiber_energy_lower_bound (χ : (ZMod q)ˣ →* ℂˣ) (N : Nat) :
     exact hcsf
   -- ‖∑x_a‖² ≤ (∑‖x_a‖)² ≤ C · ∑‖x_a‖²
   calc ‖∑ a : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a N‖ ^ 2
-      ≤ (∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N‖) ^ 2 := by
-        apply sq_le_sq'
-        · linarith [norm_nonneg (∑ a : (ZMod q)ˣ, fiberMultCharSum q hq hne χ a N)]
-        · exact h_triangle
+      ≤ (∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N‖) ^ 2 :=
+        (sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg fun _ _ => norm_nonneg _)).mpr
+          h_triangle
     _ ≤ Fintype.card (ZMod q)ˣ *
         ∑ a : (ZMod q)ˣ, ‖fiberMultCharSum q hq hne χ a N‖ ^ 2 := h_cs
 
@@ -548,18 +516,15 @@ theorem cofZ_eq_shifted_div_mult {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (n : ℕ) :
     cofZ q n = (walkZ q n + 1) * (multZ q n)⁻¹ := by
   have hm_ne := multZ_ne_zero hq hne n
-  have h := shifted_walk_eq_mult_mul_cof q n
-  rw [h, mul_comm (multZ q n) _, mul_assoc, mul_inv_cancel₀ hm_ne, mul_one]
+  rw [shifted_walk_eq_mult_mul_cof, mul_comm (multZ q n), mul_assoc,
+    mul_inv_cancel₀ hm_ne, mul_one]
 
 /-- **Walk from cofactor and multiplier**: the walk position can be recovered
     from the multiplier and cofactor:
       `walkZ(q,n) = multZ(q,n) * cofZ(q,n) - 1` -/
 theorem walkZ_eq_mult_mul_cof_sub_one (q : ℕ) (n : ℕ) :
-    walkZ q n = multZ q n * cofZ q n - 1 := by
-  have h := shifted_walk_eq_mult_mul_cof q n
-  -- h : walkZ q n + 1 = multZ q n * cofZ q n
-  -- Goal: walkZ q n = multZ q n * cofZ q n - 1
-  rw [← h]; ring
+    walkZ q n = multZ q n * cofZ q n - 1 :=
+  eq_sub_of_add_eq (shifted_walk_eq_mult_mul_cof q n)
 
 /-- **Death condition via cofactor**: the walk hits -1 at step n iff
     the cofactor `cofZ(q,n)` is zero in `ZMod q`.
@@ -571,18 +536,8 @@ theorem walkZ_eq_neg_one_iff_cofZ_zero {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (n : ℕ) :
     walkZ q n = -1 ↔ cofZ q n = 0 := by
   have hm_ne := multZ_ne_zero hq hne n
-  constructor
-  · intro h
-    have h1 : walkZ q n + 1 = 0 := by rw [h]; ring
-    rw [shifted_walk_eq_mult_mul_cof] at h1
-    exact (mul_eq_zero.mp h1).resolve_left hm_ne
-  · intro h
-    have h1 : walkZ q n + 1 = 0 := by
-      rw [shifted_walk_eq_mult_mul_cof, h, mul_zero]
-    -- walkZ q n + 1 = 0 → walkZ q n = -1
-    have : walkZ q n = -1 := by
-      have := add_eq_zero_iff_eq_neg.mp h1; exact this
-    exact this
+  rw [← add_eq_zero_iff_eq_neg, shifted_walk_eq_mult_mul_cof, mul_eq_zero,
+    or_iff_right hm_ne]
 
 /-- **Cofactor nonzero when alive**: when `walkZ(q,n) ≠ -1`, the cofactor
     is nonzero in `ZMod q`. -/
@@ -597,9 +552,8 @@ theorem cofZ_ne_zero_of_alive {q : ℕ} [Fact (Nat.Prime q)]
 theorem shifted_walk_ne_zero {q : ℕ} [Fact (Nat.Prime q)]
     (_hq : IsPrime q) (_hne : ∀ k, seq k ≠ q) (n : ℕ)
     (halive : walkZ q n ≠ -1) :
-    walkZ q n + 1 ≠ 0 := by
-  intro h
-  exact halive (add_eq_zero_iff_eq_neg.mp h)
+    walkZ q n + 1 ≠ 0 :=
+  fun h => halive (add_eq_zero_iff_eq_neg.mp h)
 
 /-- **Walk successor via cofactor**: combining the walk recurrence
     `walkZ(q,n+1) = walkZ(q,n) * multZ(q,n)` with the shifted walk identity
@@ -612,12 +566,7 @@ theorem shifted_walk_ne_zero {q : ℕ} [Fact (Nat.Prime q)]
     This is the "cofactor evolution" identity. -/
 theorem shifted_walk_succ_eq (q : ℕ) (n : ℕ) :
     walkZ q (n + 1) + 1 = (multZ q n) ^ 2 * cofZ q n - multZ q n + 1 := by
-  rw [walkZ_succ]
-  have h := shifted_walk_eq_mult_mul_cof q n
-  -- walkZ q n = multZ q n * cofZ q n - 1
-  have hw : walkZ q n = multZ q n * cofZ q n - 1 := by rw [← h]; ring
-  rw [hw]
-  ring
+  rw [walkZ_succ, walkZ_eq_mult_mul_cof_sub_one]; ring
 
 /-- **Multiplier-cofactor product is the shifted walk**: at the unit level,
     when the walk is alive (not at -1), the product `multZ * cofZ` in ZMod q
@@ -627,9 +576,8 @@ theorem shifted_walk_succ_eq (q : ℕ) (n : ℕ) :
 theorem mult_cof_product_ne_zero {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (n : ℕ)
     (halive : walkZ q n ≠ -1) :
-    multZ q n * cofZ q n ≠ 0 := by
-  rw [← shifted_walk_eq_mult_mul_cof]
-  exact shifted_walk_ne_zero hq hne n halive
+    multZ q n * cofZ q n ≠ 0 :=
+  shifted_walk_eq_mult_mul_cof q n ▸ shifted_walk_ne_zero hq hne n halive
 
 /-- **Character decomposition of shifted walk**: for any multiplicative
     character χ of `(ZMod q)ˣ`, when the walk is alive at step n, the
@@ -650,11 +598,8 @@ theorem char_shifted_walk_eq_char_mult_mul_char_cof {q : ℕ} [Fact (Nat.Prime q
     χ (Units.mk0 (walkZ q n + 1) (shifted_walk_ne_zero hq hne n halive)) =
     χ (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) *
     χ (Units.mk0 (cofZ q n) (cofZ_ne_zero_of_alive hq hne n halive)) := by
-  rw [← map_mul]
-  congr 1
-  ext
-  simp only [Units.val_mul, Units.val_mk0]
-  exact shifted_walk_eq_mult_mul_cof q n
+  rw [← map_mul]; congr 1; ext
+  simp only [Units.val_mul, Units.val_mk0, shifted_walk_eq_mult_mul_cof]
 
 /-- **Shifted walk vanishes mod any Euclid divisor**: if `q | prod(n) + 1`,
     then `walkZ(q,n) + 1 = 0` in `ZMod q`. Equivalently, `multZ(q,n) * cofZ(q,n) = 0`.
@@ -665,18 +610,17 @@ theorem char_shifted_walk_eq_char_mult_mul_char_cof {q : ℕ} [Fact (Nat.Prime q
 theorem shifted_walk_zero_of_dvd (q n : ℕ) (hq : q ∣ (prod n + 1)) :
     walkZ q n + 1 = 0 := by
   simp only [walkZ]
-  have : ((prod n + 1 : ℕ) : ZMod q) = 0 := by rwa [ZMod.natCast_eq_zero_iff]
+  have h : ((prod n + 1 : ℕ) : ZMod q) = 0 := (ZMod.natCast_eq_zero_iff ..).mpr hq
   calc (prod n : ZMod q) + 1 = ((prod n + 1 : ℕ) : ZMod q) := by push_cast; ring
-    _ = 0 := this
+    _ = 0 := h
 
 /-- **Multiplier-cofactor product vanishes at auto-hit**: at the auto-hit
     modulus `seq(n+1)`, we have `multZ(seq(n+1), n) * cofZ(seq(n+1), n) = 0`.
     Since `multZ` is a self-cast (`seq(n+1) mod seq(n+1) = 0`), in fact
     `multZ(seq(n+1), n) = 0`, and the product is trivially zero. -/
 theorem mult_cof_zero_at_auto_hit (n : ℕ) :
-    multZ (seq (n + 1)) n * cofZ (seq (n + 1)) n = 0 := by
-  rw [← shifted_walk_eq_mult_mul_cof]
-  exact shifted_walk_zero_of_dvd _ n (seq_dvd_succ_prod n)
+    multZ (seq (n + 1)) n * cofZ (seq (n + 1)) n = 0 :=
+  shifted_walk_eq_mult_mul_cof _ n ▸ shifted_walk_zero_of_dvd _ n (seq_dvd_succ_prod n)
 
 end ShiftedWalkIdentity
 

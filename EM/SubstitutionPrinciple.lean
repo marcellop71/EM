@@ -53,12 +53,11 @@ def fiberReturnSteps (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
 /-- The cardinality of fiberReturnSteps is at most N (it is a subset of range N). -/
 theorem fiberReturnSteps_card_le (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (a : (ZMod q)ˣ) (N : Nat) :
-    (fiberReturnSteps q hq hne a N).card ≤ N := by
-  calc (fiberReturnSteps q hq hne a N).card
-      ≤ (Finset.range N).card := Finset.card_filter_le _ _
-    _ = N := Finset.card_range N
+    (fiberReturnSteps q hq hne a N).card ≤ N :=
+  (Finset.card_filter_le _ _).trans (Finset.card_range N).le
 
 /-- Membership characterization for fiberReturnSteps. -/
+@[simp]
 theorem mem_fiberReturnSteps_iff {q : Nat} [Fact (Nat.Prime q)] {hq : IsPrime q}
     {hne : ∀ k, seq k ≠ q} {a : (ZMod q)ˣ} {N k : Nat} :
     k ∈ fiberReturnSteps q hq hne a N ↔ k < N ∧ emWalkUnit q hq hne k = a := by
@@ -99,9 +98,8 @@ section CoprimeCascade
     (indeed on all of ℕ, by seq_injective). -/
 theorem return_visit_mult_injective (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (a : (ZMod q)ˣ) (N : Nat) :
-    Set.InjOn (fun n => seq (n + 1)) ↑(fiberReturnSteps q hq hne a N) := by
-  intro j _hj k _hk hjk
-  exact Nat.succ_injective (seq_injective _ _ hjk)
+    Set.InjOn (fun n => seq (n + 1)) ↑(fiberReturnSteps q hq hne a N) :=
+  fun _ _ _ _ hjk => Nat.succ_injective (seq_injective _ _ hjk)
 
 /-- At return visits, distinct multiplier primes are coprime.
     Since all seq values are pairwise coprime (seq_coprime_of_distinct),
@@ -123,13 +121,9 @@ theorem walkZ_at_return {q : Nat} [Fact (Nat.Prime q)] {hq : IsPrime q}
     {hne : ∀ k, seq k ≠ q} {a : (ZMod q)ˣ} {N n : Nat}
     (hn : n ∈ fiberReturnSteps q hq hne a N) :
     walkZ q n = ↑a := by
-  rw [mem_fiberReturnSteps_iff] at hn
-  have heq := hn.2
-  -- emWalkUnit q hq hne n = Units.mk0 (walkZ q n) ... = a
-  -- So walkZ q n = ↑a as ZMod q elements
-  have : (emWalkUnit q hq hne n : ZMod q) = ↑a := congrArg Units.val heq
-  simp only [emWalkUnit, Units.val_mk0] at this
-  exact this
+  simp only [mem_fiberReturnSteps_iff] at hn
+  have : (emWalkUnit q hq hne n : ZMod q) = ↑a := congrArg Units.val hn.2
+  simpa only [emWalkUnit, Units.val_mk0] using this
 
 /-- At a return visit, the Euclid number prod(n)+1 is in a fixed residue
     class mod q: namely, it is ≡ a + 1 (mod q).
@@ -140,7 +134,6 @@ theorem euclid_residue_at_return {q : Nat} [Fact (Nat.Prime q)] {hq : IsPrime q}
     (prod n + 1 : ZMod q) = ↑a + 1 := by
   have hw := walkZ_at_return hn
   simp only [walkZ] at hw
-  -- hw : (prod n : ZMod q) = ↑a
   exact congrArg (· + 1) hw
 
 /-- The multiplier at a return visit is seq(n+1), which divides prod(n)+1.
@@ -251,10 +244,9 @@ section SPStructure
 theorem return_visit_distinct_primes_count (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (a : (ZMod q)ˣ) (N : Nat) :
     ((fiberReturnSteps q hq hne a N).image (fun n => seq (n + 1))).card =
-    (fiberReturnSteps q hq hne a N).card := by
-  apply Finset.card_image_of_injective
-  intro j k hjk
-  exact Nat.succ_injective (seq_injective _ _ hjk)
+    (fiberReturnSteps q hq hne a N).card :=
+  Finset.card_image_of_injective _ fun _ _ hjk =>
+    Nat.succ_injective (seq_injective _ _ hjk)
 
 /-- All multiplier primes at return visits are pairwise coprime.
     This is the coprime cascade specialized to the fiber: the function

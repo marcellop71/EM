@@ -65,23 +65,17 @@ theorem populationCharEnergy_nonneg (q : Nat) (χ : Nat → ℂ) (K X : Nat) :
     0 ≤ populationCharEnergy q χ K X := by
   unfold populationCharEnergy
   split
-  · exact le_refl 0
-  · apply mul_nonneg
-    · apply div_nonneg one_pos.le
-      exact Nat.cast_nonneg _
-    · apply Finset.sum_nonneg
-      intro n _
-      exact genSeqCharEnergy_nonneg n K q χ
+  · exact le_rfl
+  · exact mul_nonneg (div_nonneg one_pos.le (Nat.cast_nonneg _))
+      (Finset.sum_nonneg fun n _ => genSeqCharEnergy_nonneg n K q χ)
 
 /-- Population energy equals the ensemble average of character energy (when sqfreeCount > 0). -/
 theorem populationCharEnergy_eq_ensembleAvg (q : Nat) (χ : Nat → ℂ) (K X : Nat)
     (hX : 0 < sqfreeCount X) :
     populationCharEnergy q χ K X = ensembleAvg X (fun n => genSeqCharEnergy n K q χ) := by
-  have hne : sqfreeCount X ≠ 0 := by omega
   unfold populationCharEnergy
-  rw [if_neg hne]
-  unfold ensembleAvg sqfreeCount
-  ring
+  rw [if_neg hX.ne']
+  unfold ensembleAvg sqfreeCount; ring
 
 /-- Population energy at K = 0 is zero (the partial sum over 0 steps is empty). -/
 theorem populationCharEnergy_zero (q : Nat) (χ : Nat → ℂ) (X : Nat) :
@@ -89,11 +83,8 @@ theorem populationCharEnergy_zero (q : Nat) (χ : Nat → ℂ) (X : Nat) :
   unfold populationCharEnergy
   split
   · rfl
-  · have : ∀ n ∈ (Finset.Icc 1 X).filter Squarefree,
-        genSeqCharEnergy n 0 q χ = 0 := by
-      intro n _
-      simp [genSeqCharEnergy, genSeqCharPartialSum, Complex.normSq_zero]
-    rw [Finset.sum_eq_zero this, mul_zero]
+  · simp only [genSeqCharEnergy, genSeqCharPartialSum, Finset.range_zero, Finset.sum_empty,
+      map_zero, Finset.sum_const_zero, mul_zero]
 
 end PopulationEnergy
 
@@ -123,35 +114,22 @@ def populationCrossTermSum (q : Nat) (χ : Nat → ℂ) (K X : Nat) : ℝ :=
     This follows from Re(z * conj(w)) = Re(w * conj(z)) for all complex z, w. -/
 theorem crossTermPair_comm (q : Nat) (χ : Nat → ℂ) (j k X : Nat) :
     crossTermPair q χ j k X = crossTermPair q χ k j X := by
-  unfold crossTermPair
-  congr 1
-  ext n
-  -- Re(a * conj(b)) = Re(b * conj(a)) via conj(a * conj(b)) = b * conj(a)
-  have : ∀ (a b : ℂ), (a * starRingEnd ℂ b).re = (b * starRingEnd ℂ a).re := by
-    intro a b
-    have h1 : (a * starRingEnd ℂ b).re = (starRingEnd ℂ (a * starRingEnd ℂ b)).re :=
-      (Complex.conj_re _).symm
-    rw [h1, map_mul, starRingEnd_self_apply, mul_comm]
-  exact this _ _
+  simp only [crossTermPair]
+  congr 1; ext n
+  rw [show (χ _ * starRingEnd ℂ (χ _)).re = (starRingEnd ℂ (χ _ * starRingEnd ℂ (χ _))).re
+    from (Complex.conj_re _).symm, map_mul, starRingEnd_self_apply, mul_comm]
 
 /-- The cross-term pair at j = k is the sum of normSq values. -/
 private theorem re_mul_conj_eq_normSq (z : ℂ) :
     (z * starRingEnd ℂ z).re = Complex.normSq z := by
-  -- starRingEnd ℂ = Star.star for ℂ, and Star.star = conj
-  have hstar : starRingEnd ℂ z = Star.star z := rfl
-  rw [hstar, Complex.star_def]
-  -- Now: (z * conj z).re = normSq z
-  rw [Complex.mul_conj]
-  exact Complex.ofReal_re _
+  rw [show starRingEnd ℂ z = Star.star z from rfl, Complex.star_def,
+    Complex.mul_conj, Complex.ofReal_re]
 
 theorem crossTermPair_self (q : Nat) (χ : Nat → ℂ) (j X : Nat) :
     crossTermPair q χ j j X =
     ∑ n ∈ (Finset.Icc 1 X).filter Squarefree,
       Complex.normSq (χ (genSeq n j % q)) := by
-  unfold crossTermPair
-  congr 1
-  ext n
-  exact re_mul_conj_eq_normSq _
+  simp only [crossTermPair, re_mul_conj_eq_normSq]
 
 end CrossTerms
 
@@ -285,7 +263,7 @@ theorem charSumVarianceBound_implies_secondMomentBound (C : ℝ) (hC : 0 < C)
     by_cases hsf : sqfreeCount X = 0
     · -- No squarefree numbers: energy is 0
       simp only [populationCharEnergy, if_pos hsf]
-      exact mul_nonneg (le_of_lt hC) (Nat.cast_nonneg _)
+      exact mul_nonneg hC.le (Nat.cast_nonneg _)
     · -- sqfreeCount > 0: use ensemble average bound
       rw [populationCharEnergy_eq_ensembleAvg q χ K X (Nat.pos_of_ne_zero hsf)]
       exact hX₀ X hX⟩
@@ -327,12 +305,8 @@ def populationDiagonalSum (q : Nat) (χ : Nat → ℂ) (K X : Nat) : ℝ :=
 
 /-- The population diagonal sum is non-negative (sum of normSq values). -/
 theorem populationDiagonalSum_nonneg (q : Nat) (χ : Nat → ℂ) (K X : Nat) :
-    0 ≤ populationDiagonalSum q χ K X := by
-  apply Finset.sum_nonneg
-  intro n _
-  apply Finset.sum_nonneg
-  intro k _
-  exact Complex.normSq_nonneg _
+    0 ≤ populationDiagonalSum q χ K X :=
+  Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => Complex.normSq_nonneg _
 
 /-- When chi is bounded (normSq <= 1), the population diagonal sum is at most
     K * sqfreeCount X. This is the natural upper bound: each of the sqfreeCount X
@@ -343,17 +317,11 @@ theorem populationDiagonalSum_le (q : Nat) (χ : Nat → ℂ) (K X : Nat)
   unfold populationDiagonalSum sqfreeCount
   set S := (Finset.Icc 1 X).filter Squarefree
   calc ∑ n ∈ S, ∑ k ∈ Finset.range K, Complex.normSq (χ (genSeq n k % q))
-      ≤ ∑ n ∈ S, ∑ _k ∈ Finset.range K, (1 : ℝ) := by
-        apply Finset.sum_le_sum
-        intro n _
-        apply Finset.sum_le_sum
-        intro k _
-        exact hχ _
+      ≤ ∑ n ∈ S, ∑ _k ∈ Finset.range K, (1 : ℝ) :=
+        Finset.sum_le_sum fun _ _ => Finset.sum_le_sum fun _ _ => hχ _
     _ = ∑ _n ∈ S, (K : ℝ) := by
-        congr 1; ext _
-        simp [Finset.sum_const, nsmul_eq_mul, Finset.card_range]
-    _ = S.card * K := by rw [Finset.sum_const, nsmul_eq_mul]
-    _ = K * S.card := by ring
+        simp_rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one]
+    _ = ↑K * S.card := by rw [Finset.sum_const, nsmul_eq_mul, mul_comm]
 
 end DiagonalSum
 
@@ -386,19 +354,9 @@ theorem charSumVarianceBound_implies_uniform (C : ℝ)
   use X₀
   intro X hX
   by_cases hsf : sqfreeCount X = 0
-  · -- No squarefree numbers in [1,X]: population energy is 0
-    -- We need 0 ≤ C * K. Use the variance bound at X to get C * K ≥ 0:
-    -- ensembleAvg is ≥ 0 (average of normSq), and ≤ C*K.
-    -- When sqfreeCount = 0, ensembleAvg = 0/0 which is 0 in div_zero convention.
-    -- We use that ensembleAvg ≤ C*K from hvb, and ensembleAvg ≥ 0 from normSq.
-    -- Actually, this is subtle since hvb gives the bound for X ≥ X₀ but sqfreeCount X = 0.
-    -- Just use: at X₀ itself, ensembleAvg X₀ ≤ C * K, and ensembleAvg X₀ ≥ 0.
+  · -- No squarefree numbers: population energy is 0, and 0 ≤ C * K
     simp only [populationCharEnergy, if_pos hsf]
-    have h0 : ensembleAvg X (fun n => genSeqCharEnergy n K q χ) ≤ C * ↑K :=
-      hX₀ X hX
-    have hnn : 0 ≤ ensembleAvg X (fun n => genSeqCharEnergy n K q χ) :=
-      ensembleAvg_nonneg (fun n _ => genSeqCharEnergy_nonneg n K q χ)
-    linarith
+    exact le_trans (ensembleAvg_nonneg fun n _ => genSeqCharEnergy_nonneg n K q χ) (hX₀ X hX)
   · rw [populationCharEnergy_eq_ensembleAvg q χ K X (Nat.pos_of_ne_zero hsf)]
     exact hX₀ X hX
 

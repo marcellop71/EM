@@ -56,14 +56,10 @@ theorem nao_set_eq_range {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) :
     { u : (ZMod q)ˣ | ∃ n : ℕ, (u : ZMod q) = (emSDDS q (IsPrime.toNatPrime hq)).mult n } =
     Set.range (fun n => Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) := by
-  ext u
-  simp only [Set.mem_setOf_eq, Set.mem_range]
+  ext u; simp only [Set.mem_setOf_eq, Set.mem_range]
   constructor
-  · rintro ⟨n, hn⟩
-    rw [emSDDS_mult_eq_multZ] at hn
-    exact ⟨n, Units.ext hn.symm⟩
-  · rintro ⟨n, rfl⟩
-    exact ⟨n, by rw [emSDDS_mult_eq_multZ]; rfl⟩
+  · rintro ⟨n, hn⟩; rw [emSDDS_mult_eq_multZ] at hn; exact ⟨n, Units.ext hn.symm⟩
+  · rintro ⟨n, rfl⟩; exact ⟨n, by simp [emSDDS_mult_eq_multZ]⟩
 
 /-- **SubgroupEscape implies NoAlgebraicObstruction for emSDDS.**
 
@@ -76,12 +72,8 @@ theorem nao_set_eq_range {q : ℕ} [Fact (Nat.Prime q)]
 theorem se_implies_nao (hse : SubgroupEscape) (q : ℕ) (hq : Nat.Prime q)
     (hiq : IsPrime q) (hne : ∀ k, seq k ≠ q) :
     NoAlgebraicObstruction (emSDDS q hq) := by
-  -- Unfold NoAlgebraicObstruction
-  unfold NoAlgebraicObstruction
-  -- The Fact instance in the definition uses hq; our Fact instance also uses hq.
-  -- We need to show closure of the NAO set = top.
   haveI : Fact (Nat.Prime q) := ⟨hq⟩
-  -- Rewrite the generating set to match se_implies_full_generation
+  unfold NoAlgebraicObstruction
   show Subgroup.closure
     { u : (ZMod q)ˣ | ∃ n : ℕ, (u : ZMod q) = (emSDDS q hq).mult n } = ⊤
   rw [nao_set_eq_range hiq hne]
@@ -102,12 +94,9 @@ theorem mcBelow_pre_implies_nao
   show Subgroup.closure
     { u : (ZMod q)ˣ | ∃ n : ℕ, (u : ZMod q) = (emSDDS q hq).mult n } = ⊤
   rw [nao_set_eq_range hiq hne]
-  -- Use mcBelow_pre_implies_se to get SE at q, then se_implies_full_generation
-  have hse_q := mcBelow_pre_implies_se hpre hiq hne hmc
-  -- se_implies_full_generation needs the global SE, but we only have SE at q.
-  -- Instead, directly prove closure = top from hse_q using the same contradiction argument.
+  -- mcBelow_pre_implies_se gives local SE at q (not global SubgroupEscape)
   by_contra h
-  obtain ⟨n, hn⟩ := hse_q (Subgroup.closure _) h
+  obtain ⟨n, hn⟩ := mcBelow_pre_implies_se hpre hiq hne hmc (Subgroup.closure _) h
   exact hn (Subgroup.subset_closure ⟨n, rfl⟩)
 
 /-! ## Part 2: CRT Fiber Independence
@@ -129,53 +118,27 @@ theorem crt_pair_surjective (p q : ℕ) (hp : p.Prime) (hq : q.Prime) (hpq : p �
   -- Lift a and b to integers
   obtain ⟨a', ha'⟩ := ZMod.intCast_surjective a
   obtain ⟨b', hb'⟩ := ZMod.intCast_surjective b
-  -- p and q are coprime (distinct primes)
-  have hcop : (p : ℤ).gcd q = 1 := by
-    rw [Int.gcd_natCast_natCast]
+  -- p and q are coprime (distinct primes), get Bezout coefficients
+  have hcop : IsCoprime (p : ℤ) (q : ℤ) := by
+    rw [Int.isCoprime_iff_gcd_eq_one, Int.gcd_natCast_natCast]
     exact (Nat.coprime_primes hp hq).mpr hpq
-  -- Use IsCoprime (Bezout) to get coefficients u,v with u*p + v*q = 1
-  have hcop' : IsCoprime (p : ℤ) (q : ℤ) := by
-    rwa [Int.isCoprime_iff_gcd_eq_one]
-  obtain ⟨u, v, huv⟩ := hcop'
-  -- Key Bezout facts in ZMod
-  have hp0 : ((p : ℤ) : ZMod p) = 0 := by rw [Int.cast_natCast, ZMod.natCast_self]
-  have hq0 : ((q : ℤ) : ZMod q) = 0 := by rw [Int.cast_natCast, ZMod.natCast_self]
-  -- v*q = 1 (mod p)
-  have hvq_p : (v * (q : ℤ) : ZMod p) = 1 := by
-    have : (u * (p : ℤ) + v * (q : ℤ) : ZMod p) = 1 := by exact_mod_cast congr_arg ((↑) : ℤ → ZMod p) huv
-    rwa [show (u * (p : ℤ) + v * (q : ℤ) : ZMod p) =
-      (u : ZMod p) * ((p : ℤ) : ZMod p) + (v * (q : ℤ) : ZMod p) from by push_cast; ring,
-      hp0, mul_zero, zero_add] at this
-  -- u*p = 1 (mod q)
-  have hup_q : (u * (p : ℤ) : ZMod q) = 1 := by
-    have : (u * (p : ℤ) + v * (q : ℤ) : ZMod q) = 1 := by exact_mod_cast congr_arg ((↑) : ℤ → ZMod q) huv
-    rwa [show (u * (p : ℤ) + v * (q : ℤ) : ZMod q) =
-      (u * (p : ℤ) : ZMod q) + (v : ZMod q) * ((q : ℤ) : ZMod q) from by push_cast; ring,
-      hq0, mul_zero, add_zero] at this
+  obtain ⟨u, v, huv⟩ := hcop
   -- Construct x using CRT formula: x = a' * (q*v) + b' * (p*u)
   refine ⟨a' * (↑q * v) + b' * (↑p * u), ?_, ?_⟩
-  · -- (x : ZMod p) = a: mod p, the p-term vanishes, v*q=1 gives a'
-    rw [← ha']
-    show (↑(a' * (↑q * v) + b' * (↑p * u)) : ZMod p) = ↑a'
-    push_cast
-    -- After push_cast, goal is: ↑a' * (↑q * ↑v) + ↑b' * (↑p * ↑u) = ↑a' (in ZMod p)
-    -- where ↑p is (p : ZMod p), ↑q is (q : ZMod p), etc.
-    have hp0' : (p : ZMod p) = 0 := ZMod.natCast_self p
+  · -- mod p: the p-term vanishes, and u*p + v*q = 1 gives v*q = 1
+    rw [← ha']; push_cast
     have hvq1 : (q : ZMod p) * (v : ZMod p) = 1 := by
-      have := hvq_p
-      rw [show (v * (q : ℤ) : ZMod p) = (q : ZMod p) * (v : ZMod p) from by push_cast; ring] at this
-      exact this
-    rw [hp0', zero_mul, mul_zero, add_zero, hvq1, mul_one]
-  · -- (x : ZMod q) = b: mod q, the q-term vanishes, u*p=1 gives b'
-    rw [← hb']
-    show (↑(a' * (↑q * v) + b' * (↑p * u)) : ZMod q) = ↑b'
-    push_cast
-    have hq0' : (q : ZMod q) = 0 := ZMod.natCast_self q
-    have hpu1 : (p : ZMod q) * (u : ZMod q) = 1 := by
-      have := hup_q
-      rw [show (u * (p : ℤ) : ZMod q) = (p : ZMod q) * (u : ZMod q) from by push_cast; ring] at this
-      exact this
-    rw [hq0', zero_mul, mul_zero, zero_add, hpu1, mul_one]
+      have h1 := congr_arg ((↑) : ℤ → ZMod p) huv; push_cast at h1
+      rwa [show ((p : ℕ) : ZMod p) = 0 from ZMod.natCast_self p,
+        mul_zero, zero_add, mul_comm] at h1
+    rw [ZMod.natCast_self, zero_mul, mul_zero, add_zero, hvq1, mul_one]
+  · -- mod q: the q-term vanishes, and u*p + v*q = 1 gives u*p = 1
+    rw [← hb']; push_cast
+    have hup1 : (p : ZMod q) * (u : ZMod q) = 1 := by
+      have h1 := congr_arg ((↑) : ℤ → ZMod q) huv; push_cast at h1
+      rwa [show ((q : ℕ) : ZMod q) = 0 from ZMod.natCast_self q,
+        mul_zero, add_zero, mul_comm] at h1
+    rw [ZMod.natCast_self, zero_mul, mul_zero, zero_add, hup1, mul_one]
 
 /-- **Divisibility by p is independent of residue mod q**: for any target residue
     c mod q and any distinct prime p, there exists x with x = c mod q and p | x + 1.
@@ -187,11 +150,8 @@ theorem dvd_independent_of_residue (p q : ℕ) (hp : p.Prime) (hq : q.Prime) (hp
   -- We want x = -1 (mod p) and x = c (mod q)
   obtain ⟨x, hxp, hxq⟩ := crt_pair_surjective p q hp hq hpq (-1 : ZMod p) c
   refine ⟨x, hxq, ?_⟩
-  -- x = -1 (mod p) means p | x + 1
-  rw [show x + 1 = x - (-1) from by ring]
-  rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
-  simp only [Int.cast_sub, Int.cast_neg, Int.cast_one, sub_eq_zero]
-  exact hxp
+  rw [show x + 1 = x - (-1) by ring, ← ZMod.intCast_zmod_eq_zero_iff_dvd]
+  simp [hxp]
 
 /-- **CRT independence for unit residues**: for distinct primes p and q, any pair
     of units (a, b) in (ZMod p)^x x (ZMod q)^x can be realized by some integer.
@@ -213,6 +173,15 @@ observation: safe extractions are automatically disjoint from death-class primes
 by definition. This means extracting safe primes never depletes the supply of
 primes available in the death class. -/
 
+/-- **Death channel disjoint from safe extractions (Disjoint version)**:
+    the Disjoint lattice predicate form, more composable with Mathlib API. -/
+theorem death_channel_disjoint' {q : ℕ} [NeZero q]
+    (t : ZMod q) (safeSet deathSet : Finset ℕ)
+    (h_safe : ∀ p ∈ safeSet, (p : ZMod q) ≠ t)
+    (h_death : ∀ p ∈ deathSet, (p : ZMod q) = t) :
+    Disjoint safeSet deathSet :=
+  Finset.disjoint_left.mpr fun x hs hd => h_safe x hs (h_death x hd)
+
 /-- **Death channel disjoint from safe extractions**: if `safeSet` consists of
     natural numbers whose ZMod q values avoid a target `t`, and `deathSet`
     consists of natural numbers whose ZMod q values equal `t`, then the
@@ -223,19 +192,9 @@ theorem death_channel_disjoint {q : ℕ} [NeZero q]
     (t : ZMod q) (safeSet deathSet : Finset ℕ)
     (h_safe : ∀ p ∈ safeSet, (p : ZMod q) ≠ t)
     (h_death : ∀ p ∈ deathSet, (p : ZMod q) = t) :
-    safeSet ∩ deathSet = ∅ := by
-  rw [← Finset.disjoint_iff_inter_eq_empty]
-  exact Finset.disjoint_left.mpr fun x hs hd => h_safe x hs (h_death x hd)
-
-/-- **Death channel disjoint from safe extractions (Disjoint version)**:
-    the Disjoint lattice predicate form, more composable with Mathlib API. -/
-theorem death_channel_disjoint' {q : ℕ} [NeZero q]
-    (t : ZMod q) (safeSet deathSet : Finset ℕ)
-    (h_safe : ∀ p ∈ safeSet, (p : ZMod q) ≠ t)
-    (h_death : ∀ p ∈ deathSet, (p : ZMod q) = t) :
-    Disjoint safeSet deathSet := by
-  rw [Finset.disjoint_iff_inter_eq_empty]
-  exact death_channel_disjoint t safeSet deathSet h_safe h_death
+    safeSet ∩ deathSet = ∅ :=
+  Finset.disjoint_iff_inter_eq_empty.mp
+    (death_channel_disjoint' t safeSet deathSet h_safe h_death)
 
 /-- **Death class has a specific unit representative**: when the walk is at position c
     (a unit in (ZMod q)^x), the death value for the multiplier is -c^{-1}, since
@@ -246,8 +205,8 @@ theorem death_channel_disjoint' {q : ℕ} [NeZero q]
 theorem death_value_mechanism {q : ℕ} [Fact (Nat.Prime q)]
     (c : (ZMod q)ˣ) :
     (c : ZMod q) * ((-c⁻¹ : (ZMod q)ˣ) : ZMod q) = -1 := by
-  simp only [Units.val_neg, Units.val_inv_eq_inv_val]
-  rw [mul_neg, mul_inv_cancel₀ (IsUnit.ne_zero (Units.isUnit c))]
+  simp only [Units.val_neg, Units.val_inv_eq_inv_val, mul_neg,
+    mul_inv_cancel₀ c.ne_zero]
 
 /-- **Residue class partition**: for a prime q and any unit target t, each prime p /= q
     either has residue t mod q or not. This trivial dichotomy underpins the
