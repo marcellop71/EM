@@ -186,12 +186,17 @@ MFRE\@.  The chain is
 \]
 where ``\checkmark'' denotes machine-verified arrows and
 ``open'' denotes unformalized steps.
-Two files provide the ANT infrastructure:
+Three files provide the ANT infrastructure:
 \code{OneSidedTauberian.lean} (557~lines, zero \code{sorry})
-proves the Tauberian and stripping steps, and
+proves the Tauberian and stripping steps;
 \code{AbelChain.lean} (651~lines, zero \code{sorry}) proves the
 full discrete Abel summation chain converting log-weighted prime
-sums into reciprocal-weighted sums.
+sums into reciprocal-weighted sums; and
+\code{AlladiDensity.lean} (275~lines, zero \code{sorry})
+defines intermediate hypotheses for the Alladi chain and
+proves the master reduction
+\lean{EM/AlladiDensity.lean}{wpnt\_dsl\_implies\_mc}:
+WeightedPNTinAP + Alladi + CRT + DSL~$\Rightarrow$~MC.
 
 \paragraph{Proved steps.}
 \begin{itemize}
@@ -278,16 +283,29 @@ Mangoldt function.  Two gaps remain:
   If a W-I formalization lands in Mathlib, the gap closes
   immediately via the L-series identity above.
 
-\item \textbf{Alladi chain} (${\sim}1{,}000$--$1{,}800$~lines):
+\item \textbf{Alladi chain} (${\sim}1{,}000$--$1{,}400$~lines remaining):
   Alladi's formula~\cite{Alladi1977} for the density of
   $\{m : \minFac(m) = p\}$ combined with CRT sieving gives
   PrimesEquidistInAP~$\Rightarrow$~MFRE\@.
+  The reduction scaffolding is now formalized in
+  \code{AlladiDensity.lean} (275~lines, zero \code{sorry}),
+  which decomposes the chain into two precisely stated
+  open hypotheses:
+  \defname{PrimesEquidistImpliesRoughLPF}
+  (Alladi density + weight independence,
+  ${\sim}600$--$800$~lines) and
+  \defname{RoughLPFImpliesMFRE}
+  (CRT sieve transfer from generic $q$-rough integers to
+  shifted squarefree integers, ${\sim}400$--$600$~lines).
+  The master reduction
+  \lean{EM/AlladiDensity.lean}{wpnt\_dsl\_implies\_mc}
+  composes these with the proved ANT chain and DSL
+  to give MC\@.
   The sieve density infrastructure already exists
   (\code{ShiftedSquarefreeDensity.lean}).
-  The key observation is that the weight
-  $h(p) = p \cdot g(p) \cdot \prod_{r < p}(1 - g(r))$
-  (where $g(r) = r/(r^2 - 1)$ is the shifted squarefree
-  sieve density) depends on~$p$ only through~$|p|$,
+  The key observation is that the Alladi weight
+  $h(p) = (1/p) \cdot \prod_{q < r < p}(1 - 1/r)$
+  depends on~$p$ only through~$|p|$,
   not through $p \bmod q$, so weighted Dirichlet equidistribution
   transfers to minFac residues.
   No prior formalization of Alladi's density formula or
@@ -296,9 +314,11 @@ Mangoldt function.  Two gaps remain:
 
 \noindent
 We estimate ${\sim}1{,}300$--$2{,}300$ lines to close the full
-chain.  The Abel summation step is now complete
-(\code{AbelChain.lean}), leaving Wiener--Ikehara and
-Alladi as the two remaining components.
+chain.  The Abel summation step is complete
+(\code{AbelChain.lean}), the Alladi chain scaffolding with
+master reduction is formalized (\code{AlladiDensity.lean}),
+and the Wiener--Ikehara bridge and Alladi density content
+are the two remaining components.
 Formalizing ANT is feasible future work but does not affect
 the paper's contribution, since the reduction DSL~$\Rightarrow$~MC
 is the novel content.
@@ -306,8 +326,8 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}44{,}500$ \\
-Files & 72 \\
+Lines of Lean code & ${\sim}44{,}700$ \\
+Files & 73 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\
 \code{sorry} occurrences & \textbf{0} \\

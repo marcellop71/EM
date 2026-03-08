@@ -138,11 +138,15 @@ the discrete Abel summation chain are now machine-verified
 (\code{OneSidedTauberian.lean}, 557~lines;
 \code{AbelChain.lean}, 651~lines), giving the full composed arrow
 WeightedPNTinAP~$\Rightarrow$~PrimesEquidistributedInAP.
+The Alladi chain from PrimesEquidistInAP to MFRE is decomposed
+into two precisely stated open hypotheses with a proved master
+reduction
+(\code{AlladiDensity.lean}, 275~lines).
 The two remaining blocking dependencies are the
 real-variable Wiener--Ikehara bridge
 (converting $L$-series behavior near $s = 1$ into partial sum
-asymptotics) and the Alladi density formula
-(converting prime equidistribution into minFac equidistribution).
+asymptotics) and the Alladi density content
+(sieve-theoretic proof of the two Alladi chain hypotheses).
 
 \subsection{The Decorrelation--Variance--Concentration Chain}
 \label{sec:decorr-chain}
