@@ -238,7 +238,7 @@ becomes: what remains after removing the ANT difficulty?
 
 \paragraph{What the Weil bound gives.}
 Let $Q \in \FF_p[t]$ be a monic irreducible of degree~$d$, and
-$\chi : (\FF_p[t]/(Q))^\times \to \CC^\times$ a non-trivial
+$\chi : (\FF_p[t]/(Q))^\times \to \mathbb{C}^\times$ a non-trivial
 multiplicative character.  The Weil bound for function fields states:
 \[
   \Bigl|\sum_{\substack{\alpha \in \FF_p[t] \\ \deg \alpha < d}}
@@ -966,6 +966,14 @@ SMSB $+$ SE per-class escape
     bad-density requires joint (position, badness) independence, which
     IS the orbit-specificity gap.  Pigeonhole gives ``some class'' but
     not the specific class~$-1$ needed for MC\@.  Dead End~\#121. \\
+Dobrushin coefficient
+  & The Dobrushin coefficient of ergodicity equals~$1$ for every step
+    of the deterministic EM walk (each transition is a point mass;
+    disjoint support gives overlap~$= 0$).  Dobrushin's theorem
+    requires $\sum(1-\alpha) = \infty$, but $\sum 0 = 0$.
+    The weaker MUB hypothesis is genuinely weaker than CME
+    (CME $\Rightarrow$ MUB proved) but useless without Dobrushin.
+    Dead End~\#131. \\
 \bottomrule
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
