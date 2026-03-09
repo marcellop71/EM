@@ -1,0 +1,12 @@
+{"total_lines": 45000,
+ "total_files": 77,
+ "sorry_count": 0,
+ "published": 38,
+ "project": "EM",
+ "open_points": 24,
+ "mathlib_version": "v4.29.0-rc1",
+ "lean_toolchain": "leanprover/lean4:v4.29.0-rc1",
+ "description": "Lean 4 formalization reducing Mullin's Conjecture to DSL",
+ "conditional": 16,
+ "ca_hash_mode": "name-based",
+ "ca_hash_level": "L0"}
