@@ -416,10 +416,8 @@ some prime factor of Prod(k)+1 has residue outside H. -/
     Contrapositive of `Subgroup.mul_mem`. -/
 theorem product_escape_two {G : Type*} [Group G]
     {H : Subgroup G} {a b : G} (hab : a * b ∉ H) :
-    a ∉ H ∨ b ∉ H := by
-  by_contra h
-  push_neg at h
-  exact hab (H.mul_mem h.1 h.2)
+    a ∉ H ∨ b ∉ H :=
+  not_and_or.mp fun ⟨ha, hb⟩ => hab (H.mul_mem ha hb)
 
 /-- **Product-escape lemma (n factors via Finset.prod)**: if a product over
     a finset lands outside H, some factor is outside H. -/
@@ -427,8 +425,7 @@ theorem product_escape_finset {G : Type*} [CommGroup G]
     {H : Subgroup G} {ι : Type*} {s : Finset ι} {f : ι → G}
     (hprod : ∏ i ∈ s, f i ∉ H) :
     ∃ i ∈ s, f i ∉ H := by
-  by_contra hall
-  push_neg at hall
+  by_contra hall; push_neg at hall
   exact hprod (H.prod_mem fun i hi => hall i hi)
 
 /-! ### §27b. Multiplier Equidistribution
@@ -476,11 +473,9 @@ def MultiplierEquidistribution : Prop :=
 theorem mult_equidist_implies_global_tail_se
     (hme : MultiplierEquidistribution) : GlobalTailSE := by
   intro q _ hq hne H hH N
-  -- H ≠ ⊤ means some unit u ∉ H exists
-  have ⟨u, hu⟩ : ∃ u : (ZMod q)ˣ, u ∉ H := by
-    by_contra hall
-    push_neg at hall
-    exact hH (eq_top_iff.mpr (fun x _ => hall x))
+  obtain ⟨u, hu⟩ : ∃ u : (ZMod q)ˣ, u ∉ H := by
+    by_contra hall; push_neg at hall
+    exact hH (eq_top_iff.mpr fun x _ => hall x)
   obtain ⟨n, hn, heq⟩ := hme q hq hne u N
   exact ⟨n, hn, heq ▸ hu⟩
 
@@ -597,20 +592,13 @@ theorem walk_list_prod {G : Type*} [Group G]
   | nil => simp
   | cons s rest ih =>
     simp only [List.length_cons, List.prod_cons]
-    -- step 0: w 1 = w 0 * s
-    have h0 : w 1 = w 0 * s := by
-      have := hstep 0 (Nat.zero_lt_succ _)
-      simpa using this
-    -- apply ih to the shifted walk
+    have h0 : w 1 = w 0 * s := by simpa using hstep 0 (Nat.zero_lt_succ _)
     have shift : w (rest.length + 1) = w 1 * rest.prod := by
       apply ih (fun k => w (k + 1))
       intro k hk
-      have hk' : k + 1 < (s :: rest).length := by simp [List.length_cons]; omega
-      have := hstep (k + 1) hk'
-      simp only [List.getElem_cons_succ] at this
-      exact this
-    rw [← mul_assoc, ← h0, show rest.length + 1 = (s :: rest).length from rfl]
-    exact shift
+      have hk' : k + 1 < (s :: rest).length := by simp; omega
+      simpa [List.getElem_cons_succ] using hstep (k + 1) hk'
+    rw [← mul_assoc, ← h0]; exact shift
 
 /-- **Cofinal cycle multipliers product is 1**: given a list of group elements
     `ss = [s₀, s₁, …, s_{ℓ-1}]` and a walk `w : ℕ → G` satisfying the
@@ -626,13 +614,8 @@ theorem cofinal_cycle_multipliers_product_one {G : Type*} [Group G]
     (hcycle : w ss.length = w 0) :
     ss.prod = 1 := by
   have h := walk_list_prod w ss hstep
-  -- h : w ss.length = w 0 * ss.prod
-  -- hcycle : w ss.length = w 0
-  -- From w 0 = w 0 * ss.prod, left-cancel gives 1 = ss.prod.
   rw [hcycle] at h
-  -- h : w 0 = w 0 * ss.prod
-  -- h.symm : w 0 * ss.prod = w 0 = w 0 * 1
-  exact mul_left_cancel (h.symm.trans (mul_one (w 0)).symm)
+  exact left_eq_mul.mp h
 
 /-- **Cofinal cycle at length 1**: if a single multiplier s satisfies
     w · s = w (the walk returns to the same position in one step), then s = 1.
@@ -640,7 +623,7 @@ theorem cofinal_cycle_multipliers_product_one {G : Type*} [Group G]
     This is the length-1 case of `cofinal_cycle_multipliers_product_one`. -/
 theorem cofinal_fixed_point_multiplier_one {G : Type*} [Group G]
     {w s : G} (h : w * s = w) : s = 1 :=
-  mul_left_cancel (h.trans (mul_one w).symm)
+  mul_eq_left.mp h
 
 /-- **Cofinal cycle at length 2**: if two multipliers s₀, s₁ and positions
     w₀, w₁ satisfy w₁ = w₀ · s₀ and w₀ = w₁ · s₁ (a 2-cycle), then
@@ -649,9 +632,8 @@ theorem cofinal_two_cycle_product_one {G : Type*} [Group G]
     {w₀ w₁ s₀ s₁ : G}
     (h₀ : w₁ = w₀ * s₀) (h₁ : w₀ = w₁ * s₁) :
     s₀ * s₁ = 1 := by
-  have hcycle : w₀ * (s₀ * s₁) = w₀ := by
-    rw [← mul_assoc, ← h₀, ← h₁]
-  exact mul_left_cancel (hcycle.trans (mul_one w₀).symm)
+  have hcycle : w₀ * (s₀ * s₁) = w₀ := by rw [← mul_assoc, ← h₀, ← h₁]
+  exact mul_eq_left.mp hcycle
 
 end CofinalCycleProduct
 
@@ -769,28 +751,16 @@ theorem cofinal_of_hitCount_unbounded (q : Nat) [Fact (Nat.Prime q)]
     ∀ N₀, ∃ n, N₀ ≤ n ∧ emWalkUnit q hq hne n = t := by
   intro N₀
   obtain ⟨N, hN⟩ := hunbd (WalkHitCount q hq hne t N₀ + 1)
-  -- WalkHitCount(N) > WalkHitCount(N₀), so N > N₀ (by monotonicity contrapositive)
   have hlt : N₀ < N := by
-    by_contra h
-    push_neg at h
+    by_contra h; push_neg at h
     exact absurd (walkHitCount_mono q hq hne t h) (by omega)
-  -- There exists a hit in [N₀, N)
-  suffices hexists : ∃ n ∈ Finset.range N, N₀ ≤ n ∧ emWalkUnit q hq hne n = t by
-    obtain ⟨n, _, hn₀, heq⟩ := hexists
-    exact ⟨n, hn₀, heq⟩
-  by_contra hall
-  push_neg at hall
-  -- Every hit n in [0,N) satisfies n < N₀, so WalkHitCount(N) ≤ WalkHitCount(N₀)
-  have hle : WalkHitCount q hq hne t N ≤ WalkHitCount q hq hne t N₀ := by
-    apply Finset.card_le_card
-    intro n hn
+  suffices ∃ n ∈ Finset.range N, N₀ ≤ n ∧ emWalkUnit q hq hne n = t by
+    obtain ⟨n, _, hn₀, heq⟩ := this; exact ⟨n, hn₀, heq⟩
+  by_contra hall; push_neg at hall
+  have : WalkHitCount q hq hne t N ≤ WalkHitCount q hq hne t N₀ := by
+    apply Finset.card_le_card; intro n hn
     simp only [Finset.mem_filter, Finset.mem_range] at hn ⊢
-    obtain ⟨hnN, hneq⟩ := hn
-    have hn0 : n < N₀ := by
-      by_contra hge
-      push_neg at hge
-      exact (hall n (Finset.mem_range.mpr hnN) hge) hneq
-    exact ⟨hn0, hneq⟩
+    exact ⟨Nat.lt_of_not_le fun hge => hall n (Finset.mem_range.mpr hn.1) hge hn.2, hn.2⟩
   omega
 
 /-- **Unbounded count from linear lower bound**: if `WalkHitCount q t N ≥ N / (2*(q-1))`
@@ -805,24 +775,12 @@ theorem unbounded_of_linear_lower_bound (q : Nat) [Fact (Nat.Prime q)]
     ∀ K, ∃ M, K ≤ WalkHitCount q hq hne t M := by
   intro K
   obtain ⟨N₀, hN₀⟩ := hlb
-  have hq1 : 0 < 2 * (q - 1) := by
-    have hpq : Nat.Prime q := Fact.out
-    have : 2 ≤ q := hpq.two_le
-    omega
-  -- Take M = max(N₀, 2*(q-1)*(K+1))
+  have hq1 : 0 < 2 * (q - 1) := by have := (Fact.out : Nat.Prime q).two_le; omega
   let M := max N₀ (2 * (q - 1) * (K + 1))
-  have hMge : M ≥ N₀ := le_max_left _ _
-  have hM := hN₀ M hMge
-  -- WalkHitCount(M) * (2*(q-1)) ≥ M ≥ 2*(q-1)*(K+1)
-  have hM2 : 2 * (q - 1) * (K + 1) ≤ M := le_max_right _ _
-  -- So WalkHitCount(M) * (2*(q-1)) ≥ 2*(q-1)*(K+1)
-  have hge : WalkHitCount q hq hne t M * (2 * (q - 1)) ≥ 2 * (q - 1) * (K + 1) :=
-    Nat.le_trans hM2 hM
-  -- Dividing: WalkHitCount(M) ≥ K+1 > K
   refine ⟨M, ?_⟩
-  have : K + 1 ≤ WalkHitCount q hq hne t M := by
-    nlinarith
-  omega
+  have hM := hN₀ M (le_max_left _ _)
+  have hM2 : 2 * (q - 1) * (K + 1) ≤ M := le_max_right _ _
+  nlinarith
 
 open Classical in
 /-- **CharSumBound**: the analytic hypothesis that non-trivial character sums
@@ -1032,26 +990,12 @@ theorem walk_hit_count_fourier_step : WalkHitCountFourierStep := by
   haveI : Fact (Nat.Prime q) := inst
   have hqprime : Nat.Prime q := Fact.out
   have hq2 : 2 ≤ q := hqprime.two_le
-  -- NeZero q instance (needed for ZMod q)
-  haveI hqnz : NeZero q := ⟨by omega⟩
-  -- NeZero for ℂ: char 0 so cast is injective
-  haveI : NeZero (q : ℂ) := by
-    constructor
-    exact_mod_cast hqprime.ne_zero
-  -- HasEnoughRootsOfUnity ℂ (Monoid.exponent (ZMod q)ˣ):
-  -- ℂ is algebraically closed, hence IsSepClosed; char 0 so exponent ≠ 0 in ℂ
-  -- The exponent of (ZMod q)ˣ divides q - 1, which divides q - 1 ≠ 0.
-  -- We use the general instance from IsSepClosed (which ℂ has via IsAlgClosed).
-  haveI hne_exp : NeZero (Monoid.exponent (ZMod q)ˣ : ℂ) := by
-    constructor
-    have hexp_pos : 0 < Monoid.exponent (ZMod q)ˣ :=
-      Monoid.ExponentExists.of_finite.exponent_pos
-    exact_mod_cast Nat.pos_iff_ne_zero.mp hexp_pos
-  -- ℂ is algebraically closed hence separably closed
-  haveI hsc : IsSepClosed ℂ := IsSepClosed.of_isAlgClosed ℂ
-  -- HasEnoughRootsOfUnity ℂ n holds when ℂ is IsSepClosed and NeZero (n : ℂ)
+  haveI : NeZero q := ⟨by omega⟩
+  haveI : NeZero (q : ℂ) := ⟨by exact_mod_cast hqprime.ne_zero⟩
+  haveI : NeZero (Monoid.exponent (ZMod q)ˣ : ℂ) :=
+    ⟨by exact_mod_cast (Monoid.ExponentExists.of_finite.exponent_pos).ne'⟩
+  haveI : IsSepClosed ℂ := IsSepClosed.of_isAlgClosed ℂ
   haveI : HasEnoughRootsOfUnity ℂ (Monoid.exponent (ZMod q)ˣ) := inferInstance
-  -- The totient of a prime q equals q - 1
   have htotient : q.totient = q - 1 := Nat.totient_prime hqprime
   -- RHS = ∑_χ χ(t⁻¹) * ∑_{n<N} χ(emWalkUnit n)
   --     = ∑_χ ∑_{n<N} χ(t⁻¹) * χ(emWalkUnit n)     [mul distributes over sum]
@@ -1101,15 +1045,9 @@ theorem walk_hit_count_fourier_step : WalkHitCountFourierStep := by
 theorem dirichlet_ne_one_iff_toUnitHom_ne_one {q : ℕ}
     (ψ : DirichletCharacter ℂ q) :
     ψ ≠ 1 ↔ ψ.toUnitHom ≠ 1 := by
-  -- Use DirichletCharacter.toUnitHom_inj: toUnitHom χ = toUnitHom ψ ↔ χ = ψ
-  -- with ψ specialised to (1 : DirichletCharacter ℂ q)
-  have key : ψ = 1 ↔ ψ.toUnitHom = (1 : DirichletCharacter ℂ q).toUnitHom :=
-    (DirichletCharacter.toUnitHom_inj (χ := ψ) 1).symm
-  -- (1 : DirichletCharacter ℂ q).toUnitHom equals the trivial hom
-  have h1 : (1 : DirichletCharacter ℂ q).toUnitHom = 1 := by
-    ext a
-    simp [MulChar.one_apply_coe]
-  rw [h1] at key
+  have h1 : (1 : DirichletCharacter ℂ q).toUnitHom = 1 := by ext; simp [MulChar.one_apply_coe]
+  have key : ψ = 1 ↔ ψ.toUnitHom = 1 :=
+    (DirichletCharacter.toUnitHom_inj (χ := ψ) 1).symm.trans (by rw [h1])
   exact key.not
 
 /-- For a `DirichletCharacter ℂ q` and unit `u : (ZMod q)ˣ`, the character
@@ -1139,12 +1077,7 @@ theorem dirichlet_char_sum_le_of_unit_bound
   have hψ' : ψ.toUnitHom ≠ 1 := (dirichlet_ne_one_iff_toUnitHom_ne_one ψ).mp hψ
   obtain ⟨N₀, hN₀⟩ := hbound ψ.toUnitHom hψ' ε hε
   refine ⟨N₀, fun N hN => ?_⟩
-  have heq : ∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n) =
-      ∑ n ∈ Finset.range N, (ψ.toUnitHom (emWalkUnit q hq hne n) : ℂ) := by
-    apply Finset.sum_congr rfl
-    intro n _
-    exact dirichlet_val_eq_toUnitHom ψ (emWalkUnit q hq hne n)
-  rw [heq]
+  simp_rw [dirichlet_val_eq_toUnitHom]
   exact hN₀ N hN
 
 /-- Bounding non-trivial `DirichletCharacter ℂ q` sums via `ComplexCharSumBound`.
@@ -1214,9 +1147,7 @@ theorem fourier_step_implies_csb_lb
   -- Trivial character contribution: χ₁(t⁻¹) * ∑_n χ₁(w(n)) = 1 * N = N
   have h_triv : (1 : DirichletCharacter ℂ q) ↑(t⁻¹ : (ZMod q)ˣ) *
       ∑ n ∈ Finset.range N, (1 : DirichletCharacter ℂ q) ↑(emWalkUnit q hq hne n) = N := by
-    simp only [MulChar.one_apply_coe, one_mul]
-    simp only [Finset.sum_const, Finset.card_range]
-    ring
+    simp only [MulChar.one_apply_coe, one_mul, Finset.sum_const, Finset.card_range]; ring
   -- Abbreviation for the error sum
   let Serr := ∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).erase 1,
       χ ↑(t⁻¹ : (ZMod q)ˣ) * ∑ n ∈ Finset.range N, χ ↑(emWalkUnit q hq hne n)
@@ -1234,11 +1165,9 @@ theorem fourier_step_implies_csb_lb
           rw [norm_mul, h_norm_inv, one_mul]
           exact hbounds χ hχne
       _ = (card - 1) * ε * N := by
-          rw [Finset.sum_const]
-          rw [Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ]
-          rw [nsmul_eq_mul]
-          simp only [card, Nat.cast_sub hcard_pos]
-          ring
+          rw [Finset.sum_const, Finset.card_erase_of_mem (Finset.mem_univ _),
+            Finset.card_univ, nsmul_eq_mul]
+          simp only [card, Nat.cast_sub hcard_pos]; ring
   -- From hfourier: WalkHitCount * (q-1) = N + Serr (as complex numbers)
   have hfourier' : (WalkHitCount q hq hne t N : ℂ) * (q - 1 : ℕ) = N + Serr := by
     rw [hfourier, h_triv]
@@ -1249,11 +1178,8 @@ theorem fourier_step_implies_csb_lb
         (WalkHitCount q hq hne t N : ℝ) * (q - 1 : ℕ) := by
       simp [Complex.mul_re, Complex.natCast_re]
     have hrhs_re : (↑N + Serr).re ≥ (N : ℝ) - (card - 1) * ε * N := by
-      rw [Complex.add_re]
-      have h_N_re : (N : ℂ).re = N := by simp
-      rw [h_N_re]
-      have hre_lb : -‖Serr‖ ≤ Serr.re :=
-        (abs_le.mp (RCLike.abs_re_le_norm Serr)).1
+      rw [Complex.add_re, show (N : ℂ).re = (N : ℝ) from Complex.natCast_re N]
+      have hre_lb : -‖Serr‖ ≤ Serr.re := (abs_le.mp (RCLike.abs_re_le_norm Serr)).1
       linarith
     rw [← hlhs_re, hfourier']
     exact hrhs_re
@@ -1261,22 +1187,16 @@ theorem fourier_step_implies_csb_lb
   have h_eps_small : (card - 1 : ℝ) * ε ≤ 1 / 2 := by
     simp only [ε]
     have hcard_pos' : (0 : ℝ) < card := Nat.cast_pos.mpr hcard_pos
-    have h2c : (0 : ℝ) < 2 * card := by positivity
-    have key : (card - 1 : ℝ) * (1 / (2 * card)) = (card - 1) / (2 * card) := by ring
-    rw [key]
-    rw [div_le_div_iff₀ h2c two_pos]
+    rw [show (card - 1 : ℝ) * (1 / (2 * card)) = (card - 1) / (2 * card) from by ring,
+      div_le_div_iff₀ (by positivity) two_pos]
     nlinarith
-  -- WalkHitCount * (q-1) ≥ N/2
   have h_whc_half : (WalkHitCount q hq hne t N : ℝ) * (q - 1 : ℕ) ≥ N / 2 := by
     have hN_nn : (N : ℝ) ≥ 0 := Nat.cast_nonneg N
-    have h1 : (card - 1 : ℝ) * ε * N ≤ 1 / 2 * N := by nlinarith
-    linarith
+    nlinarith
   -- Convert: WalkHitCount * (2*(q-1)) ≥ N (as ℕ)
   rw [ge_iff_le, ← Nat.cast_le (α := ℝ)]
   push_cast
-  have hq1_pos : (0 : ℝ) < (q - 1 : ℕ) := by
-    have h : 1 ≤ q - 1 := Nat.le_sub_one_of_lt hq2
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (by omega)
+  have hq1_pos : (0 : ℝ) < (q - 1 : ℕ) := by exact_mod_cast (show 0 < q - 1 by omega)
   linarith
 
 /-- **ComplexCSBImpliesHitCountLB is proved**: composing the Fourier step identity

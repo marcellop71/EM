@@ -104,7 +104,7 @@ private theorem genSeqCharPartialSum_succ (n K q : Nat) (χ : Nat → ℂ) :
 /-- The character energy at K=0 is zero. -/
 private theorem genSeqCharEnergy_zero (n q : Nat) (χ : Nat → ℂ) :
     genSeqCharEnergy n 0 q χ = 0 := by
-  simp [genSeqCharEnergy, genSeqCharPartialSum, Complex.normSq_zero]
+  simp [genSeqCharEnergy, genSeqCharPartialSum]
 
 /-- Energy recurrence: energy(K+1) = energy(K) + normSq(z_K) + 2·Re(S_K · conj(z_K)). -/
 private theorem genSeqCharEnergy_succ (n K q : Nat) (χ : Nat → ℂ) :
@@ -134,23 +134,153 @@ private theorem ensembleAvg_le_of_pointwise {X : Nat} {f : Nat → ℝ} {M : ℝ
 /-- Ensemble average of a sum equals the sum of ensemble averages. -/
 private theorem ensembleAvg_sum {X : Nat} {s : Finset Nat} {f : Nat → Nat → ℝ} :
     ensembleAvg X (fun n => ∑ j ∈ s, f n j) = ∑ j ∈ s, ensembleAvg X (fun n => f n j) := by
-  simp only [ensembleAvg, sqfreeCount]
-  -- LHS: (∑ n ∈ SF, ∑ j ∈ s, f n j) / |SF|
-  -- RHS: ∑ j ∈ s, (∑ n ∈ SF, f n j) / |SF|
-  rw [← Finset.sum_div]
-  -- Both sides: ... / |SF|
-  -- Need: ∑ n ∈ SF, ∑ j ∈ s, f n j = ∑ j ∈ s, ∑ n ∈ SF, f n j
-  congr 1
-  exact Finset.sum_comm
+  simp only [ensembleAvg, sqfreeCount, ← Finset.sum_div]
+  congr 1; exact Finset.sum_comm
 
-/-- Ensemble average of a sum of three functions. -/
+/-- Ensemble average distributes over addition. -/
 private theorem ensembleAvg_add {X : Nat} {f g : Nat → ℝ} :
     ensembleAvg X (fun n => f n + g n) =
     ensembleAvg X f + ensembleAvg X g := by
-  unfold ensembleAvg
-  rw [← add_div]
-  congr 1
-  exact Finset.sum_add_distrib
+  simp only [ensembleAvg, ← add_div]; congr 1; exact Finset.sum_add_distrib
+
+/-- **Variance induction**: if normSq(χ a) ≤ 1 and each cross-term ensemble average
+    tends to 0, then ensembleAvg X (genSeqCharEnergy · K q χ) ≤ 2·K eventually.
+
+    This is the core induction used by both `decorrelation_implies_variance_proved`
+    and `per_chi_cancellation_bridge_proved`. -/
+private theorem variance_bound_induction (q : Nat) (χ : Nat → ℂ)
+    (hχ : ∀ a, Complex.normSq (χ a) ≤ 1)
+    (h_cross : ∀ j K : Nat, j < K →
+      ∃ X₀ : Nat, ∀ X ≥ X₀,
+        |ensembleAvg X (fun n =>
+          (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
+        1 / (2 * ((K : ℝ) + 1))) :
+    ∀ K : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
+      ensembleAvg X (fun n => genSeqCharEnergy n K q χ) ≤ 2 * K := by
+  intro K
+  induction K with
+  | zero =>
+    refine ⟨0, fun X _ => ?_⟩
+    simp only [Nat.cast_zero, mul_zero]
+    exact ensembleAvg_le_of_pointwise (le_refl _)
+      (fun n _ => le_of_eq (genSeqCharEnergy_zero n q χ))
+  | succ K ih =>
+    obtain ⟨X₀_K, hX₀_K⟩ := ih
+    by_cases hK0 : K = 0
+    · subst hK0
+      refine ⟨0, fun X _ => ?_⟩
+      show ensembleAvg X (fun n => genSeqCharEnergy n 1 q χ) ≤ 2 * (↑(1 : Nat) : ℝ)
+      simp only [Nat.cast_one, mul_one]
+      apply ensembleAvg_le_of_pointwise (by norm_num : (0:ℝ) ≤ 2)
+      intro n _
+      rw [genSeqCharEnergy_succ, genSeqCharEnergy_zero]
+      simp only [genSeqCharPartialSum, Finset.sum_range_zero, zero_mul, Complex.zero_re,
+        mul_zero, add_zero, zero_add]
+      exact le_trans (hχ _) one_le_two
+    · -- K ≥ 1. Collect cross-term witnesses.
+      let X₀_fn : Nat → Nat := fun j =>
+        if h : j < K then (h_cross j K h).choose else 0
+      have hX₀_fn : ∀ j, j < K → ∀ X ≥ X₀_fn j,
+          |ensembleAvg X (fun n =>
+            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
+          1 / (2 * ((K : ℝ) + 1)) := by
+        intro j hjK X hX
+        have := (h_cross j K hjK).choose_spec X
+        simp only [X₀_fn, dif_pos hjK] at hX
+        exact this hX
+      have h_all : ∃ X₀_cross : Nat, ∀ j ∈ Finset.range K, ∀ X ≥ X₀_cross,
+          |ensembleAvg X (fun n =>
+            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
+          1 / (2 * ((K : ℝ) + 1)) := by
+        refine ⟨(Finset.range K).sup X₀_fn, fun j hj X hX => ?_⟩
+        exact hX₀_fn j (Finset.mem_range.mp hj) X (le_trans (Finset.le_sup hj) hX)
+      obtain ⟨X₀_cross, hX₀_cross⟩ := h_all
+      refine ⟨Nat.max X₀_K X₀_cross, fun X hX => ?_⟩
+      have hX_K : X ≥ X₀_K := le_trans (Nat.le_max_left _ _) hX
+      have hX_cross : X ≥ X₀_cross := le_trans (Nat.le_max_right _ _) hX
+      -- Decompose energy(K+1) = energy(K) + normSq(z_K) + 2·Re(S_K·conj(z_K))
+      have h_avg_eq : ensembleAvg X (fun n => genSeqCharEnergy n (K + 1) q χ) =
+          ensembleAvg X (fun n => genSeqCharEnergy n K q χ +
+            Complex.normSq (χ (genSeq n K % q))) +
+          ensembleAvg X (fun n =>
+            2 * (genSeqCharPartialSum n K q χ *
+              starRingEnd ℂ (χ (genSeq n K % q))).re) := by
+        have : (fun n => genSeqCharEnergy n (K + 1) q χ) =
+            (fun n => (genSeqCharEnergy n K q χ +
+              Complex.normSq (χ (genSeq n K % q))) +
+              2 * (genSeqCharPartialSum n K q χ *
+                starRingEnd ℂ (χ (genSeq n K % q))).re) := by
+          ext n; exact genSeqCharEnergy_succ n K q χ
+        rw [this]; exact ensembleAvg_add
+      rw [ensembleAvg_add] at h_avg_eq
+      have h1 := hX₀_K X hX_K
+      have h2 : ensembleAvg X (fun n => Complex.normSq (χ (genSeq n K % q))) ≤ 1 :=
+        ensembleAvg_le_of_pointwise (by norm_num : (0:ℝ) ≤ 1) (fun n _ => hχ _)
+      -- Cross-term bound: 2·|∑_j avg(cross(j,K))| < 1
+      have h3 : ensembleAvg X (fun n =>
+          2 * (genSeqCharPartialSum n K q χ *
+            starRingEnd ℂ (χ (genSeq n K % q))).re) ≤ 1 := by
+        have h_expand : (fun n => (genSeqCharPartialSum n K q χ *
+            starRingEnd ℂ (χ (genSeq n K % q))).re) =
+            (fun n => ∑ j ∈ Finset.range K,
+              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
+          ext n; simp only [genSeqCharPartialSum, Finset.sum_mul, Complex.re_sum]
+        have h_factor : ensembleAvg X (fun n =>
+            2 * (genSeqCharPartialSum n K q χ *
+              starRingEnd ℂ (χ (genSeq n K % q))).re) =
+            2 * ensembleAvg X (fun n =>
+              (genSeqCharPartialSum n K q χ *
+                starRingEnd ℂ (χ (genSeq n K % q))).re) := by
+          unfold ensembleAvg; rw [← mul_div_assoc]; congr 1; rw [Finset.mul_sum]
+        rw [h_factor]
+        have h_sum_form : ensembleAvg X (fun n =>
+            (genSeqCharPartialSum n K q χ *
+              starRingEnd ℂ (χ (genSeq n K % q))).re) =
+            ∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
+              (χ (genSeq n j % q) *
+                starRingEnd ℂ (χ (genSeq n K % q))).re) := by
+          rw [show (fun n => (genSeqCharPartialSum n K q χ *
+              starRingEnd ℂ (χ (genSeq n K % q))).re) =
+              (fun n => ∑ j ∈ Finset.range K,
+                (χ (genSeq n j % q) *
+                  starRingEnd ℂ (χ (genSeq n K % q))).re) from h_expand]
+          exact ensembleAvg_sum
+        rw [h_sum_form]
+        have h_each : ∀ j ∈ Finset.range K, |ensembleAvg X (fun n =>
+            (χ (genSeq n j % q) *
+              starRingEnd ℂ (χ (genSeq n K % q))).re)| <
+            1 / (2 * ((K : ℝ) + 1)) :=
+          fun j hj => hX₀_cross j hj X hX_cross
+        have h_sum_bound : ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
+            (χ (genSeq n j % q) *
+              starRingEnd ℂ (χ (genSeq n K % q))).re)| <
+            K * (1 / (2 * ((K : ℝ) + 1))) :=
+          calc ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
+                  (χ (genSeq n j % q) *
+                    starRingEnd ℂ (χ (genSeq n K % q))).re)|
+              < ∑ _ ∈ Finset.range K, (1 / (2 * ((K : ℝ) + 1))) :=
+                Finset.sum_lt_sum_of_nonempty
+                  (Finset.nonempty_range_iff.mpr (by omega)) h_each
+            _ = K * (1 / (2 * ((K : ℝ) + 1))) := by
+                rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+        have h_frac : (K : ℝ) * (1 / (2 * ((K : ℝ) + 1))) ≤ 1 / 2 := by
+          rw [mul_div, mul_one,
+            div_le_div_iff₀ (mul_pos two_pos (Nat.cast_add_one_pos (n := K))) two_pos]
+          nlinarith
+        have h_cross_abs : |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
+            (χ (genSeq n j % q) *
+              starRingEnd ℂ (χ (genSeq n K % q))).re)| < 1 / 2 :=
+          calc |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
+                (χ (genSeq n j % q) *
+                  starRingEnd ℂ (χ (genSeq n K % q))).re)|
+              ≤ ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
+                  (χ (genSeq n j % q) *
+                    starRingEnd ℂ (χ (genSeq n K % q))).re)| :=
+                Finset.abs_sum_le_sum_abs _ _
+            _ < K * (1 / (2 * ((K : ℝ) + 1))) := h_sum_bound
+            _ ≤ 1 / 2 := h_frac
+        linarith [(abs_lt.mp h_cross_abs).1, (abs_lt.mp h_cross_abs).2]
+      rw [h_avg_eq]; push_cast [Nat.cast_succ]; linarith
 
 /-- The cross-term in StepDecorrelation matches the Re part of the energy recurrence.
     Specifically, for j < K:
@@ -182,198 +312,12 @@ private theorem cross_term_bound_from_sd
 theorem decorrelation_implies_variance_proved : DecorrelationImpliesVariance := by
   intro hsd
   refine ⟨2, by norm_num, ?_⟩
-  -- Prove CharSumVarianceBound 2
   intro q hq χ hχ K
-  -- By induction on K: ∃ X₀, ∀ X ≥ X₀, ensembleAvg ≤ 2 * K
-  induction K with
-  | zero =>
-    refine ⟨0, fun X _ => ?_⟩
-    simp only [Nat.cast_zero, mul_zero]
-    exact ensembleAvg_le_of_pointwise (le_refl _) (fun n _ => le_of_eq (genSeqCharEnergy_zero n q χ))
-  | succ K ih =>
-    -- IH: ∃ X₀_K, ∀ X ≥ X₀_K, ensembleAvg ≤ 2 * K
-    obtain ⟨X₀_K, hX₀_K⟩ := ih
-    -- For each j < K+1, get X₀_j such that |cross-term| < 1/(2*(K+1))
-    -- Actually we only need j < K+1 for the cross terms with index K
-    -- The cross-term (S_K * conj(z_K)).re = ∑_{j<K} (z_j * conj(z_K)).re
-    -- ensembleAvg of this = ∑_{j<K} ensembleAvg of (z_j * conj(z_K)).re
-    -- For each j < K, |ensembleAvg ...| < 1/(2*(K+1)) eventually
-    -- There are K such pairs. Their total contribution < K/(2*(K+1)) < 1/2.
-    -- So 2 * total < 1.
-    -- Total: ensembleAvg(energy(K+1)) ≤ 2K + 1 + 1 = 2K + 2 = 2(K+1)
-    -- But we need to handle the case K = 0 where there are no cross terms.
-    -- For K = 0: energy(1) = normSq(z_0) ≤ 1 ≤ 2*1. No cross terms needed.
-    by_cases hK0 : K = 0
-    · -- K = 0, so K+1 = 1. energy(1) = normSq(χ(genSeq n 0 % q)) ≤ 1 ≤ 2
-      subst hK0
-      refine ⟨0, fun X _ => ?_⟩
-      show ensembleAvg X (fun n => genSeqCharEnergy n 1 q χ) ≤ 2 * (↑(1 : Nat) : ℝ)
-      simp only [Nat.cast_one, mul_one]
-      apply ensembleAvg_le_of_pointwise (by norm_num : (0:ℝ) ≤ 2)
-      intro n _
-      rw [genSeqCharEnergy_succ, genSeqCharEnergy_zero]
-      simp only [genSeqCharPartialSum, Finset.sum_range_zero, zero_mul, Complex.zero_re,
-        mul_zero, add_zero, zero_add]
-      exact le_trans (hχ _) one_le_two
-    · -- K ≥ 1. Use StepDecorrelation for each j < K paired with K.
-      -- Get bound for each cross term
-      have hK_pos : 0 < K + 1 := Nat.succ_pos K
-      have hε : (0 : ℝ) < 1 / (2 * ((K : ℝ) + 1)) :=
-        div_pos one_pos (mul_pos two_pos (Nat.cast_add_one_pos (n := K)))
-      -- For each j < K, get X₀_j with |cross-term(j,K)| < 1/(2(K+1))
-      -- We need: ∀ j < K, ∃ X₀_j, ∀ X ≥ X₀_j, |avg crossTerm(j,K)| < 1/(2(K+1))
-      -- Then take max of all X₀_j and X₀_K.
-      -- Use Finset.range K to collect all witnesses
-      have cross_bounds : ∀ j ∈ Finset.range K, ∃ X₀_j : Nat, ∀ X ≥ X₀_j,
-          |ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-          1 / (2 * ((K : ℝ) + 1)) := by
-        intro j hj
-        have hjK : j < K := Finset.mem_range.mp hj
-        exact cross_term_bound_from_sd hsd q hq χ j K hjK _ hε
-      -- Extract witnesses using Finset.exists_le (or classical choice + max)
-      -- Use classical choice to get a function j ↦ X₀_j
-      -- For each j < K, get an X₀ bound. Take max over all j < K.
-      -- Define a bound function using classical choice
-      have h_bound_fn : ∀ j : Nat, j < K → ∃ X₀_j : Nat, ∀ X ≥ X₀_j,
-          |ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-          1 / (2 * ((K : ℝ) + 1)) := by
-        intro j hjK
-        exact cross_bounds j (Finset.mem_range.mpr hjK)
-      -- Use classical choice to get a function from j to X₀_j (extending to 0 outside range)
-      let X₀_fn : Nat → Nat := fun j => if h : j < K then (h_bound_fn j h).choose else 0
-      have hX₀_fn : ∀ j, j < K → ∀ X ≥ X₀_fn j,
-          |ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-          1 / (2 * ((K : ℝ) + 1)) := by
-        intro j hjK X hX
-        have := (h_bound_fn j hjK).choose_spec X
-        simp only [X₀_fn, dif_pos hjK] at hX
-        exact this hX
-      -- Take X₀_cross = sup of X₀_fn over range K
-      have h_all : ∃ X₀_cross : Nat, ∀ j ∈ Finset.range K, ∀ X ≥ X₀_cross,
-          |ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-          1 / (2 * ((K : ℝ) + 1)) := by
-        refine ⟨(Finset.range K).sup X₀_fn, fun j hj X hX => ?_⟩
-        have hjK := Finset.mem_range.mp hj
-        exact hX₀_fn j hjK X (le_trans (Finset.le_sup hj) hX)
-      obtain ⟨X₀_cross, hX₀_cross⟩ := h_all
-      -- Take X₀ = max(X₀_K, X₀_cross)
-      refine ⟨Nat.max X₀_K X₀_cross, fun X hX => ?_⟩
-      have hX_K : X ≥ X₀_K := le_trans (Nat.le_max_left _ _) hX
-      have hX_cross : X ≥ X₀_cross := le_trans (Nat.le_max_right _ _) hX
-      -- energy(K+1) = energy(K) + normSq(z_K) + 2·Re(S_K · conj(z_K))
-      -- ensembleAvg(energy(K+1)) = ensembleAvg(energy(K)) + ensembleAvg(normSq(z_K))
-      --                            + 2 · ensembleAvg(Re(S_K · conj(z_K)))
-      -- We bound each piece.
-      -- Rewrite the ensembleAvg using linearity (ensembleAvg_add)
-      have h_avg_eq : ensembleAvg X (fun n => genSeqCharEnergy n (K + 1) q χ) =
-          ensembleAvg X (fun n => genSeqCharEnergy n K q χ +
-            Complex.normSq (χ (genSeq n K % q))) +
-          ensembleAvg X (fun n =>
-            2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-        have : (fun n => genSeqCharEnergy n (K + 1) q χ) =
-            (fun n => (genSeqCharEnergy n K q χ + Complex.normSq (χ (genSeq n K % q))) +
-              2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-          ext n; exact genSeqCharEnergy_succ n K q χ
-        rw [this]; exact ensembleAvg_add
-      have h_avg_split : ensembleAvg X (fun n => genSeqCharEnergy n K q χ +
-          Complex.normSq (χ (genSeq n K % q))) =
-          ensembleAvg X (fun n => genSeqCharEnergy n K q χ) +
-          ensembleAvg X (fun n => Complex.normSq (χ (genSeq n K % q))) :=
-        ensembleAvg_add
-      rw [h_avg_split] at h_avg_eq
-      -- Now bound each piece
-      -- Piece 1: ensembleAvg(energy(K)) ≤ 2K by IH
-      have h1 := hX₀_K X hX_K
-      -- Piece 2: ensembleAvg(normSq(z_K)) ≤ 1 (pointwise: normSq ≤ 1)
-      have h2 : ensembleAvg X (fun n => Complex.normSq (χ (genSeq n K % q))) ≤ 1 :=
-        ensembleAvg_le_of_pointwise (by norm_num : (0:ℝ) ≤ 1) (fun n _ => hχ _)
-      -- Piece 3: the cross-term. We need to bound
-      -- ensembleAvg(fun n => 2 * Re(S_K(n) * conj(z_K(n))))
-      -- S_K(n) = ∑_{j<K} z_j(n), so Re(S_K*conj(z_K)) = ∑_{j<K} Re(z_j*conj(z_K))
-      -- The ensemble average distributes:
-      -- ensembleAvg(fun n => 2 * ∑_{j<K} Re(z_j*conj(z_K))) =
-      -- 2 * ∑_{j<K} ensembleAvg(fun n => Re(z_j*conj(z_K)))
-      -- Each |ensembleAvg(crossTerm(j,K))| < 1/(2(K+1))
-      -- There are K terms, so |total| < K/(2(K+1)) ≤ 1/2
-      -- So 2 * |total| < 1.
-      -- Thus: ensembleAvg(energy(K+1)) ≤ 2K + 1 + 1 ≤ 2(K+1)
-      -- We bound the cross piece directly
-      have h3 : ensembleAvg X (fun n =>
-          2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) ≤ 1 := by
-        -- Rewrite genSeqCharPartialSum as a sum
-        have h_expand : (fun n => (genSeqCharPartialSum n K q χ *
-            starRingEnd ℂ (χ (genSeq n K % q))).re) =
-            (fun n => ∑ j ∈ Finset.range K,
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-          ext n
-          simp only [genSeqCharPartialSum, Finset.sum_mul, Complex.re_sum]
-        -- The 2* factor: ensembleAvg(2*f) = 2*ensembleAvg(f)
-        have h_factor : ensembleAvg X (fun n =>
-            2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) =
-            2 * ensembleAvg X (fun n =>
-              (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-          unfold ensembleAvg
-          rw [← mul_div_assoc]
-          congr 1
-          rw [Finset.mul_sum]
-        rw [h_factor]
-        -- Now bound |ensembleAvg(Re(S_K * conj(z_K)))| ≤ 1/2
-        -- Expand using h_expand and linearity
-        have h_sum_form : ensembleAvg X (fun n =>
-            (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) =
-            ∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-          have : (fun n => (genSeqCharPartialSum n K q χ *
-              starRingEnd ℂ (χ (genSeq n K % q))).re) =
-              (fun n => ∑ j ∈ Finset.range K,
-                (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re) := h_expand
-          rw [this]; exact ensembleAvg_sum
-        rw [h_sum_form]
-        -- Bound |∑_j avg(cross)| ≤ ∑_j |avg(cross)| < K * 1/(2(K+1)) ≤ 1/2
-        have h_abs_sum : |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| ≤
-            ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| :=
-          Finset.abs_sum_le_sum_abs _ _
-        have h_each_small : ∀ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-            1 / (2 * ((K : ℝ) + 1)) :=
-          fun j hj => hX₀_cross j hj X hX_cross
-        have h_sum_bound : ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-            K * (1 / (2 * ((K : ℝ) + 1))) := by
-          calc ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-                  (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)|
-              < ∑ _ ∈ Finset.range K, (1 / (2 * ((K : ℝ) + 1))) :=
-                Finset.sum_lt_sum_of_nonempty
-                  (Finset.nonempty_range_iff.mpr (by omega))
-                  h_each_small
-            _ = K * (1 / (2 * ((K : ℝ) + 1))) := by
-                rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-        have h_frac : (K : ℝ) * (1 / (2 * ((K : ℝ) + 1))) ≤ 1 / 2 := by
-          rw [mul_div, mul_one, div_le_div_iff₀ (mul_pos two_pos (Nat.cast_add_one_pos (n := K))) two_pos]
-          nlinarith
-        -- The sum of cross terms has absolute value < 1/2
-        have h_cross_abs : |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-            (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| < 1 / 2 := by
-          calc |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-                (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)|
-              ≤ ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-                  (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| := h_abs_sum
-            _ < K * (1 / (2 * ((K : ℝ) + 1))) := h_sum_bound
-            _ ≤ 1 / 2 := h_frac
-        -- So the sum itself is in (-1/2, 1/2), hence 2*sum ∈ (-1, 1) ≤ 1
-        have h_cross_val := abs_lt.mp h_cross_abs
-        linarith [h_cross_val.1, h_cross_val.2]
-      -- Assemble the bound
-      rw [h_avg_eq]
-      -- Goal: E[energy(K)] + E[normSq] + E[2*cross] ≤ 2*(K+1)
-      push_cast [Nat.cast_succ]
-      linarith
+  -- Apply the extracted variance induction with cross-term bounds from SD
+  exact variance_bound_induction q χ hχ (fun j K hjK => by
+    have hε : (0 : ℝ) < 1 / (2 * ((K : ℝ) + 1)) :=
+      div_pos one_pos (mul_pos two_pos (Nat.cast_add_one_pos (n := K)))
+    exact cross_term_bound_from_sd hsd q hq χ j K hjK _ hε) K
 
 end EquidistToDecorrelation
 
@@ -1168,154 +1112,18 @@ def PerChiCancellationBridge : Prop :=
     the K₀-specific deviant set, so its density → 0 via Metric.tendsto_atTop. -/
 theorem per_chi_cancellation_bridge_proved : PerChiCancellationBridge := by
   intro q hq χ hχ h_decorr ε hε
-  -- ===== Step 1: Per-chi variance bound with C=2 =====
-  -- For each K, ∃ X₀, ∀ X ≥ X₀, ensembleAvg X (energy · K q χ) ≤ 2 * K
+  -- ===== Step 1: Per-chi variance bound with C=2 (via extracted helper) =====
   have h_variance : ∀ K : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
-      ensembleAvg X (fun n => genSeqCharEnergy n K q χ) ≤ 2 * K := by
-    intro K
-    induction K with
-    | zero =>
-      refine ⟨0, fun X _ => ?_⟩
-      simp only [Nat.cast_zero, mul_zero]
-      exact ensembleAvg_le_of_pointwise (le_refl _) (fun n _ => le_of_eq (genSeqCharEnergy_zero n q χ))
-    | succ K ih =>
-      obtain ⟨X₀_K, hX₀_K⟩ := ih
-      by_cases hK0 : K = 0
-      · -- K = 0, so K+1 = 1. energy(1) = normSq(χ(genSeq n 0 % q)) ≤ 1 ≤ 2
-        subst hK0
-        refine ⟨0, fun X _ => ?_⟩
-        show ensembleAvg X (fun n => genSeqCharEnergy n 1 q χ) ≤ 2 * (↑(1 : Nat) : ℝ)
-        simp only [Nat.cast_one, mul_one]
-        apply ensembleAvg_le_of_pointwise (by norm_num : (0:ℝ) ≤ 2)
-        intro n _
-        rw [genSeqCharEnergy_succ, genSeqCharEnergy_zero]
-        simp only [genSeqCharPartialSum, Finset.sum_range_zero, zero_mul, Complex.zero_re,
-          mul_zero, add_zero, zero_add]
-        exact le_trans (hχ _) one_le_two
-      · -- K ≥ 1. Use per-chi decorrelation for each cross-term (j, K) with j < K.
-        have hε_cross : (0 : ℝ) < 1 / (2 * ((K : ℝ) + 1)) :=
-          div_pos one_pos (mul_pos two_pos (Nat.cast_add_one_pos (n := K)))
-        -- For each j < K, get X₀_j with |cross-term(j,K)| < 1/(2(K+1))
-        have h_bound_fn : ∀ j : Nat, j < K → ∃ X₀_j : Nat, ∀ X ≥ X₀_j,
-            |ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-            1 / (2 * ((K : ℝ) + 1)) := by
-          intro j hjK
-          have h := h_decorr j K hjK
-          rw [Metric.tendsto_atTop] at h
-          obtain ⟨X₀, hX₀⟩ := h _ hε_cross
-          refine ⟨X₀, fun X hX => ?_⟩
-          have := hX₀ X hX
-          rwa [Real.dist_eq, sub_zero, abs_abs] at this
-        -- Classical choice to get X₀ for each j
-        let X₀_fn : Nat → Nat := fun j => if h : j < K then (h_bound_fn j h).choose else 0
-        have hX₀_fn : ∀ j, j < K → ∀ X ≥ X₀_fn j,
-            |ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-            1 / (2 * ((K : ℝ) + 1)) := by
-          intro j hjK X hX
-          have := (h_bound_fn j hjK).choose_spec X
-          simp only [X₀_fn, dif_pos hjK] at hX
-          exact this hX
-        -- Take X₀_cross = sup of X₀_fn over range K
-        have h_all : ∃ X₀_cross : Nat, ∀ j ∈ Finset.range K, ∀ X ≥ X₀_cross,
-            |ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-            1 / (2 * ((K : ℝ) + 1)) := by
-          refine ⟨(Finset.range K).sup X₀_fn, fun j hj X hX => ?_⟩
-          have hjK := Finset.mem_range.mp hj
-          exact hX₀_fn j hjK X (le_trans (Finset.le_sup hj) hX)
-        obtain ⟨X₀_cross, hX₀_cross⟩ := h_all
-        -- Take X₀ = max(X₀_K, X₀_cross)
-        refine ⟨Nat.max X₀_K X₀_cross, fun X hX => ?_⟩
-        have hX_K : X ≥ X₀_K := le_trans (Nat.le_max_left _ _) hX
-        have hX_cross : X ≥ X₀_cross := le_trans (Nat.le_max_right _ _) hX
-        -- Decompose energy(K+1) = energy(K) + normSq(z_K) + 2·Re(S_K·conj(z_K))
-        have h_avg_eq : ensembleAvg X (fun n => genSeqCharEnergy n (K + 1) q χ) =
-            ensembleAvg X (fun n => genSeqCharEnergy n K q χ +
-              Complex.normSq (χ (genSeq n K % q))) +
-            ensembleAvg X (fun n =>
-              2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-          have : (fun n => genSeqCharEnergy n (K + 1) q χ) =
-              (fun n => (genSeqCharEnergy n K q χ + Complex.normSq (χ (genSeq n K % q))) +
-                2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-            ext n; exact genSeqCharEnergy_succ n K q χ
-          rw [this]; exact ensembleAvg_add
-        have h_avg_split : ensembleAvg X (fun n => genSeqCharEnergy n K q χ +
-            Complex.normSq (χ (genSeq n K % q))) =
-            ensembleAvg X (fun n => genSeqCharEnergy n K q χ) +
-            ensembleAvg X (fun n => Complex.normSq (χ (genSeq n K % q))) :=
-          ensembleAvg_add
-        rw [h_avg_split] at h_avg_eq
-        -- Bound each piece
-        have h1 := hX₀_K X hX_K
-        have h2 : ensembleAvg X (fun n => Complex.normSq (χ (genSeq n K % q))) ≤ 1 :=
-          ensembleAvg_le_of_pointwise (by norm_num : (0:ℝ) ≤ 1) (fun n _ => hχ _)
-        -- Cross-term bound
-        have h3 : ensembleAvg X (fun n =>
-            2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) ≤ 1 := by
-          have h_expand : (fun n => (genSeqCharPartialSum n K q χ *
-              starRingEnd ℂ (χ (genSeq n K % q))).re) =
-              (fun n => ∑ j ∈ Finset.range K,
-                (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-            ext n
-            simp only [genSeqCharPartialSum, Finset.sum_mul, Complex.re_sum]
-          have h_factor : ensembleAvg X (fun n =>
-              2 * (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) =
-              2 * ensembleAvg X (fun n =>
-                (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-            unfold ensembleAvg
-            rw [← mul_div_assoc]
-            congr 1
-            rw [Finset.mul_sum]
-          rw [h_factor]
-          have h_sum_form : ensembleAvg X (fun n =>
-              (genSeqCharPartialSum n K q χ * starRingEnd ℂ (χ (genSeq n K % q))).re) =
-              ∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-                (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re) := by
-            have : (fun n => (genSeqCharPartialSum n K q χ *
-                starRingEnd ℂ (χ (genSeq n K % q))).re) =
-                (fun n => ∑ j ∈ Finset.range K,
-                  (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re) := h_expand
-            rw [this]; exact ensembleAvg_sum
-          rw [h_sum_form]
-          have h_abs_sum : |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| ≤
-              ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-                (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| :=
-            Finset.abs_sum_le_sum_abs _ _
-          have h_each_small : ∀ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-              1 / (2 * ((K : ℝ) + 1)) :=
-            fun j hj => hX₀_cross j hj X hX_cross
-          have h_sum_bound : ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| <
-              K * (1 / (2 * ((K : ℝ) + 1))) := by
-            calc ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-                    (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)|
-                < ∑ _ ∈ Finset.range K, (1 / (2 * ((K : ℝ) + 1))) :=
-                  Finset.sum_lt_sum_of_nonempty
-                    (Finset.nonempty_range_iff.mpr (by omega))
-                    h_each_small
-              _ = K * (1 / (2 * ((K : ℝ) + 1))) := by
-                  rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-          have h_frac : (K : ℝ) * (1 / (2 * ((K : ℝ) + 1))) ≤ 1 / 2 := by
-            rw [mul_div, mul_one, div_le_div_iff₀ (mul_pos two_pos (Nat.cast_add_one_pos (n := K))) two_pos]
-            nlinarith
-          have h_cross_abs : |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-              (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| < 1 / 2 := by
-            calc |∑ j ∈ Finset.range K, ensembleAvg X (fun n =>
-                  (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)|
-                ≤ ∑ j ∈ Finset.range K, |ensembleAvg X (fun n =>
-                    (χ (genSeq n j % q) * starRingEnd ℂ (χ (genSeq n K % q))).re)| := h_abs_sum
-              _ < K * (1 / (2 * ((K : ℝ) + 1))) := h_sum_bound
-              _ ≤ 1 / 2 := h_frac
-          have h_cross_val := abs_lt.mp h_cross_abs
-          linarith [h_cross_val.1, h_cross_val.2]
-        -- Assemble: E[energy(K+1)] ≤ 2K + 1 + 1 = 2(K+1)
-        rw [h_avg_eq]
-        push_cast [Nat.cast_succ]
-        linarith
+      ensembleAvg X (fun n => genSeqCharEnergy n K q χ) ≤ 2 * K :=
+    variance_bound_induction q χ hχ (fun j K hjK => by
+      have hε_cross : (0 : ℝ) < 1 / (2 * ((K : ℝ) + 1)) :=
+        div_pos one_pos (mul_pos two_pos (Nat.cast_add_one_pos (n := K)))
+      have h := h_decorr j K hjK
+      rw [Metric.tendsto_atTop] at h
+      obtain ⟨X₀, hX₀⟩ := h _ hε_cross
+      refine ⟨X₀, fun X hX => ?_⟩
+      have := hX₀ X hX
+      rwa [Real.dist_eq, sub_zero, abs_abs] at this)
   -- ===== Step 2: Per-chi concentration =====
   -- For any δ > 0, ∃ K₀, ∀ K ≥ K₀, ∃ X₀, ∀ X ≥ X₀, density ≤ δ
   have h_concentration : ∀ (δ : ℝ), 0 < δ →
@@ -1475,15 +1283,14 @@ private theorem genProd_not_dvd_of_not_appeared {n : Nat} {q : Nat} (hq : Nat.Pr
     (hndvd : ¬ (q ∣ n)) (hnot : ∀ j, genSeq n j ≠ q) (k : Nat) :
     ¬ (q ∣ genProd n k) := by
   induction k with
-  | zero => simp [genProd]; exact hndvd
+  | zero => simpa [genProd]
   | succ k ih =>
-    simp [genProd_succ]; intro hdvd
+    rw [genProd_succ]; intro hdvd
     rcases hq.dvd_mul.mp hdvd with h1 | h2
     · exact ih h1
     · have hn_pos : 1 ≤ n := by
         by_contra h; push_neg at h; interval_cases n; exact hndvd (dvd_zero q)
-      have hp := genSeq_prime hn_pos k
-      rcases hp.eq_one_or_self_of_dvd q h2 with h | h
+      rcases (genSeq_prime hn_pos k).eq_one_or_self_of_dvd q h2 with h | h
       · exact absurd h (by have := hq.one_lt; omega)
       · exact absurd h.symm (hnot k)
 
@@ -1508,34 +1315,19 @@ private theorem weylTestFn_zero (q : Nat) : weylTestFn q 0 = 0 := by
 
 private theorem weylTestFn_bound (q : Nat) (hq2 : 2 ≤ q) (a : Nat) :
     Complex.normSq (weylTestFn q a) ≤ 1 := by
+  have hqR : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast hq2
+  have hqr_pos : (0 : ℝ) < (q : ℝ) - 1 := by linarith
   simp only [weylTestFn]
   split_ifs with h0 h1
   · simp [Complex.normSq]
   · rw [show (((q : ℝ) - 2) / ((q : ℝ) - 1) : ℂ) =
       Complex.ofReal (((q : ℝ) - 2) / ((q : ℝ) - 1)) from by push_cast; ring]
-    rw [Complex.normSq_ofReal]
-    have hqr : (0 : ℝ) < (q : ℝ) - 1 := by
-      have : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast hq2
-      linarith
-    rw [div_mul_div_comm]
-    rw [div_le_one (by positivity)]
-    have hqR : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast hq2
-    have h1 : (q : ℝ) - 2 ≤ (q : ℝ) - 1 := by linarith
-    exact mul_self_le_mul_self (by linarith) h1
+    rw [Complex.normSq_ofReal, div_mul_div_comm, div_le_one (by positivity)]
+    exact mul_self_le_mul_self (by linarith) (by linarith)
   · rw [show (((-1 : ℝ) / ((q : ℝ) - 1)) : ℂ) =
       Complex.ofReal ((-1 : ℝ) / ((q : ℝ) - 1)) from by push_cast; ring]
-    rw [Complex.normSq_ofReal]
-    have hqr : (0 : ℝ) < (q : ℝ) - 1 := by
-      have : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast hq2
-      linarith
-    rw [div_mul_div_comm]
-    rw [div_le_one (by positivity)]
-    have hqR : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast hq2
-    have h1 : (1 : ℝ) ≤ (q : ℝ) - 1 := by linarith
-    calc (-1 : ℝ) * -1 = 1 := by ring
-      _ ≤ ((q : ℝ) - 1) * 1 := by linarith
-      _ ≤ ((q : ℝ) - 1) * ((q : ℝ) - 1) := by
-        apply mul_le_mul_of_nonneg_left h1 (by linarith)
+    rw [Complex.normSq_ofReal, div_mul_div_comm, div_le_one (by positivity)]
+    nlinarith
 
 /-- The Weyl test function sums to zero over ZMod q.
     Sum = 0 (at val=0) + (q-2)/(q-1) (at val=q-1) + (q-2)*(-1/(q-1)) (rest) = 0. -/
@@ -1543,32 +1335,13 @@ private theorem weylTestFn_sum_zero (q : Nat) (hq : Nat.Prime q) :
     (letI : NeZero q := ⟨hq.ne_zero⟩; ∑ a : ZMod q, weylTestFn q (ZMod.val a) = 0) := by
   letI : NeZero q := ⟨hq.ne_zero⟩
   have hq2 := hq.two_le
-  have hqr_pos : (0 : ℝ) < (q : ℝ) - 1 := by
-    have : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast hq2
-    linarith
-  have hqr_ne : (q : ℝ) - 1 ≠ 0 := ne_of_gt hqr_pos
   have hval_mod : ∀ a : ZMod q, ZMod.val a % q = ZMod.val a :=
     fun a => Nat.mod_eq_of_lt (ZMod.val_lt a)
   simp_rw [weylTestFn, hval_mod]
-  -- The sum has the form ∑ a, f(val a) where f is piecewise constant.
-  -- Rewrite: if val=0 then 0, elif val=q-1 then A, else B
-  -- = A * (if val=q-1 then 1 else 0) + B * (if val≠0 ∧ val≠q-1 then 1 else 0)
-  -- The first indicator sums to 1 (one element with val=q-1)
-  -- The second indicator sums to q-2.
-  -- Total = A + (q-2)*B = (q-2)/(q-1) + (q-2)*(-1/(q-1)) = 0.
-  -- We use Finset.sum_ite and Finset.card_filter.
-  -- Strategy: rewrite the whole sum as a single expression and simplify.
-  -- Let's compute directly by rewriting each conditional.
-  -- Each term: if val=0 then 0 else if val=q-1 then A else B
-  --          = A * (if val=q-1 then 1 else 0) + B * (if val≠0 ∧ val≠q-1 then 1 else 0)
-  -- (using the fact that exactly one of the three cases holds, and for val=0 both indicators are 0)
-  -- This algebraic decomposition works because: when val=0, A*0 + B*0 = 0.
-  -- When val=q-1, A*1 + B*0 = A. When val ∈ {1,...,q-2}, A*0 + B*1 = B.
-  -- Rewrite each summand as: B * (if val≠0 then 1 else 0) + (A - B) * (if val=q-1 then 1 else 0)
-  -- Then sum = B * (q-1) + (A-B) * 1 = (q-1)B + A - B = A + (q-2)B = 0.
+  -- Decompose: each summand = B·(if val≠0 then 1 else 0) + (A-B)·(if val=q-1 then 1 else 0)
+  -- Sum = B·(q-1) + (A-B)·1 = A + (q-2)·B = 0.
   set A : ℂ := (((q : ℝ) - 2) / ((q : ℝ) - 1) : ℂ) with hAdef
   set B : ℂ := (((-1 : ℝ) / ((q : ℝ) - 1)) : ℂ) with hBdef
-  -- Each summand: rewrite nested ite
   have hdecomp : ∀ a : ZMod q,
       (if ZMod.val a = 0 then (0 : ℂ) else if ZMod.val a = q - 1 then A else B) =
       B * (if ZMod.val a = 0 then 0 else 1) + (A - B) * (if ZMod.val a = q - 1 then 1 else 0) := by
@@ -1577,16 +1350,10 @@ private theorem weylTestFn_sum_zero (q : Nat) (hq : Nat.Prime q) :
     · simp
     · ring
     · ring
-  simp_rw [hdecomp]
-  rw [Finset.sum_add_distrib]
-  -- First sum: B * ∑ (if val≠0 then 1 else 0)
-  simp_rw [← Finset.mul_sum]
+  simp_rw [hdecomp, Finset.sum_add_distrib, ← Finset.mul_sum]
   rw [Finset.sum_ite, Finset.sum_const_zero, Finset.sum_const, nsmul_eq_mul, mul_one]
   rw [Finset.sum_ite, Finset.sum_const_zero, Finset.sum_const, nsmul_eq_mul, mul_one]
-  -- Now need: B * card{val≠0} + (A-B) * card{val=q-1} = 0
-  -- card{val≠0} = q-1, card{val=q-1} = 1
-  -- Using ZMod.val as a bijection with Fin q (via ZMod q = Fin q for q > 0)
-  -- First: card{a : ZMod q | val a ≠ 0}
+  -- Need: B·card{val≠0} + (A-B)·card{val=q-1} = 0 where card{val≠0}=q-1, card{val=q-1}=1
   have hval_inj : Function.Injective (fun a : ZMod q => ZMod.val a) := ZMod.val_injective q
   have hcard_ne0 : ((Finset.univ.filter (fun a : ZMod q => ¬ZMod.val a = 0)).card : ℂ) =
       (q : ℂ) - 1 := by
@@ -1594,16 +1361,13 @@ private theorem weylTestFn_sum_zero (q : Nat) (hq : Nat.Prime q) :
     have hone : (Finset.univ.filter (fun a : ZMod q => ZMod.val a = 0)).card = 1 := by
       have : Finset.univ.filter (fun a : ZMod q => ZMod.val a = 0) = {0} := by
         ext a; simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
-        constructor
-        · intro h; exact hval_inj (by simp [h])
-        · intro h; simp [h]
+        exact ⟨fun h => hval_inj (by simp [h]), fun h => by simp [h]⟩
       rw [this, Finset.card_singleton]
     have hnat := Finset.card_filter_add_card_filter_not
       (s := Finset.univ) (fun a : ZMod q => ZMod.val a = 0)
     rw [htotal, hone] at hnat
-    have hcard_val : (Finset.univ.filter (fun a : ZMod q => ¬ZMod.val a = 0)).card = q - 1 := by
-      omega
-    rw [hcard_val, Nat.cast_sub (by omega : 1 ≤ q)]; simp
+    rw [show (Finset.univ.filter (fun a : ZMod q => ¬ZMod.val a = 0)).card = q - 1 from by omega,
+        Nat.cast_sub (by omega : 1 ≤ q)]; simp
   -- Second: card{a : ZMod q | val a = q-1}
   have hcard_qm1 : ((Finset.univ.filter (fun a : ZMod q => ZMod.val a = q - 1)).card : ℂ) = 1 := by
     have : Finset.univ.filter (fun a : ZMod q => ZMod.val a = q - 1) = {((q - 1 : Nat) : ZMod q)} := by
@@ -1647,8 +1411,7 @@ theorem weyl_hitting_bridge_proved : WeylHittingBridge := by
     have hχ0 := weylTestFn_zero q
     have hχ_sum := weylTestFn_sum_zero q hq
     have hqr_pos : (0 : ℝ) < (q : ℝ) - 1 := by
-      have h2 := hq.two_le
-      have : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast h2
+      have : (2 : ℝ) ≤ (q : ℝ) := by exact_mod_cast hq.two_le
       linarith
     set ε := 1 / (2 * ((q : ℝ) - 1))
     have hε_pos : 0 < ε := div_pos one_pos (mul_pos two_pos hqr_pos)
@@ -1657,16 +1420,8 @@ theorem weyl_hitting_bridge_proved : WeylHittingBridge := by
     set K := Nat.max K₀ (2 * C * q + 1)
     have hK_ge : K₀ ≤ K := Nat.le_max_left _ _
     have hK_big : 2 * C * q + 1 ≤ K := Nat.le_max_right _ _
-    -- Energy bound at K
     have hE := hK₀ K hK_ge
-    -- The energy = normSq(partial_sum) where partial_sum = hitK - K/(q-1) as complex.
-    -- Since hitK <= C, |partial_sum| >= K/(q-1) - C for large K.
-    -- energy >= (K/(q-1) - C)^2.
-    -- But energy <= (eps*K)^2 = K^2/(4(q-1)^2).
-    -- So (K/(q-1) - C)^2 <= K^2/(4(q-1)^2).
-    -- Hence K/(q-1) - C <= K/(2(q-1)), so K/(2(q-1)) <= C, K <= 2C(q-1) < 2Cq+1 <= K.
-    -- Contradiction.
-    -- Step 1: Compute partial sum
+    -- Compute partial sum, show energy = (hitK - K/(q-1))², derive contradiction
     set hitK := ((Finset.range K).filter (fun k => genProd n k % q = q - 1)).card
     set A : ℂ := (((q : ℝ) - 2) / ((q : ℝ) - 1) : ℂ)
     set B : ℂ := (((-1 : ℝ) / ((q : ℝ) - 1)) : ℂ)

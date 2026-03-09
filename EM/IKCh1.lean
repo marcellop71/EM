@@ -33,8 +33,7 @@ namespace IK
 open Nat ArithmeticFunction Finset BigOperators
 
 open scoped ArithmeticFunction.Moebius ArithmeticFunction.zeta
-open scoped ArithmeticFunction.Omega ArithmeticFunction.omega
-open scoped ArithmeticFunction.sigma
+  ArithmeticFunction.Omega ArithmeticFunction.omega ArithmeticFunction.sigma
 
 /-!
 ## §1.1 Additive and multiplicative functions
@@ -67,12 +66,8 @@ theorem IsCompletelyAdditiveFunction.toIsAdditiveFunction [AddGroup R]
     {f : ArithmeticFunction R} (hf : IsCompletelyAdditiveFunction f) :
     IsAdditiveFunction f := by
   have hf1 : f 1 = 0 := by
-    have h := hf Nat.one_pos Nat.one_pos
-    simp only [mul_one] at h
-    -- h : f 1 = f 1 + f 1
-    have key := congrArg (· - f 1) h  -- f 1 - f 1 = (f 1 + f 1) - f 1
-    simp only [sub_self, add_sub_cancel_right] at key
-    exact key.symm
+    have h := hf Nat.one_pos Nat.one_pos; simp only [mul_one] at h
+    exact (add_left_cancel (by rwa [add_zero] : f 1 + 0 = f 1 + f 1)).symm
   refine ⟨hf1, fun {m n} hcop => ?_⟩
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · -- Coprime 0 n means n = 1
@@ -169,18 +164,23 @@ section LiouvilleFunction
 def liouville : ArithmeticFunction ℤ :=
   ⟨fun n => if n = 0 then 0 else (-1) ^ Ω n, by simp⟩
 
+/-- Evaluation of the Liouville function at a nonzero argument. -/
 theorem liouville_apply {n : ℕ} (hn : n ≠ 0) : liouville n = (-1) ^ Ω n :=
   if_neg hn
 
+/-- `λ(1) = 1`. -/
 @[simp]
 theorem liouville_one : liouville 1 = 1 := by simp [liouville]
 
+/-- `λ(p) = -1` for any prime `p`. -/
+@[simp]
 theorem liouville_apply_prime {p : ℕ} (hp : p.Prime) : liouville p = -1 := by
   simp [liouville_apply hp.ne_zero, cardFactors_apply_prime hp]
 
+/-- `λ(p^k) = (-1)^k` for any prime `p`. -/
 theorem liouville_apply_prime_pow {p k : ℕ} (hp : p.Prime) :
     liouville (p ^ k) = (-1) ^ k := by
-  rcases Nat.eq_zero_or_pos k with rfl | _
+  rcases k.eq_zero_or_pos with rfl | _
   · simp [liouville]
   · simp [liouville_apply (pow_ne_zero k hp.ne_zero), cardFactors_apply_prime_pow hp]
 
@@ -188,15 +188,14 @@ theorem liouville_apply_prime_pow {p k : ℕ} (hp : p.Prime) :
 theorem liouville_isCompletelyMultiplicative :
     IsCompletelyMultiplicative liouville := by
   refine ⟨liouville_one, fun {m n} hm hn => ?_⟩
-  rw [liouville_apply (by omega : m ≠ 0),
-      liouville_apply (by omega : n ≠ 0),
-      liouville_apply (Nat.mul_ne_zero (by omega) (by omega)),
-      cardFactors_mul (by omega) (by omega), pow_add]
+  rw [liouville_apply hm.ne', liouville_apply hn.ne',
+      liouville_apply (Nat.mul_ne_zero hm.ne' hn.ne'),
+      cardFactors_mul hm.ne' hn.ne', pow_add]
 
 /-- `λ(n) = μ(n)` when `n` is squarefree — IK §1.4. -/
 theorem liouville_eq_moebius_of_squarefree {n : ℕ} (hn : Squarefree n) :
     liouville n = μ n := by
-  rw [liouville_apply (Squarefree.ne_zero hn), moebius_apply_of_squarefree hn]
+  rw [liouville_apply hn.ne_zero, moebius_apply_of_squarefree hn]
 
 /-- `φ(n)/n = ∑_{d|n} μ(d)/d` — IK (1.43).
     Requires Möbius inversion over ℚ applied to the totient divisor sum formula. -/
@@ -215,6 +214,7 @@ section ExponentialSums
 /-- The standard additive character `e(x) = e^{2πix}` — IK (1.9). -/
 def eChar (x : ℝ) : ℂ := Complex.exp (2 * Real.pi * x * Complex.I)
 
+@[simp]
 theorem eChar_zero : eChar 0 = 1 := by simp [eChar]
 
 /-- The multiplicative inverse of `x` modulo `c`, or 0 if not coprime. -/
@@ -276,6 +276,7 @@ def summatoryFunction {R : Type*} [AddCommMonoid R]
     (f : ArithmeticFunction R) (x : ℝ) : R :=
   ∑ n ∈ Finset.Icc 1 (Nat.floor x), f n
 
+/-- A summatory function of a nonneg arithmetic function is monotone. -/
 theorem summatoryFunction_mono {R : Type*} [AddCommMonoid R] [PartialOrder R] [AddLeftMono R]
     (f : ArithmeticFunction R) (hf : ∀ n, 0 ≤ f n) {x y : ℝ} (hxy : x ≤ y) :
     summatoryFunction f x ≤ summatoryFunction f y := by
