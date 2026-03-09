@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 89~files
-totaling ${\sim}50{,}900$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 90~files
+totaling ${\sim}51{,}300$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -117,6 +117,7 @@ three leaf modules:
 \code{DiamondsPerspective.lean} & $p$-adic geometric perspective, Hecke obstruction, Dead End~\#128 & 340 \\
 \code{MarkovSieveSynthesis.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 520 \\
 \code{DobrushinStopping.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
+\code{EMLFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
 \code{FFBootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FFSubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -578,6 +579,16 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Dobrushin coefficient $= 1$ (deterministic) & Proved & \code{dobrushin\_coefficient\_one} \\
 \quad Dead End~\#131: Dobrushin inapplicable & Documented & \code{dead\_end\_131\_witness} \\
 \midrule
+\multicolumn{3}{l}{\emph{$L_{\mathrm{EM}}$ Dirichlet series}} \\
+\quad $\sum 1/\mathrm{prod}(n)$ converges (geometric comparison) & Proved & \code{accum\_reciprocal\_summable} \\
+\quad Self-similar head + tail decomposition & Proved & \code{em\_self\_similar\_decomposition} \\
+\quad $p^a \neq q^b$ for distinct primes (FTA) & Proved & \code{prime\_pow\_ne\_prime\_pow} \\
+\quad $\log p / \log q$ irrational for distinct primes & Proved & \code{log\_ratio\_irrational} \\
+\quad $L_{\mathrm{EM}}$ landscape (6-clause conjunction) & Proved & \code{em\_lfunction\_landscape} \\
+\quad Dead End~\#132: $L$-function factorization circular & Documented & \code{dead\_end\_132\_witness} \\
+\quad Dead End~\#133: self-similar FE framework mismatch & Documented & \code{dead\_end\_133\_witness} \\
+\quad Dead End~\#134: no Tauberian lever for $L_{\mathrm{EM}}$ & Documented & \code{tauberian\_lever\_absent\_witness} \\
+\midrule
 \multicolumn{3}{l}{\emph{Integer-level $T$-iteration}} \\
 \quad $T$-orbit $=$ shifted accumulators & Proved & \code{emIterationT\_iterate\_eq} \\
 \quad $T$-orbit strictly monotone & Proved & \code{emIterationT\_orbit\_strictMono} \\
@@ -700,6 +711,9 @@ Mathlib version & v4.29.0-rc1 \\
 \quad CCSB+CPD $\to$ UPE (pairwise $\not\Rightarrow$ $k$-wise, Dead End~\#125) & \textbf{Dead} & \code{CCSBCPDImpliesUPE} \\
 \quad SE $\not\Rightarrow$ DH (generation $\neq$ coverage, Dead End~\#130) & \textbf{Dead} & \code{se\_does\_not\_imply\_dh} \\
 \quad Dobrushin coefficient $= 1$ (deterministic, Dead End~\#131) & \textbf{Dead} & \code{dobrushin\_coefficient\_one} \\
+\quad $L$-function factorization circular (Dead End~\#132) & \textbf{Dead} & \code{dead\_end\_132\_witness} \\
+\quad Self-similar FE $\neq$ Lapidus framework (Dead End~\#133) & \textbf{Dead} & \code{dead\_end\_133\_witness} \\
+\quad No Tauberian lever for $L_{\mathrm{EM}}$ (Dead End~\#134) & \textbf{Dead} & \code{tauberian\_lever\_absent\_witness} \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
 \normalsize

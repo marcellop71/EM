@@ -974,6 +974,26 @@ Dobrushin coefficient
     The weaker MUB hypothesis is genuinely weaker than CME
     (CME $\Rightarrow$ MUB proved) but useless without Dobrushin.
     Dead End~\#131. \\
+\midrule
+  $L$-function factorization
+  & The factorization $L(s,\chi) = L_{\mathrm{EM}}(s,\chi)\cdot L_{\mathrm{non\text{-}EM}}(s,\chi)$
+    is circular: proving $L_{\mathrm{non\text{-}EM}} \neq 0$ on $\Re(s) = 1$ requires knowing
+    which primes are non-EM, i.e., requires MC itself. Dead End~\#132. \\
+\midrule
+  Self-similar functional equation
+  & The tail identity gives $L_{\mathrm{EM}} = \text{head} + L_{\mathrm{EM, from } P(M)}$,
+    but the tail orbit starts from $P(M) \neq 2$, so it is \emph{not} a scalar multiple
+    of $L_{\mathrm{EM}}$. The Lapidus--van Frankenhuijsen fractal zeta framework requires
+    scaling ratios $\zeta(s) = \sum r_j^s \zeta(s) + f(s)$; the EM self-similarity
+    does not match this form. Dead End~\#133. \\
+\midrule
+  No Tauberian lever
+  & The super-exponential growth of $P(n)$ makes $\sum \mathrm{prod}(n)^{-s}$ converge
+    for all $\Re(s) > 0$ (proved: \code{accum\_reciprocal\_summable}). The resulting
+    Dirichlet series is entire in $\Re(s) > 0$ --- no pole at $s = 1$ to exploit
+    via Tauberian methods. The standard PNT argument uses the pole of~$\zeta(s)$;
+    $L_{\mathrm{EM}}$ has no such pole because EM primes are too sparse.
+    Dead End~\#134. \\
 \bottomrule
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
