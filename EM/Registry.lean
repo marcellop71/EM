@@ -11,6 +11,7 @@ import EM.TailIdentityAttack
 import EM.CRTPointwiseTransfer
 import EM.IKCh7Hilbert
 import EM.EnsemblePT
+import EM.AdelicEquidist
 
 /-!
 # EM Registry: Content-Addressed Publication Annotations
@@ -159,3 +160,10 @@ attribute [publish] IK.cross_r_cesaro_convergence_proved
 attribute [publish] lyapunov_one_step
 attribute [publish] lyapunov_telescope
 attribute [publish] excessEnergy_eq_visit_deviation
+
+/-! ### Adelic decomposition -/
+
+attribute [publish] mwi_mme_implies_cme
+attribute [publish] adelic_implies_mc
+attribute [publish] cme_implies_mwi
+attribute [publish] all_routes_to_mc_adelic

@@ -74,4 +74,6 @@ import EM.Blueprint
 import EM.FiberAutonomy
 import EM.IntegerDiophantine
 import EM.SieveConstraint
+import EM.AdelicEquidist
+import EM.ProfiniteEquidist
 import EM.Registry
