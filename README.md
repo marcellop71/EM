@@ -21,6 +21,19 @@ The full paper is available in this repo at [`paper/main.pdf`](paper/main.pdf) w
 
 Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`zulip_mathlib_candidates.md`](zulip_mathlib_candidates.md) for a curated list including:
 
+## Content-Addressed Registry
+
+The project includes a machine-readable registry of all key results and open hypotheses, generated using the [CA](../CA/) (Content Addressing for Lean 4) package.
+
+**How it works:** The CA package provides `@[publish]` and `@[open_point]` attributes that tag declarations for inclusion in a decentralized formal math registry. Each tagged declaration gets an L0 content address — a deterministic hash of its canonicalized type expression (universe-renamed, metadata-stripped).
+
+- [`EM/Registry.lean`](EM/Registry.lean) — 24 `@[open_point]` annotations (unproved hypotheses) and 38 `@[publish]` annotations (proved theorems)
+- [`scripts/GenRegistry.lean`](scripts/GenRegistry.lean) — generator script that queries the environment for annotated declarations, computes content hashes, classifies each as *open*, *proved*, or *conditional* (depends on an open point), and writes the registry
+- [`registry/declarations.json`](registry/declarations.json) — 62 entries with name, module, kind, status, content hash, pretty-printed type, and dependency list
+- [`registry/meta.json`](registry/meta.json) — project summary (24 open points, 22 proved, 16 conditional)
+
+To regenerate: `lake build genRegistry` (the registry is written during elaboration via `#eval!`).
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
