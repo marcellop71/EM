@@ -77,4 +77,6 @@ import EM.SieveConstraint
 import EM.AdelicEquidist
 import EM.ProfiniteEquidist
 import EM.UniformConductorEquidist
+import EM.FunctionFieldAnalog
+import EM.DiamondsPerspective
 import EM.Registry

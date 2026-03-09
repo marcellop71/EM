@@ -484,7 +484,7 @@ hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
 The formalization has exhaustively explored all known proof strategies
-across 125~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
+across 128~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
 counterexample (Dead End~\#117), the cofactor identity's failure to
 escape the Marginal/Joint Barrier (Dead End~\#115), and the exhaustion
 of all four DSL proof directions (algebraic identities, cofactor
@@ -699,6 +699,8 @@ ways that current analytic number theory does not.
 \quad BlockRotationEstimate (impossible for $d \geq 3$, Remark~\ref{rem:bre-impossible}) & \textbf{Dead} & \code{BlockRotationEstimate} \\
 \quad MultCancelToWalkCancel (counterexample, Dead End~\#117) & \textbf{Dead} & \code{MultCancelToWalkCancel} \\
 \quad Cofactor identity (joint variable, Dead End~\#115) & \textbf{Dead} & shifted\_walk\_eq\_mult\_mul\_cof \\
+\quad Function field analog (Weil $\not\Rightarrow$ FF-DSL, Dead End~\#127) & \textbf{Dead} & \code{WeilDoesNotImplyFFDSL} \\
+\quad $p$-adic geometry (technique mismatch, Dead End~\#128) & \textbf{Dead} & \code{padicGeometryDeadEnd} \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
 \normalsize

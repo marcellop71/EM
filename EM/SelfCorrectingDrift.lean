@@ -518,7 +518,7 @@ theorem sve_implies_scd_above_threshold (hsve : SubquadraticVisitEnergy) :
   have hN_pos : (0 : ℝ) ≤ (N : ℝ) := Nat.cast_nonneg N
   have hSVE := hN₁ N hNN1
   rw [excessEnergy_eq_visit_deviation _ hp1] at hSVE
-  simp only [walkVisitCount_eq_emVisitCount hq hne N, visitDeviation] at hSVE
+  simp only [walkVisitCount_eq_emVisitCount hq hne N] at hSVE
   -- So (q-1) * lyapunov ≤ 2ε * N²
   change ((q : ℝ) - 1) * lyapunov hq hne N ≤ 2 * ε * (N : ℝ) ^ 2 at hSVE
   -- Hence lyapunov ≤ 2ε * N² / (q-1) ≤ 2ε * N²
