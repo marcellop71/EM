@@ -9,7 +9,7 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 75~files
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 76~files
 totaling ${\sim}45{,}000$~lines.  The dependency chain is linear, with
 three leaf modules:
 
@@ -107,6 +107,7 @@ three leaf modules:
 \code{TailIdentityAttack.lean} & Tail energy identities, 4th moment, Chebyshev bridge & 433 \\
 \code{TailWindowDecorrelation.lean} & Window decomposition, variance identity, TWD $\Rightarrow$ MC & 477 \\
 \code{IntegerDiophantine.lean} & $T$-iteration $T(n){=}(n{-}1)\cdot\minFac(n){+}1$, orbit, cofactor & 340 \\
+\code{SieveConstraint.lean} & Prime support $S_n$, sieve exclusion, $P(n){+}1 \equiv 1 \bmod S_n$ & 261 \\
 \midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 195 \\
@@ -330,7 +331,7 @@ is the novel content.
 \begin{tabular}{lr}
 \toprule
 Lines of Lean code & ${\sim}45{,}000$ \\
-Files & 75 \\
+Files & 76 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\
 \code{sorry} occurrences & \textbf{0} \\
@@ -509,6 +510,13 @@ Mathlib version & v4.29.0-rc1 \\
 \quad New prime factor at each step & Proved & \code{T\_orbit\_new\_prime\_factor} \\
 \quad GCD of consecutive orbit elements & Proved & \code{T\_orbit\_consecutive\_gcd\_dvd} \\
 \quad Integer quadratic cofactor identity & Proved & \code{prod\_succ\_add\_one\_cofactor} \\
+\midrule
+\multicolumn{3}{l}{\emph{Sieve constraint infrastructure}} \\
+\quad $|S_n| = n{+}1$ (support cardinality) & Proved & \code{emSupport\_card} \\
+\quad $P(n){+}1 \equiv 1 \bmod p$ for $p \in S_n$ & Proved & \code{prod\_succ\_mod\_emSupport} \\
+\quad $\seq{2}(n{+}1) \notin S_n$ (boundary) & Proved & \code{seq\_succ\_not\_mem\_emSupport} \\
+\quad $S_n \subsetneq S_{n+1}$ (strict monotonicity) & Proved & \code{emSupport\_ssubset} \\
+\quad genSupport: exclusion, growth, cardinality & Proved & \code{genSupport\_not\_dvd\_succ} \\
 \midrule
 \multicolumn{3}{l}{\emph{Large sieve route}} \\
 \quad MultiModularCSB $\Rightarrow$ MC & Proved & \code{mmcsb\_implies\_mc} \\
