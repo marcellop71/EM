@@ -17,7 +17,9 @@ chi_i : (Z/p_iZ)x -> Cx at each, and form the product
 This gives a hierarchy of equidistribution notions:
 
 - **FiniteLevelEquidist**: at each prime q (not in seq), the walk visits
-  every position cofinally. This follows from SE + PRE (already proved).
+  every position cofinally. Conjectured to follow from SE + PRE, but no
+  proof exists — the gap is between subgroup generation (algebraic) and
+  cofinal visits to every element (dynamical).
 
 - **UniformProfiniteEquidist** (UPE): for any finite set of distinct primes
   and any product of nontrivial characters, the product character sum is o(N).
