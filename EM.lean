@@ -71,3 +71,4 @@ import EM.OneSidedTauberian
 import EM.AbelChain
 import EM.AlladiDensity
 import EM.Blueprint
+import EM.FiberAutonomy

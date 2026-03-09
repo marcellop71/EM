@@ -9,7 +9,7 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 72~files
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 74~files
 totaling ${\sim}45{,}000$~lines.  The dependency chain is linear, with
 three leaf modules:
 
@@ -80,7 +80,8 @@ three leaf modules:
 \code{ReciprocalSumDivergence.lean} & Generalized EM reciprocal sum divergence & 289 \\
 \code{PopulationTransferStrategy.lean} & PE + DSL $\Rightarrow$ MC, ensemble concentration & 273 \\
 \code{OneSidedTauberian.lean} & One-sided Tauberian, L-series bounds, prime power stripping & 557 \\
-\code{AbelChain.lean} & Abel summation chain: $(\log p)/p \to 1/p$ infrastructure & 1{,}261 \\
+\code{AbelChain.lean} & Abel summation chain: $(\log p)/p \to 1/p$ infrastructure & 641 \\
+\code{AlladiDensity.lean} & Alladi chain scaffolding, WPNT+DSL $\Rightarrow$ MC & 267 \\
 \midrule
 \multicolumn{3}{l}{\emph{Ensemble framework (new)}} \\
 \code{EnsembleStructure.lean} & Generalized EM: genProd, genSeq, injectivity & 247 \\
@@ -91,6 +92,7 @@ three leaf modules:
 \code{EnsemblePT.lean} & Full CRT chain $\Rightarrow$ cancellation, Weyl $\Rightarrow$ MC & 2159 \\
 \code{EnsembleCRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 763 \\
 \code{EnsembleBaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 407 \\
+\code{FiberAutonomy.lean} & CRT fiber determines multiplier dynamics, walk readout & 255 \\
 \midrule
 \multicolumn{3}{l}{\emph{DSL and master reduction (new)}} \\
 \code{DSLInfrastructure.lean} & Energy evolution, fiber analysis, FEB $\Rightarrow$ CME & 683 \\
@@ -189,10 +191,10 @@ where ``\checkmark'' denotes machine-verified arrows and
 Three files provide the ANT infrastructure:
 \code{OneSidedTauberian.lean} (557~lines, zero \code{sorry})
 proves the Tauberian and stripping steps;
-\code{AbelChain.lean} (651~lines, zero \code{sorry}) proves the
+\code{AbelChain.lean} (641~lines, zero \code{sorry}) proves the
 full discrete Abel summation chain converting log-weighted prime
 sums into reciprocal-weighted sums; and
-\code{AlladiDensity.lean} (275~lines, zero \code{sorry})
+\code{AlladiDensity.lean} (267~lines, zero \code{sorry})
 defines intermediate hypotheses for the Alladi chain and
 proves the master reduction
 \lean{EM/AlladiDensity.lean}{wpnt\_dsl\_implies\_mc}:
@@ -229,7 +231,7 @@ sum over primes only.
 
 \item \textbf{Abel summation chain}
 (\lean{EM/AbelChain.lean}{prime\_log\_to\_reciprocal\_proved},
-651~lines):
+641~lines):
   $\text{PrimeLogSumEquidist} \Rightarrow
   \text{PrimesEquidistributedInAP}$.
   Discrete Abel summation (summation by parts) converts the
@@ -288,7 +290,7 @@ Mangoldt function.  Two gaps remain:
   $\{m : \minFac(m) = p\}$ combined with CRT sieving gives
   PrimesEquidistInAP~$\Rightarrow$~MFRE\@.
   The reduction scaffolding is now formalized in
-  \code{AlladiDensity.lean} (275~lines, zero \code{sorry}),
+  \code{AlladiDensity.lean} (267~lines, zero \code{sorry}),
   which decomposes the chain into two precisely stated
   open hypotheses:
   \defname{PrimesEquidistImpliesRoughLPF}
@@ -326,8 +328,8 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}44{,}700$ \\
-Files & 73 \\
+Lines of Lean code & ${\sim}45{,}000$ \\
+Files & 74 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\
 \code{sorry} occurrences & \textbf{0} \\
@@ -478,6 +480,10 @@ Mathlib version & v4.29.0-rc1 \\
 \quad CharVarianceImpliesConcentration & Proved & \code{char\_variance\_implies\_concentration\_proved} \\
 \quad EnsembleMultEquidistImpliesCharMeanZero & Proved & \code{ensemble\_mult\_equidist\_char\_mean\_zero} \\
 \quad JSE base case (tower rule) & Proved & \code{jse\_base\_case} \\
+\quad CRT fiber determines genSeq & Proved & \code{crt\_fiber\_determines\_genSeq} \\
+\quad CRT fiber propagates across steps & Proved & \code{crt\_fiber\_propagates} \\
+\quad Walk readout from multipliers & Proved & \code{walk\_readout\_from\_multipliers} \\
+\quad Walk death $\Leftrightarrow$ fiber condition & Proved & \code{walk\_death\_is\_fiber\_condition} \\
 \quad Cofactor identity: $w(n){+}1 = m(n) \cdot \mathrm{cof}(n)$ & Proved & \code{shifted\_walk\_eq\_mult\_mul\_cof} \\
 \quad Hit $\Leftrightarrow$ cofZ $= 0$ & Proved & \code{walkZ\_eq\_neg\_one\_iff\_cofZ\_zero} \\
 \quad SP $=$ CME (definitional, \code{simp}) & Proved & \code{sp\_eq\_cme} \\
@@ -572,6 +578,8 @@ Mathlib version & v4.29.0-rc1 \\
 \quad $\int 1/(t\log t)\,dt = \log\log$ (FTC) & Proved & \code{integral\_inv\_mul\_log} \\
 \quad $\int 1/(t(\log t)^2)\,dt$ (FTC) & Proved & \code{integral\_inv\_mul\_log\_sq} \\
 \quad Main sum sandwich ($\log\log$ approximation) & Proved & \code{main\_sum\_sandwich} \\
+\quad WPNT $\Rightarrow$ PrimesEquidistInAP (composed chain) & Proved & \code{wpnt\_implies\_primes\_equidist\_proved} \\
+\quad WPNT + Alladi + CRT + DSL $\Rightarrow$ MC & Proved & \code{wpnt\_dsl\_implies\_mc} \\
 \midrule
 \multicolumn{3}{l}{\emph{Known theorems --- not yet in Mathlib}} \\
 \quad PrimeDensityEquipartition (PNT in APs) & Known & \code{PrimeDensityEquipartition} \\
