@@ -475,6 +475,49 @@ requires mechanisms beyond the simplest equidistribution
 framework.  The CME bypass sidesteps this barrier, but the barrier's
 existence means any proof must be genuinely subtle.
 
+\paragraph{Collapse certificates.}
+Two natural-seeming proof strategies---modelling the EM walk as a
+non-homogeneous Markov chain (Doeblin--Dobrushin ergodic theory) and
+adapting the multiplicative large sieve to the $\minFac$ selection
+rule---were assessed by formalization.  Both \emph{collapse
+definitionally} to existing open hypotheses:
+\begin{itemize}
+\item
+  \lean{EM/MarkovSieveSynthesis.lean}{doeblin\_eq\_cme}:
+  \texttt{DoeblinConvergenceForEM = CME} by \texttt{rfl}.
+  The Doeblin coefficient of ergodicity approaching~$1$ for the
+  empirical transition matrix of the EM walk is literally the
+  statement that conditional multiplier character sums vanish, which
+  is CME.
+\item
+  \lean{EM/MarkovSieveSynthesis.lean}{sieve\_orbit\_control\_eq\_ccsb}:
+  \texttt{SieveOrbitControl = CCSB} by \texttt{rfl}.
+  Pointwise-in-$q$ walk character sum bounds from sieve methods are
+  literally CCSB\@.
+\end{itemize}
+A definitional equality (\texttt{rfl}) is the strongest possible dead-end
+certificate: the type-checker confirms that the ``new'' hypothesis
+contains zero mathematical content beyond the existing one.
+The underlying obstruction is the \emph{orbit-specificity gap}
+(average-over-$q$ versus pointwise-in-$q$), which is structurally
+analogous to the gap between Chebotarev's density theorem
+(unconditional) and Artin's primitive root conjecture
+(conditional on GRH; Hooley 1967).
+
+The root cause is algebraic.  The identity
+\begin{equation}
+  \label{eq:minfac-min}
+  \minFac(nm) = \min\bigl(\minFac(n),\;\minFac(m)\bigr)
+  \qquad (n,m > 1),
+  \tag{$\checkmark$ \code{minFac\_mul\_eq\_min}}
+\end{equation}
+proved without any coprimality hypothesis, shows that $\minFac$ is a
+\emph{lattice} operation (min), not an algebraic one (product).
+Multiplicative number theory---Dirichlet series, the Hal\'asz theorem,
+pretentious distance---is designed for functions $f$ satisfying
+$f(nm) = f(n)f(m)$, and is structurally incompatible with a function
+obeying~\eqref{eq:minfac-min}.
+
 \paragraph{Assessment.}
 We believe the walk does hit~$-1$ at every prime, primarily because
 the self-correcting sieve mechanism provides a concrete dynamical
@@ -484,7 +527,7 @@ hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
 The formalization has exhaustively explored all known proof strategies
-across 128~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
+across 129~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
 counterexample (Dead End~\#117), the cofactor identity's failure to
 escape the Marginal/Joint Barrier (Dead End~\#115), and the exhaustion
 of all four DSL proof directions (algebraic identities, cofactor
@@ -701,6 +744,7 @@ ways that current analytic number theory does not.
 \quad Cofactor identity (joint variable, Dead End~\#115) & \textbf{Dead} & shifted\_walk\_eq\_mult\_mul\_cof \\
 \quad Function field analog (Weil $\not\Rightarrow$ FF-DSL, Dead End~\#127) & \textbf{Dead} & \code{WeilDoesNotImplyFFDSL} \\
 \quad $p$-adic geometry (technique mismatch, Dead End~\#128) & \textbf{Dead} & \code{padicGeometryDeadEnd} \\
+\quad FFLM structurally false (cyclotomic, Dead End~\#129) & \textbf{Dead} & \code{ff\_cyclotomic\_dead\_end} \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
 \normalsize

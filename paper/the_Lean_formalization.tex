@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 83~files
-totaling ${\sim}47{,}300$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 84~files
+totaling ${\sim}47{,}900$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -113,8 +113,9 @@ three leaf modules:
 \code{AdelicEquidist.lean} & Adelic decomposition: CME $\Leftrightarrow$ MWI $+$ MME, Fourier bridge, CPD & 656 \\
 \code{ProfiniteEquidist.lean} & Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion & 182 \\
 \code{UniformConductorEquidist.lean} & UCE hypothesis, conductor counting, UCE$+$DSL$\Rightarrow$MC & 301 \\
-\code{FunctionFieldAnalog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, Deligne chain, Dead End~\#127 & 886 \\
+\code{FunctionFieldAnalog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 952 \\
 \code{DiamondsPerspective.lean} & $p$-adic geometric perspective, Hecke obstruction, Dead End~\#128 & 340 \\
+\code{MarkovSieveSynthesis.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 520 \\
 \midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 195 \\
@@ -540,12 +541,21 @@ Mathlib version & v4.29.0-rc1 \\
 \quad FF-EM degree strictly monotone & Proved & \code{ffProd\_natDegree\_strict\_mono} \\
 \quad $\deg(\text{ffProd}(n){+}1) = \deg(\text{ffProd}(n))$ & Proved & \code{ffProdPlusOne\_natDegree} \\
 \quad FF-EM monodromy landscape & Proved & \code{ff\_monodromy\_landscape} \\
+\quad Dead End~\#129: FFLM structurally false (cyclotomic) & Proved & \code{ff\_cyclotomic\_dead\_end} \\
 \midrule
 \multicolumn{3}{l}{\emph{$p$-adic geometric perspective}} \\
 \quad $p$-adic valuation monotone & Proved & \code{emPadicVal\_mono} \\
 \quad Slope sequence positive & Proved & \code{emSlope\_pos} \\
 \quad Diamonds perspective landscape & Proved & \code{diamonds\_perspective\_landscape} \\
 \quad Dead End~\#128: $p$-adic geometry (technique mismatch) & Documented & \code{padicGeometryDeadEnd} \\
+\midrule
+\multicolumn{3}{l}{\emph{Markov chain / sieve synthesis}} \\
+\quad Doeblin convergence $=$ CME (collapse) & Proved & \code{doeblin\_eq\_cme} \\
+\quad Sieve orbit control $=$ CCSB (collapse) & Proved & \code{sieve\_orbit\_control\_eq\_ccsb} \\
+\quad Spectral gap $\Rightarrow$ CME & Proved & \code{spectral\_gap\_implies\_doeblin} \\
+\quad Quantitative DSL $\Rightarrow$ DSL & Proved & \code{qdsl\_implies\_dsl} \\
+\quad $\minFac(nm) = \min(\minFac(n), \minFac(m))$ & Proved & \code{minFac\_mul\_eq\_min} \\
+\quad 7-route landscape & Proved & \code{markov\_sieve\_landscape} \\
 \midrule
 \multicolumn{3}{l}{\emph{Integer-level $T$-iteration}} \\
 \quad $T$-orbit $=$ shifted accumulators & Proved & \code{emIterationT\_iterate\_eq} \\

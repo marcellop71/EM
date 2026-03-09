@@ -302,6 +302,38 @@ theorem sve_small_threshold_mc
 
 end SubquadraticVisitEnergyBridge
 
+/-! ### Shared helpers for telescoping identity and boundary norm -/
+
+section TelescopingHelpers
+
+open Finset
+
+/-- The walk character sum equals the product sum minus the boundary term. -/
+theorem walk_sum_eq_product_sub_boundary (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
+    (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (N : Nat) :
+    ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
+    ∑ n ∈ Finset.range N, ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ))
+    - ((χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)) := by
+  have hsub : ∑ n ∈ Finset.range N,
+      ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ))
+    - ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
+      (χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ) := by
+    rw [← Finset.sum_sub_distrib]
+    convert walk_telescope_identity q hq hne χ N using 1
+    congr 1; ext n; ring
+  linear_combination -hsub
+
+/-- The boundary term `χ(w(N)) - χ(w(0))` has norm at most 2. -/
+theorem walk_boundary_norm_le_two (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q)
+    (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (N : Nat) :
+    ‖(χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)‖ ≤ 2 :=
+  calc ‖(χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)‖
+      ≤ ‖(χ (emWalkUnit q hq hne N) : ℂ)‖ + ‖(χ (emWalkUnit q hq hne 0) : ℂ)‖ :=
+        norm_sub_le _ _
+    _ = 2 := by rw [walkTelescope_char_norm_one χ _, walkTelescope_char_norm_one χ _]; ring
+
+end TelescopingHelpers
+
 /-! ## §68. Finite Weyl Criterion for Walk Equidistribution
 
 The **finite Weyl criterion** on a finite abelian group: a sequence is
@@ -503,20 +535,10 @@ For fixed H and delta, the RHS is O(N^2/(H+1) + delta*N^2). By choosing H large
 
 section HigherOrderDecorrelation
 
-/-- **Higher-Order Decorrelation**: for all primes q not in the EM sequence,
-    all nontrivial characters chi mod q, and all eps > 0, there exist H_0 such
-    that for all H >= H_0 there exists N_0 such that for all N >= N_0 and all
-    lags 1 <= h <= H, the walk autocorrelation satisfies ||R_h(N)|| <= eps * N.
-
-    This hypothesis captures the idea that consecutive multiplier character values
-    chi(m(n)), chi(m(n+1)), ..., chi(m(n+h-1)) are "asymptotically independent",
-    so that h-fold products decorrelate. By `walkAutocorrelation_eq_mult_product`,
-    R_h involves h-fold products of consecutive multiplier values, and decorrelation
-    means these products average to zero.
-
-    For h = 1, HOD reduces to `EMMultCharSumBound` (multiplier sums o(N)).
-    For h >= 2, this is a genuinely stronger hypothesis about multi-step
-    correlations in the EM sequence. -/
+/-- **Higher-Order Decorrelation**: all walk autocorrelations `R_h(N)` are `o(N)`
+    for every prime q not in the EM sequence and every nontrivial character.
+    For `h = 1` this reduces to `EMMultCharSumBound`; for `h >= 2` it captures
+    multi-step independence of consecutive multiplier character values. -/
 def HigherOrderDecorrelation : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
   ∀ (chi : (ZMod q)ˣ →* ℂˣ) (_hchi : chi ≠ 1),
@@ -1235,21 +1257,7 @@ theorem cme_implies_ccsb (hcme : ConditionalMultiplierEquidist) :
   set N₀ := max N₀_cme N₀_boundary
   refine ⟨N₀, fun N hN => ?_⟩
   -- Step 3: Use the telescoping identity to express S_N
-  -- walk_telescope_identity: ∑ χ(w(n))·(χ(m(n))-1) = χ(w(N)) - χ(w(0))
-  -- Expanding: ∑ χ(w)·χ(m) - ∑ χ(w) = χ(w(N)) - χ(w(0))
-  -- So: ∑ χ(w) = ∑ χ(w)·χ(m) - (χ(w(N)) - χ(w(0)))
-  have htelescope := walk_telescope_identity q hq hne χ N
-  have hSN_eq : ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
-      ∑ n ∈ Finset.range N, ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ))
-      - ((χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)) := by
-    have hsub : ∑ n ∈ Finset.range N,
-        ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ))
-      - ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
-        (χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ) := by
-      rw [← Finset.sum_sub_distrib]
-      convert htelescope using 1
-      congr 1; ext n; ring
-    linear_combination -hsub
+  have hSN_eq := walk_sum_eq_product_sub_boundary q hq hne χ N
   -- Step 4: Bound the product sum via fiber decomposition and CME
   have hfiber := walk_mult_product_fiber_decomp q hq hne χ N
   -- Step 5: Bound norm of product sum using triangle inequality + CME
@@ -1277,14 +1285,7 @@ theorem cme_implies_ccsb (hcme : ConditionalMultiplierEquidist) :
       _ = C * (ε' * N) := by
             rw [Finset.sum_const, nsmul_eq_mul, hC_def, Finset.card_univ]
   -- Step 6: Bound the boundary term ‖χ(w(N)) - χ(w(0))‖ ≤ 2
-  have hboundary : ‖(χ (emWalkUnit q hq hne N) : ℂ) -
-      (χ (emWalkUnit q hq hne 0) : ℂ)‖ ≤ 2 := by
-    calc ‖(χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)‖
-        ≤ ‖(χ (emWalkUnit q hq hne N) : ℂ)‖ + ‖(χ (emWalkUnit q hq hne 0) : ℂ)‖ :=
-          norm_sub_le _ _
-      _ = 1 + 1 := by
-          rw [walkTelescope_char_norm_one χ _, walkTelescope_char_norm_one χ _]
-      _ = 2 := by ring
+  have hboundary := walk_boundary_norm_le_two q hq hne χ N
   -- Step 7: N ≥ 4/ε ensures the boundary term is absorbed
   have hN_ge_boundary : (4 / ε : ℝ) ≤ N := by
     calc (4 / ε : ℝ) ≤ ↑(Nat.ceil (4 / ε)) := Nat.le_ceil _
@@ -1460,18 +1461,7 @@ theorem feb_implies_ccsb (hfeb : FiberEnergyBound) : ComplexCharSumBound := by
       ε' * (N : ℝ) ^ 2 :=
     hN₀_feb N (le_trans (le_max_left _ _) hN)
   -- Use telescoping identity
-  have htelescope := walk_telescope_identity q hq hne χ N
-  have hSN_eq : ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
-      ∑ n ∈ Finset.range N, ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ))
-      - ((χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)) := by
-    have hsub : ∑ n ∈ Finset.range N,
-        ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ))
-      - ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
-        (χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ) := by
-      rw [← Finset.sum_sub_distrib]
-      convert htelescope using 1
-      congr 1; ext n; ring
-    linear_combination -hsub
+  have hSN_eq := walk_sum_eq_product_sub_boundary q hq hne χ N
   -- Fiber decomposition of the product sum
   have hfiber := walk_mult_product_fiber_decomp q hq hne χ N
   -- Cauchy-Schwarz: ‖∑_a χ(a) · F(a)‖² ≤ (∑ ‖χ(a)‖²) · (∑ ‖F(a)‖²) = C · ∑ ‖F(a)‖²
@@ -1514,14 +1504,7 @@ theorem feb_implies_ccsb (hfeb : FiberEnergyBound) : ComplexCharSumBound := by
     nlinarith [sq_nonneg (‖∑ n ∈ Finset.range N,
       ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ))‖ - ε / 2 * N)]
   -- Boundary term bound
-  have hboundary : ‖(χ (emWalkUnit q hq hne N) : ℂ) -
-      (χ (emWalkUnit q hq hne 0) : ℂ)‖ ≤ 2 := by
-    calc ‖(χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)‖
-        ≤ ‖(χ (emWalkUnit q hq hne N) : ℂ)‖ + ‖(χ (emWalkUnit q hq hne 0) : ℂ)‖ :=
-          norm_sub_le _ _
-      _ = 1 + 1 := by
-          rw [walkTelescope_char_norm_one χ _, walkTelescope_char_norm_one χ _]
-      _ = 2 := by ring
+  have hboundary := walk_boundary_norm_le_two q hq hne χ N
   -- N ≥ 4/ε ensures boundary absorption
   have hN_ge : (4 / ε : ℝ) ≤ N := by
     calc (4 / ε : ℝ) ≤ ↑(Nat.ceil (4 / ε)) := Nat.le_ceil _
@@ -2284,7 +2267,6 @@ theorem vcb_ped_implies_ccsb (hvcb : VanishingConditionalBias)
     have : 0 < Nat.ceil (8 / (c₀ * ε)) := Nat.ceil_pos.mpr (by positivity)
     exact Nat.cast_pos.mpr (by omega)
   -- Step 6: Telescoping identity — S_N = P_N - boundary
-  have htelescope := walk_telescope_identity q hq hne χ N
   set S_N := ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) with hSN_def
   set P_N := ∑ n ∈ Finset.range N,
     ((χ (emWalkUnit q hq hne n) : ℂ) * (χ (emMultUnit q hq hne n) : ℂ)) with hPN_def
@@ -2292,18 +2274,9 @@ theorem vcb_ped_implies_ccsb (hvcb : VanishingConditionalBias)
     (χ (emWalkUnit q hq hne 0) : ℂ) with hbdry_def
   have hSN_eq : S_N = P_N - boundary := by
     rw [hSN_def, hPN_def, hbdry_def]
-    have hsub : P_N - S_N = boundary := by
-      rw [hPN_def, hSN_def, hbdry_def, ← Finset.sum_sub_distrib]
-      convert htelescope using 1; congr 1; ext n; ring
-    linear_combination -hsub
+    exact walk_sum_eq_product_sub_boundary q hq hne χ N
   -- Step 7: Boundary norm ≤ 2
-  have hboundary_le : ‖boundary‖ ≤ 2 := by
-    rw [hbdry_def]
-    calc ‖(χ (emWalkUnit q hq hne N) : ℂ) - (χ (emWalkUnit q hq hne 0) : ℂ)‖
-        ≤ ‖(χ (emWalkUnit q hq hne N) : ℂ)‖ + ‖(χ (emWalkUnit q hq hne 0) : ℂ)‖ :=
-          norm_sub_le _ _
-      _ = 1 + 1 := by rw [walkTelescope_char_norm_one χ _, walkTelescope_char_norm_one χ _]
-      _ = 2 := by ring
+  have hboundary_le : ‖boundary‖ ≤ 2 := hbdry_def ▸ walk_boundary_norm_le_two q hq hne χ N
   -- Step 9: VCB fiber error bound (via helper)
   have hPN_muSN : ‖P_N - μ * S_N‖ ≤ C * η * N := by
     rw [hPN_def, hSN_def]; exact vcb_fiber_error_bound hμ_bound

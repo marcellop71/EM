@@ -78,5 +78,10 @@ import EM.AdelicEquidist
 import EM.ProfiniteEquidist
 import EM.UniformConductorEquidist
 import EM.FunctionFieldAnalog
+import EM.FFSubgroupEscape
+import EM.FFBootstrap
+import EM.FFMultiplierCCSB
 import EM.DiamondsPerspective
+import EM.MarkovSieveSynthesis
+import EM.CyclicWalkCoverage
 import EM.Registry
