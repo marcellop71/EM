@@ -527,7 +527,7 @@ hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
 The formalization has exhaustively explored all known proof strategies
-across 129~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
+across 130~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
 counterexample (Dead End~\#117), the cofactor identity's failure to
 escape the Marginal/Joint Barrier (Dead End~\#115), and the exhaustion
 of all four DSL proof directions (algebraic identities, cofactor
@@ -669,6 +669,15 @@ ways that current analytic number theory does not.
 \quad $\Prod{2}(n)$ coprime to primes not in seq & Proved & \code{prod\_coprime\_of\_not\_in\_seq} \\
 \quad UCE landscape (summary conjunction) & Proved & \code{uce\_landscape} \\
 \midrule
+\multicolumn{3}{l}{\emph{FF-MC large-$p$ chain}} \\
+\quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & Proved & \code{ff\_dh\_implies\_ffmc} \\
+\quad FF-EM sequence injective & Proved & \code{ffSeq\_injective\_proved} \\
+\quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ & Proved & \code{weil\_implies\_ff\_se} \\
+\quad FF-SE unconditional for $d = 1$ & Proved & \code{ff\_se\_degree\_one} \\
+\quad $\ZZ/4\ZZ$ counterexample (generation $\neq$ coverage) & Proved & \code{alternating\_walk\_misses\_two} \\
+\quad Weil $\Rightarrow$ population multiplier CCSB & Proved & \code{weil\_implies\_population\_mult\_ccsb} \\
+\quad Selection bias chain & Proved & \code{selection\_bias\_chain} \\
+\midrule
 \multicolumn{3}{l}{\emph{Large sieve route}} \\
 \quad MultiModularCSB $\Rightarrow$ MC & Proved & \code{mmcsb\_implies\_mc} \\
 \quad BV chain $\Rightarrow$ MC & Proved & \code{bv\_chain\_mc} \\
@@ -729,6 +738,9 @@ ways that current analytic number theory does not.
 \quad PairwiseVanishingImpliesSMB (variance route) & \textbf{Open} & \code{PairwiseVanishingImpliesSMB} \\
 \quad SMBImpliesDSL (second moment $\Rightarrow$ DSL) & \textbf{Open} & \code{SMBImpliesDSL} \\
 \quad VarianceChainImpliesDSL (full variance chain) & \textbf{Open} & \code{VarianceChainImpliesDSL} \\
+\quad FFDynamicalHitting (cofinal $-1$ hits for FF-EM) & \textbf{Open} & \code{FFDynamicalHitting} \\
+\quad SelectionBiasNeutral (min-degree preserves cancel.) & \textbf{Open} & \code{SelectionBiasNeutral} \\
+\quad WalkCharExpansion (Fourier inversion on finite groups) & \textbf{Open} & \code{WalkCharExpansion} \\
 \midrule
 \multicolumn{3}{l}{\emph{Known theorems --- not yet in Mathlib}} \\
 \quad PrimeDensityEquipartition (PNT in APs) & Known & \code{PrimeDensityEquipartition} \\
@@ -745,6 +757,7 @@ ways that current analytic number theory does not.
 \quad Function field analog (Weil $\not\Rightarrow$ FF-DSL, Dead End~\#127) & \textbf{Dead} & \code{WeilDoesNotImplyFFDSL} \\
 \quad $p$-adic geometry (technique mismatch, Dead End~\#128) & \textbf{Dead} & \code{padicGeometryDeadEnd} \\
 \quad FFLM structurally false (cyclotomic, Dead End~\#129) & \textbf{Dead} & \code{ff\_cyclotomic\_dead\_end} \\
+\quad SE $\not\Rightarrow$ DH (generation $\neq$ coverage, Dead End~\#130) & \textbf{Dead} & \code{se\_does\_not\_imply\_dh} \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
 \normalsize

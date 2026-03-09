@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 84~files
-totaling ${\sim}47{,}900$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 88~files
+totaling ${\sim}50{,}200$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -116,6 +116,10 @@ three leaf modules:
 \code{FunctionFieldAnalog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 952 \\
 \code{DiamondsPerspective.lean} & $p$-adic geometric perspective, Hecke obstruction, Dead End~\#128 & 340 \\
 \code{MarkovSieveSynthesis.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 520 \\
+\code{FFBootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
+\code{FFSubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
+\code{CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
+\code{FFMultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 763 \\
 \midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 195 \\
@@ -339,8 +343,8 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}45{,}700$ \\
-Files & 79 \\
+Lines of Lean code & ${\sim}50{,}200$ \\
+Files & 88 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\
 \code{sorry} occurrences & \textbf{0} \\
@@ -542,6 +546,17 @@ Mathlib version & v4.29.0-rc1 \\
 \quad $\deg(\text{ffProd}(n){+}1) = \deg(\text{ffProd}(n))$ & Proved & \code{ffProdPlusOne\_natDegree} \\
 \quad FF-EM monodromy landscape & Proved & \code{ff\_monodromy\_landscape} \\
 \quad Dead End~\#129: FFLM structurally false (cyclotomic) & Proved & \code{ff\_cyclotomic\_dead\_end} \\
+\quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & Proved & \code{ff\_dh\_implies\_ffmc} \\
+\quad FF-EM sequence injective & Proved & \code{ffSeq\_injective\_proved} \\
+\quad Competitor capture (degree finiteness) & Proved & \code{ff\_element\_capture} \\
+\quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ & Proved & \code{weil\_implies\_ff\_se} \\
+\quad FF-SE unconditional for $d = 1$ & Proved & \code{ff\_se\_degree\_one} \\
+\quad Weil arithmetic contradiction & Proved & \code{weil\_arithmetic\_contradiction} \\
+\quad Walk char cancel $\Rightarrow$ coverage (Weyl) & Proved & \code{walk\_cancel\_implies\_covers} \\
+\quad $\ZZ/4\ZZ$ counterexample (generation $\neq$ coverage) & Proved & \code{alternating\_walk\_misses\_two} \\
+\quad Weil $\Rightarrow$ population multiplier CCSB & Proved & \code{weil\_implies\_population\_mult\_ccsb} \\
+\quad Selection bias chain (population $\to$ orbit) & Proved & \code{selection\_bias\_chain} \\
+\quad Dead End~\#130: SE $\not\Rightarrow$ DH (selection bias) & Documented & \code{se\_does\_not\_imply\_dh} \\
 \midrule
 \multicolumn{3}{l}{\emph{$p$-adic geometric perspective}} \\
 \quad $p$-adic valuation monotone & Proved & \code{emPadicVal\_mono} \\
@@ -646,6 +661,9 @@ Mathlib version & v4.29.0-rc1 \\
 \quad UCEImpliesCME (orbit-specificity bridge for UCE) & \textbf{Open} & \code{UCEImpliesCME} \\
 \quad FFLargeMonodromy (Galois group $\supseteq A_d$ for FF-EM) & \textbf{Open} & \code{FFLargeMonodromy} \\
 \quad FFCME (conditional equidist for FF-EM) & \textbf{Open} & \code{FFCME} \\
+\quad FFDynamicalHitting (cofinal $-1$ hits for FF-EM) & \textbf{Open} & \code{FFDynamicalHitting} \\
+\quad SelectionBiasNeutral (min-degree preserves cancellation) & \textbf{Open} & \code{SelectionBiasNeutral} \\
+\quad WalkCharExpansion (Fourier inversion on finite groups) & \textbf{Open} & \code{WalkCharExpansion} \\
 \midrule
 \multicolumn{3}{l}{\emph{ANT infrastructure (one-sided Tauberian + Abel chain)}} \\
 \quad One-sided Tauberian upper bound & Proved & \code{one\_sided\_tauberian\_upper} \\
@@ -674,6 +692,7 @@ Mathlib version & v4.29.0-rc1 \\
 \quad SCD $\equiv$ SVE (no new leverage, Dead End~\#120) & \textbf{Dead} & \code{sve\_implies\_scd\_above\_threshold} \\
 \quad SMSB+SE per-class $\to$ CME (Dead End~\#121) & \textbf{Dead} & \code{smsb\_se\_collapse\_certificate} \\
 \quad CCSB+CPD $\to$ UPE (pairwise $\not\Rightarrow$ $k$-wise, Dead End~\#125) & \textbf{Dead} & \code{CCSBCPDImpliesUPE} \\
+\quad SE $\not\Rightarrow$ DH (generation $\neq$ coverage, Dead End~\#130) & \textbf{Dead} & \code{se\_does\_not\_imply\_dh} \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
 \normalsize
