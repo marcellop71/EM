@@ -71,7 +71,9 @@ def UniformProfiniteEquidist : Prop :=
 
 /-- Finite-level equidistribution: at each prime q (that does not appear
     in the sequence), the walk visits every position cofinally.
-    This follows from SE + PRE (already proved in the codebase). -/
+    Conjectured to follow from SE + PRE, but NO proof exists — the gap
+    is between subgroup generation (algebraic) and cofinal visits to
+    every element (dynamical). See Session 163 for discussion. -/
 def FiniteLevelEquidist : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
   ∀ (a : (ZMod q)ˣ), ∀ (N₀ : Nat), ∃ n, n ≥ N₀ ∧ emWalkUnit q hq hne n = a
@@ -154,10 +156,16 @@ theorem uniform_profinite_implies_cpd
 
 /-- CCSB + CPD implies UPE: ComplexCharSumBound handles the single-prime
     case and CrossPrimeDecorrelation handles the multi-prime case.
-    The product character sum factors via independence.
 
-    This is an open Prop because the inductive product factorization
-    (from k primes to k-1 primes plus 1) requires careful bounds. -/
+    **WARNING (Dead End #125, Session 164)**: This is UNPROVABLE from
+    CCSB + CPD alone. The abstract XOR counterexample is decisive: three
+    unit-modulus sequences X₁, X₂, X₃ := X₁·X₂ satisfy all pairwise
+    cancellation conditions (∑ XᵢXⱼ = o(N)) but have ∑ X₁X₂X₃ = N.
+    No standard inequality (Cauchy-Schwarz, Hölder, Van der Corput) can
+    bridge pairwise to k-wise. Tao-Teräväinen "pairwise implies higher"
+    (arXiv:2512.01739) requires multiplicativity, absent for EM walks.
+    UPE requires k-wise decorrelation for ALL k as a primitive hypothesis,
+    not derivable from k=1 (CCSB) and k=2 (CPD) data. -/
 def CCSBCPDImpliesUPE : Prop :=
   ComplexCharSumBound → CrossPrimeDecorrelation → UniformProfiniteEquidist
 

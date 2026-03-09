@@ -397,6 +397,29 @@ theorem scd_implies_ve (hscd : SelfCorrectingDrift) : VisitEquidistribution := b
 
 end SCDImpliesVE
 
+/-! ## Section 8b: Helper Bijection -/
+
+section HelperBijection
+
+variable {q : ℕ} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+
+/-- Visit count bijection: walkVisitCount on Fin N equals emVisitCount on range N. -/
+private theorem walkVisitCount_eq_emVisitCount (N : ℕ) (a : (ZMod q)ˣ) :
+    walkVisitCount (fun (n : Fin N) => emWalkUnit q hq hne n.val) a =
+    emVisitCount q hq hne a N := by
+  simp only [walkVisitCount, emVisitCount]
+  set s := Finset.univ.filter (fun n : Fin N => emWalkUnit q hq hne n.val = a)
+  set t := (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)
+  suffices h : s.map Fin.valEmbedding = t by rw [← h]; exact (Finset.card_map _).symm
+  ext n
+  simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
+    Finset.mem_range, Fin.valEmbedding_apply, s, t]
+  constructor
+  · rintro ⟨i, hi, rfl⟩; exact ⟨i.isLt, hi⟩
+  · intro ⟨hlt, heq⟩; exact ⟨⟨n, hlt⟩, heq, rfl⟩
+
+end HelperBijection
+
 /-! ## Section 9: SCD implies SVE and MC -/
 
 section SCDImpliesMC
@@ -425,37 +448,12 @@ theorem scd_implies_sve (hscd : SelfCorrectingDrift) : SubquadraticVisitEnergy :
   have hp1 : 1 < q := (Fact.out : Nat.Prime q).one_lt
   rw [excessEnergy_eq_visit_deviation _ hp1]
   -- ∑(V - N/(q-1))^2 where V uses walkVisitCount on Fin N
-  -- Need to relate walkVisitCount (fun n : Fin N => emWalkUnit ... n.val) a
-  -- to emVisitCount ... a N
-  -- walkVisitCount w a = #{i ∈ Fin N : w i = a}
-  -- emVisitCount ... a N = #{n ∈ range N : emWalkUnit n = a}
-  -- These are equal by the natural bijection Fin N ≃ range N
-  have hvc_eq : ∀ a : (ZMod q)ˣ,
-      walkVisitCount (fun (n : Fin N) => emWalkUnit q hq hne n.val) a =
-      emVisitCount q hq hne a N := by
-    intro a
-    simp only [walkVisitCount, emVisitCount]
-    -- Map the Fin N filter to the range N filter via Fin.val
-    set s := Finset.univ.filter (fun n : Fin N => emWalkUnit q hq hne n.val = a)
-    set t := (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)
-    -- s.map Fin.valEmbedding = t
-    suffices h : s.map Fin.valEmbedding = t by
-      rw [← h]; exact (Finset.card_map _).symm
-    ext n
-    simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
-      Finset.mem_range, Fin.valEmbedding_apply, s, t]
-    constructor
-    · rintro ⟨i, hi, rfl⟩; exact ⟨i.isLt, hi⟩
-    · intro ⟨hlt, heq⟩; exact ⟨⟨n, hlt⟩, heq, rfl⟩
-  -- Now the sums match
   have hsum_eq :
       ∑ a : (ZMod q)ˣ,
         ((walkVisitCount (fun (n : Fin N) => emWalkUnit q hq hne n.val) a : ℝ) -
          (N : ℝ) / ((q : ℝ) - 1)) ^ 2 =
       ∑ a : (ZMod q)ˣ, (visitDeviation hq hne N a) ^ 2 := by
-    apply Finset.sum_congr rfl
-    intro a _
-    simp only [visitDeviation, hvc_eq]
+    simp only [visitDeviation, walkVisitCount_eq_emVisitCount hq hne N]
   rw [hsum_eq]
   -- Now: (q-1) * lyapunov ≤ (q-1) * (ε/(q-1)) * N^2 = ε * N^2
   change ((q : ℝ) - 1) * lyapunov hq hne N ≤ ε * (N : ℝ) ^ 2
@@ -518,35 +516,9 @@ theorem sve_implies_scd_above_threshold (hsve : SubquadraticVisitEnergy) :
       linarith
     · linarith
   have hN_pos : (0 : ℝ) ≤ (N : ℝ) := Nat.cast_nonneg N
-  -- Step 1: Get lyapunov bound from SVE
-  -- SVE: excessEnergy ≤ 2ε * N²
   have hSVE := hN₁ N hNN1
-  -- excessEnergy = (q-1) * lyapunov via visit count bijection
-  have hvc_eq : ∀ a : (ZMod q)ˣ,
-      walkVisitCount (fun (n : Fin N) => emWalkUnit q hq hne n.val) a =
-      emVisitCount q hq hne a N := by
-    intro a
-    simp only [walkVisitCount, emVisitCount]
-    set s := Finset.univ.filter (fun n : Fin N => emWalkUnit q hq hne n.val = a)
-    set t := (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)
-    suffices h : s.map Fin.valEmbedding = t by
-      rw [← h]; exact (Finset.card_map _).symm
-    ext n
-    simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
-      Finset.mem_range, Fin.valEmbedding_apply, s, t]
-    constructor
-    · rintro ⟨i, hi, rfl⟩; exact ⟨i.isLt, hi⟩
-    · intro ⟨hlt, heq⟩; exact ⟨⟨n, hlt⟩, heq, rfl⟩
   rw [excessEnergy_eq_visit_deviation _ hp1] at hSVE
-  have hsum_eq :
-      ∑ a : (ZMod q)ˣ,
-        ((walkVisitCount (fun (n : Fin N) => emWalkUnit q hq hne n.val) a : ℝ) -
-         (N : ℝ) / ((q : ℝ) - 1)) ^ 2 =
-      ∑ a : (ZMod q)ˣ, (visitDeviation hq hne N a) ^ 2 := by
-    apply Finset.sum_congr rfl
-    intro a _
-    simp only [visitDeviation, hvc_eq]
-  rw [hsum_eq] at hSVE
+  simp only [walkVisitCount_eq_emVisitCount hq hne N, visitDeviation] at hSVE
   -- So (q-1) * lyapunov ≤ 2ε * N²
   change ((q : ℝ) - 1) * lyapunov hq hne N ≤ 2 * ε * (N : ℝ) ^ 2 at hSVE
   -- Hence lyapunov ≤ 2ε * N² / (q-1) ≤ 2ε * N²
