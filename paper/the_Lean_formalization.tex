@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 76~files
-totaling ${\sim}45{,}000$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 79~files
+totaling ${\sim}45{,}500$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -109,8 +109,13 @@ three leaf modules:
 \code{IntegerDiophantine.lean} & $T$-iteration $T(n){=}(n{-}1)\cdot\minFac(n){+}1$, orbit, cofactor & 340 \\
 \code{SieveConstraint.lean} & Prime support $S_n$, sieve exclusion, $P(n){+}1 \equiv 1 \bmod S_n$ & 261 \\
 \midrule
+\multicolumn{3}{l}{\emph{Adelic and profinite framework (new)}} \\
+\code{AdelicEquidist.lean} & Adelic decomposition: CME $\Leftrightarrow$ MWI $+$ MME, CRT fiber, CPD & 416 \\
+\code{ProfiniteEquidist.lean} & Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion & 172 \\
+\midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 195 \\
+\code{Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 169 \\
 \midrule
 \multicolumn{3}{l}{\emph{Iwaniec--Kowalski infrastructure}} \\
 \code{IKCh1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 434 \\
@@ -330,8 +335,8 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}45{,}000$ \\
-Files & 76 \\
+Lines of Lean code & ${\sim}45{,}500$ \\
+Files & 79 \\
 Theorems/lemmas & ${\sim}1{,}470$ \\
 Definitions & ${\sim}575$ \\
 \code{sorry} occurrences & \textbf{0} \\
@@ -504,6 +509,16 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Diagonal energy $\leq J \cdot K^2$ & Proved & \code{diag\_energy\_le} \\
 \quad TWD $\Rightarrow$ MC (via CCSB bridge) & Proved & \code{twd\_implies\_mc\_from\_bridge} \\
 \midrule
+\multicolumn{3}{l}{\emph{Adelic and profinite framework}} \\
+\quad CME $\Leftrightarrow$ AdelicEquidist (full equivalence) & Proved & \code{cme\_iff\_adelic} \\
+\quad MWI $+$ MME $\Rightarrow$ CME & Proved & \code{mwi\_mme\_implies\_cme} \\
+\quad CME $\Rightarrow$ MME (fiber decomposition) & Proved & \code{cme\_implies\_mme} \\
+\quad AdelicEquidist $\Rightarrow$ MC & Proved & \code{adelic\_implies\_mc} \\
+\quad UPE $\Rightarrow$ CCSB (k=1 specialization) & Proved & \code{uniform\_profinite\_implies\_ccsb} \\
+\quad UPE $\Rightarrow$ MC & Proved & \code{uniform\_profinite\_implies\_mc} \\
+\quad UPE $\Rightarrow$ CPD (k=2 specialization) & Proved & \code{uniform\_profinite\_implies\_cpd} \\
+\quad Adelic landscape (5-route conjunction) & Proved & \code{adelic\_landscape} \\
+\midrule
 \multicolumn{3}{l}{\emph{Integer-level $T$-iteration}} \\
 \quad $T$-orbit $=$ shifted accumulators & Proved & \code{emIterationT\_iterate\_eq} \\
 \quad $T$-orbit strictly monotone & Proved & \code{emIterationT\_orbit\_strictMono} \\
@@ -584,6 +599,11 @@ Mathlib version & v4.29.0-rc1 \\
 \quad SelfCorrectingDrift ($R(N) = o(N^2)$) & \textbf{Open} & \code{SelfCorrectingDrift} \\
 \quad TailWindowDecorrelation (cross terms vanish) & \textbf{Open} & \code{TailWindowDecorrelation} \\
 \quad TWDImpliesCCSB (TWD $\Rightarrow$ CCSB bridge) & \textbf{Open} & \code{TWDImpliesCCSB} \\
+\quad CrossPrimeDecorrelation (walk independence at distinct primes) & \textbf{Open} & \code{CrossPrimeDecorrelation} \\
+\quad MultiplierMarginalEquidist (unconditional mult char sums) & \textbf{Open} & \code{MultiplierMarginalEquidist} \\
+\quad MultWalkIndependence (mult--walk decorrelation) & \textbf{Open} & \code{MultWalkIndependence} \\
+\quad CRTMultiplierFiber (mixed mult--walk char sums) & \textbf{Open} & \code{CRTMultiplierFiber} \\
+\quad UniformProfiniteEquidist (Weyl criterion for $\hat{\mathbb{Z}}^\times$) & \textbf{Open} & \code{UniformProfiniteEquidist} \\
 \midrule
 \multicolumn{3}{l}{\emph{ANT infrastructure (one-sided Tauberian + Abel chain)}} \\
 \quad One-sided Tauberian upper bound & Proved & \code{one\_sided\_tauberian\_upper} \\
