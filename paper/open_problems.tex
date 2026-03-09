@@ -204,6 +204,170 @@ $\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \MC$,
 \noindent where DSLHitting only requires that the walk hits~$-1$ for a
 positive density of starting points, rather than full equidistribution.
 
+\paragraph{The Adelic Decomposition of CME}
+\label{sec:adelic}
+
+The EM walk does not privilege any single prime: at each step, the race
+across \emph{all} coordinates of $\hat{\ZZ}^\times = \prod_p (\ZZ/p\ZZ)^\times$
+is run and the winner ($\minFac$) is selected.  The process is
+intrinsically adelic.  CRT multiplier invariance
+(\lean{EM/MullinCRT.lean}{crt\_multiplier\_invariance}) shows that
+$\minFac(\Prod{2}(n){+}1) \bmod q$ depends only on the residues of
+$\Prod{2}(n)$ at primes $r \neq q$: the multiplier at~$q$ is determined
+by the \emph{non-$q$ coordinates} of the walk.
+
+This structural observation decomposes CME into two independent conditions:
+
+\begin{itemize}[nosep]
+\item \textbf{Multiplier Marginal Equidistribution}~(MME): the
+  unconditional multiplier character sums
+  $\sum_{n<N} \chi(\multZ{2}{q}{n})$ vanish for each non-trivial~$\chi$.
+  This captures the \emph{analytic} content---the multiplier has no
+  preferred direction.
+\item \textbf{Multiplier--Walk Independence}~(MWI): the multiplier
+  character sum conditioned on $\walkZ{2}{q}{n} = a$ is bounded by
+  the unconditional sum plus $o(N)$.  This captures the
+  \emph{structural} content---knowing where the walk is does not predict
+  the multiplier.
+\end{itemize}
+
+\begin{theorem}[\lean{EM/AdelicEquidist.lean}{cme\_iff\_adelic}]
+\label{thm:cme-iff-adelic}
+$\mathrm{CME} \;\Longleftrightarrow\; \mathrm{MWI} + \mathrm{MME}$.
+\end{theorem}
+
+\begin{proof}
+$(\Rightarrow)$: CME gives MWI trivially (the conditional sum
+is already $o(N)$); CME gives MME by decomposing the unconditional sum
+into fibers
+$\sum_n \chi(m(n)) = \sum_{a} \sum_{\{n : w(n) = a\}} \chi(m(n))$
+via \code{Finset.sum\_fiberwise}, applying CME at each fiber with
+$\varepsilon' = \varepsilon / |\GG|$, and summing
+(\lean{EM/AdelicEquidist.lean}{cme\_implies\_mme}).
+
+$(\Leftarrow)$: Given $\chi \neq 1$ and walk position~$a$, MWI bounds
+the conditional sum by $\|\sum \chi(m)\| + (\varepsilon/2)\cdot N$,
+and MME bounds the unconditional sum by $(\varepsilon/2)\cdot N$.
+Together: $\leq \varepsilon N$.
+\end{proof}
+
+The equivalence shows that MME (analytic, from population equidistribution)
+and MWI (structural, from CRT + cross-prime decorrelation) are genuinely
+independent components.  The proved identity
+$\mathrm{MME} \Leftrightarrow \text{vanishing walk lag-1 autocorrelation}$
+(\lean{EM/AdelicEquidist.lean}{mme\_iff\_walk\_autocorrelation},
+via \code{walk\_shift\_one\_correlation}) clarifies that CCSB (walk equidistribution)
+and MME (multiplier equidistribution, equivalently walk autocorrelation)
+are logically independent: neither implies the other.
+
+\medskip
+A key bridge is the \textbf{CRT Multiplier Fiber} hypothesis: for
+non-trivial $\chi, \psi : (\ZZ/q\ZZ)^\times \to \CC^\times$, the mixed sum
+$\sum_{n<N} \chi(\multZ{2}{q}{n}) \cdot \psi(\walkZ{2}{q}{n}) = o(N)$.
+This says that the multiplier and walk at prime~$q$ are decorrelated
+at the character level.
+
+\begin{theorem}[\lean{EM/AdelicEquidist.lean}{crt\_fiber\_implies\_mwi\_proved}]
+\label{thm:crt-fiber-mwi}
+$\mathrm{CRTFiber} + \mathrm{MME} \;\Longrightarrow\; \mathrm{MWI}$.
+Hence $\mathrm{CRTFiber} + \mathrm{MME} \;\Longrightarrow\; \mathrm{CME}
+\;\Longrightarrow\; \mathrm{MC}$, with no open~Props.
+\end{theorem}
+
+\begin{proof}
+By Fourier inversion on the finite abelian group $\GG = (\ZZ/q\ZZ)^\times$:
+\[
+  \mathbf{1}_{w(n)=a}
+  \;=\; \frac{1}{|\GG|} \sum_{\psi \in \hat\GG}
+    \bar\psi(a) \cdot \psi(w(n)).
+\]
+Substituting into the conditional sum
+$\sum_{\{n : w(n)=a\}} \chi(m(n))$ and exchanging sums gives
+\[
+  \frac{1}{|\GG|}\,\sum_\psi \bar\psi(a) \cdot
+  \sum_{n<N} \chi(m(n)) \cdot \psi(w(n)).
+\]
+The trivial character $\psi = 1$ contributes
+$(1/|\GG|) \cdot \|\sum \chi(m)\|$, bounded by MME\@.
+Each non-trivial~$\psi$ contributes a mixed character sum
+bounded by CRTFiber.  Triangle inequality
+(using $|\bar\psi(a)| = 1$) over the $|\GG|-1$ non-trivial characters
+gives $\|\text{conditional}\| \leq \|\text{unconditional}\| + \varepsilon N$.
+
+The formal proof (145~lines) uses \code{char\_indicator\_expansion} for
+the Fourier inversion identity and \code{MulChar.equivToUnitHom} to
+bridge between \code{DirichletCharacter\;\CC\;q}
+(which is \code{Fintype} and has the orthogonality infrastructure)
+and the \code{(ZMod\;q)\textsuperscript{x}\;→*\;\CC\textsuperscript{x}}
+type used in the hypothesis definitions.
+\end{proof}
+
+\paragraph{The Profinite Weyl Criterion}
+
+The walk lives in $\hat{\ZZ}^\times = \prod_p (\ZZ/p\ZZ)^\times$.
+Uniform Profinite Equidistribution~(UPE) is the Weyl criterion for
+this compact abelian group: for any finite set of distinct primes
+$q_1, \ldots, q_k$ (not appearing in the sequence) and any product
+of non-trivial characters $\chi_i : (\ZZ/q_i\ZZ)^\times \to \CC^\times$,
+\[
+  \Bigl\|\sum_{n<N} \prod_{i=1}^k
+    \chi_i(\walkZ{2}{q_i}{n})\Bigr\| \;\leq\; \varepsilon N
+  \qquad\text{for all } N \geq N_0(\varepsilon).
+\]
+
+\begin{theorem}[\lean{EM/ProfiniteEquidist.lean}{uniform\_profinite\_implies\_ccsb},
+  \lean{EM/ProfiniteEquidist.lean}{uniform\_profinite\_implies\_cpd}]
+\label{thm:upe-specializations}
+$\mathrm{UPE}$ implies both\/ $\mathrm{CCSB}$
+(specialization to $k{=}1$, via $\mathsf{Fin.prod\_univ\_one}$)
+and\/ $\mathrm{CPD}$
+(specialization to $k{=}2$, via $\mathsf{Fin.prod\_univ\_two}$).
+Hence $\mathrm{UPE} \Rightarrow \mathrm{MC}$.
+\end{theorem}
+
+The natural question is whether the converse holds: does pairwise
+decorrelation (CCSB at $k{=}1$ plus CPD at $k{=}2$) bootstrap to the
+full $k$-wise condition~UPE\@?
+
+\begin{remark}[Dead End~\#125]
+\label{rem:pairwise-k-wise}
+\textbf{No.}  The abstract XOR counterexample is decisive: three
+unit-modulus sequences $X_1, X_2, X_3 := X_1 \cdot X_2$ satisfy all
+pairwise cancellation conditions
+($\sum X_i \bar X_j = o(N)$) but have
+$\sum X_1 X_2 X_3 = \sum |X_1|^2 |X_2|^2 = N$.
+No standard inequality (Cauchy--Schwarz, H\"older, van~der Corput)
+bridges pairwise to $k$-wise.
+The Tao--Ter\"av\"ainen theorem~\cite{TaoTeravainenPairwise}
+(``pairwise implies higher'' for multiplicative functions) requires
+multiplicativity, which the EM walk lacks.  UPE therefore requires
+$k$-wise decorrelation for \emph{all}~$k$ as a primitive hypothesis,
+not derivable from $k{=}1$ and $k{=}2$ data alone.
+\end{remark}
+
+The hierarchy is:
+\[
+  \mathrm{UPE}
+  \;\Longrightarrow\;
+  \bigl\{\mathrm{CCSB},\;\mathrm{CPD}\bigr\}
+  \;\Longrightarrow\;
+  \mathrm{MC},
+  \qquad\text{but}\quad
+  \mathrm{CCSB} + \mathrm{CPD}
+  \;\not\Rightarrow\;
+  \mathrm{UPE}.
+\]
+CPD combined with CRT multiplier invariance gives MWI
+(conditional on \code{CPDImpliesCRTFiber}, the sole remaining bridge
+in the adelic framework).  The full adelic landscape
+(\lean{EM/AdelicEquidist.lean}{adelic\_landscape}) witnesses five
+proved routes to MC through the adelic framework:
+CME~$\Leftrightarrow$~AdelicEquidist,
+AdelicEquidist~$\Rightarrow$~MC,
+MWI~$+$~MME~$\Rightarrow$~MC,
+CRTFiber~$+$~MME~$\Rightarrow$~CME (fully proved),
+and CPD~$+$~MME~$\Rightarrow$~MC (conditional on one bridge).
+
 \paragraph{What Would Close the Conjecture}
 
 The cleanest paths to MC:

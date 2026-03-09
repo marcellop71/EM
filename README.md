@@ -2,7 +2,7 @@
 
 ## The Euclid–Mullin Sequence
 
-Euclid’s proposition IX.20 of the Elements shows that for any finite set of primes, each prime
+Euclid's proposition IX.20 of the Elements shows that for any finite set of primes, each prime
 factor of their product plus one is outside the set: to grow your set of primes, you can pick any
 of them.
 The [Euclid–Mullin sequence](https://oeis.org/A000945) (Mullin, 1963) makes a definite choice: always take the *smallest* prime factor.
@@ -15,24 +15,31 @@ The first terms are 2, 3, 7, 43, 13, 53, 5, 6221671, 38709183810571, 139, 2801, 
 
 **Mullin's Conjecture:** Every prime number eventually appears in this sequence.
 
+## Formalization
+
+~45,700 lines of Lean 4 / Mathlib (79 files, zero `sorry`) reducing the conjecture to a single open hypothesis — the **Deterministic Stability Lemma** (DSL): that population-level equidistribution of least prime factors transfers to conditional equidistribution for the specific EM orbit.
+
+The main machine-verified chain is DSL => CME => CCSB => MC, with several independent routes (adelic, profinite, ensemble, self-correcting drift, visit equidistribution) also formalized.
+
 ## Paper
 
-The full paper is available in this repo at [`paper/main.pdf`](paper/main.pdf) with clickable links to the Lean source code for every formally verified result.
+The full paper is available at [`paper/main.pdf`](paper/main.pdf) with clickable links to the Lean source code for every formally verified result.
 
-Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`zulip_mathlib_candidates.md`](zulip_mathlib_candidates.md) for a curated list including:
+## Mathlib Candidates
+
+Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`zulip_mathlib_candidates.md`](zulip_mathlib_candidates.md) for a curated list.
 
 ## Content-Addressed Registry
 
-The project includes a machine-readable registry of all key results and open hypotheses, generated using the [CA](../CA/) (Content Addressing for Lean 4) package.
+The project includes a machine-readable registry of all key results and open hypotheses, using the [CA](https://github.com/marcellop71/CA) (Content Addressing for Lean 4) package.
 
-**How it works:** The CA package provides `@[publish]` and `@[open_point]` attributes that tag declarations for inclusion in a decentralized formal math registry. Each tagged declaration gets an L0 content address — a deterministic hash of its canonicalized type expression (universe-renamed, metadata-stripped).
+**How it works:** The CA package provides `@[publish]` and `@[open_point]` attributes that tag declarations for inclusion in a decentralized formal math registry. Each tagged declaration gets a content address — a SHA256 hash of its canonicalized type expression (universe-renamed, metadata-stripped).
 
-- [`EM/Registry.lean`](EM/Registry.lean) — 24 `@[open_point]` annotations (unproved hypotheses) and 38 `@[publish]` annotations (proved theorems)
-- [`scripts/GenRegistry.lean`](scripts/GenRegistry.lean) — generator script that queries the environment for annotated declarations, computes content hashes, classifies each as *open*, *proved*, or *conditional* (depends on an open point), and writes the registry
-- [`registry/declarations.json`](registry/declarations.json) — 62 entries with name, module, kind, status, content hash, pretty-printed type, and dependency list
-- [`registry/meta.json`](registry/meta.json) — project summary (24 open points, 22 proved, 16 conditional)
+- [`EM/Registry.lean`](EM/Registry.lean) — `@[open_point]` annotations (unproved hypotheses) and `@[publish]` annotations (proved theorems)
+- [`registry/declarations.json`](registry/declarations.json) — entries with name, module, kind, status, content hash, pretty-printed type, and dependency list
+- [`registry/meta.json`](registry/meta.json) — project summary (open points, proved, conditional)
 
-To regenerate: `lake build genRegistry` (the registry is written during elaboration via `#eval!`).
+To regenerate: `ca registry --module EM.Registry --output registry/`.
 
 ## License
 

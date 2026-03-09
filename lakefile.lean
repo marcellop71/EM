@@ -22,6 +22,3 @@ require ca from "../CA"
 
 @[default_target]
 lean_lib EM where
-
-lean_exe genRegistry where
-  root := `scripts.GenRegistry
