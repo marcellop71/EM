@@ -167,3 +167,9 @@ attribute [publish] mwi_mme_implies_cme
 attribute [publish] adelic_implies_mc
 attribute [publish] cme_implies_mwi
 attribute [publish] all_routes_to_mc_adelic
+
+-- ============================================================================
+-- Registry generation (runs during `lake build`)
+-- ============================================================================
+
+#ca_registry "registry/"

@@ -33,13 +33,13 @@ Several general-purpose results developed in this formalization fill genuine gap
 
 The project includes a machine-readable registry of all key results and open hypotheses, using the [CA](https://github.com/marcellop71/CA) (Content Addressing for Lean 4) package.
 
-**How it works:** The CA package provides `@[publish]` and `@[open_point]` attributes that tag declarations for inclusion in a decentralized formal math registry. Each tagged declaration gets a content address — a SHA256 hash of its canonicalized type expression (universe-renamed, metadata-stripped).
+**How it works:** The CA package provides `@[publish]` and `@[open_point]` attributes that tag declarations for inclusion in a decentralized formal math registry. Each tagged declaration gets a content address — a deterministic hash of its canonicalized type expression (universe-renamed, metadata-stripped). The `#ca_registry` command at the end of [`EM/Registry.lean`](EM/Registry.lean) generates the registry files automatically during `lake build`.
 
 - [`EM/Registry.lean`](EM/Registry.lean) — `@[open_point]` annotations (unproved hypotheses) and `@[publish]` annotations (proved theorems)
 - [`registry/declarations.json`](registry/declarations.json) — entries with name, module, kind, status, content hash, pretty-printed type, and dependency list
 - [`registry/meta.json`](registry/meta.json) — project summary (open points, proved, conditional)
 
-To regenerate: `ca registry --module EM.Registry --output registry/`.
+The registry is regenerated automatically by `lake build`.
 
 ## License
 
