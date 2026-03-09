@@ -484,7 +484,7 @@ hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
 The formalization has exhaustively explored all known proof strategies
-across 121~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
+across 125~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
 counterexample (Dead End~\#117), the cofactor identity's failure to
 escape the Marginal/Joint Barrier (Dead End~\#115), and the exhaustion
 of all four DSL proof directions (algebraic identities, cofactor
@@ -620,6 +620,12 @@ ways that current analytic number theory does not.
 \quad Cofactor identity: $w(n){+}1 = m(n) \cdot \mathrm{cof}(n)$ & Proved & \code{shifted\_walk\_eq\_mult\_mul\_cof} \\
 \quad Hit $\Leftrightarrow$ cofZ $= 0$ & Proved & \code{walkZ\_eq\_neg\_one\_iff\_cofZ\_zero} \\
 \midrule
+\multicolumn{3}{l}{\emph{UCE (sieve-based) route}} \\
+\quad UCE + UCEImpliesCME $\Rightarrow$ MC & Proved & \code{uce\_cme\_implies\_mc} \\
+\quad UCE + Alladi + DSL $\Rightarrow$ MC & Proved & \code{uce\_dsl\_implies\_mc} \\
+\quad $\Prod{2}(n)$ coprime to primes not in seq & Proved & \code{prod\_coprime\_of\_not\_in\_seq} \\
+\quad UCE landscape (summary conjunction) & Proved & \code{uce\_landscape} \\
+\midrule
 \multicolumn{3}{l}{\emph{Large sieve route}} \\
 \quad MultiModularCSB $\Rightarrow$ MC & Proved & \code{mmcsb\_implies\_mc} \\
 \quad BV chain $\Rightarrow$ MC & Proved & \code{bv\_chain\_mc} \\
@@ -673,6 +679,8 @@ ways that current analytic number theory does not.
 \quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
 \quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\
 \quad EMDImpliesCME & \textbf{Open} & \code{EMDImpliesCME} \\
+\quad UniformConductorEquidist (sieve uniformity) & \textbf{Open} & \code{UniformConductorEquidist} \\
+\quad UCEImpliesCME (orbit-specificity bridge) & \textbf{Open} & \code{UCEImpliesCME} \\
 \quad JointStepEquidist (ensemble route gap) & \textbf{Open} & \code{JointStepEquidist} \\
 \quad MultCancelToWalkCancel ($\equiv$ CCSB, Dead End \#117) & \textbf{Open} & \code{MultCancelToWalkCancel} \\
 \quad PairwiseVanishingImpliesSMB (variance route) & \textbf{Open} & \code{PairwiseVanishingImpliesSMB} \\

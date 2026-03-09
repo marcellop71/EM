@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 79~files
-totaling ${\sim}45{,}700$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 80~files
+totaling ${\sim}46{,}000$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -112,6 +112,7 @@ three leaf modules:
 \multicolumn{3}{l}{\emph{Adelic and profinite framework (new)}} \\
 \code{AdelicEquidist.lean} & Adelic decomposition: CME $\Leftrightarrow$ MWI $+$ MME, Fourier bridge, CPD & 656 \\
 \code{ProfiniteEquidist.lean} & Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion & 182 \\
+\code{UniformConductorEquidist.lean} & UCE hypothesis, conductor counting, UCE$+$DSL$\Rightarrow$MC & 301 \\
 \midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 195 \\
@@ -523,6 +524,12 @@ Mathlib version & v4.29.0-rc1 \\
 \quad CCSB $\wedge$ MME $+$ MWI $\Rightarrow$ CME & Proved & \code{ccsb\_mme\_landscape} \\
 \quad Adelic landscape (5-route conjunction) & Proved & \code{adelic\_landscape} \\
 \midrule
+\multicolumn{3}{l}{\emph{Uniform Conductor Equidistribution}} \\
+\quad UCE $+$ DSL $\Rightarrow$ MC (via Alladi chain) & Proved & \code{uce\_dsl\_implies\_mc} \\
+\quad UCEImpliesCME $\Rightarrow$ MC & Proved & \code{uce\_cme\_implies\_mc} \\
+\quad $\prod(n)$ coprime to $q \notin$ seq & Proved & \code{prod\_coprime\_of\_not\_in\_seq} \\
+\quad UCE landscape (3-clause conjunction) & Proved & \code{uce\_landscape} \\
+\midrule
 \multicolumn{3}{l}{\emph{Integer-level $T$-iteration}} \\
 \quad $T$-orbit $=$ shifted accumulators & Proved & \code{emIterationT\_iterate\_eq} \\
 \quad $T$-orbit strictly monotone & Proved & \code{emIterationT\_orbit\_strictMono} \\
@@ -608,6 +615,8 @@ Mathlib version & v4.29.0-rc1 \\
 \quad MultWalkIndependence (mult--walk decorrelation) & \textbf{Open} & \code{MultWalkIndependence} \\
 \quad CRTMultiplierFiber (mixed mult--walk char sums) & \textbf{Open} & \code{CRTMultiplierFiber} \\
 \quad UniformProfiniteEquidist (Weyl criterion for $\hat{\mathbb{Z}}^\times$) & \textbf{Open} & \code{UniformProfiniteEquidist} \\
+\quad UniformConductorEquidist (sieve with growing conductor) & \textbf{Open} & \code{UniformConductorEquidist} \\
+\quad UCEImpliesCME (orbit-specificity bridge for UCE) & \textbf{Open} & \code{UCEImpliesCME} \\
 \midrule
 \multicolumn{3}{l}{\emph{ANT infrastructure (one-sided Tauberian + Abel chain)}} \\
 \quad One-sided Tauberian upper bound & Proved & \code{one\_sided\_tauberian\_upper} \\

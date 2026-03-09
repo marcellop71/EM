@@ -12,6 +12,7 @@ import EM.CRTPointwiseTransfer
 import EM.IKCh7Hilbert
 import EM.EnsemblePT
 import EM.AdelicEquidist
+import EM.UniformConductorEquidist
 
 /-!
 # EM Registry: Content-Addressed Publication Annotations
@@ -79,6 +80,11 @@ attribute [open_point] TWDImpliesCCSB
 attribute [open_point] IK.WeightedPNTinAP
 attribute [open_point] PrimesEquidistImpliesRoughLPF
 attribute [open_point] RoughLPFImpliesMFRE
+
+/-! ### Conductor equidistribution hypotheses -/
+
+attribute [open_point] UniformConductorEquidist
+attribute [open_point] UCEImpliesCME
 
 -- ============================================================================
 -- Published results: proved theorems
@@ -167,6 +173,12 @@ attribute [publish] mwi_mme_implies_cme
 attribute [publish] adelic_implies_mc
 attribute [publish] cme_implies_mwi
 attribute [publish] all_routes_to_mc_adelic
+
+/-! ### Conductor equidistribution -/
+
+attribute [publish] uce_cme_implies_mc
+attribute [publish] prod_coprime_of_not_in_seq
+attribute [publish] uce_landscape
 
 -- ============================================================================
 -- Registry generation (runs during `lake build`)

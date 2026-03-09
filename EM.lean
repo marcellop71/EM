@@ -76,4 +76,5 @@ import EM.IntegerDiophantine
 import EM.SieveConstraint
 import EM.AdelicEquidist
 import EM.ProfiniteEquidist
+import EM.UniformConductorEquidist
 import EM.Registry
