@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 93~files
-totaling ${\sim}51{,}400$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 95~files
+totaling ${\sim}51{,}500$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -61,10 +61,13 @@ three leaf modules:
 \multicolumn{3}{l}{\emph{CME decomposition and spectral analysis}} \\
 \code{CMEVariants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 113 \\
 \code{CMEDecomposition.lean} & CME $=$ A $+$ B decomposition, EMD $\Rightarrow$ CME & 385 \\
-\code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, sieve bridge & 1795 \\
+\code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, Farey, GCT chains & 855 \\
+\code{LargeSieveStructural.lean} & Coprimality, divisibility, BV decomposition, sieve bridge & 945 \\
 \code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel & 899 \\
 \code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT, dead ends & 1687 \\
-\code{LargeSieveSpectral.lean} & Walk energy, HOD, VdC, CME, VCB, SVE & 2693 \\
+\code{LargeSieveSpectral.lean} & Walk energy, SVE, Weyl criterion, HOD, VdC & 1071 \\
+\code{CMEReduction.lean} & CME definition, CME $\Rightarrow$ CCSB $\Rightarrow$ MC, FEB, hierarchy & 627 \\
+\code{LargeSieveWalkAnalysis.lean} & VCB, energy increments, fiber decomposition, transition matrix & 1006 \\
 \midrule
 \multicolumn{3}{l}{\emph{SDDS and independence}} \\
 \code{SieveDefinedDynamics.lean} & Abstract SDDS framework, factoring rules & 195 \\
@@ -89,7 +92,8 @@ three leaf modules:
 \code{EnsembleCRT.lean} & CRT equidistribution, sqfree residue averaging & 503 \\
 \code{EnsembleDecorrelation.lean} & CRT-based decorrelation, Markov density bounds & 477 \\
 \code{EnsembleFirstMoment.lean} & First moment, $\kappa = 2/3$, FM+VB $\Rightarrow$ RSD & 320 \\
-\code{EnsemblePT.lean} & Full CRT chain $\Rightarrow$ cancellation, Weyl $\Rightarrow$ MC & 2159 \\
+\code{EnsemblePT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1125 \\
+\code{EnsembleWeylChain.lean} & Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc} & 834 \\
 \code{EnsembleCRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 763 \\
 \code{EnsembleBaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 407 \\
 \code{FiberAutonomy.lean} & CRT fiber determines multiplier dynamics, walk readout & 255 \\
@@ -137,7 +141,8 @@ three leaf modules:
 \code{IKCh7AdditiveLS.lean} & Iwaniec--Kowalski Ch.\,7: additive large sieve & 989 \\
 \code{IKCh7MultiplicativeLS.lean} & Iwaniec--Kowalski Ch.\,7: multiplicative large sieve & 462 \\
 \code{IKCh7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications & 1537 \\
-\code{IKCh7Hilbert.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert inequality chain & 2279 \\
+\code{IKCh7Hilbert.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram & 1265 \\
+\code{IKCh7CesaroChain.lean} & Iwaniec--Kowalski Ch.\,7: Ces\`aro convergence, circular ALS chain & 1040 \\
 \end{longtable}
 \normalsize
 
