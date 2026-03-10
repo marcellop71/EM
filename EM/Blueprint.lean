@@ -6,6 +6,7 @@ import EM.EquidistBootstrap
 import EM.EquidistSelfCorrecting
 import EM.LargeSieveSpectral
 import EM.EnsemblePT
+import EM.EnsembleWeylChain
 import EM.PopulationTransferStrategy
 import EM.WeakErgodicity
 import EM.EnsembleStructure

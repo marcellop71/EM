@@ -11,6 +11,7 @@ import EM.TailIdentityAttack
 import EM.CRTPointwiseTransfer
 import EM.IKCh7Hilbert
 import EM.EnsemblePT
+import EM.EnsembleWeylChain
 import EM.AdelicEquidist
 import EM.UniformConductorEquidist
 
