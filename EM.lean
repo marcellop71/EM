@@ -21,9 +21,11 @@ import EM.EquidistFourier
 import EM.EquidistSelfCorrecting
 import EM.EquidistSieveTransfer
 import EM.LargeSieve
+import EM.LargeSieveStructural
 import EM.LargeSieveHarmonic
 import EM.LargeSieveAnalytic
 import EM.LargeSieveSpectral
+import EM.LargeSieveWalkAnalysis
 import EM.IKCh1
 import EM.IKCh2
 import EM.IKCh3

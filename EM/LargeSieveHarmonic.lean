@@ -1,4 +1,4 @@
-import EM.LargeSieve
+import EM.LargeSieveStructural
 
 /-!
 # Harmonic Analysis Infrastructure for the Large Sieve
