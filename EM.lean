@@ -93,4 +93,6 @@ import EM.MarkovSieveSynthesis
 import EM.CyclicWalkCoverage
 import EM.DobrushinStopping
 import EM.EMLFunction
+import EM.GaussEM.GaussEMDefs
+import EM.GaussEM.GaussWalkStructure
 import EM.Registry
