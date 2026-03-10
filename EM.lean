@@ -37,6 +37,7 @@ import EM.IKCh7Foundations
 import EM.IKCh7AdditiveLS
 import EM.IKCh7MultiplicativeLS
 import EM.IKCh7SieveApplications
+import EM.IKCh7SieveCRT
 import EM.IKCh7Hilbert
 import EM.MullinCRT
 import EM.CMEVariants
