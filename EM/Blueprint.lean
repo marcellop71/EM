@@ -4,7 +4,7 @@ import EM.MullinGroupCore
 import EM.MasterReduction
 import EM.EquidistBootstrap
 import EM.EquidistSelfCorrecting
-import EM.LargeSieveSpectral
+import EM.CMEReduction
 import EM.EnsemblePT
 import EM.EnsembleWeylChain
 import EM.PopulationTransferStrategy

@@ -1,4 +1,4 @@
-import EM.LargeSieveSpectral
+import EM.CMEReduction
 
 /-!
 # Weaker variants of Conditional Multiplier Equidistribution (CME)

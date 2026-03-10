@@ -26,6 +26,7 @@ import EM.LargeSieveHarmonic
 import EM.LargeSieveAnalytic
 import EM.LargeSieveSpectral
 import EM.LargeSieveWalkAnalysis
+import EM.CMEReduction
 import EM.IKCh1
 import EM.IKCh2
 import EM.IKCh3
