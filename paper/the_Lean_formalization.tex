@@ -9,7 +9,7 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 95~files
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 96~files
 totaling ${\sim}51{,}500$~lines.  The dependency chain is linear, with
 three leaf modules:
 
@@ -51,20 +51,22 @@ three leaf modules:
 \code{EquidistSieve.lean} & Sieve, WHP $\Leftrightarrow$ HH, forbidden multiplier, M\"obius death & 755 \\
 \code{EquidistSelfAvoidance.lean} & Self-avoidance, periodicity & 450 \\
 \code{EquidistCharPRE.lean} & Character non-vanishing, PRE $\Leftrightarrow$ SE & 807 \\
-\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 721 \\
+\code{EquidistBootstrap.lean} & Inductive bootstrap, DH $\Rightarrow$ MC, first passage & 694 \\
 \code{EquidistThreshold.lean} & Sieve gap, one-prime gap, cofinal pair avoidance & 321 \\
 \code{EquidistOrbitAnalysis.lean} & Cofinal orbits, quotient walk, sieve, selectability & 1434 \\
-\code{EquidistFourier.lean} & Character sums, Fourier bridge & 1317 \\
+\code{EquidistFourier.lean} & Character sums, Fourier bridge & 1237 \\
 \code{EquidistSelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel & 1163 \\
-\code{EquidistSieveTransfer.lean} & Sieve transfer, coprimality, neg-inv involution & 1457 \\
+\code{EquidistSieveTransfer.lean} & Sieve transfer, coprimality, neg-inv involution & 615 \\
+\code{EquidistWalkDecomposition.lean} & Quadratic/general walk sum decomposition, escape decorrelation & 863 \\
 \midrule
 \multicolumn{3}{l}{\emph{CME decomposition and spectral analysis}} \\
-\code{CMEVariants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 113 \\
-\code{CMEDecomposition.lean} & CME $=$ A $+$ B decomposition, EMD $\Rightarrow$ CME & 385 \\
+\code{CMEVariants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 96 \\
+\code{CMEDecomposition.lean} & CME $=$ A $+$ B decomposition, EMD $\Rightarrow$ CME & 355 \\
 \code{LargeSieve.lean} & BV, ALS, ArithLS, MMCSB, Farey, GCT chains & 855 \\
 \code{LargeSieveStructural.lean} & Coprimality, divisibility, BV decomposition, sieve bridge & 945 \\
 \code{LargeSieveHarmonic.lean} & Parseval, Gauss sums, DFT, kernel & 899 \\
-\code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT, dead ends & 1687 \\
+\code{LargeSieveAnalytic.lean} & Gauss inversion, WeakALS, GCT chain & 1149 \\
+\code{LargeSievePrimeArithLS.lean} & Prime arithmetic large sieve, walk as partial product, dead ends & 561 \\
 \code{LargeSieveSpectral.lean} & Walk energy, SVE, Weyl criterion, HOD, VdC & 1071 \\
 \code{CMEReduction.lean} & CME definition, CME $\Rightarrow$ CCSB $\Rightarrow$ MC, FEB, hierarchy & 627 \\
 \code{LargeSieveWalkAnalysis.lean} & VCB, energy increments, fiber decomposition, transition matrix & 1006 \\
@@ -74,7 +76,7 @@ three leaf modules:
 \code{SDDSBridge.lean} & SDDS $\leftrightarrow$ EM bridge, orbit/walk/mult correspondence & 375 \\
 \code{SDDSReduction.lean} & StrongSME $\Rightarrow$ MC via sieve-map equidist.\ & 126 \\
 \code{ExcursionIndependence.lean} & Walk excursions, char.\ sum independence & 461 \\
-\code{CRTFiberIndependence.lean} & SE $\Rightarrow$ NAO, CRT independence, death channel & 296 \\
+\code{CRTFiberIndependence.lean} & SE $\Rightarrow$ NAO, CRT independence, death channel & 255 \\
 \midrule
 \multicolumn{3}{l}{\emph{Population and weak variants}} \\
 \code{WeakMullin.lean} & Missing primes, WM $\Rightarrow$ RD, EMBV $\Rightarrow$ MC & 362 \\
@@ -87,27 +89,27 @@ three leaf modules:
 \code{AlladiDensity.lean} & Alladi chain scaffolding, WPNT+DSL $\Rightarrow$ MC & 267 \\
 \midrule
 \multicolumn{3}{l}{\emph{Ensemble framework (new)}} \\
-\code{EnsembleStructure.lean} & Generalized EM: genProd, genSeq, injectivity & 247 \\
+\code{EnsembleStructure.lean} & Generalized EM: genProd, genSeq, injectivity & 269 \\
 \code{EnsembleEM.lean} & Generalized walk/multiplier, bridge to standard EM & 114 \\
-\code{EnsembleCRT.lean} & CRT equidistribution, sqfree residue averaging & 503 \\
-\code{EnsembleDecorrelation.lean} & CRT-based decorrelation, Markov density bounds & 477 \\
+\code{EnsembleCRT.lean} & CRT equidistribution, sqfree residue averaging & 479 \\
+\code{EnsembleDecorrelation.lean} & CRT-based decorrelation, Markov density bounds & 431 \\
 \code{EnsembleFirstMoment.lean} & First moment, $\kappa = 2/3$, FM+VB $\Rightarrow$ RSD & 320 \\
 \code{EnsemblePT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1125 \\
 \code{EnsembleWeylChain.lean} & Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc} & 834 \\
-\code{EnsembleCRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 763 \\
-\code{EnsembleBaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 407 \\
+\code{EnsembleCRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 631 \\
+\code{EnsembleBaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 377 \\
 \code{FiberAutonomy.lean} & CRT fiber determines multiplier dynamics, walk readout & 255 \\
 \midrule
 \multicolumn{3}{l}{\emph{DSL and master reduction (new)}} \\
-\code{DSLInfrastructure.lean} & Energy evolution, fiber analysis, FEB $\Rightarrow$ CME & 683 \\
+\code{DSLInfrastructure.lean} & Energy evolution, fiber analysis, FEB $\Rightarrow$ CME & 627 \\
 \code{ShiftedSquarefreeDensity.lean} & Sieve density $g(r)$, algebraic properties & 251 \\
 \code{VisitEquidistribution.lean} & ExcessEnergy $=$ visit deviation, SVE $\leftrightarrow$ VE & 187 \\
 \code{SelfCorrectingDrift.lean} & Lyapunov identity, SCD $\equiv$ SVE, Dead End \#120 & 624 \\
-\code{SMSBPerClassEscape.lean} & Per-class bad set analysis, Dead End \#121 & 460 \\
+\code{SMSBPerClassEscape.lean} & Per-class bad set analysis, Dead End \#121 & 459 \\
 \code{MasterReduction.lean} & All reduction chains assembled, DSL $\Rightarrow$ MC & 210 \\
-\code{DSLVariance.lean} & Population variance route to DSL, second moment & 407 \\
-\code{CRTPointwiseTransfer.lean} & OCE $=$ CME, all routes to MC via CRT & 262 \\
-\code{SubstitutionPrinciple.lean} & SP $=$ CME, fiber return visits, 4-route witness & 301 \\
+\code{DSLVariance.lean} & Population variance route to DSL, second moment & 365 \\
+\code{CRTPointwiseTransfer.lean} & OCE $=$ CME, all routes to MC via CRT & 260 \\
+\code{SubstitutionPrinciple.lean} & SP $=$ CME, fiber return visits, 4-route witness & 290 \\
 \code{TailIdentityAttack.lean} & Tail energy identities, 4th moment, Chebyshev bridge & 433 \\
 \code{TailWindowDecorrelation.lean} & Window decomposition, variance identity, TWD $\Rightarrow$ MC & 477 \\
 \code{IntegerDiophantine.lean} & $T$-iteration $T(n){=}(n{-}1)\cdot\minFac(n){+}1$, orbit, cofactor & 340 \\
@@ -119,7 +121,7 @@ three leaf modules:
 \code{UniformConductorEquidist.lean} & UCE hypothesis, conductor counting, UCE$+$DSL$\Rightarrow$MC & 301 \\
 \code{FunctionFieldAnalog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 952 \\
 \code{DiamondsPerspective.lean} & $p$-adic geometric perspective, Hecke obstruction, Dead End~\#128 & 340 \\
-\code{MarkovSieveSynthesis.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 520 \\
+\code{MarkovSieveSynthesis.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 538 \\
 \code{DobrushinStopping.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{EMLFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
 \code{FFBootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
@@ -128,8 +130,8 @@ three leaf modules:
 \code{FFMultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 763 \\
 \midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
-\code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 195 \\
-\code{Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 169 \\
+\code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 229 \\
+\code{Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 189 \\
 \midrule
 \multicolumn{3}{l}{\emph{Iwaniec--Kowalski infrastructure}} \\
 \code{IKCh1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 434 \\
@@ -140,7 +142,8 @@ three leaf modules:
 \code{IKCh7Foundations.lean} & Iwaniec--Kowalski Ch.\,7: foundations, norm bounds & 328 \\
 \code{IKCh7AdditiveLS.lean} & Iwaniec--Kowalski Ch.\,7: additive large sieve & 989 \\
 \code{IKCh7MultiplicativeLS.lean} & Iwaniec--Kowalski Ch.\,7: multiplicative large sieve & 462 \\
-\code{IKCh7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications & 1537 \\
+\code{IKCh7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications (prime case) & 949 \\
+\code{IKCh7SieveCRT.lean} & Iwaniec--Kowalski Ch.\,7: Linnik, CRT general squarefree & 609 \\
 \code{IKCh7Hilbert.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram & 1265 \\
 \code{IKCh7CesaroChain.lean} & Iwaniec--Kowalski Ch.\,7: Ces\`aro convergence, circular ALS chain & 1040 \\
 \end{longtable}

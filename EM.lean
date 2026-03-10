@@ -16,6 +16,7 @@ import EM.EquidistSelfAvoidance
 import EM.EquidistCharPRE
 import EM.EquidistBootstrap
 import EM.EquidistThreshold
+import EM.EquidistCofinalOrbit
 import EM.EquidistOrbitAnalysis
 import EM.EquidistFourier
 import EM.EquidistSelfCorrecting
