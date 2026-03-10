@@ -10,6 +10,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
 import Mathlib.NumberTheory.DirichletCharacter.Basic
 import Mathlib.Analysis.Asymptotics.SpecificAsymptotics
 import EM.LargeSieveAnalytic
+import EM.LargeSievePrimeArithLS
 
 /-!
 # Chapter 7 (Part 1): Foundations — Bilinear Forms and LSI Framework (Iwaniec-Kowalski)
