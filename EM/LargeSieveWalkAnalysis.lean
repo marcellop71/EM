@@ -1,4 +1,5 @@
 import EM.CMEReduction
+import EM.EquidistWalkDecomposition
 
 /-!
 # Walk Analysis: Energy Increments, VCB, CME Fiber Decomposition, Transitions

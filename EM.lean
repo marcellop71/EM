@@ -20,6 +20,7 @@ import EM.EquidistOrbitAnalysis
 import EM.EquidistFourier
 import EM.EquidistSelfCorrecting
 import EM.EquidistSieveTransfer
+import EM.EquidistWalkDecomposition
 import EM.LargeSieve
 import EM.LargeSieveStructural
 import EM.LargeSieveHarmonic
