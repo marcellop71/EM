@@ -209,7 +209,7 @@
   "status": "proved",
   "pp_type": "IK.CrossRCesaroConvergence",
   "name": "IK.cross_r_cesaro_convergence_proved",
-  "module": "EM.IKCh7Hilbert",
+  "module": "EM.IKCh7CesaroChain",
   "kind": "theorem"},
  {"type_hash": "ad052f76670b53dd55bc7fc4e67825fe",
   "type_deps": ["Mullin.MullinConjecture", "Mullin.HittingHypothesis"],

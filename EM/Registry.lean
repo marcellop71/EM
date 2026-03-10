@@ -10,6 +10,7 @@ import EM.TailWindowDecorrelation
 import EM.TailIdentityAttack
 import EM.CRTPointwiseTransfer
 import EM.IKCh7Hilbert
+import EM.IKCh7CesaroChain
 import EM.EnsemblePT
 import EM.EnsembleWeylChain
 import EM.AdelicEquidist
