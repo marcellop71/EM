@@ -12,12 +12,12 @@ running product are defined by mutual recursion:
 	\label{eq:gen-em}
 \end{align}
 The standard Euclid--Mullin sequence is the case $s = 2$
-(\lean{EM/EnsembleStructure.lean}{genProd\_two\_eq\_prod}).
+(\lean{EM/Ensemble/Structure.lean}{genProd\_two\_eq\_prod}).
 We use subscripted notation throughout: $\seq{s}$, $\Prod{s}$ denote
 the sequence and accumulator from starting point~$s$.
 
-\begin{theorem}[\lean{EM/ReciprocalSumDivergence.lean}{genSeq\_prime},
-  \lean{EM/EnsembleStructure.lean}{genSeq\_injective}]\label{thm:seq-props}
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{genSeq\_prime},
+  \lean{EM/Ensemble/Structure.lean}{genSeq\_injective}]\label{thm:seq-props}
 For any $s \geq 2$, every $\seq{s}(k)$ is prime.
 For squarefree~$s$, the map $k \mapsto \seq{s}(k)$ is injective:
 no prime appears twice.
@@ -26,16 +26,16 @@ no prime appears twice.
 \noindent Further structural properties, all fully proved:
 \begin{itemize}[nosep]
 \item \textbf{Divisibility}: $s \mid \Prod{s}(k)$ for all~$k$
-  (\lean{EM/EnsembleFirstMoment.lean}{start\_dvd\_genProd}).
+  (\lean{EM/Ensemble/FirstMoment.lean}{start\_dvd\_genProd}).
 \item \textbf{Strict monotonicity}: $\Prod{s}(k) < \Prod{s}(k{+}1)$
-  (\lean{EM/EnsembleStructure.lean}{genProd\_strict\_mono}).
+  (\lean{EM/Ensemble/Structure.lean}{genProd\_strict\_mono}).
 \item \textbf{Squarefreeness}: for squarefree~$s$, $\Prod{s}(k)$ is
   squarefree for all~$k$
-  (\lean{EM/ReciprocalSumDivergence.lean}{genProd\_squarefree}).
+  (\lean{EM/Population/ReciprocalSum.lean}{genProd\_squarefree}).
 \end{itemize}
 
 \begin{theorem}[\defname{Tail identification} ---
-  \lean{EM/EnsembleStructure.lean}{genProd\_restart}]\label{thm:tail-id}
+  \lean{EM/Ensemble/Structure.lean}{genProd\_restart}]\label{thm:tail-id}
 Restarting the EM process from the $M$-th accumulator of orbit~$s$
 gives the tail of that orbit:
 \[
@@ -73,14 +73,14 @@ The first subscript is the starting point; the second is the modulus.
 \end{definition}
 
 \begin{proposition}[\defname{Walk recurrence} ---
-  \lean{EM/MullinGroupCore.lean}{walkZ\_succ},
-  \lean{EM/EnsembleEM.lean}{genWalkZ\_succ}]\label{prop:recurrence}
+  \lean{EM/Group/Core.lean}{walkZ\_succ},
+  \lean{EM/Ensemble/EM.lean}{genWalkZ\_succ}]\label{prop:recurrence}
 $\walkZ{s}{q}{n\!+\!1} = \walkZ{s}{q}{n} \cdot \multZ{s}{q}{n}$ in
 $\ZZ/q\ZZ$, for any starting point~$s$.
 \end{proposition}
 
 \begin{theorem}[\defname{Walk--Divisibility Bridge} ---
-  \lean{EM/EnsembleEM.lean}{genWalkZ\_eq\_neg\_one\_iff}]\label{thm:bridge}
+  \lean{EM/Ensemble/EM.lean}{genWalkZ\_eq\_neg\_one\_iff}]\label{thm:bridge}
 For any starting point~$s$ and prime~$q$:
 \[
   \walkZ{s}{q}{k} = -1
@@ -102,7 +102,7 @@ For any starting point~$s$ and prime~$q$:
 \item \textbf{Dead regime.}  If $q = \seq{s}(k)$ for some~$k$,
   then $q \mid \Prod{s}(m)$ for all $m > k$, so $\walkZ{s}{q}{m} = 0$
   forever.  The walk has \emph{collapsed to zero}
-  (\lean{EM/EquidistBootstrap.lean}{walkZ\_capture\_then\_collapse},
+  (\lean{EM/Equidist/Bootstrap.lean}{walkZ\_capture\_then\_collapse},
   proved for $s = 2$).
 \end{enumerate}
 
@@ -147,7 +147,7 @@ $\gcd(\Prod{2}(n), \Prod{2}(n)+1) = 1$).  This is the \textbf{sieve gap}:
 past~$N_0$, the only primes that can divide $\Prod{2}(n)+1$ are
 $\geq q$.
 
-\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_implies\_seq\_ge}]\label{thm:roughness}
+\begin{theorem}[\defname{$q$-roughness} --- \lean{EM/Equidist/Threshold.lean}{mcBelow\_implies\_seq\_ge}]\label{thm:roughness}
 If $\MC({<}\,q)$ holds, then $\exists\, N_0$ such that
 $\seq{2}(n{+}1) \geq q$ for all $n \geq N_0$.
 \end{theorem}
@@ -155,7 +155,7 @@ $\seq{2}(n{+}1) \geq q$ for all $n \geq N_0$.
 \noindent The sieve gap transforms hitting~$-1$ from a necessary condition into
 a sufficient one:
 
-\begin{theorem}[\defname{Lethal hit} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_hit\_is\_lethal}]\label{thm:lethal-hit}
+\begin{theorem}[\defname{Lethal hit} --- \lean{EM/Equidist/Threshold.lean}{mcBelow\_hit\_is\_lethal}]\label{thm:lethal-hit}
 If $\MC({<}\,q)$ holds and $\walkZ{2}{q}{n} = -1$ for some $n$ past the
 sieve gap, then $\seq{2}(n{+}1) = q$.
 \end{theorem}
@@ -175,7 +175,7 @@ A prime~$q$ is \textbf{missing} if $\seq{2}(n) \neq q$ for all~$n$.
 Under $\MC({<}\,q)$, the first hit on~$-1$ past the sieve gap is
 lethal.  This immediately constrains missing primes:
 
-\begin{theorem}[\lean{EM/EquidistThreshold.lean}{mcBelow\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
+\begin{theorem}[\lean{EM/Equidist/Threshold.lean}{mcBelow\_missing\_walk\_ne\_neg\_one}]\label{thm:no-cofinal-hit}
 If $\MC({<}\,q)$ holds and $q$ is missing, then the walk \emph{never}
 hits~$-1$ past the sieve gap: $\exists\, N_0$ such that
 $\walkZ{2}{q}{n} \neq -1$ for all $n \geq N_0$.
@@ -219,7 +219,7 @@ to step, the forbidden class changes with it.  The map $c \mapsto
 -c^{-1}$ is a bijection on $(\ZZ/q\ZZ)^\times$ (it is the composition
 of inversion and negation).
 
-\begin{theorem}[\lean{EM/EquidistSieve.lean}{walk\_hits\_neg\_one\_iff\_mult\_eq\_forbidden}]\label{thm:forbidden}
+\begin{theorem}[\lean{EM/Equidist/Sieve.lean}{walk\_hits\_neg\_one\_iff\_mult\_eq\_forbidden}]\label{thm:forbidden}
 For any starting point~$s$ and step~$n$ with $\walkZ{s}{q}{n} \in (\ZZ/q\ZZ)^\times$:
 \[
   \walkZ{s}{q}{n{+}1} = -1
@@ -240,7 +240,7 @@ $\walkZ{s}{q}{n} = \walkZ{s}{q}{0} \cdot \prod_{k < n} \multZ{s}{q}{k}$.
 The reachable set is the coset
 $\walkZ{s}{q}{0} \cdot \langle \text{multipliers} \rangle$.
 
-\begin{theorem}[\defname{Confinement} --- \lean{EM/MullinGroupCore.lean}{confinement\_forward}]\label{thm:confinement}
+\begin{theorem}[\defname{Confinement} --- \lean{EM/Group/Core.lean}{confinement\_forward}]\label{thm:confinement}
 For any starting point~$s$: if every multiplier lies in a subgroup
 $H \leq (\ZZ/q\ZZ)^\times$, then the walk is confined to the coset
 $\walkZ{s}{q}{0} \cdot H$.
@@ -256,7 +256,7 @@ $H < (\ZZ/q\ZZ)^\times$ contains all multipliers.  Equivalently,
 $\langle \multZ{s}{q}{n} : n \in \NN \rangle = (\ZZ/q\ZZ)^\times$.
 \end{property}
 
-\begin{theorem}[\lean{EM/MullinGroupEscape.lean}{se\_of\_maximal\_escape}]
+\begin{theorem}[\lean{EM/Group/Escape.lean}{se\_of\_maximal\_escape}]
 SE holds iff multipliers escape every \emph{maximal} proper subgroup.
 Since $(\ZZ/q\ZZ)^\times$ is cyclic, the maximal subgroups are the
 index-$\ell$ subgroups for prime $\ell \mid q\!-\!1$.

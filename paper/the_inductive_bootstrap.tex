@@ -9,7 +9,7 @@ The walk avoids~$-1$ forever.  Can it at least \emph{reach}~$-1$?
 That is: does SE hold?
 
 \begin{theorem}[\defname{PrimeResidueEscape} (\abbr{PRE});
-  \lean{EM/EquidistBootstrap.lean}{prime\_residue\_escape}]\label{thm:pre}
+  \lean{EM/Equidist/Bootstrap.lean}{prime\_residue\_escape}]\label{thm:pre}
 For every prime $p \geq 5$ and every proper subgroup
 $H < (\ZZ/p\ZZ)^\times$, some odd prime $r < p$ has residue
 $r \bmod p \notin H$.
@@ -26,7 +26,7 @@ even number in $[1, p)$ is in~$H$ as well.  Hence
 $H = (\ZZ/p\ZZ)^\times$, contradicting $H$ proper.
 \end{proof}
 
-\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{mcBelow\_pre\_implies\_se}]
+\begin{theorem}[\lean{EM/Equidist/Bootstrap.lean}{mcBelow\_pre\_implies\_se}]
 \label{thm:bootstrap}
 $\MC({<}\,p) + \PRE \;\Longrightarrow\; \SE(p)$.
 \end{theorem}
@@ -62,7 +62,7 @@ hold, then either $q$ already appears in the sequence, or there
 exists $n \geq N_0(q)$ with $\walkZ{2}{q}{n} = -1$.
 \end{property}
 
-\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/EquidistBootstrap.lean}{single\_hit\_implies\_mc}]
+\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/Equidist/Bootstrap.lean}{single\_hit\_implies\_mc}]
 \label{thm:single-hit}
 $\mathrm{SingleHitHypothesis} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -160,7 +160,7 @@ $\HH(q)$ (\defname{HittingHypothesis}) asks for cofinal hitting:
 $\forall\, N,\; \exists\, n \geq N,\; q \mid (\Prod{2}(n) + 1)$.
 \end{property}
 
-\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\begin{theorem}[\lean{EM/Equidist/Bootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
 \label{thm:dh-mc}
 $\DH \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -205,7 +205,7 @@ $\|S_\chi(N)\| = o(N)$, where
 $S_\chi(N) = \sum_{n<N}\chi(\walkZ{2}{q}{n})$.
 \end{property}
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{complex\_csb\_mc'}]
 \label{thm:ccsb-mc-intro}
 $\mathrm{CCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -222,7 +222,7 @@ $\chi(\multZ{2}{q}{n})$ conditioned on $\walkZ{2}{q}{n} = c$ are equidistributed
 (their partial sums are $o(N)$).
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_mc}]
 \label{thm:cme-mc-intro}
 $\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
 \end{theorem}
@@ -233,7 +233,7 @@ conditioned on the walk position.  It implies CCSB for all character
 orders, bypassing the $d \geq 3$ barrier that blocks the
 BRE route.
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{vcb\_ped\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{vcb\_ped\_implies\_mc}]
 \label{thm:vcb-ped-mc-intro}
 $\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -293,7 +293,7 @@ selectability problem described in Section~\ref{sec:intro}: past the
 sieve gap, $q$ is the smallest available factor whenever it divides
 the Euclid number.  This gives the one-prime gap:
 
-\begin{theorem}[\defname{One-prime gap} --- \lean{EM/EquidistThreshold.lean}{mcBelow\_cofinal\_hit\_implies\_mc\_at}]
+\begin{theorem}[\defname{One-prime gap} --- \lean{EM/Equidist/Threshold.lean}{mcBelow\_cofinal\_hit\_implies\_mc\_at}]
 \label{thm:one-prime-gap}
 $\MC({<}\,q)$ plus a single hitting event
 $q \mid \Prod{2}(n)+1$ for some $n$ past the sieve gap
@@ -313,7 +313,7 @@ independent conditions, one per prime~$\ell \mid q\!-\!1$.
 $\exists\, n : \multZ{2}{q}{n}^{(q-1)/\ell} \neq 1$ in $(\ZZ/q\ZZ)^\times$.
 \end{property}
 
-\begin{theorem}[\abbr{PRE} $\Leftrightarrow$ \abbr{SE} --- \lean{EM/EquidistCharPRE.lean}{pre\_iff\_se}]
+\begin{theorem}[\abbr{PRE} $\Leftrightarrow$ \abbr{SE} --- \lean{EM/Equidist/CharPRE.lean}{pre\_iff\_se}]
 $\mathrm{PRE} \;\Longleftrightarrow\; \SE$.
 The forward direction uses only Lagrange's theorem; the reverse uses
 cyclicity of $(\ZZ/q\ZZ)^\times$.

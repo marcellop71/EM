@@ -129,8 +129,8 @@ formally proved.
 StrongSieveEquidist asserts that EM multipliers are equidistributed
 within sliding windows; NoLongRunsAt and PEDAt are per-prime variants
 proved by pigeonhole and block-counting respectively
-(\lean{EM/EquidistSieveTransfer.lean\#L185}{strongSieveEquidist\_noLongRunsAt},
-\lean{EM/EquidistSieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
+(\lean{EM/Equidist/SieveTransfer.lean\#L185}{strongSieveEquidist\_noLongRunsAt},
+\lean{EM/Equidist/SieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
 
 \paragraph{The genuine frontier.}
 
@@ -149,7 +149,7 @@ specific orbit is the open step.
 
 \paragraph{Sieve-to-harmonic convergence.}
 
-The sieve hierarchy (\S36--\S39 of \code{EquidistSelfCorrecting.lean})
+The sieve hierarchy (\S36--\S39 of \code{Equidist/SelfCorrecting.lean})
 and the harmonic hierarchy (\S30--\S35) converge: both produce
 DecorrelationHypothesis as output.  The full chain
 \[
@@ -164,15 +164,15 @@ DecorrelationHypothesis as output.  The full chain
 \mathrm{MC}
 \]
 is formalized, with the first two arrows machine-verified
-(\lean{EM/LargeSieve.lean\#L1617}{sieve\_equidist\_implies\_decorrelation},
-\lean{EM/EquidistSelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
+(\lean{EM/LargeSieve/Basic.lean\#L1617}{sieve\_equidist\_implies\_decorrelation},
+\lean{EM/Equidist/SelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
 The sieve route achieves SieveEquidist~$\Rightarrow$~Dec via a
 counting-to-character-sum bridge: SieveEquidistribution produces
 \code{EMMultCharSumBound} with $Q_0 = 0$, meaning multiplier character
 sums cancel for \emph{all} primes~$q$, which is exactly
 DecorrelationHypothesis.  The sole remaining gap on this route is
 \textbf{PEDImpliesComplexCSB}
-(\lean{EM/EquidistSelfCorrecting.lean\#L109}{PEDImpliesComplexCSB}):
+(\lean{EM/Equidist/SelfCorrecting.lean\#L109}{PEDImpliesComplexCSB}):
 does positive escape density for all primes imply walk character sum
 cancellation?  Any proof of SieveEquidistribution (e.g., from PNT
 in APs $+$ Alladi's theorem) would immediately yield Dec and PED
@@ -190,14 +190,14 @@ standard EM orbit ($n = 2$).  The assembly
 $\mathrm{DSL} \Rightarrow \mathrm{CME} \Rightarrow \mathrm{CCSB}
 \Rightarrow \mathrm{MC}$
 is fully machine-verified
-(\lean{EM/MasterReduction.lean}{full\_chain\_dsl}).
+(\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}).
 DSL is the orbit-transfer principle: it bridges from population-level
 statistics (which hold for almost all starting points) to the specific
 orbit.
 
 A weaker variant also suffices:
 
-\begin{theorem}[\lean{EM/EnsembleStructure.lean}{pe\_dsl\_hitting\_implies\_mc}]
+\begin{theorem}[\lean{EM/Ensemble/Structure.lean}{pe\_dsl\_hitting\_implies\_mc}]
 $\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \MC$,
 \end{theorem}
 
@@ -211,7 +211,7 @@ The EM walk does not privilege any single prime: at each step, the race
 across \emph{all} coordinates of $\hat{\ZZ}^\times = \prod_p (\ZZ/p\ZZ)^\times$
 is run and the winner ($\minFac$) is selected.  The process is
 intrinsically adelic.  CRT multiplier invariance
-(\lean{EM/MullinCRT.lean}{crt\_multiplier\_invariance}) shows that
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}) shows that
 $\minFac(\Prod{2}(n){+}1) \bmod q$ depends only on the residues of
 $\Prod{2}(n)$ at primes $r \neq q$: the multiplier at~$q$ is determined
 by the \emph{non-$q$ coordinates} of the walk.
@@ -231,7 +231,7 @@ This structural observation decomposes CME into two independent conditions:
   the multiplier.
 \end{itemize}
 
-\begin{theorem}[\lean{EM/AdelicEquidist.lean}{cme\_iff\_adelic}]
+\begin{theorem}[\lean{EM/Adelic/Equidist.lean}{cme\_iff\_adelic}]
 \label{thm:cme-iff-adelic}
 $\mathrm{CME} \;\Longleftrightarrow\; \mathrm{MWI} + \mathrm{MME}$.
 \end{theorem}
@@ -243,7 +243,7 @@ into fibers
 $\sum_n \chi(m(n)) = \sum_{a} \sum_{\{n : w(n) = a\}} \chi(m(n))$
 via \code{Finset.sum\_fiberwise}, applying CME at each fiber with
 $\varepsilon' = \varepsilon / |\GG|$, and summing
-(\lean{EM/AdelicEquidist.lean}{cme\_implies\_mme}).
+(\lean{EM/Adelic/Equidist.lean}{cme\_implies\_mme}).
 
 $(\Leftarrow)$: Given $\chi \neq 1$ and walk position~$a$, MWI bounds
 the conditional sum by $\|\sum \chi(m)\| + (\varepsilon/2)\cdot N$,
@@ -255,7 +255,7 @@ The equivalence shows that MME (analytic, from population equidistribution)
 and MWI (structural, from CRT + cross-prime decorrelation) are genuinely
 independent components.  The proved identity
 $\mathrm{MME} \Leftrightarrow \text{vanishing walk lag-1 autocorrelation}$
-(\lean{EM/AdelicEquidist.lean}{mme\_iff\_walk\_autocorrelation},
+(\lean{EM/Adelic/Equidist.lean}{mme\_iff\_walk\_autocorrelation},
 via \code{walk\_shift\_one\_correlation}) clarifies that CCSB (walk equidistribution)
 and MME (multiplier equidistribution, equivalently walk autocorrelation)
 are logically independent: neither implies the other.
@@ -267,7 +267,7 @@ $\sum_{n<N} \chi(\multZ{2}{q}{n}) \cdot \psi(\walkZ{2}{q}{n}) = o(N)$.
 This says that the multiplier and walk at prime~$q$ are decorrelated
 at the character level.
 
-\begin{theorem}[\lean{EM/AdelicEquidist.lean}{crt\_fiber\_implies\_mwi\_proved}]
+\begin{theorem}[\lean{EM/Adelic/Equidist.lean}{crt\_fiber\_implies\_mwi\_proved}]
 \label{thm:crt-fiber-mwi}
 $\mathrm{CRTFiber} + \mathrm{MME} \;\Longrightarrow\; \mathrm{MWI}$.
 Hence $\mathrm{CRTFiber} + \mathrm{MME} \;\Longrightarrow\; \mathrm{CME}
@@ -315,8 +315,8 @@ of non-trivial characters $\chi_i : (\ZZ/q_i\ZZ)^\times \to \CC^\times$,
   \qquad\text{for all } N \geq N_0(\varepsilon).
 \]
 
-\begin{theorem}[\lean{EM/ProfiniteEquidist.lean}{uniform\_profinite\_implies\_ccsb},
-  \lean{EM/ProfiniteEquidist.lean}{uniform\_profinite\_implies\_cpd}]
+\begin{theorem}[\lean{EM/Adelic/Profinite.lean}{uniform\_profinite\_implies\_ccsb},
+  \lean{EM/Adelic/Profinite.lean}{uniform\_profinite\_implies\_cpd}]
 \label{thm:upe-specializations}
 $\mathrm{UPE}$ implies both\/ $\mathrm{CCSB}$
 (specialization to $k{=}1$, via $\mathsf{Fin.prod\_univ\_one}$)
@@ -360,7 +360,7 @@ The hierarchy is:
 CPD combined with CRT multiplier invariance gives MWI
 (conditional on \code{CPDImpliesCRTFiber}, the sole remaining bridge
 in the adelic framework).  The full adelic landscape
-(\lean{EM/AdelicEquidist.lean}{adelic\_landscape}) witnesses five
+(\lean{EM/Adelic/Equidist.lean}{adelic\_landscape}) witnesses five
 proved routes to MC through the adelic framework:
 CME~$\Leftrightarrow$~AdelicEquidist,
 AdelicEquidist~$\Rightarrow$~MC,
@@ -378,13 +378,13 @@ The cleanest paths to MC:
   that implies MC, and the only one that does so without additional
   conditions.  The assembly
   DSL~$\Rightarrow$~CME~$\Rightarrow$~CCSB~$\Rightarrow$~MC is fully
-  machine-verified (\lean{EM/MasterReduction.lean}{full\_chain\_dsl}).
+  machine-verified (\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}).
 
 \item \textbf{Prove CME}: show that the multiplier
   character sum $\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ is
   $o(N)$ for each walk position~$c$.  CME is strictly weaker than
   CCSB, and $\mathrm{CME} \Rightarrow \mathrm{CCSB}$ is proved
-  (\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}).
+  (\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}).
   CME asks only about the \emph{conditional} distribution of
   multipliers given walk state---it does not require controlling the
   walk character sum itself.  This bypasses the $d \geq 3$ barrier
@@ -483,14 +483,14 @@ rule---were assessed by formalization.  Both \emph{collapse
 definitionally} to existing open hypotheses:
 \begin{itemize}
 \item
-  \lean{EM/MarkovSieveSynthesis.lean}{doeblin\_eq\_cme}:
+  \lean{EM/Advanced/MarkovSieve.lean}{doeblin\_eq\_cme}:
   \texttt{DoeblinConvergenceForEM = CME} by \texttt{rfl}.
   The Doeblin coefficient of ergodicity approaching~$1$ for the
   empirical transition matrix of the EM walk is literally the
   statement that conditional multiplier character sums vanish, which
   is CME.
 \item
-  \lean{EM/MarkovSieveSynthesis.lean}{sieve\_orbit\_control\_eq\_ccsb}:
+  \lean{EM/Advanced/MarkovSieve.lean}{sieve\_orbit\_control\_eq\_ccsb}:
   \texttt{SieveOrbitControl = CCSB} by \texttt{rfl}.
   Pointwise-in-$q$ walk character sum bounds from sieve methods are
   literally CCSB\@.

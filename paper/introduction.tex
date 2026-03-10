@@ -117,7 +117,7 @@ through a verified chain of reductions.
 Our main result is the machine-verified reduction of MC to a single
 open hypothesis:
 
-\begin{theorem}[\lean{EM/MasterReduction.lean}{full\_chain\_dsl}]
+\begin{theorem}[\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}]
 \label{thm:main-chain}
 $\mathrm{DSL} \;\Longrightarrow\;
  \mathrm{CME} \;\Longrightarrow\;
@@ -172,7 +172,7 @@ reductions involving multiple interacting hypotheses.
 
 The intermediate reductions are:
 
-\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/EquidistBootstrap.lean}{single\_hit\_implies\_mc}]
+\begin{theorem}[\defname{Single Hit Theorem} --- \lean{EM/Equidist/Bootstrap.lean}{single\_hit\_implies\_mc}]
 \label{thm:main}
 $\mathrm{SingleHitHypothesis} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -190,18 +190,18 @@ The algebraic precondition---that the multipliers generate
 $(\ZZ/q\ZZ)^\times$---is free; the open problem is purely dynamical.
 Multiple strategies for producing the required hit are formally verified:
 
-\begin{theorem}[\lean{EM/EquidistBootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
+\begin{theorem}[\lean{EM/Equidist/Bootstrap.lean}{dynamical\_hitting\_implies\_mullin}]
 \label{thm:dh-main}
 DynamicalHitting (DH: the walk hits $-1$ cofinally)
 $\;\Longrightarrow\; \MC$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{complex\_csb\_mc'}]
 ComplexCharSumBound (CCSB: character sums of the walk are $o(N)$)
 $\;\Longrightarrow\; \MC$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_mc}]
 $\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
 \end{theorem}
 

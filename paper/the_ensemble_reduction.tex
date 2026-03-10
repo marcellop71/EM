@@ -67,7 +67,7 @@ $(\ZZ/q\ZZ)^\times$, then so is $\rho_{k+1}$.
 
 The structural basis for CRT propagation is the \emph{CRT multiplier
 invariance}
-(\lean{EM/MullinCRT.lean}{crt\_multiplier\_invariance}): the generalized
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}): the generalized
 multiplier $\seq{n}(k) = \minFac(\Prod{n}(k) + 1)$
 depends on the full integer $\Prod{n}(k) + 1$, not just its residue
 modulo~$q$.  By CRT, knowing $\Prod{n}(k) \bmod q$ does not
@@ -78,7 +78,7 @@ step~$k$.
 
 The propagation proceeds by induction on~$k$:
 
-\begin{theorem}[\lean{EM/EnsembleCRT.lean}{sre\_crt\_implies\_accum\_equidist}]
+\begin{theorem}[\lean{EM/Ensemble/CRT.lean}{sre\_crt\_implies\_accum\_equidist}]
 \label{thm:sre-crt}
 $\mathrm{SRE} + \mathrm{CRTPropagationStep}$ implies
 accumulator equidistribution:
@@ -100,11 +100,11 @@ version---counting squarefree~$n$ with $\Prod{n}(j) \equiv a$ and
 $\Prod{n}(k) \equiv b$ \emph{simultaneously}---is not trivial: it
 requires genuine independence of the mod-$q$ coordinates at different
 steps, formalized as \defname{SquarefreeCRTIndependence}
-(\code{EnsembleCRTFreedom.lean}).
+(\code{Ensemble/CRTFreedom.lean}).
 
 The CRT freedom framework proves:
 
-\begin{theorem}[\lean{EM/EnsembleCRTFreedom.lean}{scrti\_sre\_implies\_aep}]
+\begin{theorem}[\lean{EM/Ensemble/CRTFreedom.lean}{scrti\_sre\_implies\_aep}]
 $\mathrm{SCRTI} + \mathrm{SRE}$ implies
 $\mathrm{AccumulatorEquidistPropagation}$.
 \end{theorem}
@@ -124,7 +124,7 @@ integers.  Together they imply
 shifted squarefree integers $m$ (those with $\mu^2(m{-}1)=1$ and
 $\minFac(m) > q$), the smallest prime factor $\minFac(m)$ is
 equidistributed modulo~$q$
-(\lean{EM/PopulationEquidistProof.lean}{MinFacResidueEquidist}).
+(\lean{EM/Population/Proof.lean}{MinFacResidueEquidist}).
 MFRE in turn implies PopulationEquidist~(PE) via
 \code{pe\_of\_equidist}.  ANT is not formalized in Lean---it is
 assumed as a hypothesis in the master reduction---but it follows from
@@ -135,13 +135,13 @@ required Mathlib infrastructure already exists (including Dirichlet's
 theorem via $L$-series, Abel summation, and $L$-function
 non-vanishing).  The one-sided Tauberian lemma, prime power stripping, and
 the discrete Abel summation chain are now machine-verified
-(\code{OneSidedTauberian.lean}, 557~lines;
-\code{AbelChain.lean}, 651~lines), giving the full composed arrow
+(\code{Population/Tauberian.lean}, 557~lines;
+\code{Population/AbelChain.lean}, 651~lines), giving the full composed arrow
 WeightedPNTinAP~$\Rightarrow$~PrimesEquidistributedInAP.
 The Alladi chain from PrimesEquidistInAP to MFRE is decomposed
 into two precisely stated open hypotheses with a proved master
 reduction
-(\code{AlladiDensity.lean}, 275~lines).
+(\code{Population/AlladiDensity.lean}, 275~lines).
 The two remaining blocking dependencies are the
 real-variable Wiener--Ikehara bridge
 (converting $L$-series behavior near $s = 1$ into partial sum
@@ -187,7 +187,7 @@ $\mathbb{E}_{n}^{\mathrm{sqf}}[E(n, K)] \leq C \cdot K$
 eventually in~$X$.
 \end{property}
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{decorrelation\_implies\_variance\_proved}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{decorrelation\_implies\_variance\_proved}]
 \label{thm:variance-bound}
 $\mathrm{SD} \;\Longrightarrow\; \mathrm{CSVB}$ with $C = 2$.
 \end{theorem}
@@ -231,7 +231,7 @@ squarefree $n \leq X$ with $E(n, K) > (\varepsilon K)^2$ tends to~$0$
 as $X \to \infty$, uniformly in~$K$ past a threshold.
 \end{property}
 
-\begin{theorem}[\lean{EM/EnsembleDecorrelation.lean}{char\_variance\_implies\_concentration\_proved}]
+\begin{theorem}[\lean{EM/Ensemble/Decorrelation.lean}{char\_variance\_implies\_concentration\_proved}]
 CSVB implies EnsembleCharSumConcentration.
 \end{theorem}
 
@@ -242,7 +242,7 @@ $\mathbb{E}[E(n, K)] / (\varepsilon K)^2 \leq 2K / (\varepsilon^2 K^2)
 = 2/(\varepsilon^2 K)$, which tends to $0$ as $K \to \infty$.
 \end{proof}
 
-\begin{theorem}[\lean{EM/EnsembleDecorrelation.lean}{char\_concentration\_implies\_cancellation}]
+\begin{theorem}[\lean{EM/Ensemble/Decorrelation.lean}{char\_concentration\_implies\_cancellation}]
 EnsembleCharSumConcentration $\Longrightarrow$ for almost all
 squarefree~$n$, the character energy $E(n, K) = o(K^2)$.
 \end{theorem}
@@ -256,7 +256,7 @@ small.
 
 \noindent The three theorems compose into a single proved reduction:
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{sd\_implies\_cancellation}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{sd\_implies\_cancellation}]
 \label{thm:sd-cancel}
 $\mathrm{StepDecorrelation}$ alone $\Longrightarrow$ character sum
 cancellation for almost all squarefree starting points.
@@ -278,33 +278,33 @@ function}:
 which gives the conditional probability that a random shifted
 squarefree number $m$ (with $\mu^2(m{-}1) = 1$) is divisible by a
 prime~$r$.  The algebraic properties of~$g$ are fully proved in
-\code{ShiftedSquarefreeDensity.lean}:
+\code{Reduction/ShiftedDensity.lean}:
 
 \begin{itemize}[nosep]
 \item $g(r) > 0$ for $r \geq 2$
-  (\lean{EM/ShiftedSquarefreeDensity.lean}{sieveDensity\_pos}).
+  (\lean{EM/Reduction/ShiftedDensity.lean}{sieveDensity\_pos}).
 \item $g(r) < 1$ for $r \geq 2$
-  (\lean{EM/ShiftedSquarefreeDensity.lean}{sieveDensity\_lt\_one}).
+  (\lean{EM/Reduction/ShiftedDensity.lean}{sieveDensity\_lt\_one}).
 \item $g(r) > 1/r$
-  (\lean{EM/ShiftedSquarefreeDensity.lean}{sieveDensity\_gt\_inv}):
+  (\lean{EM/Reduction/ShiftedDensity.lean}{sieveDensity\_gt\_inv}):
   a density boost from automatic squarefreeness.
 \item $g(r) = \tfrac{1}{2}\bigl(\tfrac{1}{r-1} + \tfrac{1}{r+1}\bigr)$
-  (\lean{EM/ShiftedSquarefreeDensity.lean}{sieveDensity\_partial\_frac}).
+  (\lean{EM/Reduction/ShiftedDensity.lean}{sieveDensity\_partial\_frac}).
 \item $g$ is strictly decreasing on $[2, \infty)$
-  (\lean{EM/ShiftedSquarefreeDensity.lean}{sieveDensity\_strict\_anti}).
+  (\lean{EM/Reduction/ShiftedDensity.lean}{sieveDensity\_strict\_anti}).
 \end{itemize}
 
 The \emph{Buchstab weight} $\kappa(p)$ is the sieve density at the
 base prime~$p$:
 
-\begin{theorem}[\lean{EM/EnsembleFirstMoment.lean}{buchstabWeight\_two}]
+\begin{theorem}[\lean{EM/Ensemble/FirstMoment.lean}{buchstabWeight\_two}]
 $\kappa(2) = g(2) = 2/3$.
 \end{theorem}
 
 The first-moment/variance pattern gives a concentration result for
 reciprocal sums:
 
-\begin{theorem}[\lean{EM/EnsembleFirstMoment.lean}{first\_moment\_variance\_implies\_rsd}]
+\begin{theorem}[\lean{EM/Ensemble/FirstMoment.lean}{first\_moment\_variance\_implies\_rsd}]
 First Moment + Variance Bound $\Longrightarrow$ Reciprocal Sum
 Divergence: $\sum_{k < K} 1/\seq{n}(k) \to \infty$ for
 almost all squarefree~$n$.
@@ -314,7 +314,7 @@ almost all squarefree~$n$.
 \label{sec:dsl-route}
 
 \begin{property}[\defname{DSL} ---
-  \lean{EM/PopulationTransferStrategy.lean}{Deterministic\-Stability\-Lemma}]
+  \lean{EM/Population/TransferStrategy.lean}{Deterministic\-Stability\-Lemma}]
 \label{def:dsl}
 Population equidistribution of multiplier residues implies conditional
 multiplier equidistribution for the standard orbit ($n = 2$):
@@ -343,7 +343,7 @@ SD implies that \emph{almost all} squarefree starting points have
 cancelling character energy.  But ``almost all'' does not cover
 $n = 2$ specifically.  DSL bridges this gap.
 
-\begin{theorem}[\lean{EM/MasterReduction.lean}{full\_chain\_dsl}]
+\begin{theorem}[\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}]
 \label{thm:dsl-mc}
 $\mathrm{DSL} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -354,13 +354,13 @@ The proof assembles a five-link chain:
 \item \textbf{ANT $\Rightarrow$ PE}: MinFacResidueEquidist (a standard
   consequence of PNT in arithmetic progressions) gives
   PopulationEquidist
-  (\lean{EM/PopulationEquidistProof.lean}{pe\_of\_equidist}).
+  (\lean{EM/Population/Proof.lean}{pe\_of\_equidist}).
 \item \textbf{DSL: PE $\Rightarrow$ CME}: DSL converts population
   equidistribution to conditional multiplier equidistribution for the
   actual orbit.
 \item \textbf{CME $\Rightarrow$ CCSB}: proved for all character
   orders, bypassing the $d \geq 3$ barrier
-  (\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}).
+  (\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}).
 \item \textbf{CCSB $\Rightarrow$ hits}: the Fourier bridge
   (Theorem~\ref{thm:fourier-step}) forces the hit count at~$-1$ to be
   eventually positive.
@@ -395,7 +395,7 @@ destroys all correlation.
 \smallskip
 \noindent\textbf{(2) No arithmetic obstruction.}\enspace
 The products $\Prod{2}(n)$ are squarefree
-(\lean{EM/WeakErgodicity.lean}{prod\_squarefree}), pairwise
+(\lean{EM/Population/WeakErgodicity.lean}{prod\_squarefree}), pairwise
 multiplicatively entangled (each divides the next), and each
 $\Prod{2}(n)+1$ has a distinct smallest prime factor
 ($\seq{2}$ is injective).  There is no known
@@ -412,7 +412,7 @@ found insufficient (\S\ref{sec:hard}).
 The ensemble framework parametrizes the EM construction by squarefree
 starting points.  For \emph{almost all} starting points~$n$, CME
 holds: the proved StepDecorrelation~$\Rightarrow$~cancellation chain
-(\lean{EM/EnsemblePT.lean}{sd\_implies\_cancellation})
+(\lean{EM/Ensemble/PT.lean}{sd\_implies\_cancellation})
 shows that generic orbits satisfy the character sum bounds.  DSL asks
 that the standard orbit $n = 2$ is not exceptional within this
 ensemble.  Since $n = 2$ has no special arithmetic property that
@@ -431,7 +431,7 @@ the difficulty of proving that a specific deterministic sequence
 satisfies a statistical law.
 \end{remark}
 
-\begin{remark}[\lean{EM/CRTPointwiseTransfer.lean}{oce\_eq\_cme}]
+\begin{remark}[\lean{EM/Transfer/CRTPointwise.lean}{oce\_eq\_cme}]
 An alternative perspective on DSL is the \emph{CRT pointwise transfer}:
 condition on the walk position $c = \walkZ{2}{q}{n}$ and ask whether
 the multiplier residues in each fiber are equidistributed.
@@ -441,7 +441,7 @@ position \emph{is} the residue class that CME conditions on.
 Any route to OCE automatically gives CME, and the CRT bridge
 (population conditional equidistribution~$\Rightarrow$~OCE) is
 subsumed by DSL
-(\lean{EM/CRTPointwiseTransfer.lean}{dsl\_implies\_crt\_bridge}).
+(\lean{EM/Transfer/CRTPointwise.lean}{dsl\_implies\_crt\_bridge}).
 \end{remark}
 
 A weaker variant also suffices:
@@ -454,7 +454,7 @@ DSLHitting asks only for the walk to visit $-1$, not for full
 character sum cancellation.
 \end{property}
 
-\begin{theorem}[\lean{EM/EnsembleStructure.lean}{pe\_dsl\_hitting\_implies\_mc}]
+\begin{theorem}[\lean{EM/Ensemble/Structure.lean}{pe\_dsl\_hitting\_implies\_mc}]
 $\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
@@ -466,7 +466,7 @@ $\mathrm{PE} \xrightarrow{\text{DSLHitting}} \mathrm{DH}
 The tail identification (Theorem~\ref{thm:tail-id}) gives a precise
 structural link between the standard orbit and the ensemble.  Since
 $\Prod{2}(M)$ is squarefree for all~$M$
-(\lean{EM/WeakErgodicity.lean}{prod\_squarefree}), the $M$-th
+(\lean{EM/Population/WeakErgodicity.lean}{prod\_squarefree}), the $M$-th
 accumulator is itself a valid ensemble member.  The tail identity says
 the orbit starting from $\Prod{2}(M)$ \emph{is} the suffix of the
 standard orbit from step~$M$ onward:
@@ -625,20 +625,20 @@ walk away from~$c$ toward all other positions---a negative feedback
 that opposes further concentration at~$c$.
 
 This has been formalized via a Lyapunov function
-(\code{SelfCorrectingDrift.lean}).  Define
+(\code{Reduction/SelfCorrecting.lean}).  Define
 \[
   L(N) \;=\; \sum_{c \in (\ZZ/q\ZZ)^\times}
   \Bigl(V_c(N) - \frac{N}{\varphi(q)}\Bigr)^{\!2},
 \]
 where $V_c(N) = |\{n < N : \walkZ{2}{q}{n} = c\}|$ is the visit count.
 The one-step algebraic identity
-(\lean{EM/SelfCorrectingDrift.lean}{lyapunov\_one\_step})
+(\lean{EM/Reduction/SelfCorrecting.lean}{lyapunov\_one\_step})
 \[
   L(N{+}1) = L(N) + 2\,d_{\walkZ{2}{q}{N}}(N) + \frac{q-2}{q-1},
 \]
 where $d_c(N) = V_c(N) - N/(q{-}1)$ is the visit deviation at
 position~$c$, telescopes to
-(\lean{EM/SelfCorrectingDrift.lean}{lyapunov\_telescope})
+(\lean{EM/Reduction/SelfCorrecting.lean}{lyapunov\_telescope})
 \[
   L(N) = 2\,R(N) + N\,\frac{q-2}{q-1},
   \qquad R(N) = \sum_{n<N} d_{\walkZ{2}{q}{n}}(n).
@@ -646,13 +646,13 @@ position~$c$, telescopes to
 The cumulative drift $R(N)$ records how often the walk visits
 positions that are already over-represented.  Under a uniform
 multiplier measure, $\mathbb{E}[d_c] = 0$ for every position
-(\lean{EM/SelfCorrectingDrift.lean}{uniform\_multiplier\_zero\_drift}),
+(\lean{EM/Reduction/SelfCorrecting.lean}{uniform\_multiplier\_zero\_drift}),
 and the transition matrix is doubly stochastic
-(\lean{EM/SelfCorrectingDrift.lean}{group\_walk\_doubly\_stochastic}),
+(\lean{EM/Reduction/SelfCorrecting.lean}{group\_walk\_doubly\_stochastic}),
 so the drift has zero bias.
 \textbf{SelfCorrectingDrift}~(SCD) asserts $R(N) = o(N^2)$, which
 gives $L(N) = o(N^2)$, hence VE, and therefore MC via the proved
-chain (\lean{EM/SelfCorrectingDrift.lean}{scd\_implies\_mc}).
+chain (\lean{EM/Reduction/SelfCorrecting.lean}{scd\_implies\_mc}).
 
 \medskip
 \noindent\textbf{SCD $\equiv$ SVE (Dead End~\#120).}\enspace
@@ -660,7 +660,7 @@ The Lyapunov telescope $L(N) = 2R(N) + O(N)$ shows that SCD
 ($R(N) = o(N^2)$) is algebraically equivalent to SVE ($L(N) = o(N^2)$)
 for each fixed prime~$q$ above the threshold.  The converse is also
 proved: SVE implies SCD above the SVE threshold
-(\lean{EM/SelfCorrectingDrift.lean}{sve\_implies\_scd\_above\_threshold}).
+(\lean{EM/Reduction/SelfCorrecting.lean}{sve\_implies\_scd\_above\_threshold}).
 Therefore SCD provides no new proof leverage beyond SVE; it is a
 Lyapunov reformulation that clarifies the dynamical mechanism
 (self-correcting feedback) but does not reduce the mathematical
@@ -686,9 +686,9 @@ A natural attempt: use SMSB (SecondMomentSquaredBound) to bound the
 character energy), then argue that each walk-position class has
 proportionally few bad steps, then use SubgroupEscape to get escape
 from each class.  The per-class bad sets partition the total bad set
-(\lean{EM/SMSBPerClassEscape.lean}{badVisitsInClass\_card\_sum\_eq}),
+(\lean{EM/Reduction/SMSB.lean}{badVisitsInClass\_card\_sum\_eq}),
 and pigeonhole guarantees \emph{some} class with small bad density
-(\lean{EM/SMSBPerClassEscape.lean}{exists\_class\_small\_bad\_set}).
+(\lean{EM/Reduction/SMSB.lean}{exists\_class\_small\_bad\_set}).
 But MC requires the specific class~$-1$, not an existential over
 classes.  Targeting~$-1$ requires that bad steps do not concentrate
 in one class---a per-fiber density statement
@@ -712,7 +712,7 @@ point~$n$: $\forall\, q$ prime, $\exists\, k$,
 $\seq{n}(k) = q$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{gen\_hitting\_implies\_gen\_mc\_proved}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{gen\_hitting\_implies\_gen\_mc\_proved}]
 \label{thm:gen-mc}
 For squarefree $n \geq 1$: if the generalized walk hits~$-1$
 cofinally for every prime~$q$,
@@ -729,7 +729,7 @@ $\Prod{n}(k) + 1$.  So $q = \minFac(\Prod{n}(k) + 1) =
 \seq{n}(k)$.
 
 The argument is a generalized \code{captures\_target} lemma
-(\lean{EM/EnsemblePT.lean}{gen\_captures\_target}), paralleling the
+(\lean{EM/Ensemble/PT.lean}{gen\_captures\_target}), paralleling the
 standard version from \S\ref{sec:bootstrap}.
 \end{proof}
 
@@ -737,7 +737,7 @@ The connection between character cancellation and hitting uses the Weyl
 equidistribution criterion, adapted to the multiplicative setting:
 
 \begin{theorem}[\defname{WeylHittingBridge} ---
-  \lean{EM/EnsemblePT.lean}{weyl\_hitting\_bridge\_proved}]
+  \lean{EM/Ensemble/PT.lean}{weyl\_hitting\_bridge\_proved}]
 \label{thm:weyl-bridge}
 If all non-trivial walk character sums satisfy
 $\|\sum_{k<K} \chi(\walkZ{n}{q}{k})\|^2 \leq (\varepsilon K)^2$
@@ -783,7 +783,7 @@ so $K \leq 2C(q{-}1)$.  But $K$ was chosen larger than $2Cq + 1$:
 contradiction.
 \end{proof}
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{cancel\_weyl\_implies\_mc}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{cancel\_weyl\_implies\_mc}]
 \label{thm:cancel-weyl-mc}
 Walk character cancellation at $n = 2$ implies MC.
 \end{theorem}
@@ -808,7 +808,7 @@ For the JSE route, only \emph{per-chi} decorrelation is available (for
 each individual non-trivial character).  The PerChiCancellationBridge
 shows the same three-step chain works per-chi:
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{per\_chi\_cancellation\_bridge\_proved}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{per\_chi\_cancellation\_bridge\_proved}]
 \label{thm:per-chi}
 \defname{PerChiCancellationBridge}: for each prime~$q$ and
 character~$\chi$ with $\|\chi\|^2 \leq 1$, if the cross-terms
@@ -832,7 +832,7 @@ characters.
 
 The full ensemble assembly uses the following master theorem:
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{ensemble\_pt\_master\_simplified}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{ensemble\_pt\_master\_simplified}]
 Under four hypotheses (SRE, CRTPropagationStep,
 AccumEquidistImpliesMultEquidist, EnsembleEquidistImpliesDecorrelation),
 character sums cancel for almost all squarefree starting points.
@@ -857,11 +857,11 @@ An alternative chain uses \emph{JointStepEquidist}~(JSE): the joint
 distribution of $(\seq{n}(j), \seq{n}(k))$
 is asymptotically uniform over non-zero pairs.  The JSE base case
 ($j = 0, k = 1$) is proved via the tower rule
-(\lean{EM/EnsembleBaseCase.lean}{jse\_base\_case}):
+(\lean{EM/Ensemble/BaseCase.lean}{jse\_base\_case}):
 $P(A, B) = P(A \mid B) \cdot P(B)$, decomposing the joint density
 into conditional and marginal equidistribution.
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{jse\_transfer\_implies\_mc}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{jse\_transfer\_implies\_mc}]
 $\mathrm{JSE} + \mathrm{MultCancelToWalkCancel}
 \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -869,7 +869,7 @@ $\mathrm{JSE} + \mathrm{MultCancelToWalkCancel}
 \noindent The composition:
 \begin{enumerate}[nosep]
 \item JSE gives per-chi decorrelation for non-trivial~$\chi$
-  (\lean{EM/EnsemblePT.lean}{joint\_step\_equidist\_implies\_step\_decorrelation}).
+  (\lean{EM/Ensemble/PT.lean}{joint\_step\_equidist\_implies\_step\_decorrelation}).
 \item PerChiCancellationBridge (Theorem~\ref{thm:per-chi}) gives
   multiplier character cancellation for almost all squarefree~$n$.
 \item \textbf{MultCancelToWalkCancel} (open): multiplier energy
@@ -907,7 +907,7 @@ cancellation without ever needing the multiplier-to-walk transfer.
 \paragraph{The Variance Route to DSL}
 \label{sec:variance-route}
 
-The DSLVariance framework (\code{DSLVariance.lean}) provides an
+The DSLVariance framework (\code{Reduction/DSLVariance.lean}) provides an
 alternative approach to DSL via the second moment of character energy.
 
 \begin{definition}[\defname{Population Character Energy}]
@@ -915,7 +915,7 @@ The ensemble average of character energy:
 $\mathcal{E}(q, \chi, K, X) = \mathbb{E}^{\mathrm{sqf}}_{n \leq X}[E(n, K)]$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/DSLVariance.lean}{populationCharEnergy\_nonneg}]
+\begin{theorem}[\lean{EM/Reduction/DSLVariance.lean}{populationCharEnergy\_nonneg}]
 $\mathcal{E} \geq 0$.
 \end{theorem}
 
@@ -927,7 +927,7 @@ $\Gamma(j, k) = \mathbb{E}^{\mathrm{sqf}}_{n \leq X}
 [\mathrm{Re}(\chi(m_j) \cdot \overline{\chi(m_k)})]$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/DSLVariance.lean}{crossTermPair\_comm}]
+\begin{theorem}[\lean{EM/Reduction/DSLVariance.lean}{crossTermPair\_comm}]
 $\Gamma(j, k) = \Gamma(k, j)$ (since $\mathrm{Re}(z \cdot \bar{w}) =
 \mathrm{Re}(w \cdot \bar{z})$).
 \end{theorem}
@@ -936,11 +936,11 @@ $\Gamma(j, k) = \Gamma(k, j)$ (since $\mathrm{Re}(z \cdot \bar{w}) =
 $\Gamma(j, k) \to 0$ as $X \to \infty$ for each fixed pair $j < k$.
 \end{property}
 
-\begin{theorem}[\lean{EM/DSLVariance.lean}{stepDecorrelation\_implies\_pairwiseVanishing}]
+\begin{theorem}[\lean{EM/Reduction/DSLVariance.lean}{stepDecorrelation\_implies\_pairwiseVanishing}]
 $\mathrm{SD} \;\Longrightarrow\; \mathrm{PCV}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/DSLVariance.lean}{charSumVarianceBound\_implies\_secondMomentBound}]
+\begin{theorem}[\lean{EM/Reduction/DSLVariance.lean}{charSumVarianceBound\_implies\_secondMomentBound}]
 $\mathrm{CSVB}(C) \;\Longrightarrow\; \mathrm{SecondMomentBound}(C)$:
 the population energy is at most~$CK$.
 \end{theorem}
@@ -971,7 +971,7 @@ fundamental identity relating character energy to the geometry of the
 walk.  For a walk of length~$N$ on $(\ZZ/q\ZZ)^\times$, define the
 \emph{visit count} $V_N(a) = |\{n < N : \walkZ{2}{q}{n} = a\}|$.
 
-\begin{theorem}[\lean{EM/VisitEquidistribution.lean}{excessEnergy\_eq\_visit\_deviation}]
+\begin{theorem}[\lean{EM/Reduction/VisitEquidist.lean}{excessEnergy\_eq\_visit\_deviation}]
 \label{thm:excess-energy}
 The excess energy $E_\chi(N) - N$ equals $(q{-}1)$ times the
 squared deviation of visit counts from the uniform distribution:
@@ -984,7 +984,7 @@ squared deviation of visit counts from the uniform distribution:
 
 This establishes the equivalence
 \defname{SVE}~$\Leftrightarrow$~\defname{VE}
-(\lean{EM/MasterReduction.lean}{sve\_iff\_ve}): subquadratic visit
+(\lean{EM/Reduction/Master.lean}{sve\_iff\_ve}): subquadratic visit
 energy (the total non-trivial character energy is $o(N^2)$) is the same
 as visit equidistribution (the visit counts are approximately uniform).
 The identity connects the Fourier-analytic perspective (character sums)
@@ -1000,7 +1000,7 @@ Parseval's identity on the finite group $(\ZZ/q\ZZ)^\times$.
 
 The fiber decomposition (\S\ref{sec:fiber-energy}) refines this further:
 
-\begin{theorem}[\lean{EM/VisitEquidistribution.lean}{fiberMultCharSum\_step}]
+\begin{theorem}[\lean{EM/Reduction/VisitEquidist.lean}{fiberMultCharSum\_step}]
 The fiber character sum $F(a, N) = \sum_{\substack{n < N \\ w(n) = a}}
 \chi(m(n))$ satisfies the recurrence:
 $F(a, N{+}1) = F(a, N) + \chi(m(N)) \cdot \mathbf{1}_{w(N) = a}$.
@@ -1074,20 +1074,20 @@ The character sum over the $j$-th window of length~$K$:
 $S_j = \sum_{k < K} \chi(\seq{2}(jK{+}k{+}1) \bmod q)$.
 \end{definition}
 
-\begin{theorem}[\lean{EM/TailWindowDecorrelation.lean}{windowCharSum\_eq\_genSeqCharPartialSum}]
+\begin{theorem}[\lean{EM/Reduction/TailWindow.lean}{windowCharSum\_eq\_genSeqCharPartialSum}]
 $S_j$ equals the generalized character partial sum
 starting from $\Prod{2}(jK)$:
 $S_j = \sum_{k<K} \chi(\text{genSeq}(\Prod{2}(jK), k) \bmod q)$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/TailWindowDecorrelation.lean}{charSum\_eq\_window\_sum}]
+\begin{theorem}[\lean{EM/Reduction/TailWindow.lean}{charSum\_eq\_window\_sum}]
 \label{thm:window-decomp}
 The total character sum decomposes:
 $\sum_{k < JK} \chi(\seq{2}(k{+}1) \bmod q) = \sum_{j<J} S_j$.
 \end{theorem}
 
 Applying the variance identity
-(\lean{EM/TailWindowDecorrelation.lean}{norm\_sq\_sum\_eq\_diag\_plus\_cross}),
+(\lean{EM/Reduction/TailWindow.lean}{norm\_sq\_sum\_eq\_diag\_plus\_cross}),
 the total character energy decomposes as
 \[
   \Bigl\|\sum_{j<J} S_j\Bigr\|^2
@@ -1095,7 +1095,7 @@ the total character energy decomposes as
   + 2 \sum_{j < l < J} \mathrm{Re}(S_j \cdot \overline{S_l}).
 \]
 The diagonal terms are bounded by $J \cdot K^2$
-(\lean{EM/TailWindowDecorrelation.lean}{diag\_energy\_le}).
+(\lean{EM/Reduction/TailWindow.lean}{diag\_energy\_le}).
 The \emph{cross terms}---the off-diagonal correlations between
 windows at different temporal positions---are the new quantity of
 interest.
@@ -1109,7 +1109,7 @@ vanishes as the window size~$K$ grows:
 \]
 \end{property}
 
-\begin{theorem}[\lean{EM/TailWindowDecorrelation.lean}{twd\_implies\_mc\_from\_bridge}]
+\begin{theorem}[\lean{EM/Reduction/TailWindow.lean}{twd\_implies\_mc\_from\_bridge}]
 $\mathrm{TWDImpliesCCSB} + \mathrm{TWD}
 \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -1140,7 +1140,7 @@ orbit-specificity barrier (density-one results cannot pin down $n=2$),
 while TWD faces the temporal-correlation barrier (consecutive windows
 share the accumulator prefix $\Prod{2}(jK)$).
 
-The file \code{TailWindowDecorrelation.lean} (477~lines, zero
+The file \code{Reduction/TailWindow.lean} (477~lines, zero
 \code{sorry}) formalizes the window definitions, the tail identity
 connection, the variance identity, the diagonal and cross-term bounds,
 and the conditional chain TWD~$\Rightarrow$~CCSB~$\Rightarrow$~MC\@.
@@ -1272,7 +1272,7 @@ TWD~$\to$~CCSB (open bridge, via temporal window decorrelation).
 All solid arrows are machine-verified; the two dashed arrows
 (DSL, TWD~$\Rightarrow$~CCSB) are the open hypotheses.
 
-\begin{theorem}[\lean{EM/EnsemblePT.lean}{dsl\_closes\_all}]
+\begin{theorem}[\lean{EM/Ensemble/PT.lean}{dsl\_closes\_all}]
 Under standard ANT (MinFacResidueEquidist) plus DSL:
 $\mathrm{MC} \;\wedge\; \mathrm{CCSB}$.
 \end{theorem}

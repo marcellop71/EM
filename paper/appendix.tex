@@ -225,7 +225,7 @@ where $F(n) = f_0 \cdots f_n$ is the running product.  We call this the
 \textbf{FF-EM sequence} and state the function field analog of MC\@:
 
 \begin{conjecture}[\defname{FF-MC}]
-\lean{EM/FunctionFieldAnalog.lean}{FFMullinConjecture}
+\lean{EM/FunctionField/Analog.lean}{FFMullinConjecture}
 Every monic irreducible polynomial in $\FF_p[t]$ eventually appears in
 the FF-EM sequence.
 \end{conjecture}
@@ -246,7 +246,7 @@ multiplicative character.  The Weil bound for function fields states:
   \;\leq\; (d - 1)\sqrt{p}.
 \]
 This immediately gives \textbf{population equidistribution}
-(\lean{EM/FunctionFieldAnalog.lean}{weil\_implies\_population\_equidist}):
+(\lean{EM/FunctionField/Analog.lean}{weil\_implies\_population\_equidist}):
 among all monic irreducibles, the residues modulo~$Q$ are
 equidistributed in $(\FF_p[t]/(Q))^\times$.  Over $\ZZ$, obtaining
 the analogous statement requires the Weighted PNT in Arithmetic
@@ -262,7 +262,7 @@ sequence.  The Weil bound says nothing about which irreducible
 factor of a specific polynomial has the smallest degree.
 
 This is the \textbf{orbit-specificity barrier} (Dead End~\#127,
-\lean{EM/FunctionFieldAnalog.lean}{WeilDoesNotImplyFFDSL}),
+\lean{EM/FunctionField/Analog.lean}{WeilDoesNotImplyFFDSL}),
 structurally identical to the integer case: no known result transfers
 population-level equidistribution to a specific deterministic orbit.
 The function field analog thus confirms that the difficulty of MC is
@@ -277,19 +277,19 @@ min-degree rule only guarantees that the selected factor has degree
 $\leq \deg Q$.
 
 The solution is \textbf{competitor exhaustion}
-(\lean{EM/FFBootstrap.lean}{ff\_element\_capture}):
+(\lean{EM/FunctionField/Bootstrap.lean}{ff\_element\_capture}):
 there are finitely many monic irreducibles of each degree~$d$ over
 $\FF_p$ (exactly $\frac{1}{d}\sum_{e \mid d} \mu(d/e)\, p^e$ of
 them).  If $Q$ divides $F(n)+1$ cofinally, the hitting set
 $\{n : Q \mid F(n)+1\}$ is infinite.  At each such~$n$, the
 selected factor $f_{n+1}$ has $\deg f_{n+1} \leq \deg Q$ and is
 injective into the finite set of competitors
-(by \lean{EM/FFBootstrap.lean}{ffSeq\_injective\_proved}).
+(by \lean{EM/FunctionField/Bootstrap.lean}{ffSeq\_injective\_proved}).
 Since an injection from an infinite set to a finite set is
 impossible, eventually all competitors of degree $\leq \deg Q$
 are consumed, and $Q$ must be selected.
 
-\begin{theorem}[\lean{EM/FFBootstrap.lean}{ff\_dh\_implies\_ffmc}]
+\begin{theorem}[\lean{EM/FunctionField/Bootstrap.lean}{ff\_dh\_implies\_ffmc}]
 \label{thm:ff-bootstrap}
 $\mathrm{FFDynamicalHitting} \;\Longrightarrow\; \mathrm{FF\text{-}MC}$.
 \end{theorem}
@@ -313,7 +313,7 @@ $\chi(h) = 1$ for $h \in H$), the character sum $\sum_{a \in \FF_p}
 gives $|\text{sum}| \leq (d-1)\sqrt{p}$, yielding $p \leq (d-1)\sqrt{p}$,
 i.e., $p \leq (d-1)^2$.
 
-\begin{theorem}[\lean{EM/FFSubgroupEscape.lean}{weil\_implies\_ff\_se}]
+\begin{theorem}[\lean{EM/FunctionField/SubgroupEscape.lean}{weil\_implies\_ff\_se}]
 \label{thm:ff-se}
 If $p \geq (d-1)^2 + 1$, then the degree-1 multipliers generate
 the full unit group $(\FF_p[t]/(Q))^\times$ for every monic
@@ -323,7 +323,7 @@ irreducible~$Q$ of degree~$d$.
 The threshold $(d-1)^2 + 1$ is sharp for this argument.
 For $d = 1$, SE holds for all~$p$ (the degree-1 images
 \emph{are} all nonzero elements of~$\FF_p$,
-\lean{EM/FFSubgroupEscape.lean}{ff\_se\_degree\_one}).
+\lean{EM/FunctionField/SubgroupEscape.lean}{ff\_se\_degree\_one}).
 For $d = 2$, the threshold is~$2$, so SE holds for all odd
 primes.
 
@@ -331,7 +331,7 @@ primes.
 SE proves that the multipliers \emph{generate} the full unit group.
 Does this imply the walk \emph{visits}~$-1$?  No.
 
-\begin{example}[\lean{EM/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}]
+\begin{example}[\lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}]
 \label{ex:z4}
 In $\ZZ/4\ZZ$, the alternating steps $\{1, 3, 1, 3, \ldots\}$
 generate the full group ($\gcd(1,3) = 1$), but the additive walk
@@ -348,7 +348,7 @@ actually reaches every element).  The two coincide for random walks
 \paragraph{The three-level hierarchy.}
 The FF-MC reduction decomposes the orbit-specificity barrier into
 three levels of difficulty
-(\lean{EM/FFMultiplierCCSB.lean}{ff\_mc\_mult\_ccsb\_landscape}):
+(\lean{EM/FunctionField/MultiplierCCSB.lean}{ff\_mc\_mult\_ccsb\_landscape}):
 
 \begin{enumerate}[nosep]
 \item \textbf{Population level} (solved).  Among \emph{all} monic
@@ -381,7 +381,7 @@ theorem~\cite{Deligne1980} constrains the Frobenius conjugacy class distribution
 and hence the factorization statistics.
 
 \begin{remark}[Dead End~\#129,
-\lean{EM/FunctionFieldAnalog.lean}{ff\_cyclotomic\_dead\_end}]
+\lean{EM/FunctionField/Analog.lean}{ff\_cyclotomic\_dead\_end}]
 \label{rem:fflm-false}
 The \textbf{FF Large Monodromy} hypothesis (Galois group of
 $F(n)+1$ eventually contains~$A_d$) is \emph{structurally false}.
@@ -431,7 +431,7 @@ content in each route is the orbit-specificity transfer.
 
 \subsubsection*{Arithmetic Large Sieve Route}
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L403}{arith\_ls\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Basic.lean\#L403}{arith\_ls\_chain\_mc}]
 $\mathrm{ArithLS} + \mathrm{ArithLSImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 The arithmetic large sieve gives character sum bounds for Dirichlet
@@ -454,7 +454,7 @@ with $\min_{r \neq s} \|\alpha_r - \alpha_s\| \geq \delta$:
 \]
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L490}{weak\_als\_from\_card\_bound}]
+\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L490}{weak\_als\_from\_card\_bound}]
 \label{thm:weak-als}
 A \emph{weak} version with constant $N \cdot (\delta^{-1} + 1)$ is
 proved (the optimal constant is $N - 1 + \delta^{-1}$, but the
@@ -466,7 +466,7 @@ $\tau(\chi) = \sum_{a} \chi(a)\, e(a/p)$ intertwines multiplication
 and addition on~$\ZZ/p\ZZ$, converting character sums to exponential
 sums.
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L304}{char\_sum\_to\_exp\_sum}]
+\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L304}{char\_sum\_to\_exp\_sum}]
 \label{thm:gauss-inversion}
 For a non-trivial character~$\chi$ mod~$p$ prime:
 $\sum_n f(n)\, \chi(n)
@@ -476,12 +476,12 @@ $\sum_n f(n)\, \chi(n)
 The GaussConductorTransfer composes eight internal lemmas (all proved,
 \S56--\S62) into the bridge from ALS to the prime arithmetic large sieve:
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1358}{als\_implies\_prime\_arith\_ls}]
+\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L1358}{als\_implies\_prime\_arith\_ls}]
 \label{thm:als-prime}
 $\mathrm{AnalyticLargeSieve} \;\Longrightarrow\; \mathrm{PrimeArithLS}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieveAnalytic.lean\#L1535}{als\_prime\_arith\_ls\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L1535}{als\_prime\_arith\_ls\_chain\_mc}]
 $\mathrm{ALS} + \mathrm{PrimeArithLSImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
@@ -522,7 +522,7 @@ Instead of individual character sums, this route examines the
 \emph{total energy} of the walk occupation measure
 $V_N(a) = |\{n < N : \walkZ{2}{q}{n} = a\}|$.
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L89}{walk\_energy\_parseval}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L89}{walk\_energy\_parseval}]
 \label{thm:walk-energy}
 $\sum_\chi \|S_\chi(N)\|^2 = (q{-}1) \sum_{a \in (\ZZ/q\ZZ)^\times} V_N(a)^2$
 \quad (Parseval).
@@ -537,7 +537,7 @@ For every missing prime~$q$ and $\varepsilon > 0$, there exists
 $N_0$ such that for $N \geq N_0$: $E(N) \leq \varepsilon N^2$.
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L238}{sve\_implies\_mmcsb}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L238}{sve\_implies\_mmcsb}]
 \label{thm:sve-mc}
 $\mathrm{SVE} \Longrightarrow \mathrm{MMCSB} \Longrightarrow \MC$.
 \end{theorem}
@@ -550,7 +550,7 @@ each prime individually and MMCSB jointly.
 \paragraph{Van der Corput and higher-order decorrelation.}
 The van der Corput inequality bounds $|\sum z_n|$ via autocorrelations:
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L826}{van\_der\_corput\_bound}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L826}{van\_der\_corput\_bound}]
 \label{thm:vdc}
 $\left\|\sum_{n \leq N} z_n\right\|^2
 \leq \frac{N + H}{H+1}\bigl(N + 2\sum_{h=1}^{H}
@@ -569,7 +569,7 @@ $N \geq N_0$ and all $1 \leq h \leq H$:
 $\|R_h(N)\| \leq \varepsilon N$.
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L1038}{hod\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L1038}{hod\_implies\_ccsb}]
 \label{thm:hod-mc}
 $\mathrm{HOD} \Longrightarrow \mathrm{CCSB} \Longrightarrow \MC$.
 \end{theorem}
@@ -583,11 +583,11 @@ $c \in (\ZZ/q\ZZ)^\times$:
 $\|\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))\| \leq \varepsilon N$.
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_dec}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_dec}]
 $\mathrm{CME} \Longrightarrow \mathrm{DecorrelationHypothesis}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}]
 \label{thm:cme-ccsb}
 $\mathrm{CME} \Longrightarrow \mathrm{CCSB}$.
 \end{theorem}
@@ -607,7 +607,7 @@ barrier.  The proof works for all character orders because it uses
 only the fiber decomposition and telescoping---no block rotation
 estimate is needed.
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_mc}]
 $\mathrm{CME} \Longrightarrow \MC$.
 \end{theorem}
 
@@ -615,7 +615,7 @@ $\mathrm{CME} \Longrightarrow \MC$.
 Compose \texttt{cme\_implies\_ccsb} with \texttt{complex\_csb\_mc'}.
 \end{proof}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean}{cme\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_chain\_mc}]
 $\mathrm{CME} + \mathrm{PEDImpliesCSB} \Longrightarrow \MC$.
 \end{theorem}
 
@@ -662,7 +662,7 @@ MC is the assertion $M = \emptyset$.  A natural weakening asks only that
 $M$ is \emph{small} in an analytic sense:
 
 \begin{property}[\defname{WeakMullin} (\abbr{WM})]
-\lean{EM/WeakMullin.lean}{WeakMullin}
+\lean{EM/Population/WeakMullin.lean}{WeakMullin}
 The reciprocal sum over missing primes converges:
 $\sum_{q \in M} 1/q < \infty$.
 \end{property}
@@ -672,16 +672,16 @@ a trivially convergent empty sum) but strong enough to have a nontrivial
 consequence:
 
 \begin{property}[\defname{ReciprocalDivergence} (\abbr{RD})]
-\lean{EM/WeakMullin.lean}{ReciprocalDivergence}
+\lean{EM/Population/WeakMullin.lean}{ReciprocalDivergence}
 The reciprocal sum over EM primes diverges:
 $\sum_{k=0}^{\infty} 1/\seq{2}(k) = \infty$.
 \end{property}
 
-\begin{theorem}[\lean{EM/WeakMullin.lean}{mc\_implies\_wm}]
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{mc\_implies\_wm}]
 $\MC \Longrightarrow \mathrm{WM}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/WeakMullin.lean}{wm\_implies\_rd}]
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{wm\_implies\_rd}]
 \label{thm:wm-rd}
 $\mathrm{WM} \Longrightarrow \mathrm{RD}$.
 \end{theorem}
@@ -715,7 +715,7 @@ sum---i.e., the missing set would be ``large'' in the harmonic sense.
 The negation of WM has a quantitative consequence for products over
 missing primes.
 
-\begin{theorem}[\lean{EM/WeakMullin.lean}{safe\_fraction\_exp\_bound}]
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{safe\_fraction\_exp\_bound}]
 For a finite set $Q$ of reals with $q \geq 2$ for each $q \in Q$:
 \[
 \prod_{q \in Q} \frac{q-2}{q-1}
@@ -729,7 +729,7 @@ inequality $1 - x \leq e^{-x}$.  Taking the product over~$Q$ gives
 the result.
 \end{proof}
 
-\begin{theorem}[\lean{EM/WeakMullin.lean}{not\_wm\_product\_diverges}]
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{not\_wm\_product\_diverges}]
 If\/ $\neg\mathrm{WM}$, then for every $C \in \mathbb{R}$ there exists a finite
 subset $F \subseteq M$ with
 $\prod_{q \in F} \tfrac{q-1}{q-2} \geq C$.
@@ -754,13 +754,13 @@ The confined-energy perspective connects the missing primes to the
 spectral route via visit counts.
 
 \begin{property}[\defname{EMBV}]
-\lean{EM/WeakMullin.lean}{EMBV}
+\lean{EM/Population/WeakMullin.lean}{EMBV}
 An alias for $\mathrm{MMCSB}$, emphasizing the
 Bombieri--Vinogradov analogy: the EM walk satisfies multi-modular
 character sum bounds.
 \end{property}
 
-\begin{theorem}[\lean{EM/WeakMullin.lean}{embv\_implies\_mc}]
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{embv\_implies\_mc}]
 $\mathrm{EMBV} \Longrightarrow \MC$ \textup(conditional on the
 sieve-gap threshold $Q_0 \leq 11$\textup).
 \end{theorem}
@@ -769,7 +769,7 @@ For a missing prime $q \geq 3$, the walk avoids $-1$ entirely, so the
 $N$ visits are distributed among only $q-2$ residues instead of the
 full $q-1$.  A pigeonhole argument gives:
 
-\begin{theorem}[\lean{EM/WeakMullin.lean}{per\_prime\_confined\_energy\_lb}]
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{per\_prime\_confined\_energy\_lb}]
 For a missing prime $q \geq 3$ and $N$ steps:
 \[
 \frac{N^2}{q-2}
@@ -793,12 +793,12 @@ what SVE forbids: subquadratic visit energy requires the walk to
 spread evenly, but a missing prime forces concentration.
 
 \begin{property}[\defname{JointSVE}]
-\lean{EM/WeakMullin.lean}{JointSVE}
+\lean{EM/Population/WeakMullin.lean}{JointSVE}
 Joint subquadratic visit energy: the sum of excess energies over any
 finite set of missing primes is $o(N^2)$.
 \end{property}
 
-\begin{theorem}[\lean{EM/WeakMullin.lean}{jointSVE\_implies\_mmcsb}]
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{jointSVE\_implies\_mmcsb}]
 $\mathrm{JointSVE} \Longrightarrow \mathrm{MMCSB}$.
 \end{theorem}
 
@@ -812,7 +812,7 @@ to the multi-modular character sum bound.
 The EM accumulator $\Prod{2}(n)$ is a product of distinct primes and is
 therefore squarefree:
 
-\begin{theorem}[\lean{EM/WeakErgodicity.lean}{prod\_squarefree}]
+\begin{theorem}[\lean{EM/Population/WeakErgodicity.lean}{prod\_squarefree}]
 $\Prod{2}(n)$ is squarefree for all~$n$.
 \end{theorem}
 
@@ -847,7 +847,7 @@ This gives a decomposition of WE~(= EMDirichlet) into two components:
   \texttt{crt\_multiplier\_invariance} (the sampling rule is $q$-blind).
 \end{itemize}
 
-\begin{theorem}[\lean{EM/WeakErgodicity.lean}{pe\_transfer\_cme\_implies\_mc}]
+\begin{theorem}[\lean{EM/Population/WeakErgodicity.lean}{pe\_transfer\_cme\_implies\_mc}]
 $\mathrm{PE} + \mathrm{PT} + \mathrm{EMDImpliesCME}
 \;\Longrightarrow\; \MC$.
 \end{theorem}

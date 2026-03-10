@@ -73,7 +73,7 @@ $\Omega(N)$ (to cancel the uniform share in the Fourier bridge).
 CCSB rules this out.
 \end{property}
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{complex\_csb\_mc'}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{complex\_csb\_mc'}]
 \label{thm:ccsb-mc}
 $\mathrm{CCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -82,7 +82,7 @@ This is a single-hypothesis reduction with no additional parameters.
 The proof composes three bridges:
 
 \begin{enumerate}[nosep]
-\item \textbf{Fourier inversion} (\lean{EM/EquidistFourier.lean}{complex\_csb\_implies\_hit\_count\_lb\_proved}):
+\item \textbf{Fourier inversion} (\lean{EM/Equidist/Fourier.lean}{complex\_csb\_implies\_hit\_count\_lb\_proved}):
   CCSB implies that the hit count at~$-1$ satisfies
   $|\{n < N : \walkZ{2}{q}{n} = -1\}| = N/(q{-}1) + o(N)$,
   which is eventually positive.  This directly contradicts permanent
@@ -91,7 +91,7 @@ The proof composes three bridges:
   specializing to $t = -1$ is what matters).
 
 \item \textbf{Cofinal hitting gives HH}
-  (\lean{EM/EquidistFourier.lean}{walk\_equidist\_mc}):
+  (\lean{EM/Equidist/Fourier.lean}{walk\_equidist\_mc}):
   the eventually-positive hit count at~$-1$ gives cofinal hitting,
   hence HH\@.  (In fact, the Fourier bridge yields equidistribution
   across all classes, but only the $t = -1$ case is needed.  SE is a
@@ -108,7 +108,7 @@ The Fourier bridge is the single most important proved result after
 DH~$\Rightarrow$~MC itself: it converts character sum bounds into hit
 count lower bounds, and hence into MC.
 
-\begin{theorem}[\lean{EM/EquidistFourier.lean}{walk\_hit\_count\_fourier\_step}]
+\begin{theorem}[\lean{EM/Equidist/Fourier.lean}{walk\_hit\_count\_fourier\_step}]
 \label{thm:fourier-step}
 For any target $t \in (\ZZ/q\ZZ)^\times$:
 \[
@@ -255,7 +255,7 @@ $\sum_{\substack{n<N \\ \walkZ{2}{q}{n} = c}} \chi(\multZ{2}{q}{n}) = o(N)$
 separately for each position~$c$, not just the global sum.
 Since the global sum is the sum of the fiber sums, CME implies
 Decorrelation by the triangle inequality
-(\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_dec}).
+(\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_dec}).
 The significance of CME is that it also implies CCSB
 \emph{directly}, bypassing PED and BRE entirely: the fiber
 decomposition and the telescoping identity together convert
@@ -263,7 +263,7 @@ conditional multiplier cancellation into walk character sum
 cancellation, for \emph{all} character orders, without needing the
 intermediate PED $\to$ BRE $\to$ CCSB chain.
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{decorrelation\_implies\_ped}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{decorrelation\_implies\_ped}]
 Decorrelation $\Rightarrow$ PED.
 \end{theorem}
 
@@ -276,7 +276,7 @@ which is $\geq \varepsilon N$ for $\delta$ small enough.  This
 contradicts Decorrelation.
 \end{proof}
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{noLongRuns\_implies\_ped}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{noLongRuns\_implies\_ped}]
 NoLongRuns$(L) \Rightarrow$ PED with $\delta = 1/(2L)$.
 \end{theorem}
 
@@ -286,7 +286,7 @@ contains at least one escape (by assumption), so the total escape count
 is $\geq N/(2L)$.
 \end{proof}
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{block\_rotation\_implies\_ped\_csb}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{block\_rotation\_implies\_ped\_csb}]
 BRE $\Rightarrow$ PEDImpliesComplexCSB.
 \end{theorem}
 
@@ -304,7 +304,7 @@ density into walk character sum cancellation.
 
 However, the PED route is not the only path.  CME implies CCSB
 \emph{directly}, bypassing PED and BRE entirely
-(\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}):
+(\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}):
 \[
 \mathrm{CME}
 \;\xrightarrow{\text{proved}}\;
@@ -352,7 +352,7 @@ constant cannot equal~1; the telescope then forces the walk character
 sum to be $o(N)$, ruling out the sustained bias needed for permanent
 avoidance.
 
-\begin{proposition}[\lean{EM/LargeSieveSpectral.lean\#L2007}{cme\_implies\_vcb}]
+\begin{proposition}[\lean{EM/LargeSieve/Spectral.lean\#L2007}{cme\_implies\_vcb}]
 $\mathrm{CME} \Rightarrow \mathrm{VCB}$ with $\mu = 0$.
 Conversely, $\mathrm{VCB} + \mathrm{Dec} \Rightarrow \mathrm{CME}$.
 Thus CME decomposes as $\mathrm{CME} = \mathrm{VCB} + \mathrm{Dec}$.
@@ -360,7 +360,7 @@ VCB alone is strictly weaker than CME: it permits the fiber sums to
 be $\Theta(N)$, provided they are proportional to the visit counts.
 \end{proposition}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2256}{vcb\_ped\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L2256}{vcb\_ped\_implies\_ccsb}]
 \label{thm:vcb-ped-ccsb}
 $\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \mathrm{CCSB}$.
 \end{theorem}
@@ -376,8 +376,8 @@ that at least $\delta N$ multipliers escape $\ker(\chi)$.  For each
 escaping multiplier, $\chi(m(n))$ is a non-trivial $d$-th root of
 unity, satisfying $\mathrm{Re}(\chi(m(n))) \leq 1 - \eta_0^2/2$
 where $\eta_0 = \min_{\zeta \in \mu_d \setminus \{1\}} |\zeta - 1| > 0$
-(\lean{EM/LargeSieveSpectral.lean\#L2024}{norm\_sub\_one\_sq\_eq},
-\lean{EM/LargeSieveSpectral.lean\#L2037}{unit\_norm\_re\_le\_of\_dist}).
+(\lean{EM/LargeSieve/Spectral.lean\#L2024}{norm\_sub\_one\_sq\_eq},
+\lean{EM/LargeSieve/Spectral.lean\#L2037}{unit\_norm\_re\_le\_of\_dist}).
 This real-part defect accumulates over $\delta N$ escaping steps,
 forcing $|\sum \chi(m(n)) - N| \geq c_0 N$ for
 $c_0 = \delta \eta_0^2 / 2$.  Combined with VCB's control
@@ -386,7 +386,7 @@ triangle inequality gives $|1 - \mu| \geq c_0/2$ for small
 $\varepsilon$.
 \end{proof}
 
-\begin{theorem}[\lean{EM/LargeSieveSpectral.lean\#L2366}{vcb\_ped\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L2366}{vcb\_ped\_implies\_mc}]
 $\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
@@ -414,19 +414,19 @@ define the \emph{character energy}
   E_\chi(N) \;=\; \Bigl\|\sum_{n<N} \chi(\walkZ{2}{q}{n})\Bigr\|^2,
 \]
 which decomposes as
-\begin{theorem}[\lean{EM/DSLInfrastructure.lean}{char\_sum\_energy\_eq\_N\_plus\_cross}]
+\begin{theorem}[\lean{EM/Reduction/DSLInfra.lean}{char\_sum\_energy\_eq\_N\_plus\_cross}]
 $E_\chi(N) = N + 2\sum_{j<k<N} \mathrm{Re}\bigl(
   \overline{\chi(\walkZ{2}{q}{j})} \cdot \chi(\walkZ{2}{q}{k})\bigr)$.
 \end{theorem}
 \noindent If the cross terms are $o(N)$, the energy grows linearly
 rather than quadratically:
-\begin{theorem}[\lean{EM/DSLInfrastructure.lean}{cross\_term\_controls\_growth}]
+\begin{theorem}[\lean{EM/Reduction/DSLInfra.lean}{cross\_term\_controls\_growth}]
 $o(N)$ cross terms $\Rightarrow$ $E_\chi(N) = N + o(N^2)$,
 i.e., the walk character sum is $o(N)$.
 \end{theorem}
 
 The cross terms admit a fiber decomposition indexed by walk position:
-\begin{theorem}[\lean{EM/DSLInfrastructure.lean}{total\_cross\_term\_eq\_sum\_fiber}]
+\begin{theorem}[\lean{EM/Reduction/DSLInfra.lean}{total\_cross\_term\_eq\_sum\_fiber}]
 The total cross term equals the sum of \emph{fiber cross terms} over
 walk positions~$a \in (\ZZ/q\ZZ)^\times$.
 \end{theorem}
@@ -435,7 +435,7 @@ This connects to CME via the \emph{Fiber Energy Bound}~(FEB),
 which asks that the sum of squared fiber norms
 $\sum_a \|F(a,N)\|^2 \leq \varepsilon N^2$:
 
-\begin{theorem}[\lean{EM/DSLInfrastructure.lean}{feb\_implies\_cme}]
+\begin{theorem}[\lean{EM/Reduction/DSLInfra.lean}{feb\_implies\_cme}]
 $\mathrm{FEB} \;\Longrightarrow\; \mathrm{CME}$.
 \end{theorem}
 
@@ -448,7 +448,7 @@ This holds for all~$a$, giving CME with error $\sqrt{\varepsilon}\, N$.
 The fiber energy perspective also clarifies that character values on
 $(\ZZ/q\ZZ)^\times$ have unit norm:
 
-\begin{theorem}[\lean{EM/DSLInfrastructure.lean}{char\_value\_norm\_one}]
+\begin{theorem}[\lean{EM/Reduction/DSLInfra.lean}{char\_value\_norm\_one}]
 For any finite group $G$ and character $\chi : G \to \mathbb{C}^\times$,
 $\|\chi(g)\| = 1$ for all $g \in G$.
 \end{theorem}
@@ -473,7 +473,7 @@ CCSB, but because they reveal the structural landscape: they show
 which proof strategies are compatible with the walk's algebra and
 which are ruled out.
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_telescope\_identity}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{walk\_telescope\_identity}]
 \label{thm:telescope}
 For any $\chi$ and $N$:
 \[
@@ -487,7 +487,7 @@ $\chi(w(n{+}1)) = \chi(w(n)) \cdot \chi(m(n))$: writing
 $\chi(w(n)) \cdot (\chi(m(n)) - 1) = \chi(w(n{+}1)) - \chi(w(n))$,
 the sum telescopes to $\chi(w(N)) - \chi(w(0))$.
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_telescope\_norm\_bound}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{walk\_telescope\_norm\_bound}]
 The telescoping sum has norm $\leq 2$ (triangle inequality on
 unit-norm terms).
 \end{theorem}
@@ -503,7 +503,7 @@ multiplier character sum $M_N = \sum_{n<N} \chi(m(n))$.  Splitting
 the product in Theorem~\ref{thm:telescope} gives
 $S_N \cdot \overline{M_N/N} - S_N = O(1)$ (after normalization).
 
-\begin{theorem}[\lean{EM/EquidistSelfCorrecting.lean}{walk\_shift\_one\_correlation}]
+\begin{theorem}[\lean{EM/Equidist/SelfCorrecting.lean}{walk\_shift\_one\_correlation}]
 \label{thm:shift-one}
 $\sum_{n < N} \chi(w(n)) \cdot \overline{\chi(w(n+1))}
   = \overline{\sum_{n < N} \chi(m(n))}$.
@@ -527,7 +527,7 @@ Euclid construction.  Define the \emph{cofactor}
 $\text{cof}(n) = (\Prod{2}(n)+1)/\seq{2}(n{+}1)$, and its residue
 $\mathrm{cofZ}(q, n) = \text{cof}(n) \bmod q$.  Then:
 
-\begin{theorem}[\lean{EM/DSLInfrastructure.lean}{shifted\_walk\_eq\_mult\_mul\_cof}]
+\begin{theorem}[\lean{EM/Reduction/DSLInfra.lean}{shifted\_walk\_eq\_mult\_mul\_cof}]
 \label{thm:cofactor}
 $\walkZ{2}{q}{n} + 1 = \multZ{2}{q}{n} \cdot \mathrm{cofZ}(q, n)$.
 \end{theorem}
@@ -537,7 +537,7 @@ $\chi(\walkZ{2}{q}{n} + 1) = \chi(\multZ{2}{q}{n}) \cdot \chi(\mathrm{cofZ}(q,n)
 Since the walk hits~$-1$ exactly when $\walkZ{2}{q}{n} + 1 = 0$, and
 $\multZ{2}{q}{n} \neq 0$ (as a unit):
 
-\begin{theorem}[\lean{EM/DSLInfrastructure.lean}{walkZ\_eq\_neg\_one\_iff\_cofZ\_zero}]
+\begin{theorem}[\lean{EM/Reduction/DSLInfra.lean}{walkZ\_eq\_neg\_one\_iff\_cofZ\_zero}]
 $\walkZ{2}{q}{n} = -1 \;\Longleftrightarrow\; \mathrm{cofZ}(q, n) = 0$.
 \end{theorem}
 
@@ -560,7 +560,7 @@ prove than pointwise ones.  The large sieve inequality and the
 Bombieri--Vinogradov theorem are the two central tools for this.
 
 The formalization develops this multi-modular route across three files
-(\code{LargeSieve.lean}, \code{Large\-Sieve\-Harmonic.lean},
+(\code{LargeSieve/Basic.lean}, \code{Large\-Sieve\-Harmonic.lean},
 \code{Large\-Sieve\-Analytic.lean}) totaling ${\sim}5{,}870$~lines,
 connecting classical analytic number theory to MC via a multi-modular
 character sum bound.
@@ -596,7 +596,7 @@ exceptional primes below~$Q_0$.  This weakening is crucial because
 averaged results like BV naturally produce bounds that fail for
 finitely many moduli.
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L303}{mmcsb\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Basic.lean\#L303}{mmcsb\_implies\_mc}]
 \label{thm:mmcsb-mc}
 $\mathrm{MultiModularCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -620,7 +620,7 @@ the expected $\pi(x)/\phi(q)$.  If this applies to the EM multipliers,
 the death channel---a single progression---gets its fair share of
 multipliers, breaking the avoidance.
 
-\begin{theorem}[\lean{EM/LargeSieve.lean\#L362}{bv\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Basic.lean\#L362}{bv\_chain\_mc}]
 $\mathrm{BV} + \mathrm{BVImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 The transfer hypothesis BVImpliesMMCSB is a \textbf{genuine frontier}:
@@ -645,7 +645,7 @@ where EMMultCSB bounds the \emph{multiplier} character sums)
 from the dynamical content (EMMultCSB~$\Rightarrow$~MMCSB, converting
 multiplier bounds to \emph{walk} bounds).  However, the walk bridge
 \textbf{MultCSBImpliesMMCSB is false in general}
-(\lean{EM/LargeSieve.lean\#L1226}{MultCSBImpliesMMCSB}):
+(\lean{EM/LargeSieve/Basic.lean\#L1226}{MultCSBImpliesMMCSB}):
 the walk character sum $\sum \chi(w(n))$ is a \emph{partial product}
 $\prod_{k<n} \chi(m(k))$ of the multiplier characters, and partial
 products of equidistributed unit complex numbers need not cancel---they

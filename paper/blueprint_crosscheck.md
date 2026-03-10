@@ -1,12 +1,12 @@
 # LeanArchitect Blueprint Cross-Check Report
 
-Generated from `EM/Blueprint.lean` (20 key declarations annotated with `@[blueprint]`).
+Generated from `EM/Meta/Blueprint.lean` (20 key declarations annotated with `@[blueprint]`).
 
 ## Setup
 - LeanArchitect v4.29.0-rc1 added as dependency
-- 20 key theorems annotated in `EM/Blueprint.lean` (retroactive `attribute [blueprint]`)
+- 20 key theorems annotated in `EM/Meta/Blueprint.lean` (retroactive `attribute [blueprint]`)
 - All 20 declarations: `\leanok` (zero sorry)
-- Blueprint LaTeX and JSON generated via `lake exe extract_blueprint single EM.Blueprint`
+- Blueprint LaTeX and JSON generated via `lake exe extract_blueprint single EM.Meta.Blueprint`
 
 ## Misalignments Found
 

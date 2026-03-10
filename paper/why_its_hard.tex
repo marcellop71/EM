@@ -17,7 +17,7 @@ The difficulty of MC is not the \emph{existence} of new primes but
 whether the $\minFac$ rule eventually \emph{selects} each one.  The
 formalization makes this contrast precise.
 
-\begin{theorem}[\lean{EM/EquidistOrbitAnalysis.lean}{divisor\_not\_yet\_in\_seq}]
+\begin{theorem}[\lean{EM/Equidist/OrbitAnalysis.lean}{divisor\_not\_yet\_in\_seq}]
 \label{thm:divisor-fresh}
 If $p \mid \Prod{2}(n)+1$, then $\seq{2}(m) \neq p$ for all $m \leq n$.
 \end{theorem}
@@ -27,13 +27,13 @@ Any $\seq{2}(m)$ with $m \leq n$ divides $\Prod{2}(n)$.  A number $\geq 2$
 cannot divide both~$a$ and~$a+1$.
 \end{proof}
 
-\begin{theorem}[\lean{EM/EquidistOrbitAnalysis.lean}{passed\_over\_persists}]
+\begin{theorem}[\lean{EM/Equidist/OrbitAnalysis.lean}{passed\_over\_persists}]
 If $p \mid \Prod{2}(n)+1$ but $\seq{2}(n\!+\!1) \neq p$ (the $\minFac$ rule
 chose a smaller prime), then $\seq{2}(m) \neq p$ for all $m \leq n+1$.
 The prime survives to potentially divide future Euclid numbers.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/EquidistOrbitAnalysis.lean}{selectability\_extinguished}]
+\begin{theorem}[\lean{EM/Equidist/OrbitAnalysis.lean}{selectability\_extinguished}]
 \label{thm:extinct}
 Once $\seq{2}(m) = p$, we have $p \mid \Prod{2}(n)$ for all $n \geq m$, so
 $p \nmid \Prod{2}(n)+1$ ever again.  Selectability is a one-shot resource.
@@ -47,11 +47,11 @@ p \mid \Prod{2}(n)+1$.
 
 By Theorem~\ref{thm:extinct}, MC$(p)$ and
 Infinitely\-Selectable$(p)$ are mutually exclusive
-(\lean{EM/EquidistOrbitAnalysis.lean}%
+(\lean{EM/Equidist/OrbitAnalysis.lean}%
 {mc\_implies\_not\_infinitely\_selectable}):
 a prime that enters the sequence can never be selectable again.
 
-\begin{theorem}[\lean{EM/EquidistOrbitAnalysis.lean}{dh\_implies\_infinitely\_selectable}]
+\begin{theorem}[\lean{EM/Equidist/OrbitAnalysis.lean}{dh\_implies\_infinitely\_selectable}]
 \label{thm:dh-inf-sel}
 Under DH, every prime that never appears in the sequence (with SE
 satisfied) is infinitely selectable.
@@ -102,7 +102,7 @@ The verified reductions (TailSE, CofinalEscape, QuotientDH) exhaust
 what can be proved about the \emph{marginal} distribution of multiplier
 residues.
 
-\begin{theorem}[\lean{EM/EquidistOrbitAnalysis.lean}{emfe\_iff\_tail\_se\_at}]
+\begin{theorem}[\lean{EM/Equidist/OrbitAnalysis.lean}{emfe\_iff\_tail\_se\_at}]
 $\mathrm{EuclidMinFacEscape}(q) \Leftrightarrow \mathrm{TailSE}(q)$.
 \end{theorem}
 
@@ -140,14 +140,14 @@ $\approx N/2 \cdot (1 + \omega) \neq o(N)$.
 For $d = 2$ this degeneracy vanishes: the only non-trivial rotation
 is~$-1$, so escape frequency \emph{is} the rotation distribution.
 The order-2 BRE from NoLongRuns$(L)$ is proved in the formalization
-(\lean{EM/EquidistSelfCorrecting.lean}{order2\_noLongRuns\_mc}).
+(\lean{EM/Equidist/SelfCorrecting.lean}{order2\_noLongRuns\_mc}).
 But for $d \geq 3$, PED constrains how often the walk rotates without
 constraining the \emph{distribution} among $d-1$ non-identity
 rotations.  The $\mathrm{PED} \Rightarrow \mathrm{BRE} \Rightarrow
 \mathrm{CCSB}$ factorization is invalid for $d \geq 3$.
 
 This barrier is specific to the PED route.  The CME $\to$ CCSB
-reduction (\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb})
+reduction (\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb})
 bypasses PED and BRE entirely, working for all character orders $d$
 via the telescoping identity.  The $d \geq 3$ problem is therefore
 not a barrier for the \emph{reduction}---only for the particular
@@ -176,7 +176,7 @@ The BV route decomposes into two stages: sieve transfer
 and the walk bridge (EMMultCSB~$\Rightarrow$~MMCSB, converting multiplier
 bounds to \emph{walk} bounds).  The walk bridge
 \textbf{MultCSBImpliesMMCSB}
-(\lean{EM/LargeSieve.lean\#L1226}{MultCSBImpliesMMCSB})
+(\lean{EM/LargeSieve/Basic.lean\#L1226}{MultCSBImpliesMMCSB})
 is stated as an open \code{Prop} and is \textbf{false in general}.
 
 The obstruction is structural: the walk character sum is a
@@ -352,7 +352,7 @@ almost certainly use at least one.
 
 \medskip\noindent\textbf{Feature~1: Super-exponential growth.}\enspace
 $\Prod{2}(n) \geq 2^n$
-(\lean{EM/LargeSieve.lean}{prod\_lower\_bound\_for\_sieve}).  The
+(\lean{EM/LargeSieve/Basic.lean}{prod\_lower\_bound\_for\_sieve}).  The
 Euclid numbers $\Prod{2}(n)+1$ grow absurdly fast.  This means the
 \emph{sieve level}---the threshold below which all prime factors have
 been excluded---grows super-exponentially.  By step~$n$, the Euclid
@@ -391,7 +391,7 @@ factor of numbers $\equiv a+1 \pmod{q}$ depends on~$a+1$, creating a
 feedback loop: concentration in one residue class biases the
 multiplier distribution, which in turn pushes the walk away from that
 class.  This self-correcting mechanism has been formalized via a Lyapunov
-function (\code{SelfCorrectingDrift.lean}): the one-step identity
+function (\code{Reduction/SelfCorrecting.lean}): the one-step identity
 $L(N{+}1) = L(N) + 2d_{w(N)}(N) + (q{-}2)/(q{-}1)$ telescopes to
 $L(N) = 2R(N) + O(N)$, and $R(N) = o(N^2)$ (SCD) implies VE and
 hence MC\@.  The zero-bias property under uniform multipliers is
@@ -537,8 +537,8 @@ formally proved.
 StrongSieveEquidist asserts that EM multipliers are equidistributed
 within sliding windows; NoLongRunsAt and PEDAt are per-prime variants
 proved by pigeonhole and block-counting respectively
-(\lean{EM/EquidistSieveTransfer.lean\#L185}{strongSieveEquidist\_noLongRunsAt},
-\lean{EM/EquidistSieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
+(\lean{EM/Equidist/SieveTransfer.lean\#L185}{strongSieveEquidist\_noLongRunsAt},
+\lean{EM/Equidist/SieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
 
 \paragraph{The genuine frontier.}
 
@@ -557,7 +557,7 @@ specific orbit is the open step.
 
 \paragraph{Sieve-to-harmonic convergence.}
 
-The sieve hierarchy (\S36--\S39 of \code{EquidistSelfCorrecting.lean})
+The sieve hierarchy (\S36--\S39 of \code{Equidist/SelfCorrecting.lean})
 and the harmonic hierarchy (\S30--\S35) converge: both produce
 DecorrelationHypothesis as output.  The full chain
 \[
@@ -572,15 +572,15 @@ DecorrelationHypothesis as output.  The full chain
 \mathrm{MC}
 \]
 is formalized, with the first two arrows machine-verified
-(\lean{EM/LargeSieve.lean\#L1617}{sieve\_equidist\_implies\_decorrelation},
-\lean{EM/EquidistSelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
+(\lean{EM/LargeSieve/Basic.lean\#L1617}{sieve\_equidist\_implies\_decorrelation},
+\lean{EM/Equidist/SelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
 The sieve route achieves SieveEquidist~$\Rightarrow$~Dec via a
 counting-to-character-sum bridge: SieveEquidistribution produces
 \code{EMMultCharSumBound} with $Q_0 = 0$, meaning multiplier character
 sums cancel for \emph{all} primes~$q$, which is exactly
 DecorrelationHypothesis.  The sole remaining gap on this route is
 \textbf{PEDImpliesComplexCSB}
-(\lean{EM/EquidistSelfCorrecting.lean\#L109}{PEDImpliesComplexCSB}):
+(\lean{EM/Equidist/SelfCorrecting.lean\#L109}{PEDImpliesComplexCSB}):
 does positive escape density for all primes imply walk character sum
 cancellation?  Any proof of SieveEquidistribution (e.g., from PNT
 in APs $+$ Alladi's theorem) would immediately yield Dec and PED
@@ -598,14 +598,14 @@ standard EM orbit ($n = 2$).  The assembly
 $\mathrm{DSL} \Rightarrow \mathrm{CME} \Rightarrow \mathrm{CCSB}
 \Rightarrow \mathrm{MC}$
 is fully machine-verified
-(\lean{EM/MasterReduction.lean}{full\_chain\_dsl}).
+(\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}).
 DSL is the orbit-transfer principle: it bridges from population-level
 statistics (which hold for almost all starting points) to the specific
 orbit.
 
 A weaker variant also suffices:
 
-\begin{theorem}[\lean{EM/EnsembleStructure.lean}{pe\_dsl\_hitting\_implies\_mc}]
+\begin{theorem}[\lean{EM/Ensemble/Structure.lean}{pe\_dsl\_hitting\_implies\_mc}]
 $\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \MC$,
 \end{theorem}
 
@@ -622,13 +622,13 @@ The cleanest paths to MC:
   that implies MC, and the only one that does so without additional
   conditions.  The assembly
   DSL~$\Rightarrow$~CME~$\Rightarrow$~CCSB~$\Rightarrow$~MC is fully
-  machine-verified (\lean{EM/MasterReduction.lean}{full\_chain\_dsl}).
+  machine-verified (\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}).
 
 \item \textbf{Prove CME}: show that the multiplier
   character sum $\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ is
   $o(N)$ for each walk position~$c$.  CME is strictly weaker than
   CCSB, and $\mathrm{CME} \Rightarrow \mathrm{CCSB}$ is proved
-  (\lean{EM/LargeSieveSpectral.lean}{cme\_implies\_ccsb}).
+  (\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}).
   CME asks only about the \emph{conditional} distribution of
   multipliers given walk state---it does not require controlling the
   walk character sum itself.  This bypasses the $d \geq 3$ barrier
