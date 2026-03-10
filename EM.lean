@@ -95,4 +95,5 @@ import EM.DobrushinStopping
 import EM.EMLFunction
 import EM.GaussEM.GaussEMDefs
 import EM.GaussEM.GaussWalkStructure
+import EM.GaussEM.GaussConfinement
 import EM.Registry

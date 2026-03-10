@@ -9,7 +9,7 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 96~files
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 98~files
 totaling ${\sim}51{,}500$~lines.  The dependency chain is linear, with
 three leaf modules:
 
@@ -129,6 +129,8 @@ three leaf modules:
 \code{FFSubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
 \code{FFMultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 763 \\
+\code{GaussEM/GaussEMDefs.lean} & Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality & 290 \\
+\code{GaussEM/GaussWalkStructure.lean} & Gaussian walk: split/inert classification, norm kernel, orbit barrier & 331 \\
 \midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 229 \\
