@@ -183,6 +183,21 @@ def AlmostAllSquarefreeRSD : Prop :=
         ((Finset.Icc 1 X).filter Squarefree).card)
       Filter.atTop (nhds 0)
 
+/-- **Positive density RSD**: for every bound M > 0, a positive density of
+    squarefree starting points have their reciprocal partial sum ≥ M
+    (for all sufficiently large K and X).
+
+    This is strictly weaker than AlmostAllSquarefreeRSD (density 1), but follows
+    from LinearMeanGrowth alone (1 open hypothesis) without requiring
+    PairwiseStepDecorrelation. -/
+def PositiveDensityRSD : Prop :=
+  ∃ δ : ℝ, 0 < δ ∧
+    ∀ M : ℝ, 0 < M →
+      ∃ K₀ : ℕ, ∀ K ≥ K₀, ∃ X₀ : ℕ, ∀ X ≥ X₀,
+        δ ≤ (((Finset.Icc 1 X).filter
+          (fun n => Squarefree n ∧ M ≤ recipPartialSum n K)).card : ℝ) /
+        ((Finset.Icc 1 X).filter Squarefree).card
+
 end DivergenceDefinitions
 
 /-! ## Asymptotic Hypothesis -/
@@ -1009,6 +1024,177 @@ theorem psd_lmg_implies_rsd
 
 end PairwiseDecorrelation
 
+/-! ## Positive Density Route: LMG alone → PositiveDensityRSD
+
+LinearMeanGrowth alone implies a positive density of squarefree starting
+points have divergent reciprocal sums, WITHOUT requiring PairwiseStepDecorrelation.
+
+The argument is elementary: if the mean is at least κK and every value is at most K/2
+(from genSeq ≥ 2), then by a simple averaging/partition argument, the density
+of {S_K ≥ M} is at least (κK - M)/(K/2 - M), which tends to 2κ as K → ∞.
+
+This gives a 1-hypothesis route: LMG → PositiveDensityRSD,
+compared to the 2-hypothesis route: PSD + LMG → AlmostAllSquarefreeRSD. -/
+
+section PositiveDensityRoute
+
+/-- **Deterministic upper bound**: the partial reciprocal sum S_K(n) ≤ K/2
+    for all starting points n ≥ 1, since each term 1/genSeq(n,k) ≤ 1/2. -/
+theorem recipPartialSum_le_half_K {n : Nat} (hn : 1 ≤ n) (K : Nat) :
+    recipPartialSum n K ≤ K / 2 := by
+  unfold recipPartialSum
+  calc ∑ k ∈ Finset.range K, (1 : ℝ) / (genSeq n k : ℝ)
+      ≤ ∑ _k ∈ Finset.range K, (1 : ℝ) / 2 :=
+        Finset.sum_le_sum (fun k _ => recipPartialSum_term_le_half hn k)
+    _ = K / 2 := by rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; ring
+
+/-- **Averaging lower bound on density**: if the ensemble mean of f is at least μ,
+    every f(n) ≤ B, f(n) ≥ 0, and μ > M < B, then the density of {f ≥ M} is
+    at least (μ - M)/(B - M).
+
+    Proof: partition into {f ≥ M} and {f < M}, bound each part, solve for density. -/
+private theorem density_lower_bound_from_mean
+    (X : Nat) (f : Nat → ℝ) (μ M B : ℝ)
+    (hμ : μ ≤ sfAvg X f)
+    (hB : ∀ n ∈ sfSet X, f n ≤ B)
+    (_hfnn : ∀ n ∈ sfSet X, 0 ≤ f n)
+    (hMB : M < B) (_hμM : M < μ) (hX : 0 < sfCard X) :
+    (μ - M) / (B - M) ≤
+      ((sfSet X).filter (fun n => M ≤ f n)).card / (sfCard X : ℝ) := by
+  set S := sfSet X
+  set good := S.filter (fun n => M ≤ f n) with hgood_def
+  set bad := S.filter (fun n => ¬(M ≤ f n)) with hbad_def
+  have hgood_sub : good ⊆ S := Finset.filter_subset _ _
+  have hcard_pos : (0 : ℝ) < (S.card : ℝ) := by exact_mod_cast hX
+  have hBM_pos : (0 : ℝ) < B - M := by linarith
+  -- Partition: ∑_{S} f = ∑_{good} f + ∑_{bad} f
+  have hpart : ∑ n ∈ S, f n = ∑ n ∈ good, f n + ∑ n ∈ bad, f n := by
+    rw [hgood_def, hbad_def]
+    exact (Finset.sum_filter_add_sum_filter_not S (fun n => M ≤ f n) f).symm
+  -- Card partition: |good| + |bad| = |S|
+  have hcard_part : good.card + bad.card = S.card := by
+    rw [hgood_def, hbad_def]
+    exact S.card_filter_add_card_filter_not (fun n => M ≤ f n)
+  -- Bound: ∑_{good} f ≤ |good| * B
+  have hgood_le : ∑ n ∈ good, f n ≤ (good.card : ℝ) * B := by
+    calc ∑ n ∈ good, f n ≤ ∑ _n ∈ good, B :=
+          Finset.sum_le_sum (fun n hn => hB n (hgood_sub hn))
+      _ = (good.card : ℝ) * B := by rw [Finset.sum_const, nsmul_eq_mul]
+  -- Bound: ∑_{bad} f ≤ |bad| * M (since f(n) < M for n in bad, so f(n) ≤ M)
+  have hbad_le : ∑ n ∈ bad, f n ≤ (bad.card : ℝ) * M := by
+    calc ∑ n ∈ bad, f n ≤ ∑ _n ∈ bad, M := by
+          apply Finset.sum_le_sum
+          intro n hn
+          simp only [hbad_def, Finset.mem_filter, not_le] at hn
+          exact le_of_lt hn.2
+      _ = (bad.card : ℝ) * M := by rw [Finset.sum_const, nsmul_eq_mul]
+  -- From hμ: μ * |S| ≤ ∑_S f
+  have hμS : μ * (S.card : ℝ) ≤ ∑ n ∈ S, f n := by
+    have h := hμ
+    simp only [sfAvg] at h
+    rw [le_div_iff₀ hcard_pos] at h
+    linarith
+  -- Combine: μ * |S| ≤ |good| * B + |bad| * M
+  have hcombine : μ * (S.card : ℝ) ≤ (good.card : ℝ) * B + (bad.card : ℝ) * M := by
+    calc μ * (S.card : ℝ) ≤ ∑ n ∈ S, f n := hμS
+      _ = ∑ n ∈ good, f n + ∑ n ∈ bad, f n := hpart
+      _ ≤ (good.card : ℝ) * B + (bad.card : ℝ) * M := add_le_add hgood_le hbad_le
+  -- Substitute |bad| = |S| - |good|
+  have hbad_eq : (bad.card : ℝ) = (S.card : ℝ) - (good.card : ℝ) := by
+    have := hcard_part; push_cast [← this]; ring
+  -- |good| * (B - M) ≥ |S| * (μ - M)
+  have hgood_bound : (S.card : ℝ) * (μ - M) ≤ (good.card : ℝ) * (B - M) := by
+    rw [hbad_eq] at hcombine
+    nlinarith
+  -- Divide by |S| * (B - M) to get density ≥ (μ - M)/(B - M)
+  rw [div_le_div_iff₀ hBM_pos hcard_pos]
+  linarith
+
+/-- **LinearMeanGrowth → PositiveDensityRSD (PROVED).**
+
+    Uses only LinearMeanGrowth (1 open hypothesis), without PairwiseStepDecorrelation.
+    Given κ from LMG, sets δ = κ/2. For any M > 0, chooses K₀ large enough that
+    κK > 2M and K/2 > M. Then by the averaging lemma:
+
+    density{S_K ≥ M} ≥ (κK - M)/(K/2 - M) ≥ κ/2 = δ
+
+    for all K ≥ K₀ and X sufficiently large. -/
+theorem lmg_implies_positive_density_rsd :
+    LinearMeanGrowth → PositiveDensityRSD := by
+  intro ⟨κ, hκ, hlmg⟩
+  -- Set δ = κ / 2
+  refine ⟨κ / 2, by linarith, ?_⟩
+  intro M hM
+  -- Choose K₀ = max(⌈4*M/κ⌉+1, ⌈2*M⌉+1), ensuring κK > 4M AND K/2 > M
+  set Ka := Nat.ceil (4 * M / κ) + 1
+  set Kb := Nat.ceil (2 * M) + 1
+  set K₀ := max Ka Kb
+  refine ⟨K₀, fun K hK => ?_⟩
+  -- Get X₀ from LMG for this K
+  obtain ⟨X₀, hX₀⟩ := hlmg K
+  refine ⟨X₀, fun X hX => ?_⟩
+  -- Key arithmetic from K ≥ K₀
+  have hK_ge_a : Ka ≤ K := le_trans (le_max_left _ _) hK
+  have hK_ge_b : Kb ≤ K := le_trans (le_max_right _ _) hK
+  have h4M_lt_κK : 4 * M < κ * K := by
+    have h4Mκ_lt : 4 * M / κ < (K : ℝ) := by
+      calc 4 * M / κ ≤ ↑(Nat.ceil (4 * M / κ)) := Nat.le_ceil _
+        _ < ↑(Nat.ceil (4 * M / κ)) + 1 := by linarith
+        _ ≤ (Ka : ℝ) := by simp [Ka]
+        _ ≤ (K : ℝ) := by exact_mod_cast hK_ge_a
+    nlinarith [mul_comm κ (4 * M / κ), div_mul_cancel₀ (4 * M) (ne_of_gt hκ)]
+  have hκK_gt_M : M < κ * K := by linarith
+  have hK_pos : (0 : ℝ) < (K : ℝ) := by
+    have : 1 ≤ Ka := Nat.le_add_left 1 _
+    exact_mod_cast show 0 < K by omega
+  have hK_half_gt_M : M < (K : ℝ) / 2 := by
+    have h2M_lt : 2 * M < (K : ℝ) := by
+      calc 2 * M ≤ ↑(Nat.ceil (2 * M)) := Nat.le_ceil _
+        _ < ↑(Nat.ceil (2 * M)) + 1 := by linarith
+        _ ≤ (Kb : ℝ) := by simp [Kb]
+        _ ≤ (K : ℝ) := by exact_mod_cast hK_ge_b
+    linarith
+  -- Handle sfCard X = 0 case
+  by_cases hcard : sfCard X = 0
+  · -- sfAvg = 0 when sfCard = 0, but LMG says sfAvg ≥ κK > 0, contradiction
+    exfalso
+    have hmean := hX₀ X hX
+    simp only [sfAvg, hcard, Nat.cast_zero, div_zero] at hmean
+    linarith
+  have hcard_pos : 0 < sfCard X := Nat.pos_of_ne_zero hcard
+  -- Apply the density lower bound
+  have hmean := hX₀ X hX
+  -- Every recipPartialSum is ≤ K/2 for squarefree n ≥ 1
+  have hB : ∀ n ∈ sfSet X, recipPartialSum n K ≤ (K : ℝ) / 2 := by
+    intro n hn
+    simp only [Finset.mem_filter, Finset.mem_Icc] at hn
+    exact recipPartialSum_le_half_K hn.1.1 K
+  -- Every recipPartialSum is ≥ 0
+  have hfnn : ∀ n ∈ sfSet X, 0 ≤ recipPartialSum n K := by
+    intro n _; exact recipPartialSum_nonneg n K
+  -- Apply density_lower_bound_from_mean
+  have hdens := density_lower_bound_from_mean X
+    (fun n => recipPartialSum n K) (κ * K) M ((K : ℝ) / 2)
+    hmean hB hfnn hK_half_gt_M hκK_gt_M hcard_pos
+  -- The filtered sets match: sfSet X = (Finset.Icc 1 X).filter Squarefree
+  -- and sfCard X = its card
+  -- The density_lower_bound gives us a bound on ((sfSet X).filter ...).card / sfCard X
+  -- We need to relate this to the PositiveDensityRSD filter over Finset.Icc 1 X
+  have hset_eq : (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ M ≤ recipPartialSum n K) =
+      (sfSet X).filter (fun n => M ≤ recipPartialSum n K) := by
+    ext n
+    simp only [Finset.mem_filter, Finset.mem_Icc, sfSet]
+    tauto
+  rw [hset_eq]
+  -- Now show κ/2 ≤ (κK - M)/(K/2 - M) ≤ density
+  calc κ / 2 ≤ (κ * K - M) / ((K : ℝ) / 2 - M) := by
+        rw [le_div_iff₀ (by linarith : (0 : ℝ) < (K : ℝ) / 2 - M)]
+        nlinarith
+    _ ≤ ((sfSet X).filter (fun n => M ≤ recipPartialSum n K)).card /
+        (sfCard X : ℝ) := hdens
+
+end PositiveDensityRoute
+
 /-! ## Landscape: Revival of Dead End #125
 
 Dead End #125 proved that pairwise (k=2) cancellation does NOT imply k-wise
@@ -1047,6 +1233,24 @@ theorem dead_end_125_pairwise_revival :
     PSDIVBImpliesVarianceBound ∧
     ChebyshevConcentration :=
   ⟨psd_lmg_implies_rsd,
+   individual_variance_quarter,
+   psd_ivb_implies_variance_bound_proved,
+   chebyshev_concentration_proved⟩
+
+/-- **Extended landscape theorem**: including the positive density route.
+
+    Now includes:
+    - LMG alone → PositiveDensityRSD (1 open hypothesis, PROVED)
+    - PSD + LMG → AlmostAllSquarefreeRSD (2 open hypotheses)
+    - All three bridges PROVED -/
+theorem positive_density_landscape :
+    (LinearMeanGrowth → PositiveDensityRSD) ∧
+    (PairwiseStepDecorrelation → LinearMeanGrowth → AlmostAllSquarefreeRSD) ∧
+    IndividualVarianceBound (1 / 4) ∧
+    PSDIVBImpliesVarianceBound ∧
+    ChebyshevConcentration :=
+  ⟨lmg_implies_positive_density_rsd,
+   psd_lmg_implies_rsd,
    individual_variance_quarter,
    psd_ivb_implies_variance_bound_proved,
    chebyshev_concentration_proved⟩
