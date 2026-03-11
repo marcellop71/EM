@@ -929,4 +929,205 @@ theorem k1_lower_bound_landscape :
 
 end K1Infrastructure
 
+/-! ## k=2 CRT Structure
+
+For odd squarefree n with n % 3 = 1 (equivalently n ≡ 1 mod 6):
+- genSeq(n,0) = 2, genProd(n,1) = 2n
+- genSeq(n,1) = 3, genProd(n,2) = 6n
+- genSeq(n,2) = minFac(6n+1)
+
+For n additionally with n % 5 = 4 (equivalently n ≡ 19 mod 30 by CRT):
+- 6n+1 ≡ 0 mod 5, and 6n+1 is odd and coprime to 3
+- So minFac(6n+1) = 5, i.e., genSeq(n,2) = 5 -/
+
+section K2Infrastructure
+
+/-- For odd n ≥ 1 with n % 3 = 1, genProd n 2 = 6 * n.
+    Since n is odd, genSeq n 0 = 2, so genProd n 1 = n * 2.
+    Since n % 3 = 1, genSeq n 1 = 3, so genProd n 2 = n * 2 * 3 = 6 * n. -/
+theorem genProd_two_of_mod6 {n : Nat} (hn : 1 ≤ n) (hodd : ¬ Even n)
+    (hmod3 : n % 3 = 1) : genProd n 2 = 6 * n := by
+  have h_gs0 : genSeq n 0 = 2 := genSeq_zero_of_odd hn hodd
+  have h_gs1 : genSeq n 1 = 3 := genSeq_one_of_mod6 hn hodd hmod3
+  -- genProd n 2 = genProd n 1 * genSeq n 1
+  rw [show genProd n 2 = genProd n 1 * genSeq n 1 from rfl]
+  -- genProd n 1 = n * genSeq n 0
+  rw [show genProd n 1 = n * genSeq n 0 from rfl]
+  rw [h_gs0, h_gs1]
+  ring
+
+/-- For odd n ≥ 1 with n % 3 = 1 and n % 5 = 4, genSeq n 2 = 5.
+    Since genProd n 2 = 6n, genSeq n 2 = minFac(6n+1).
+    6n+1 is odd (since 6n is even), coprime to 3 (6n ≡ 0 mod 3, so 6n+1 ≡ 1 mod 3).
+    n ≡ 4 mod 5 implies 6n ≡ 24 ≡ 4 mod 5, so 6n+1 ≡ 0 mod 5.
+    Thus 5 | (6n+1), minFac(6n+1) ≤ 5, and minFac ≥ 5 (not 2, not 3). Hence = 5. -/
+theorem genSeq_two_of_mod30 {n : Nat} (hn : 1 ≤ n) (hodd : ¬ Even n)
+    (hmod3 : n % 3 = 1) (hmod5 : n % 5 = 4) : genSeq n 2 = 5 := by
+  rw [genSeq_def]
+  rw [genProd_two_of_mod6 hn hodd hmod3]
+  set m := 6 * n + 1 with hm_def
+  -- m ≠ 1 (since n ≥ 1 → m = 6n + 1 ≥ 7)
+  have hm_ne1 : m ≠ 1 := by omega
+  -- m is odd (6n is even, +1 gives odd)
+  have hm_odd : ¬ Even m := by
+    intro ⟨k, hk⟩; omega
+  -- 3 ∤ m (6n ≡ 0 mod 3, so 6n+1 ≡ 1 mod 3)
+  have h3_ndvd : ¬ (3 ∣ m) := by
+    intro ⟨k, hk⟩; omega
+  -- 5 ∣ m: n ≡ 4 mod 5 → 6n ≡ 24 ≡ 4 mod 5 → 6n+1 ≡ 0 mod 5
+  have h5_dvd : 5 ∣ m := by
+    rw [hm_def]
+    have : n = 5 * (n / 5) + 4 := by omega
+    exact ⟨6 * (n / 5) + 5, by omega⟩
+  -- minFac m is prime
+  have hm_prime := Nat.minFac_prime hm_ne1
+  -- minFac m ≤ 5
+  have hm_le5 : Nat.minFac m ≤ 5 := Nat.minFac_le_of_dvd (by omega : 2 ≤ 5) h5_dvd
+  -- minFac m ≥ 2
+  have hm_ge2 : 2 ≤ Nat.minFac m := hm_prime.two_le
+  -- minFac m ≠ 2 (since m is odd)
+  have hm_ne2 : Nat.minFac m ≠ 2 := by
+    intro h2
+    have : 2 ∣ m := (Nat.minFac_eq_two_iff m).mp h2
+    exact hm_odd (even_iff_two_dvd.mpr this)
+  -- minFac m ≠ 3 (since 3 ∤ m)
+  have hm_ne3 : Nat.minFac m ≠ 3 := by
+    intro h3
+    exact h3_ndvd (h3 ▸ Nat.minFac_dvd m)
+  -- minFac m ≠ 4 (since minFac is prime and 4 is not prime)
+  have hm_ne4 : Nat.minFac m ≠ 4 := by
+    intro h4; rw [h4] at hm_prime; exact (by decide : ¬ Nat.Prime 4) hm_prime
+  -- Conclude: minFac m = 5
+  omega
+
+/-- k=2 CRT landscape: for n ≡ 19 mod 30, the first three EM primes are 2, 3, 5. -/
+theorem k2_crt_landscape :
+    (∀ n : Nat, 1 ≤ n → ¬ Even n → n % 3 = 1 → genProd n 2 = 6 * n) ∧
+    (∀ n : Nat, 1 ≤ n → ¬ Even n → n % 3 = 1 → n % 5 = 4 → genSeq n 2 = 5) :=
+  ⟨fun _ hn hodd hmod3 => genProd_two_of_mod6 hn hodd hmod3,
+   fun _ hn hodd hmod3 hmod5 => genSeq_two_of_mod30 hn hodd hmod3 hmod5⟩
+
+end K2Infrastructure
+
+/-! ## Partial SMLB and Fixed Density Results
+
+PartialSMLB captures "SMLB for finitely many steps", which suffices for
+a fixed positive density result (not divergence, but a concrete threshold). -/
+
+section PartialSMLBSection
+
+/-- **Partial SMLB**: the ensemble average of 1/genSeq(n,k) is at least c
+    for each k ≤ K₀. This is weaker than SMLB (which requires ALL k). -/
+def PartialSMLB (c : ℝ) (K₀ : Nat) : Prop :=
+  ∀ k ≤ K₀, ∃ X₀ : Nat, ∀ X ≥ X₀,
+    c ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ))
+
+/-- PartialSMLB(c, K₀) implies: for X large enough, E[S_{K₀+1}(n)] ≥ c·(K₀+1).
+    By linearity of ensembleAvg, the partial sum average is the sum of step averages.
+    Each step average is ≥ c for X large enough. Taking the max threshold gives
+    the uniform bound. -/
+theorem partial_smlb_implies_mean_lower_bound {c : ℝ} {K₀ : Nat} (_hc : 0 < c)
+    (hpsmlb : PartialSMLB c K₀) :
+    ∃ X₀ : Nat, ∀ X ≥ X₀,
+      c * (K₀ + 1) ≤ ensembleAvg X (fun n => recipPartialSum n (K₀ + 1)) := by
+  -- For each k ≤ K₀ (i.e., k ∈ range (K₀ + 1)), extract threshold X_k
+  have hthresh : ∀ k, k ∈ Finset.range (K₀ + 1) →
+      ∃ Xk : Nat, ∀ X ≥ Xk,
+        c ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+    intro k hk
+    rw [Finset.mem_range] at hk
+    exact hpsmlb k (by omega)
+  -- Choose thresholds
+  let threshold : Nat → Nat := fun k =>
+    if hk : k ∈ Finset.range (K₀ + 1) then (hthresh k hk).choose else 0
+  have hthresh_spec : ∀ k, k ∈ Finset.range (K₀ + 1) → ∀ X ≥ threshold k,
+      c ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+    intro k hk X hX
+    simp only [threshold, dif_pos hk] at hX
+    exact (hthresh k hk).choose_spec X hX
+  -- Take X₀ = sup of thresholds over range (K₀ + 1)
+  let X₀ := (Finset.range (K₀ + 1)).sup threshold
+  refine ⟨X₀, fun X hX => ?_⟩
+  -- Rewrite recipPartialSum as a sum
+  have hrps : ∀ n, recipPartialSum n (K₀ + 1) =
+      ∑ k ∈ Finset.range (K₀ + 1), 1 / (genSeq n k : ℝ) := fun n => rfl
+  simp_rw [hrps]
+  rw [ensembleAvg_sum_range]
+  calc c * (↑K₀ + 1) = ∑ _ ∈ Finset.range (K₀ + 1), c := by
+        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+        push_cast; ring
+    _ ≤ ∑ k ∈ Finset.range (K₀ + 1),
+          ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+        apply Finset.sum_le_sum
+        intro k hk
+        apply hthresh_spec k hk
+        calc threshold k ≤ (Finset.range (K₀ + 1)).sup threshold :=
+              Finset.le_sup (f := threshold) hk
+          _ ≤ X := hX
+
+/-- PartialSMLB(1/4, 0) holds unconditionally from the k=0 step. -/
+theorem partial_smlb_zero_unconditional : PartialSMLB (1 / 4) 0 := by
+  intro k hk
+  have : k = 0 := by omega
+  subst this
+  exact smlb_k0_unconditional
+
+/-- PartialSMLB landscape: PartialSMLB(1/4, 0) unconditional + mean lower bound chain. -/
+theorem partial_smlb_landscape :
+    PartialSMLB (1 / 4) 0 ∧
+    (∀ c : ℝ, 0 < c → ∀ K₀ : Nat, PartialSMLB c K₀ →
+      ∃ X₀ : Nat, ∀ X ≥ X₀,
+        c * (K₀ + 1) ≤ ensembleAvg X (fun n => recipPartialSum n (K₀ + 1))) :=
+  ⟨partial_smlb_zero_unconditional,
+   fun _ hc _ hpsmlb => partial_smlb_implies_mean_lower_bound hc hpsmlb⟩
+
+end PartialSMLBSection
+
+/-! ## Squarefree Density in 1 mod 6
+
+The density of squarefree n ≡ 1 mod 6 among all squarefree is 1/3 asymptotically.
+We state a weaker lower bound as a hypothesis and connect it to SMLB. -/
+
+section Mod6DensitySection
+
+/-- The density of 1-mod-6 squarefree among all squarefree is bounded below.
+    Mathematically: #{n ≤ X : sf, n ≡ 1 mod 6} / #{n ≤ X : sf} → 1/3 as X → ∞.
+    We only need: for large X, this ratio ≥ 1/8. -/
+def Mod6DensityLB : Prop :=
+  ∃ X₀ : Nat, ∀ X ≥ X₀,
+    (sqfreeCount X : ℝ) / 8 ≤
+    ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ n % 3 = 1)).card
+
+/-- Mod6DensityLB implies SMLB at k=1 with c = 1/24.
+    E[1/genSeq(·,1)] ≥ #{1 mod 6 sf}/(3·#{sf}) ≥ (#{sf}/8)/(3·#{sf}) = 1/24. -/
+theorem mod6_density_implies_smlb_k1 (hd : Mod6DensityLB) :
+    ∃ X₀ : Nat, ∀ X ≥ X₀,
+      (1 : ℝ) / 24 ≤ ensembleAvg X (fun n => 1 / (genSeq n 1 : ℝ)) := by
+  obtain ⟨X₁, hX₁⟩ := hd
+  refine ⟨max X₁ 1, fun X hX => ?_⟩
+  have hXge1 : 1 ≤ X := by omega
+  have hsc_pos : 0 < sqfreeCount X := sqfreeCount_pos_of_pos hXge1
+  have hsc_pos_real : (0 : ℝ) < sqfreeCount X := by exact_mod_cast hsc_pos
+  -- Get the lower bound from ensembleAvg_k1_ge_mod6_fraction
+  have h_lower := ensembleAvg_k1_ge_mod6_fraction hsc_pos
+  -- Get the density lower bound
+  have h_dens := hX₁ X (by omega)
+  -- mod6 count
+  set mod6Card := ((Finset.Icc 1 X).filter
+    (fun n => Squarefree n ∧ ¬ Even n ∧ n % 3 = 1)).card with hmod6Card_def
+  -- From density bound: sqfreeCount X / 8 ≤ mod6Card
+  -- From k1 bound: mod6Card / (3 * sqfreeCount X) ≤ ensembleAvg X (...)
+  -- Chain: 1/24 ≤ mod6Card / (3 * sqfreeCount X) ≤ ...
+  have h3sc_pos : (0 : ℝ) < 3 * sqfreeCount X := by positivity
+  calc (1 : ℝ) / 24
+      ≤ (mod6Card : ℝ) / (3 * sqfreeCount X) := by
+        rw [div_le_div_iff₀ (by positivity : (0 : ℝ) < 24) h3sc_pos]
+        -- Goal: 1 * (3 * sqfreeCount X) ≤ mod6Card * 24
+        have h_dens_cast : (sqfreeCount X : ℝ) / 8 ≤ (mod6Card : ℝ) := by
+          exact_mod_cast h_dens
+        nlinarith
+    _ ≤ ensembleAvg X (fun n => 1 / (genSeq n 1 : ℝ)) := h_lower
+
+end Mod6DensitySection
+
 end
