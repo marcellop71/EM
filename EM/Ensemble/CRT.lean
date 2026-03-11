@@ -571,6 +571,267 @@ theorem ewe_landscape :
 
 end Mod3Bridge
 
+/-! ## Conditional MinFac Residue Equidistribution -/
+
+section MFREConditional
+
+/-- Count of squarefree m in [1,X] with m ≡ c (mod q). -/
+def sqfreeClassCount (X q : Nat) (c : ZMod q) : Nat :=
+  ((Finset.Icc 1 X).filter (fun m : Nat => Squarefree m ∧ (↑m : ZMod q) = c)).card
+
+/-- Count of squarefree m in [1,X] with m ≡ c (mod q) AND minFac(m+1) ≡ a (mod q). -/
+def sqfreeClassMinFacCount (X q : Nat) (c a : ZMod q) : Nat :=
+  ((Finset.Icc 1 X).filter (fun m : Nat =>
+    Squarefree m ∧ (↑m : ZMod q) = c ∧
+    (↑(Nat.minFac (m + 1)) : ZMod q) = a)).card
+
+/-- Conditional density of minFac(m+1) ≡ a mod q among squarefree m ≡ c mod q. -/
+def condMinFacDensity (X q : Nat) (c a : ZMod q) : ℝ :=
+  (sqfreeClassMinFacCount X q c a : ℝ) / (sqfreeClassCount X q c : ℝ)
+
+/-- The joint count is bounded by the class count (filter subset). -/
+theorem sqfreeClassMinFacCount_le (X q : Nat) (c a : ZMod q) :
+    sqfreeClassMinFacCount X q c a ≤ sqfreeClassCount X q c := by
+  unfold sqfreeClassMinFacCount sqfreeClassCount
+  exact Finset.card_le_card fun n hn => by
+    simp only [Finset.mem_filter] at hn ⊢; exact ⟨hn.1, hn.2.1, hn.2.2.1⟩
+
+/-- The conditional density is non-negative. -/
+theorem condMinFacDensity_nonneg (X q : Nat) (c a : ZMod q) :
+    0 ≤ condMinFacDensity X q c a :=
+  div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+
+/-- The conditional density is at most 1. -/
+theorem condMinFacDensity_le_one (X q : Nat) (c a : ZMod q) :
+    condMinFacDensity X q c a ≤ 1 := by
+  unfold condMinFacDensity
+  rcases eq_or_ne (sqfreeClassCount X q c) 0 with h | h
+  · simp [h]
+  · exact (div_le_one (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h))).mpr
+      (Nat.cast_le.mpr (sqfreeClassMinFacCount_le X q c a))
+
+/-- **MFREConditional**: conditional equidistribution of minFac mod q with O(1/q^2) error.
+    For prime q, among squarefree m with m ≡ c (mod q) where c is nonzero and c ≠ -1,
+    the density of those with minFac(m+1) ≡ a (mod q) converges to 1/(q-1) + O(1/q^2).
+
+    **Status**: open hypothesis (requires conditional sieve-theoretic analysis). -/
+def MFREConditional : Prop :=
+  ∃ C : ℝ, 0 < C ∧
+    ∀ (q : Nat), Nat.Prime q →
+    ∀ (c : ZMod q), c ≠ 0 → (c : ZMod q) ≠ -1 →
+    ∀ (a : ZMod q), a ≠ 0 →
+      ∃ (L : ℝ),
+        |L - 1 / ((q : ℝ) - 1)| ≤ C / (q : ℝ) ^ 2 ∧
+        Filter.Tendsto
+          (fun X : Nat => condMinFacDensity X q c a)
+          Filter.atTop (nhds L)
+
+/-- **EnsembleSelectionLemma**: orbit-population transfer for conditional MFRE.
+    This bridges from the population-level conditional equidistribution (MFREConditional)
+    to the ensemble-level conditional density of genSeq n k ≡ a (mod q) among squarefree
+    n with genProd n k ≡ c (mod q).
+
+    **Status**: open hypothesis (requires orbit-population transfer analysis). -/
+def EnsembleSelectionLemma : Prop :=
+  MFREConditional →
+    ∀ (q : Nat), Nat.Prime q → ∀ (k : Nat),
+    ∀ (c : ZMod q), c ≠ 0 → (c : ZMod q) ≠ -1 →
+    ∀ (a : ZMod q), a ≠ 0 →
+      ∃ (L : ℝ),
+        (∃ C : ℝ, |L - 1 / ((q : ℝ) - 1)| ≤ C / (q : ℝ) ^ 2) ∧
+        Filter.Tendsto
+          (fun X : Nat =>
+            (((Finset.Icc 1 X).filter (fun n =>
+              Squarefree n ∧ (genProd n k : ZMod q) = c ∧
+              (genSeq n k : ZMod q) = a)).card : ℝ) /
+            (sqfreeAccumCount X k q c : ℝ))
+          Filter.atTop (nhds L)
+
+/-- **MFRECondImpliesSMLB**: MFRE_conditional + EnsembleSelection implies SMLB.
+    This captures the route from conditional equidistribution to a step mean lower bound.
+
+    **Status**: open hypothesis (requires assembling conditional density → average bound). -/
+def MFRECondImpliesSMLB : Prop :=
+  MFREConditional → EnsembleSelectionLemma → StepMeanLowerBound (1/6)
+
+end MFREConditional
+
+/-! ## Generalized Death Density Bridge
+
+When genProd(n,k) ≡ -1 mod q for a prime q ≥ 3, the accumulator satisfies
+q | genProd(n,k) + 1, so genSeq(n,k) = minFac(genProd(n,k)+1) ≤ q.
+Combined with genSeq ≥ 3 (from parity), this gives 1/genSeq ≥ 1/q on
+the "death fiber" {n : genProd(n,k) ≡ -1 mod q}.
+
+This generalizes the mod-3 bridge (where -1 ≡ 2 mod 3) to all primes q ≥ 3.
+-/
+
+section DeathDensity
+
+/-- Auxiliary: on the fiber where genProd n k ≡ -1 mod q (for prime q ≥ 3, k ≥ 1, n ≥ 1),
+    the generalized EM prime genSeq n k satisfies genSeq n k ≤ q.
+    Proof: q divides genProd n k + 1, and genSeq = minFac(genProd+1) ≤ q. -/
+private theorem genSeq_le_of_genProd_neg_one {n k q : Nat} (_hn : 1 ≤ n) (_hk : 1 ≤ k)
+    (hq : Nat.Prime q) (hmod : (genProd n k : ZMod q) = -1) :
+    genSeq n k ≤ q := by
+  rw [genSeq_def]
+  have h_dvd : q ∣ genProd n k + 1 := by
+    rw [← ZMod.natCast_eq_zero_iff]
+    push_cast
+    rw [hmod]; ring
+  exact Nat.minFac_le_of_dvd hq.two_le h_dvd
+
+/-- Auxiliary: the numerator inequality for the death density bound at prime q ≥ 3.
+    On the death fiber {n : genProd n k ≡ -1 mod q}, each 1/genSeq ≥ 1/q,
+    so the fiber sum ≥ fiber_card / q. The complement contributes ≥ 0. -/
+private theorem death_numerator_bound (X k q : Nat) (hk : 1 ≤ k) (hq : Nat.Prime q)
+    (_hq3 : 3 ≤ q) :
+    (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+        (genProd n k : ZMod q) = (-1 : ZMod q))).card : ℝ) / q ≤
+    ∑ n ∈ (Finset.Icc 1 X).filter Squarefree, 1 / (genSeq n k : ℝ) := by
+  set S := (Finset.Icc 1 X).filter Squarefree
+  set Sdeath := S.filter (fun n => (genProd n k : ZMod q) = (-1 : ZMod q))
+  -- The filter on Icc with conj equals Sdeath
+  have hSdeath_eq : Sdeath.card =
+      ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+        (genProd n k : ZMod q) = (-1 : ZMod q))).card := by
+    congr 1; ext n
+    simp only [Sdeath, S, Finset.mem_filter, and_assoc]
+  rw [← hSdeath_eq]
+  -- Split the sum over S by whether genProd n k ≡ -1 mod q
+  have hsplit := Finset.sum_filter_add_sum_filter_not S
+    (fun n => (genProd n k : ZMod q) = (-1 : ZMod q))
+    (fun n => 1 / (genSeq n k : ℝ))
+  -- On Sdeath: each term ≥ 1/q
+  have hdeath_terms : ∀ n ∈ Sdeath, 1 / (q : ℝ) ≤ 1 / (genSeq n k : ℝ) := by
+    intro n hn
+    have hmem := Finset.mem_filter.mp hn
+    have hS_mem := Finset.mem_filter.mp hmem.1
+    have hn1 : 1 ≤ n := (Finset.mem_Icc.mp hS_mem.1).1
+    have hle := genSeq_le_of_genProd_neg_one hn1 hk hq hmem.2
+    have hge3 := genSeq_ge_three hn1 hk
+    have hq_pos : (0 : ℝ) < q := by exact_mod_cast hq.pos
+    have hgs_pos : (0 : ℝ) < genSeq n k := by exact_mod_cast (by omega : 0 < genSeq n k)
+    exact div_le_div_of_nonneg_left one_pos.le hgs_pos (by exact_mod_cast hle)
+  -- Sum on Sdeath ≥ Sdeath.card / q
+  have hdeath_sum : (Sdeath.card : ℝ) / q ≤ ∑ n ∈ Sdeath, 1 / (genSeq n k : ℝ) := by
+    rw [div_le_iff₀ (by exact_mod_cast hq.pos : (0 : ℝ) < q)]
+    calc (Sdeath.card : ℝ) = ∑ _ ∈ Sdeath, (1 : ℝ) := by
+          rw [Finset.sum_const, nsmul_eq_mul, mul_one]
+      _ = ∑ n ∈ Sdeath, (1 / (q : ℝ)) * (q : ℝ) := by
+          congr 1; ext n; rw [div_mul_cancel₀]; exact_mod_cast hq.ne_zero
+      _ ≤ ∑ n ∈ Sdeath, (1 / (genSeq n k : ℝ)) * (q : ℝ) := by
+          apply Finset.sum_le_sum
+          intro n hn
+          exact mul_le_mul_of_nonneg_right (hdeath_terms n hn)
+            (by exact_mod_cast Nat.zero_le q)
+      _ = (∑ n ∈ Sdeath, 1 / (genSeq n k : ℝ)) * (q : ℝ) :=
+          (Finset.sum_mul ..).symm
+  -- Sum on complement ≥ 0
+  have hrest_nonneg : 0 ≤ ∑ n ∈ S.filter
+      (fun n => ¬(genProd n k : ZMod q) = (-1 : ZMod q)),
+      1 / (genSeq n k : ℝ) :=
+    Finset.sum_nonneg fun n _ => by positivity
+  linarith [hsplit]
+
+/-- For any prime q ≥ 3 and step k ≥ 1: the ensemble average of 1/genSeq(n,k)
+    is at least the death density at q divided by q.
+    "Death density" = density of genProd ≡ -1 mod q among squarefree starting points.
+
+    This generalizes `ensembleAvg_ge_mod3_density` from q=3 to all primes q ≥ 3. -/
+theorem ensembleAvg_ge_death_density (X k q : Nat) (hk : 1 ≤ k)
+    (hq : Nat.Prime q) (hq3 : 3 ≤ q) :
+    sqfreeAccumDensity X k q (-1) / q ≤
+    ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+  unfold ensembleAvg sqfreeAccumDensity sqfreeAccumCount sqfreeCount
+  set S := (Finset.Icc 1 X).filter Squarefree
+  -- Handle sqfreeCount = 0 case
+  rcases eq_or_ne S.card 0 with hcard | hcard
+  · simp [hcard]
+  have hS_pos : (0 : ℝ) < S.card := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hcard)
+  -- Reduce to numerator inequality
+  have hnum := death_numerator_bound X k q hk hq hq3
+  show (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+          (genProd n k : ZMod q) = (-1 : ZMod q))).card : ℝ) / ↑S.card / ↑q
+      ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card
+  calc (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+          (genProd n k : ZMod q) = (-1 : ZMod q))).card : ℝ) / ↑S.card / ↑q
+      = (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+          (genProd n k : ZMod q) = (-1 : ZMod q))).card : ℝ) / ↑q / ↑S.card := by ring
+    _ ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card :=
+        div_le_div_of_nonneg_right hnum hS_pos.le
+
+/-- Lower bound on the "death density" at prime q for all steps k.
+    This says the density of squarefree n with genProd n k ≡ -1 mod q is
+    eventually at least c for every step k.
+
+    **Status**: open hypothesis (follows from AccumulatorEquidistPropagation). -/
+def DeathDensityLB (q : Nat) (c : ℝ) : Prop :=
+  ∀ k : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
+    c ≤ sqfreeAccumDensity X k q (-1)
+
+/-- DeathDensityLB at any prime q ≥ 3 implies StepMeanLowerBound.
+    At k=0 we use the unconditional smlb_k0_unconditional (c=1/4).
+    At k≥1 we use ensembleAvg_ge_death_density to get c/q as a lower bound. -/
+theorem death_density_implies_smlb {q : Nat} {c : ℝ} (hq : Nat.Prime q)
+    (hq3 : 3 ≤ q) (_hc : 0 < c) (hdd : DeathDensityLB q c) :
+    StepMeanLowerBound (min (1/4) (c/q)) := by
+  intro k
+  rcases k with _ | k'
+  · -- k = 0: use smlb_k0_unconditional
+    obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
+    exact ⟨X₀, fun X hX => le_trans (min_le_left _ _) (hX₀ X hX)⟩
+  · -- k = k' + 1 ≥ 1: use death density
+    obtain ⟨X₀, hX₀⟩ := hdd (k' + 1)
+    exact ⟨X₀, fun X hX => by
+      calc min (1 / 4) (c / ↑q) ≤ c / ↑q := min_le_right _ _
+        _ ≤ sqfreeAccumDensity X (k' + 1) q (-1) / ↑q := by
+            exact div_le_div_of_nonneg_right (hX₀ X hX)
+              (by exact_mod_cast Nat.zero_le q)
+        _ ≤ ensembleAvg X (fun n => 1 / (genSeq n (k' + 1) : ℝ)) :=
+            ensembleAvg_ge_death_density X (k' + 1) q (by omega) hq hq3⟩
+
+/-- DeathDensityLB at any prime q ≥ 3 implies PositiveDensityRSD, via SMLB and LMG. -/
+theorem death_density_implies_prsd {q : Nat} {c : ℝ} (hq : Nat.Prime q)
+    (hq3 : 3 ≤ q) (hc : 0 < c) (hdd : DeathDensityLB q c) :
+    PositiveDensityRSD :=
+  smlb_implies_positive_density_rsd (by positivity) (death_density_implies_smlb hq hq3 hc hdd)
+
+/-- In ZMod 3, -1 = 2. -/
+private theorem neg_one_eq_two_mod3 : (-1 : ZMod 3) = (2 : ZMod 3) := by decide
+
+/-- AccumMod3LB(c) is equivalent to DeathDensityLB(3, c), since -1 ≡ 2 mod 3.
+    This shows the mod-3 bridge is a special case of the general death density bridge. -/
+theorem accumMod3LB_iff_deathDensity3 {c : ℝ} :
+    AccumMod3LB c ↔ DeathDensityLB 3 c := by
+  simp only [AccumMod3LB, DeathDensityLB, neg_one_eq_two_mod3]
+
+end DeathDensity
+
+/-! ## Extended EWE Landscape -/
+
+section ExtendedLandscape
+
+/-- **Extended EWE Landscape**: all routes from equidistribution hypotheses to
+    PositiveDensityRSD, including the generalized death density bridge.
+
+    Route 1: FirstMomentStep(kappa) → PRSD (via LMG).
+    Route 2: SMLB(c) → PRSD (via LMG).
+    Route 3: AccumMod3LB(c) → PRSD (special case of Route 4 at q=3).
+    Route 4: DeathDensityLB at any prime q ≥ 3 → PRSD (generalized death density). -/
+theorem ewe_landscape_extended :
+    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → PositiveDensityRSD) ∧
+    (∀ c : ℝ, 0 < c → StepMeanLowerBound c → PositiveDensityRSD) ∧
+    (∀ c : ℝ, 0 < c → AccumMod3LB c → PositiveDensityRSD) ∧
+    (∀ q : Nat, Nat.Prime q → 3 ≤ q → ∀ c : ℝ, 0 < c →
+      DeathDensityLB q c → PositiveDensityRSD) :=
+  ⟨fun _ hκ => first_moment_step_implies_positive_density_rsd hκ,
+   fun _ hc => smlb_implies_positive_density_rsd hc,
+   fun _ hc => accum_mod3_implies_positive_density_rsd hc,
+   fun _ hq hq3 _ hc => death_density_implies_prsd hq hq3 hc⟩
+
+end ExtendedLandscape
+
 /-! ## Summary of Proof Chain
 
 The CRT equidistribution framework establishes the following chain:
