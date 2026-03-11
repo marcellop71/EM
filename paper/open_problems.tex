@@ -448,12 +448,15 @@ The cleanest paths to MC:
   yields a fixed mean lower bound; PartialSMLB$(1/4, 0)$ is
   unconditional
   (\lean{EM/Ensemble/FirstMoment.lean}{partial\_smlb\_zero\_unconditional}).
-  For $k = 1$, \textbf{Mod6DensityLB} (density of $1$-mod-$6$
-  squarefree $\geq 1/8$) implies SMLB at $k{=}1$ with $c = 1/24$
+  For $k = 1$, \textbf{Mod6DensityLB} is now proved unconditionally
+  via sieve bounds
+  (\lean{EM/Ensemble/FirstMoment.lean}{mod6\_density\_lb\_proved}),
+  giving $\mathbb{E}[1/\seq{\cdot}(1)] \geq 1/24$ unconditionally
   (\lean{EM/Ensemble/FirstMoment.lean}{mod6\_density\_implies\_smlb\_k1}).
   CRT extends to $k = 2$: for $n \equiv 19 \bmod 30$, the first three
   primes are $2, 3, 5$
   (\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_two\_of\_mod30}).
+  Thus SMLB holds unconditionally for $k \leq 1$; the barrier is $k \geq 2$.
 \end{enumerate}
 
 \paragraph{Does the Walk Hit $-1$?}
@@ -703,6 +706,10 @@ ways that current analytic number theory does not.
 \quad PartialSMLB $\Rightarrow$ mean lower bound & Proved & \code{partial\_smlb\_implies\_mean\_lower\_bound} \\
 \quad PartialSMLB$(1/4, 0)$ unconditional & Proved & \code{partial\_smlb\_zero\_unconditional} \\
 \quad Mod6DensityLB $\Rightarrow$ SMLB at $k{=}1$ & Proved & \code{mod6\_density\_implies\_smlb\_k1} \\
+\quad Mod6DensityLB proved (sieve) & Proved & \code{mod6\_density\_lb\_proved} \\
+\quad $\mathbb{E}[1/\text{genSeq}(\cdot,1)] \geq 1/24$ (unconditional) & Proved & (composition) \\
+\quad Non-sf mod-6 count $\leq X/24 + \sqrt{X}$ & Proved & \code{nonsf\_mod6\_count\_bound} \\
+\quad sqfreeCount inclusion-exclusion & Proved & \code{sqfreeCount\_plus\_fourth\_ninth} \\
 \midrule
 \multicolumn{3}{l}{\emph{UCE (sieve-based) route}} \\
 \quad UCE + UCEImpliesCME $\Rightarrow$ MC & Proved & \code{uce\_cme\_implies\_mc} \\
@@ -772,7 +779,7 @@ ways that current analytic number theory does not.
 \quad PairwiseStepDecorrelation (2-hyp density-1 route) & \textbf{Open} & \code{PairwiseStepDecorrelation} \\
 \quad FirstMomentStep (each step contributes $\kappa$) & \textbf{Open} & \code{FirstMomentStep} \\
 \quad StepMeanLowerBound ($k{\geq}1$; $k{=}0$ proved) & \textbf{Open} & \code{StepMeanLowerBound} \\
-\quad Mod6DensityLB ($\Rightarrow$ SMLB at $k{=}1$) & \textbf{Open} & \code{Mod6DensityLB} \\
+\quad Mod6DensityLB ($\Rightarrow$ SMLB at $k{=}1$) & Proved & \code{mod6\_density\_lb\_proved} \\
 \quad CharSumVarianceBound & \textbf{Open} & \code{CharSumVarianceBound} \\
 \quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
 \quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\

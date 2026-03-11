@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 104~files
-totaling ${\sim}55{,}350$~lines.  The dependency chain is linear, with
+totaling ${\sim}55{,}650$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -94,7 +94,7 @@ three leaf modules:
 \code{Ensemble/EM.lean} & Generalized walk/multiplier, bridge to standard EM & 114 \\
 \code{Ensemble/CRT.lean} & CRT equidistribution, sqfree residue averaging & 479 \\
 \code{Ensemble/Decorrelation.lean} & CRT-based decorrelation, Markov density bounds & 431 \\
-\code{Ensemble/FirstMoment.lean} & First moment, parity, SMLB chain, $k$=0/$k$=1/$k$=2 CRT, PartialSMLB & 1133 \\
+\code{Ensemble/FirstMoment.lean} & First moment, parity, SMLB chain, $k$=0/$k$=1/$k$=2 CRT, sieve density & 1450 \\
 \code{Ensemble/PT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1092 \\
 \code{Ensemble/WeylChain.lean} & Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc} & 834 \\
 \code{Ensemble/CRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 631 \\
@@ -540,6 +540,10 @@ Mathlib version & v4.29.0-rc1 \\
 \quad PartialSMLB $\Rightarrow$ mean lower bound & Proved & \code{partial\_smlb\_implies\_mean\_lower\_bound} \\
 \quad PartialSMLB$(1/4, 0)$ unconditional & Proved & \code{partial\_smlb\_zero\_unconditional} \\
 \quad Mod6DensityLB $\Rightarrow$ SMLB at $k{=}1$ & Proved & \code{mod6\_density\_implies\_smlb\_k1} \\
+\quad Mod6DensityLB proved (sieve: $d^2 \equiv 1 \bmod 6$) & Proved & \code{mod6\_density\_lb\_proved} \\
+\quad sqfreeCount inclusion-exclusion ($4, 9, 36$) & Proved & \code{sqfreeCount\_plus\_fourth\_ninth} \\
+\quad Non-sf mod-6 count $\leq X/24 + \sqrt{X}$ & Proved & \code{nonsf\_mod6\_count\_bound} \\
+\quad Telescoping $\sum 1/d^2 \leq 1/(K{-}1)$ & Proved & \code{sum\_inv\_sq\_le\_telescoping} \\
 \quad CRT fiber determines genSeq & Proved & \code{crt\_fiber\_determines\_genSeq} \\
 \quad CRT fiber propagates across steps & Proved & \code{crt\_fiber\_propagates} \\
 \quad Walk readout from multipliers & Proved & \code{walk\_readout\_from\_multipliers} \\
