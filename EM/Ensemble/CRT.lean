@@ -447,6 +447,130 @@ theorem ensemble_mult_equidist_implies_char_mean_zero :
 
 end CharMean
 
+/-! ## Mod-3 Bridge: AccumMod3LB → SMLB → PositiveDensityRSD
+
+When genProd(n,k) ≡ 2 mod 3 and k ≥ 1, the accumulator is even (so genProd+1 is odd)
+and 3 divides genProd+1, forcing genSeq(n,k) = minFac(genProd+1) = 3.
+
+This gives a lower bound on the k-th step ensemble average from the mod-3
+accumulator density, which chains to SMLB and then PositiveDensityRSD.
+-/
+
+section Mod3Bridge
+
+/-- When genProd(n,k) ≡ 2 mod 3 and k ≥ 1, n ≥ 1, genSeq(n,k) = 3.
+    Proof: 3 divides genProd+1 (since 2+1 = 0 in ZMod 3), and genSeq ≥ 3
+    (from parity), and genSeq = minFac(genProd+1) ≤ 3 (from 3 | genProd+1). -/
+theorem genSeq_eq_three_of_genProd_mod3 {n k : Nat} (hn : 1 ≤ n) (hk : 1 ≤ k)
+    (hmod : (genProd n k : ZMod 3) = 2) : genSeq n k = 3 := by
+  have h3_dvd : 3 ∣ (genProd n k + 1) := by
+    rw [← ZMod.natCast_eq_zero_iff]
+    push_cast
+    simp only [hmod]; decide
+  rw [genSeq_def]
+  have hne1 : genProd n k + 1 ≠ 1 := by have := genProd_pos hn k; omega
+  have hge2 := (Nat.minFac_prime hne1).two_le
+  have hle3 := Nat.minFac_le_of_dvd (by omega : 2 ≤ 3) h3_dvd
+  have hne2 : Nat.minFac (genProd n k + 1) ≠ 2 := fun h2 =>
+    genProd_succ_odd hn hk (even_iff_two_dvd.mpr ((Nat.minFac_eq_two_iff _).mp h2))
+  omega
+
+/-- Auxiliary: the numerator inequality for the mod-3 density bound. -/
+private theorem mod3_numerator_bound (X k : Nat) (hk : 1 ≤ k) :
+    (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+        (genProd n k : ZMod 3) = 2)).card : ℝ) / 3 ≤
+    ∑ n ∈ (Finset.Icc 1 X).filter Squarefree, 1 / (genSeq n k : ℝ) := by
+  set S := (Finset.Icc 1 X).filter Squarefree
+  set Smod := S.filter (fun n => (genProd n k : ZMod 3) = (2 : ZMod 3))
+  -- The filter on Icc with conj equals Smod
+  have hSmod_eq : Smod.card =
+      ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+        (genProd n k : ZMod 3) = 2)).card := by
+    congr 1; ext n
+    simp only [Smod, S, Finset.mem_filter, and_assoc]
+  rw [← hSmod_eq]
+  -- Split the sum over S by whether genProd n k ≡ 2 mod 3
+  have hsplit := Finset.sum_filter_add_sum_filter_not S
+    (fun n => (genProd n k : ZMod 3) = (2 : ZMod 3))
+    (fun n => 1 / (genSeq n k : ℝ))
+  -- On Smod: each term is 1/3
+  have hmod_terms : ∀ n ∈ Smod, 1 / (genSeq n k : ℝ) = 1 / 3 := by
+    intro n hn
+    have hmem := Finset.mem_filter.mp hn
+    have hS_mem := Finset.mem_filter.mp hmem.1
+    have hn1 : 1 ≤ n := (Finset.mem_Icc.mp hS_mem.1).1
+    congr 1; exact_mod_cast genSeq_eq_three_of_genProd_mod3 hn1 hk hmem.2
+  -- Sum on Smod = Smod.card / 3
+  have hmod_sum : ∑ n ∈ Smod, 1 / (genSeq n k : ℝ) = (Smod.card : ℝ) / 3 := by
+    rw [Finset.sum_congr rfl hmod_terms, Finset.sum_const, nsmul_eq_mul]; ring
+  -- Sum on complement ≥ 0
+  have hrest_nonneg : 0 ≤ ∑ n ∈ S.filter (fun n => ¬(genProd n k : ZMod 3) = (2 : ZMod 3)),
+      1 / (genSeq n k : ℝ) :=
+    Finset.sum_nonneg fun n _ => by positivity
+  linarith [hsplit]
+
+/-- The ensemble average of 1/genSeq(n,k) is at least (1/3) times the density
+    of squarefree n with genProd(n,k) ≡ 2 mod 3. -/
+theorem ensembleAvg_ge_mod3_density (X k : Nat) (hk : 1 ≤ k) :
+    sqfreeAccumDensity X k 3 2 / 3 ≤
+    ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+  unfold ensembleAvg sqfreeAccumDensity sqfreeAccumCount sqfreeCount
+  set S := (Finset.Icc 1 X).filter Squarefree
+  -- Handle sqfreeCount = 0 case
+  rcases eq_or_ne S.card 0 with hcard | hcard
+  · simp [hcard]
+  have hS_pos : (0 : ℝ) < S.card := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hcard)
+  -- Reduce to numerator inequality: Smod.card / 3 ≤ ∑ 1/genSeq
+  -- LHS = (Smod.card / S.card) / 3, RHS = (∑ 1/genSeq) / S.card
+  have hnum := mod3_numerator_bound X k hk
+  show (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+          (genProd n k : ZMod 3) = 2)).card : ℝ) / ↑S.card / 3
+      ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card
+  calc (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+          (genProd n k : ZMod 3) = 2)).card : ℝ) / ↑S.card / 3
+      = (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
+          (genProd n k : ZMod 3) = 2)).card : ℝ) / 3 / ↑S.card := by ring
+    _ ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card :=
+        div_le_div_of_nonneg_right hnum hS_pos.le
+
+/-- Positive lower bound on mod-3 accumulator density for all k. -/
+def AccumMod3LB (c : ℝ) : Prop :=
+  ∀ k : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
+    c ≤ sqfreeAccumDensity X k 3 2
+
+/-- AccumMod3LB(c) implies StepMeanLowerBound(min(1/4, c/3)) for all k. -/
+theorem accum_mod3_implies_smlb {c : ℝ} (_hc : 0 < c) (hmod3 : AccumMod3LB c) :
+    StepMeanLowerBound (min (1/4) (c/3)) := by
+  intro k
+  rcases k with _ | k'
+  · -- k = 0: use smlb_k0_unconditional
+    obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
+    exact ⟨X₀, fun X hX => le_trans (min_le_left _ _) (hX₀ X hX)⟩
+  · -- k = k' + 1 ≥ 1: use mod-3 density
+    obtain ⟨X₀, hX₀⟩ := hmod3 (k' + 1)
+    exact ⟨X₀, fun X hX => by
+      calc min (1 / 4) (c / 3) ≤ c / 3 := min_le_right _ _
+        _ ≤ sqfreeAccumDensity X (k' + 1) 3 2 / 3 := by
+            exact div_le_div_of_nonneg_right (hX₀ X hX) (by positivity)
+        _ ≤ ensembleAvg X (fun n => 1 / (genSeq n (k' + 1) : ℝ)) :=
+            ensembleAvg_ge_mod3_density X (k' + 1) (by omega)⟩
+
+/-- AccumMod3LB(c) implies PositiveDensityRSD, via SMLB and LMG. -/
+theorem accum_mod3_implies_positive_density_rsd {c : ℝ} (hc : 0 < c)
+    (hmod3 : AccumMod3LB c) : PositiveDensityRSD :=
+  smlb_implies_positive_density_rsd (by positivity) (accum_mod3_implies_smlb hc hmod3)
+
+/-- **EWE Landscape**: all routes from equidistribution hypotheses to PRSD. -/
+theorem ewe_landscape :
+    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → PositiveDensityRSD) ∧
+    (∀ c : ℝ, 0 < c → StepMeanLowerBound c → PositiveDensityRSD) ∧
+    (∀ c : ℝ, 0 < c → AccumMod3LB c → PositiveDensityRSD) :=
+  ⟨fun _ hκ => first_moment_step_implies_positive_density_rsd hκ,
+   fun _ hc => smlb_implies_positive_density_rsd hc,
+   fun _ hc => accum_mod3_implies_positive_density_rsd hc⟩
+
+end Mod3Bridge
+
 /-! ## Summary of Proof Chain
 
 The CRT equidistribution framework establishes the following chain:
