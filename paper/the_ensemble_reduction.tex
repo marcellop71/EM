@@ -434,9 +434,30 @@ $n \equiv 1 \bmod 6$, the sequence $\seq{n}(1) = 3$
 contributing $1/3$ to the sum.  The injection argument extends to
 factor~3: $\#\{\text{sf}\} \leq 4 \cdot \#\{\text{odd sf coprime to 3}\}$
 (\lean{EM/Ensemble/FirstMoment.lean}{sf\_le\_four\_coprime6}).
-An unconditional lower bound on $\mathbb{E}[1/\seq{\cdot}(1)]$ for $k \geq 1$
-remains open---it requires knowing the density of $1$-mod-$6$
-squarefree integers, which involves sieve asymptotics.
+Conditioned on a weak density hypothesis---\textbf{Mod6DensityLB},
+stating that the fraction of $1$-mod-$6$ squarefree among all
+squarefree exceeds $1/8$---SMLB at $k = 1$ follows with $c = 1/24$
+(\lean{EM/Ensemble/FirstMoment.lean}{mod6\_density\_implies\_smlb\_k1}).
+
+The CRT analysis extends to $k = 2$: for $n \equiv 1 \bmod 6$, we have
+$\Prod{n}(2) = 6n$
+(\lean{EM/Ensemble/FirstMoment.lean}{genProd\_two\_of\_mod6})
+and $\seq{n}(2) = \minFac(6n{+}1)$.  When additionally
+$n \equiv 4 \bmod 5$ (i.e., $n \equiv 19 \bmod 30$ by CRT), we get
+$5 \mid (6n{+}1)$ while $2 \nmid (6n{+}1)$ and $3 \nmid (6n{+}1)$,
+so $\seq{n}(2) = 5$
+(\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_two\_of\_mod30}).
+Thus for $n \equiv 19 \bmod 30$ squarefree, the first three
+generalized EM primes are $2, 3, 5$ deterministically.
+
+A \textbf{PartialSMLB}$(c, K_0)$ hypothesis---requiring
+$\mathbb{E}[1/\seq{\cdot}(k)] \geq c$ only for $k \leq K_0$---yields a
+fixed mean lower bound $\mathbb{E}[S_{K_0+1}] \geq c(K_0+1)$ via
+linearity
+(\lean{EM/Ensemble/FirstMoment.lean}{partial\_smlb\_implies\_mean\_lower\_bound}).
+PartialSMLB$(1/4, 0)$ holds unconditionally
+(\lean{EM/Ensemble/FirstMoment.lean}{partial\_smlb\_zero\_unconditional}),
+giving a concrete (though non-divergent) threshold at one step.
 
 \subsection{The DSL Route to MC}
 \label{sec:dsl-route}

@@ -444,6 +444,16 @@ The cleanest paths to MC:
   (\lean{EM/Ensemble/FirstMoment.lean}{ensembleAvg\_k0\_ge\_quarter});
   additionally, $\seq{n}(k) \geq 3$ unconditionally for $k \geq 1$
   (\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_ge\_three}).
+  A weaker \textbf{PartialSMLB}$(c, K_0)$ (SMLB for $k \leq K_0$ only)
+  yields a fixed mean lower bound; PartialSMLB$(1/4, 0)$ is
+  unconditional
+  (\lean{EM/Ensemble/FirstMoment.lean}{partial\_smlb\_zero\_unconditional}).
+  For $k = 1$, \textbf{Mod6DensityLB} (density of $1$-mod-$6$
+  squarefree $\geq 1/8$) implies SMLB at $k{=}1$ with $c = 1/24$
+  (\lean{EM/Ensemble/FirstMoment.lean}{mod6\_density\_implies\_smlb\_k1}).
+  CRT extends to $k = 2$: for $n \equiv 19 \bmod 30$, the first three
+  primes are $2, 3, 5$
+  (\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_two\_of\_mod30}).
 \end{enumerate}
 
 \paragraph{Does the Walk Hit $-1$?}
@@ -688,6 +698,11 @@ ways that current analytic number theory does not.
 \quad FMS$(\kappa) \Rightarrow \kappa \geq 1/4$ & Proved & \code{fms\_kappa\_ge\_quarter} \\
 \quad genSeq$(n,1) = 3$ for $n \equiv 1 \bmod 6$ sqfree & Proved & \code{genSeq\_one\_of\_mod6} \\
 \quad Parity + SMLB landscape (4-clause) & Proved & \code{parity\_smlb\_landscape} \\
+\quad genProd$(n,2) = 6n$ for $n \equiv 1 \bmod 6$ & Proved & \code{genProd\_two\_of\_mod6} \\
+\quad genSeq$(n,2) = 5$ for $n \equiv 19 \bmod 30$ & Proved & \code{genSeq\_two\_of\_mod30} \\
+\quad PartialSMLB $\Rightarrow$ mean lower bound & Proved & \code{partial\_smlb\_implies\_mean\_lower\_bound} \\
+\quad PartialSMLB$(1/4, 0)$ unconditional & Proved & \code{partial\_smlb\_zero\_unconditional} \\
+\quad Mod6DensityLB $\Rightarrow$ SMLB at $k{=}1$ & Proved & \code{mod6\_density\_implies\_smlb\_k1} \\
 \midrule
 \multicolumn{3}{l}{\emph{UCE (sieve-based) route}} \\
 \quad UCE + UCEImpliesCME $\Rightarrow$ MC & Proved & \code{uce\_cme\_implies\_mc} \\
@@ -757,6 +772,7 @@ ways that current analytic number theory does not.
 \quad PairwiseStepDecorrelation (2-hyp density-1 route) & \textbf{Open} & \code{PairwiseStepDecorrelation} \\
 \quad FirstMomentStep (each step contributes $\kappa$) & \textbf{Open} & \code{FirstMomentStep} \\
 \quad StepMeanLowerBound ($k{\geq}1$; $k{=}0$ proved) & \textbf{Open} & \code{StepMeanLowerBound} \\
+\quad Mod6DensityLB ($\Rightarrow$ SMLB at $k{=}1$) & \textbf{Open} & \code{Mod6DensityLB} \\
 \quad CharSumVarianceBound & \textbf{Open} & \code{CharSumVarianceBound} \\
 \quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
 \quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\
