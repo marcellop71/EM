@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 104~files
-totaling ${\sim}54{,}500$~lines.  The dependency chain is linear, with
+totaling ${\sim}54{,}650$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -94,7 +94,7 @@ three leaf modules:
 \code{Ensemble/EM.lean} & Generalized walk/multiplier, bridge to standard EM & 114 \\
 \code{Ensemble/CRT.lean} & CRT equidistribution, sqfree residue averaging & 479 \\
 \code{Ensemble/Decorrelation.lean} & CRT-based decorrelation, Markov density bounds & 431 \\
-\code{Ensemble/FirstMoment.lean} & First moment, $\kappa = 2/3$, FM+VB $\Rightarrow$ RSD & 320 \\
+\code{Ensemble/FirstMoment.lean} & First moment, $\kappa = 2/3$, FMS $\Rightarrow$ LMG $\Rightarrow$ PositiveDensityRSD & 431 \\
 \code{Ensemble/PT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1092 \\
 \code{Ensemble/WeylChain.lean} & Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc} & 834 \\
 \code{Ensemble/CRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 631 \\
@@ -522,6 +522,11 @@ Mathlib version & v4.29.0-rc1 \\
 \quad $S_K(n) \leq K/2$ (deterministic, genSeq $\geq 2$) & Proved & \code{recipPartialSum\_le\_half\_K} \\
 \quad LMG $\Rightarrow$ PositiveDensityRSD (1 hypothesis) & Proved & \code{lmg\_implies\_positive\_density\_rsd} \\
 \quad Positive density landscape (5-clause) & Proved & \code{positive\_density\_landscape} \\
+\quad Ensemble average linearity ($\mathbb{E}[\sum] = \sum\mathbb{E}$) & Proved & \code{ensembleAvg\_sum\_range} \\
+\quad FMS $\Rightarrow$ LMG (1 hypothesis, full chain) & Proved & \code{first\_moment\_step\_implies\_lmg} \\
+\quad FMS $\Rightarrow$ PositiveDensityRSD (composition) & Proved & \code{first\_moment\_step\_implies\_positive\_density\_rsd} \\
+\quad Weak MC landscape (3-clause) & Proved & \code{weak\_mc\_landscape} \\
+\quad $\kappa_3 = 1/3$ (explicit Buchstab constant) & Proved & \code{kappaPartial\_three} \\
 \quad CRT fiber determines genSeq & Proved & \code{crt\_fiber\_determines\_genSeq} \\
 \quad CRT fiber propagates across steps & Proved & \code{crt\_fiber\_propagates} \\
 \quad Walk readout from multipliers & Proved & \code{walk\_readout\_from\_multipliers} \\

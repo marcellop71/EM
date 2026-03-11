@@ -317,4 +317,115 @@ Both chains reduce to PE (provable from ANT via `pe_of_equidist`)
 plus CRT decorrelation (proved via `crt_multiplier_invariance`).
 -/
 
+/-! ## FirstMomentStep → LinearMeanGrowth → PositiveDensityRSD -/
+
+section FMSToLMG
+
+/-- Ensemble average of a finite sum equals the sum of ensemble averages.
+    This is linearity of expectation for the ensemble averaging operator. -/
+theorem ensembleAvg_sum_range (X K : Nat) (f : Nat → Nat → ℝ) :
+    ensembleAvg X (fun n => ∑ k ∈ Finset.range K, f n k) =
+    ∑ k ∈ Finset.range K, ensembleAvg X (fun n => f n k) := by
+  simp only [ensembleAvg, sqfreeCount, ← Finset.sum_div]
+  congr 1; exact Finset.sum_comm
+
+/-- **FirstMomentStep implies LinearMeanGrowth**: if the ensemble average of
+    1/genSeq(n,k) converges to κ > 0 for each k, then the ensemble mean of
+    the partial reciprocal sum S_K grows at least linearly in K.
+
+    Proof: For each k < K, extract X_k such that ensembleAvg X (1/genSeq · k) ≥ κ/2
+    for X ≥ X_k. Take X₀ = max of all X_k. Then by linearity of ensemble averages,
+    sfAvg X (recipPartialSum · K) = ∑_{k<K} ensembleAvg X (1/genSeq · k) ≥ K·(κ/2). -/
+theorem first_moment_step_implies_lmg {κ : ℝ} (hκ : 0 < κ) :
+    FirstMomentStep κ → LinearMeanGrowth := by
+  intro hfms
+  -- Witness κ/2 as the growth rate
+  refine ⟨κ / 2, by linarith, ?_⟩
+  intro K
+  -- For each k < K, extract a threshold X_k from tendsto
+  -- Using Filter.Tendsto at nhds κ, we get eventually in Ioi (κ/2)
+  have half_lt : κ / 2 < κ := by linarith
+  -- Build a function giving the threshold for each k
+  have hthresh : ∀ k : Nat, ∃ Xk : Nat, ∀ X ≥ Xk,
+      κ / 2 ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+    intro k
+    have htend := hfms k
+    have hmem : Set.Ioi (κ / 2) ∈ nhds κ := Ioi_mem_nhds half_lt
+    have hev := htend.eventually (Filter.mem_map.mpr (Filter.eventually_iff_exists_mem.mpr
+      ⟨Set.Ioi (κ / 2), hmem, fun x hx => hx⟩))
+    rw [Filter.eventually_atTop] at hev
+    obtain ⟨N, hN⟩ := hev
+    exact ⟨N, fun X hX => le_of_lt (hN X hX)⟩
+  -- Choose a threshold function
+  let threshold : Nat → Nat := fun k => (hthresh k).choose
+  have hthresh_spec : ∀ k : Nat, ∀ X ≥ threshold k,
+      κ / 2 ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) :=
+    fun k => (hthresh k).choose_spec
+  -- Take X₀ = sup of thresholds over range K
+  let X₀ := (Finset.range K).sup threshold
+  refine ⟨X₀, fun X hX => ?_⟩
+  -- Show that sfAvg X (recipPartialSum · K) = ensembleAvg X (recipPartialSum · K)
+  -- Since sfAvg is a private abbrev, LinearMeanGrowth unfolds to the raw form.
+  -- We need to show: κ/2 * K ≤ (∑ n ∈ sfSet, recipPartialSum n K) / sfCard
+  -- which equals ensembleAvg X (fun n => recipPartialSum n K) by unfolding
+  -- First, show the goal in terms of ensembleAvg
+  suffices h : κ / 2 * ↑K ≤ ensembleAvg X (fun n => recipPartialSum n K) by
+    -- The LinearMeanGrowth goal uses sfAvg which expands to the same thing as ensembleAvg
+    simp only [ensembleAvg, sqfreeCount] at h
+    exact h
+  -- Rewrite recipPartialSum as a sum
+  have hrps : ∀ n, recipPartialSum n K = ∑ k ∈ Finset.range K, 1 / (genSeq n k : ℝ) :=
+    fun n => rfl
+  simp_rw [hrps]
+  -- Use linearity: ensembleAvg of sum = sum of ensembleAvg
+  rw [ensembleAvg_sum_range]
+  -- Each summand is ≥ κ/2 for X ≥ X₀
+  calc κ / 2 * ↑K = ∑ _ ∈ Finset.range K, κ / 2 := by
+        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; ring
+    _ ≤ ∑ k ∈ Finset.range K, ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+        apply Finset.sum_le_sum
+        intro k hk
+        rw [Finset.mem_range] at hk
+        apply hthresh_spec k
+        calc threshold k ≤ (Finset.range K).sup threshold :=
+              Finset.le_sup (f := threshold) (Finset.mem_range.mpr hk)
+          _ ≤ X := hX
+
+/-- **FirstMomentStep implies PositiveDensityRSD**: composing
+    first_moment_step_implies_lmg with lmg_implies_positive_density_rsd. -/
+theorem first_moment_step_implies_positive_density_rsd {κ : ℝ} (hκ : 0 < κ) :
+    FirstMomentStep κ → PositiveDensityRSD :=
+  fun hfms => lmg_implies_positive_density_rsd (first_moment_step_implies_lmg hκ hfms)
+
+/-- **Landscape theorem**: witnesses all three links in the chain
+    FirstMomentStep → LinearMeanGrowth → PositiveDensityRSD. -/
+theorem weak_mc_landscape :
+    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → PositiveDensityRSD) ∧
+    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → LinearMeanGrowth) ∧
+    (LinearMeanGrowth → PositiveDensityRSD) :=
+  ⟨fun _ hκ => first_moment_step_implies_positive_density_rsd hκ,
+   fun _ hκ => first_moment_step_implies_lmg hκ,
+   lmg_implies_positive_density_rsd⟩
+
+end FMSToLMG
+
+/-! ## Concrete κ lower bound -/
+
+section KappaLowerBound
+
+/-- The partial reciprocal constant truncated at 3 equals 1/3.
+    The only prime in range 3 is 2, with buchstabWeight 2 = 2/3,
+    so kappaPartial 3 = (2/3)/2 = 1/3. -/
+theorem kappaPartial_three : kappaPartial 3 = 1 / 3 := by
+  simp only [kappaPartial]
+  have hfilt : (Finset.range 3).filter Nat.Prime = {2} := by native_decide
+  rw [hfilt, Finset.sum_singleton, buchstabWeight_two]
+  norm_num
+
+/-- The partial κ at B=3 is positive: kappaPartial 3 = 1/3 > 0. -/
+theorem kappaPartial_pos_at_three : 0 < kappaPartial 3 := by
+  rw [kappaPartial_three]; positivity
+
+end KappaLowerBound
+
 end

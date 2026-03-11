@@ -341,8 +341,31 @@ Taking $\delta = \kappa/2$ yields a 1-hypothesis route:
 \]
 compared to the 2-hypothesis route
 PSD~$+$~LMG~$\Rightarrow$~AASRSD (density~1).
-With $\kappa \geq 1/3$ from the Buchstab weight at $p=2$,
+With $\kappa \geq 1/3$ from the Buchstab weight at $p=2$
+(\lean{EM/Ensemble/FirstMoment.lean}{kappaPartial\_three}),
 the positive density is at least $\delta = 1/6$.
+
+The chain is now fully closed to a single hypothesis.
+Linearity of the ensemble average
+(\lean{EM/Ensemble/FirstMoment.lean}{ensembleAvg\_sum\_range})
+gives:
+
+\begin{theorem}[\lean{EM/Ensemble/FirstMoment.lean}{first\_moment\_step\_implies\_positive\_density\_rsd}]
+\label{thm:fms-pdrsd}
+$\mathrm{FirstMomentStep}(\kappa) \;\Longrightarrow\;
+\mathrm{PositiveDensityRSD}$, for any $\kappa > 0$.
+\end{theorem}
+
+\noindent The proof composes two machine-verified links:
+$\mathrm{FirstMomentStep} \Rightarrow \mathrm{LMG}$
+(\lean{EM/Ensemble/FirstMoment.lean}{first\_moment\_step\_implies\_lmg},
+via $\mathbb{E}[\sum] = \sum\mathbb{E}$ and a finite-max threshold
+argument) and $\mathrm{LMG} \Rightarrow \mathrm{PositiveDensityRSD}$
+(the partition argument above).  FirstMomentStep is the sole
+remaining hypothesis: it states that the ensemble average of
+$1/\seq{n}(k)$ converges to~$\kappa$ for each~$k$, a standard
+consequence of sieve theory for~$k=0$ and a mild orbit-transfer
+for~$k \geq 1$.
 
 \subsection{The DSL Route to MC}
 \label{sec:dsl-route}
