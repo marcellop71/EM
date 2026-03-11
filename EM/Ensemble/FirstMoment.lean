@@ -513,7 +513,7 @@ private theorem squarefree_half {m : Nat} (hm : Squarefree m) (heven : Even m) :
     obtain ⟨j, hj⟩ := hk_even.two_dvd
     have h4 : (2 : Nat) * (2 : Nat) ∣ m := ⟨j, by omega⟩
     have hunit := hm 2 h4
-    simp [Nat.isUnit_iff] at hunit
+    simp at hunit
 
 /-- At least half of squarefree numbers in [1,X] are odd:
     #{sf in [1,X]} ≤ 2 * #{odd sf in [1,X]}.
@@ -710,5 +710,223 @@ theorem parity_smlb_landscape :
    fun _ hfms => fms_kappa_ge_quarter hfms⟩
 
 end ParityLandscape
+
+/-! ## k=1 Lower Bound Infrastructure
+
+For odd squarefree n with n % 3 = 1 (equivalently n ≡ 1 mod 6):
+- genSeq n 0 = 2 (since n is odd, n+1 is even, minFac(n+1)=2)
+- genProd n 1 = n · 2 (by genProd_succ)
+- genProd n 1 + 1 = 2n + 1
+- 3 ∣ (2n + 1) (since n ≡ 1 mod 3 → 2n + 1 ≡ 0 mod 3)
+- 2n + 1 is odd
+- Therefore minFac(2n + 1) = 3, i.e., genSeq n 1 = 3.
+
+This gives a concrete lower bound on the k=1 ensemble average:
+every 1-mod-6 squarefree starting point contributes 1/3 to E[1/genSeq(·,1)].
+
+We also prove the factor-3 injection (analogous to squarefree_half for factor 2):
+the map n ↦ n/3 injects {odd sf, 3|n} into {odd sf, 3∤n}, so at most half
+of odd squarefree numbers are divisible by 3.  Combining with the factor-2
+injection gives #{sf} ≤ 4 · #{odd sf coprime to 3}. -/
+
+section K1Infrastructure
+
+/-- For odd n ≥ 1 with n % 3 = 1, genSeq n 1 = 3.
+    Since n is odd, genSeq n 0 = 2, so genProd n 1 = n * 2.
+    Then genProd n 1 + 1 = 2n + 1, which is odd and divisible by 3
+    (from n ≡ 1 mod 3). So minFac(2n + 1) is an odd prime ≤ 3, hence = 3. -/
+theorem genSeq_one_of_mod6 {n : Nat} (hn : 1 ≤ n) (hodd : ¬ Even n) (hmod3 : n % 3 = 1) :
+    genSeq n 1 = 3 := by
+  -- Unfold genSeq n 1 = minFac(genProd n 1 + 1)
+  rw [genSeq_def]
+  -- genProd n 1 = genProd n 0 * genSeq n 0 = n * minFac(n+1)
+  -- Since n is odd: minFac(n+1) = 2, so genProd n 1 = n * 2
+  have h_gs0 : genSeq n 0 = 2 := genSeq_zero_of_odd hn hodd
+  show Nat.minFac (genProd n 1 + 1) = 3
+  rw [show genProd n 1 = n * genSeq n 0 from rfl, h_gs0]
+  -- Goal: Nat.minFac (n * 2 + 1) = 3
+  set m := n * 2 + 1 with hm_def
+  -- m is odd (since n * 2 is even)
+  have hm_odd : ¬ Even m := by
+    intro ⟨k, hk⟩; omega
+  -- 3 ∣ m (since n % 3 = 1 → n * 2 % 3 = 2 → n * 2 + 1 % 3 = 0)
+  have h3_dvd : 3 ∣ m := by
+    rw [hm_def]
+    have : n = 3 * (n / 3) + 1 := by omega
+    exact ⟨n / 3 * 2 + 1, by omega⟩
+  -- m ≠ 1 (since n ≥ 1 → m = n * 2 + 1 ≥ 3)
+  have hm_ne1 : m ≠ 1 := by omega
+  -- minFac m is prime
+  have hm_prime := Nat.minFac_prime hm_ne1
+  -- minFac m ≤ 3
+  have hm_le3 : Nat.minFac m ≤ 3 := Nat.minFac_le_of_dvd (by omega : 2 ≤ 3) h3_dvd
+  -- minFac m ≥ 2
+  have hm_ge2 : 2 ≤ Nat.minFac m := hm_prime.two_le
+  -- minFac m ≠ 2 (since m is odd)
+  have hm_ne2 : Nat.minFac m ≠ 2 := by
+    intro h2
+    have : 2 ∣ m := (Nat.minFac_eq_two_iff m).mp h2
+    exact hm_odd (even_iff_two_dvd.mpr this)
+  -- Conclude: minFac m = 3
+  omega
+
+/-- Dividing an odd squarefree number divisible by 3 by 3 gives an odd squarefree
+    number not divisible by 3. Analogous to squarefree_half for factor 2.
+
+    - m/3 is squarefree: since m = 3k, k divides m, and squarefree-of-divisor.
+    - m/3 is odd: if 3k were odd but k even, then 3k = 3·(2j) = 6j is even, contradiction.
+    - 3 ∤ m/3: if 3 | k, then 9 | m = 3k, contradicting squarefree(m). -/
+private theorem squarefree_third {m : Nat} (hm : Squarefree m) (hodd : ¬ Even m) (h3 : 3 ∣ m) :
+    Squarefree (m / 3) ∧ ¬ Even (m / 3) ∧ ¬ (3 ∣ (m / 3)) := by
+  obtain ⟨k, hk⟩ := h3
+  have hk3 : m / 3 = k := by omega
+  refine ⟨?_, ?_, ?_⟩
+  · -- m/3 = k is squarefree (k divides m since m = 3k)
+    rw [hk3]
+    exact hm.squarefree_of_dvd ⟨3, by omega⟩
+  · -- m/3 = k is odd: if k even then m = 3k even (since 3 is odd and k even → 3k even)
+    rw [hk3]
+    intro hk_even
+    obtain ⟨j, hj⟩ := hk_even.two_dvd
+    -- m = 3 * (2j) = 6j, which is even
+    have : Even m := ⟨3 * j, by omega⟩
+    exact hodd this
+  · -- 3 ∤ m/3: if 3 | k then 9 | m, contradicting squarefree
+    rw [hk3]
+    intro h3k
+    obtain ⟨j, hj⟩ := h3k
+    -- m = 3 * (3j) = 9j, so 3² | m
+    have h9 : (3 : Nat) * 3 ∣ m := ⟨j, by omega⟩
+    have := hm 3 h9
+    simp at this
+
+/-- At least half of odd squarefree numbers in [1,X] are coprime to 3:
+    #{odd sf in [1,X]} ≤ 2 * #{odd sf coprime to 3 in [1,X]}.
+    Proof: the map n ↦ n/3 injects {odd sf, 3|n} into {odd sf, 3∤n},
+    so #{odd sf, 3|n} ≤ #{odd sf, 3∤n}, hence total ≤ 2 · #{odd sf, 3∤n}. -/
+private theorem odd_coprime3_sf_card_ge_half (X : Nat) :
+    ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)).card ≤
+    2 * ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))).card := by
+  -- Partition odd squarefree into coprime-to-3 and divisible-by-3
+  set oddS := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)
+  set copS := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))
+  set div3S := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ (3 ∣ n))
+  have h_disj : Disjoint copS div3S := by
+    rw [Finset.disjoint_filter]
+    intro n _ ⟨_, _, hn3⟩ ⟨_, _, h3⟩
+    exact hn3 h3
+  have h_union : oddS = copS ∪ div3S := by
+    ext n
+    simp only [oddS, copS, div3S, Finset.mem_filter, Finset.mem_union, Finset.mem_Icc]
+    constructor
+    · intro ⟨hmem, hsf, hodd⟩
+      rcases Decidable.em (3 ∣ n) with h3 | h3
+      · exact Or.inr ⟨hmem, hsf, hodd, h3⟩
+      · exact Or.inl ⟨hmem, hsf, hodd, h3⟩
+    · rintro (⟨hmem, hsf, hodd, _⟩ | ⟨hmem, hsf, hodd, _⟩) <;> exact ⟨hmem, hsf, hodd⟩
+  have h_card : oddS.card = copS.card + div3S.card := by
+    rw [h_union, Finset.card_union_of_disjoint h_disj]
+  -- Injection: div3S → copS by dividing by 3
+  have h_inj : div3S.card ≤ copS.card := by
+    apply Finset.card_le_card_of_injOn (fun n => n / 3)
+    · -- Maps into copS
+      intro n hn
+      rw [Finset.mem_coe, Finset.mem_filter] at hn
+      have hmem := Finset.mem_Icc.mp hn.1
+      have hsf := hn.2.1
+      have hodd := hn.2.2.1
+      have h3 := hn.2.2.2
+      obtain ⟨hsf', hodd', hcop⟩ := squarefree_third hsf hodd h3
+      rw [Finset.mem_coe, Finset.mem_filter, Finset.mem_Icc]
+      have h1 : 1 ≤ n / 3 := by
+        have : 3 ≤ n := Nat.le_of_dvd (by omega) h3
+        omega
+      have h2 : n / 3 ≤ X := le_trans (Nat.div_le_self n 3) hmem.2
+      exact ⟨⟨h1, h2⟩, hsf', hodd', hcop⟩
+    · -- Injective on div3S: a/3 = b/3 and both divisible by 3 → a = b
+      intro a ha b hb hab
+      rw [Finset.mem_coe, Finset.mem_filter] at ha hb
+      have ha3 := Nat.div_mul_cancel ha.2.2.2
+      have hb3 := Nat.div_mul_cancel hb.2.2.2
+      linarith
+  linarith [h_card, h_inj]
+
+/-- #{sf in [1,X]} ≤ 4 · #{odd sf coprime to 3 in [1,X]}.
+    Combines the factor-2 injection (odd_sf_card_ge_half: #{sf} ≤ 2·#{odd sf})
+    with the factor-3 injection (odd_coprime3_sf_card_ge_half: #{odd sf} ≤ 2·#{odd sf ∧ 3∤n}). -/
+private theorem sf_le_four_coprime6 (X : Nat) :
+    ((Finset.Icc 1 X).filter Squarefree).card ≤
+    4 * ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))).card := by
+  calc ((Finset.Icc 1 X).filter Squarefree).card
+      ≤ 2 * ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)).card :=
+        odd_sf_card_ge_half X
+    _ ≤ 2 * (2 * ((Finset.Icc 1 X).filter
+        (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))).card) :=
+        Nat.mul_le_mul_left 2 (odd_coprime3_sf_card_ge_half X)
+    _ = 4 * ((Finset.Icc 1 X).filter
+        (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))).card := by ring
+
+/-- The ensemble average of 1/genSeq(·,1) is bounded below by the density of
+    1-mod-6 squarefree numbers divided by 3. Among odd squarefree n coprime to 3
+    with n % 3 = 1 (i.e., n ≡ 1 mod 6), genSeq n 1 = 3, so each such n
+    contributes 1/3 to the sum. -/
+theorem ensembleAvg_k1_ge_mod6_fraction {X : Nat} (hX : 0 < sqfreeCount X) :
+    ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ n % 3 = 1)).card /
+      (3 * sqfreeCount X : ℝ) ≤
+    ensembleAvg X (fun n => 1 / (genSeq n 1 : ℝ)) := by
+  unfold ensembleAvg sqfreeCount
+  set S := (Finset.Icc 1 X).filter Squarefree with hS_def
+  set mod6S := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ n % 3 = 1)
+    with hmod6S_def
+  have hS_pos : (0 : ℝ) < S.card := by exact_mod_cast hX
+  -- mod6S ⊆ S
+  have h_sub : mod6S ⊆ S := by
+    intro n hn
+    simp only [hmod6S_def, hS_def, Finset.mem_filter, Finset.mem_Icc] at hn ⊢
+    exact ⟨hn.1, hn.2.1⟩
+  -- Each n ∈ mod6S has genSeq n 1 = 3, so 1/genSeq n 1 = 1/3
+  have h_mod6_eq : ∀ n ∈ mod6S, (1 : ℝ) / (genSeq n 1 : ℝ) = 1 / 3 := by
+    intro n hn
+    simp only [hmod6S_def, Finset.mem_filter, Finset.mem_Icc] at hn
+    have h3 := genSeq_one_of_mod6 hn.1.1 hn.2.2.1 hn.2.2.2
+    simp [h3]
+  -- Sum over mod6S = |mod6S| * (1/3)
+  have h_mod6_sum : ∑ n ∈ mod6S, (1 : ℝ) / (genSeq n 1 : ℝ) = mod6S.card * (1 / 3) := by
+    rw [show mod6S.card * (1 / 3 : ℝ) = ∑ _ ∈ mod6S, (1 : ℝ) / 3 from by
+      rw [Finset.sum_const, nsmul_eq_mul]]
+    exact Finset.sum_congr rfl h_mod6_eq
+  -- Sum over S ≥ sum over mod6S
+  have h_sum_lower : (mod6S.card : ℝ) / 3 ≤ ∑ n ∈ S, (1 : ℝ) / (genSeq n 1 : ℝ) := by
+    calc ∑ n ∈ S, (1 : ℝ) / (genSeq n 1 : ℝ)
+        ≥ ∑ n ∈ mod6S, (1 : ℝ) / (genSeq n 1 : ℝ) :=
+          Finset.sum_le_sum_of_subset_of_nonneg h_sub (fun _ _ _ => by positivity)
+      _ = mod6S.card * (1 / 3) := h_mod6_sum
+      _ = (mod6S.card : ℝ) / 3 := by ring
+  -- Goal: |mod6S| / (3 * |S|) ≤ (∑ ...) / |S|
+  rw [le_div_iff₀ hS_pos]
+  calc (mod6S.card : ℝ) / (3 * (S.card : ℝ)) * (S.card : ℝ)
+      = (mod6S.card : ℝ) / 3 := by
+        have hS_ne : (S.card : ℝ) ≠ 0 := by linarith
+        field_simp
+    _ ≤ ∑ n ∈ S, (1 : ℝ) / (genSeq n 1 : ℝ) := h_sum_lower
+
+/-- **k=1 lower bound landscape**: witnesses the genSeq_one_of_mod6 theorem,
+    the sf_le_four_coprime6 injection bound, and the conditional assembly. -/
+theorem k1_lower_bound_landscape :
+    -- 1. genSeq n 1 = 3 for n ≡ 1 mod 6 squarefree
+    (∀ (n : Nat), 1 ≤ n → ¬ Even n → n % 3 = 1 → genSeq n 1 = 3) ∧
+    -- 2. #{sf} ≤ 4 · #{odd sf coprime to 3}
+    (∀ X : Nat, ((Finset.Icc 1 X).filter Squarefree).card ≤
+      4 * ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))).card) ∧
+    -- 3. Conditional lower bound on E[1/genSeq(·,1)]
+    (∀ X : Nat, 0 < sqfreeCount X →
+      ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ n % 3 = 1)).card /
+        (3 * sqfreeCount X : ℝ) ≤
+      ensembleAvg X (fun n => 1 / (genSeq n 1 : ℝ))) :=
+  ⟨fun _ hn hodd hmod3 => genSeq_one_of_mod6 hn hodd hmod3,
+   sf_le_four_coprime6,
+   fun _ hX => ensembleAvg_k1_ge_mod6_fraction hX⟩
+
+end K1Infrastructure
 
 end
