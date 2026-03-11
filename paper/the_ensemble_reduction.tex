@@ -367,6 +367,77 @@ $1/\seq{n}(k)$ converges to~$\kappa$ for each~$k$, a standard
 consequence of sieve theory for~$k=0$ and a mild orbit-transfer
 for~$k \geq 1$.
 
+\paragraph{Parity structure and unconditional bounds.}
+The mod-2 structure of the generalized EM sequence yields
+unconditional results that partly close the weak-MC chain.
+
+\begin{theorem}[\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_ge\_three}]
+\label{thm:genSeq-ge-three}
+For $k \geq 1$ and $n \geq 1$, the generalized EM prime satisfies
+$\seq{n}(k) \geq 3$.
+\end{theorem}
+
+\begin{proof}
+The product $\Prod{n}(1) = n \cdot \minFac(n{+}1)$ is always even:
+if $n$ is even the product is even; if $n$ is odd then $n{+}1$ is
+even, so $\minFac(n{+}1) = 2$
+(\lean{EM/Ensemble/FirstMoment.lean}{genProd\_one\_even}).
+For $k \geq 1$, $\Prod{n}(1) \mid \Prod{n}(k)$ by
+\code{genProd\_dvd\_genProd}, so $\Prod{n}(k)$ is even and
+$\Prod{n}(k){+}1$ is odd
+(\lean{EM/Ensemble/FirstMoment.lean}{genProd\_succ\_odd}).
+Hence $\minFac(\Prod{n}(k){+}1) \neq 2$
+(by \code{Nat.minFac\_eq\_two\_iff}), and since
+$\seq{n}(k)$ is prime with $\seq{n}(k) \geq 2$, we get
+$\seq{n}(k) \geq 3$.
+\end{proof}
+
+This tightens the deterministic bound from $S_K(n) \leq K/2$
+to $S_K(n) \leq 1/2 + (K{-}1)/3$ for $K \geq 1$.
+
+\begin{theorem}[\lean{EM/Ensemble/FirstMoment.lean}{ensembleAvg\_k0\_ge\_quarter}]
+\label{thm:k0-quarter}
+For $X$ with $\mathrm{sqfreeCount}(X) > 0$:
+$\mathbb{E}[1/\seq{\cdot}(0)] \geq 1/4$.
+\end{theorem}
+
+\begin{proof}
+For odd squarefree $n$, $n{+}1$ is even, so
+$\seq{n}(0) = \minFac(n{+}1) = 2$ and $1/\seq{n}(0) = 1/2$.
+The density of odd squarefree integers among all squarefree
+integers is $\geq 1/2$: the halving map $m \mapsto m/2$ injects
+even squarefree into odd squarefree
+(\lean{EM/Ensemble/FirstMoment.lean}{odd\_sf\_card\_ge\_half}),
+giving $\#\{\text{even sf}\} \leq \#\{\text{odd sf}\}$.
+So $\mathbb{E}[1/\seq{\cdot}(0)] \geq (1/2) \cdot (1/2) = 1/4$.
+\end{proof}
+
+\noindent This is \emph{unconditional}---no open hypothesis is used.
+
+A weaker-than-FirstMomentStep hypothesis suffices for the full chain:
+\textbf{StepMeanLowerBound}$(c)$
+(\lean{EM/Ensemble/FirstMoment.lean}{StepMeanLowerBound})
+asserts only that $\mathbb{E}[1/\seq{\cdot}(k)] \geq c$ eventually
+for each~$k$, without requiring convergence to a specific limit.
+The $k = 0$ case is proved unconditionally with $c = 1/4$
+(\lean{EM/Ensemble/FirstMoment.lean}{smlb\_k0\_unconditional}).
+The chain $\mathrm{SMLB} \Rightarrow \mathrm{LMG} \Rightarrow
+\mathrm{PositiveDensityRSD}$ is fully machine-verified
+(\lean{EM/Ensemble/FirstMoment.lean}{smlb\_implies\_positive\_density\_rsd}).
+If FirstMomentStep$(\kappa)$ holds, then $\kappa \geq 1/4$
+(\lean{EM/Ensemble/FirstMoment.lean}{fms\_kappa\_ge\_quarter},
+via \code{ge\_of\_tendsto}).
+
+For $k = 1$, the CRT structure gives further traction: for squarefree
+$n \equiv 1 \bmod 6$, the sequence $\seq{n}(1) = 3$
+(\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_one\_of\_mod6}),
+contributing $1/3$ to the sum.  The injection argument extends to
+factor~3: $\#\{\text{sf}\} \leq 4 \cdot \#\{\text{odd sf coprime to 3}\}$
+(\lean{EM/Ensemble/FirstMoment.lean}{sf\_le\_four\_coprime6}).
+An unconditional lower bound on $\mathbb{E}[1/\seq{\cdot}(1)]$ for $k \geq 1$
+remains open---it requires knowing the density of $1$-mod-$6$
+squarefree integers, which involves sieve asymptotics.
+
 \subsection{The DSL Route to MC}
 \label{sec:dsl-route}
 

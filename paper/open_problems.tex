@@ -436,6 +436,14 @@ The cleanest paths to MC:
   $\sim\kappa$ on average), whose $k = 0$ case is population-level
   (unconditional from analytic number theory); for $k \geq 1$ it
   requires a ``first-moment DSL'' strictly weaker than full DSL\@.
+  The weaker \textbf{StepMeanLowerBound}$(c)$ also suffices:
+  $\mathbb{E}[1/\seq{\cdot}(k)] \geq c$ eventually for each~$k$
+  implies LMG
+  (\lean{EM/Ensemble/FirstMoment.lean}{smlb\_implies\_lmg}).
+  The $k = 0$ case is proved unconditionally with $c = 1/4$
+  (\lean{EM/Ensemble/FirstMoment.lean}{ensembleAvg\_k0\_ge\_quarter});
+  additionally, $\seq{n}(k) \geq 3$ unconditionally for $k \geq 1$
+  (\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_ge\_three}).
 \end{enumerate}
 
 \paragraph{Does the Walk Hit $-1$?}
@@ -673,6 +681,13 @@ ways that current analytic number theory does not.
 \quad JSE base case (tower rule) & Proved & \code{jse\_base\_case} \\
 \quad Cofactor identity: $w(n){+}1 = m(n) \cdot \mathrm{cof}(n)$ & Proved & \code{shifted\_walk\_eq\_mult\_mul\_cof} \\
 \quad Hit $\Leftrightarrow$ cofZ $= 0$ & Proved & \code{walkZ\_eq\_neg\_one\_iff\_cofZ\_zero} \\
+\quad genProd$(n,k)$ even for $k \geq 1$ (parity) & Proved & \code{genProd\_even\_of\_pos} \\
+\quad genSeq$(n,k) \geq 3$ for $k \geq 1$ (unconditional) & Proved & \code{genSeq\_ge\_three} \\
+\quad $\mathbb{E}[1/\text{genSeq}(\cdot,0)] \geq 1/4$ (unconditional) & Proved & \code{ensembleAvg\_k0\_ge\_quarter} \\
+\quad SMLB $\Rightarrow$ LMG $\Rightarrow$ PositiveDensityRSD & Proved & \code{smlb\_implies\_positive\_density\_rsd} \\
+\quad FMS$(\kappa) \Rightarrow \kappa \geq 1/4$ & Proved & \code{fms\_kappa\_ge\_quarter} \\
+\quad genSeq$(n,1) = 3$ for $n \equiv 1 \bmod 6$ sqfree & Proved & \code{genSeq\_one\_of\_mod6} \\
+\quad Parity + SMLB landscape (4-clause) & Proved & \code{parity\_smlb\_landscape} \\
 \midrule
 \multicolumn{3}{l}{\emph{UCE (sieve-based) route}} \\
 \quad UCE + UCEImpliesCME $\Rightarrow$ MC & Proved & \code{uce\_cme\_implies\_mc} \\
@@ -741,6 +756,7 @@ ways that current analytic number theory does not.
 \quad \textbf{LinearMeanGrowth} (1-hyp weak MC route) & \textbf{Open} & \code{LinearMeanGrowth} \\
 \quad PairwiseStepDecorrelation (2-hyp density-1 route) & \textbf{Open} & \code{PairwiseStepDecorrelation} \\
 \quad FirstMomentStep (each step contributes $\kappa$) & \textbf{Open} & \code{FirstMomentStep} \\
+\quad StepMeanLowerBound ($k{\geq}1$; $k{=}0$ proved) & \textbf{Open} & \code{StepMeanLowerBound} \\
 \quad CharSumVarianceBound & \textbf{Open} & \code{CharSumVarianceBound} \\
 \quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
 \quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\

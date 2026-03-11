@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 104~files
-totaling ${\sim}54{,}650$~lines.  The dependency chain is linear, with
+totaling ${\sim}55{,}150$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -94,7 +94,7 @@ three leaf modules:
 \code{Ensemble/EM.lean} & Generalized walk/multiplier, bridge to standard EM & 114 \\
 \code{Ensemble/CRT.lean} & CRT equidistribution, sqfree residue averaging & 479 \\
 \code{Ensemble/Decorrelation.lean} & CRT-based decorrelation, Markov density bounds & 431 \\
-\code{Ensemble/FirstMoment.lean} & First moment, $\kappa = 2/3$, FMS $\Rightarrow$ LMG $\Rightarrow$ PositiveDensityRSD & 431 \\
+\code{Ensemble/FirstMoment.lean} & First moment, parity structure, SMLB chain, $k$=0/$k$=1 bounds & 932 \\
 \code{Ensemble/PT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1092 \\
 \code{Ensemble/WeylChain.lean} & Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc} & 834 \\
 \code{Ensemble/CRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 631 \\
@@ -527,6 +527,14 @@ Mathlib version & v4.29.0-rc1 \\
 \quad FMS $\Rightarrow$ PositiveDensityRSD (composition) & Proved & \code{first\_moment\_step\_implies\_positive\_density\_rsd} \\
 \quad Weak MC landscape (3-clause) & Proved & \code{weak\_mc\_landscape} \\
 \quad $\kappa_3 = 1/3$ (explicit Buchstab constant) & Proved & \code{kappaPartial\_three} \\
+\quad genProd$(n,k)$ even for $k \geq 1$ (parity) & Proved & \code{genProd\_even\_of\_pos} \\
+\quad genProd$(n,k){+}1$ odd for $k \geq 1$ & Proved & \code{genProd\_succ\_odd} \\
+\quad genSeq$(n,k) \geq 3$ for $k \geq 1$ (unconditional) & Proved & \code{genSeq\_ge\_three} \\
+\quad $\mathbb{E}[1/\text{genSeq}(\cdot,0)] \geq 1/4$ (unconditional) & Proved & \code{ensembleAvg\_k0\_ge\_quarter} \\
+\quad SMLB $\Rightarrow$ LMG $\Rightarrow$ PositiveDensityRSD & Proved & \code{smlb\_implies\_positive\_density\_rsd} \\
+\quad FMS$(\kappa) \Rightarrow \kappa \geq 1/4$ & Proved & \code{fms\_kappa\_ge\_quarter} \\
+\quad genSeq$(n,1) = 3$ for $n \equiv 1 \bmod 6$ sqfree & Proved & \code{genSeq\_one\_of\_mod6} \\
+\quad Parity + SMLB landscape (4-clause) & Proved & \code{parity\_smlb\_landscape} \\
 \quad CRT fiber determines genSeq & Proved & \code{crt\_fiber\_determines\_genSeq} \\
 \quad CRT fiber propagates across steps & Proved & \code{crt\_fiber\_propagates} \\
 \quad Walk readout from multipliers & Proved & \code{walk\_readout\_from\_multipliers} \\
