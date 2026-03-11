@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 102~files
-totaling ${\sim}53{,}750$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 103~files
+totaling ${\sim}54{,}200$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -130,6 +130,7 @@ three leaf modules:
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
 \code{FunctionField/MultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 763 \\
+\code{FunctionField/WeakMC.lean} & Degree escape, pool partition, capture exhaustion (Dead End~\#129 revival) & 471 \\
 \code{GaussEM/GaussEMDefs.lean} & Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality & 290 \\
 \code{GaussEM/GaussWalkStructure.lean} & Gaussian walk: split/inert classification, norm kernel, orbit barrier & 331 \\
 \midrule
@@ -358,8 +359,8 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}53{,}750$ \\
-Files & 102 \\
+Lines of Lean code & ${\sim}54{,}200$ \\
+Files & 103 \\
 Theorems/lemmas & ${\sim}1{,}850$ \\
 Definitions & ${\sim}740$ \\
 \code{sorry} occurrences & \textbf{0} \\
@@ -580,6 +581,12 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Weil $\Rightarrow$ population multiplier CCSB & Proved & \code{weil\_implies\_population\_mult\_ccsb} \\
 \quad Selection bias chain (population $\to$ orbit) & Proved & \code{selection\_bias\_chain} \\
 \quad Dead End~\#130: SE $\not\Rightarrow$ DH (selection bias) & Documented & \code{se\_does\_not\_imply\_dh} \\
+\quad FF degree escape ($\deg(\mathrm{ffSeq}(n)) \to \infty$) & Proved & \code{ffSeq\_degree\_tendsto\_atTop} \\
+\quad FF capture count stabilizes & Proved & \code{captureCount\_eventually\_constant} \\
+\quad FF pool partition (captured $+$ unsieved $=$ total) & Proved & \code{captureCount\_plus\_missing} \\
+\quad FF pool depletion $\Rightarrow$ no future captures & Proved & \code{pool\_depletion} \\
+\quad FFCaptureExhaustive $\Leftrightarrow$ FFMullinConjecture & Proved & \code{captureExhaustive\_iff\_ffmc} \\
+\quad FF weak MC landscape (6-clause conjunction) & Proved & \code{ff\_weak\_mc\_landscape} \\
 \midrule
 \multicolumn{3}{l}{\emph{$p$-adic geometric perspective}} \\
 \quad $p$-adic valuation monotone & Proved & \code{emPadicVal\_mono} \\

@@ -651,6 +651,31 @@ The remaining open hypotheses (PSD, linear mean growth, Chebyshev bridge)
 are strictly weaker than CME---they require only pairwise covariance
 decay averaged over starting points, not conditional equidistribution.
 
+\paragraph{Function Field Analog}
+
+Over $\FF_p[t]$, the FF-EM sequence has additional structural
+advantages.  The formalization proves
+(\code{FunctionField/WeakMC.lean}, 471~lines, zero \code{sorry}):
+\begin{itemize}[nosep]
+\item \textbf{Degree escape}
+(\lean{EM/FunctionField/WeakMC.lean}{ffSeq\_degree\_tendsto\_atTop}):
+$\deg(\mathrm{ffSeq}(n)) \to \infty$, unconditional from finiteness
+$+$ injectivity.
+\item \textbf{Capture count stabilization}: for each degree~$d$, the
+number of degree-$d$ irreducibles captured eventually stabilizes.
+\item \textbf{Pool partition identity}
+(\lean{EM/FunctionField/WeakMC.lean}{captureCount\_plus\_missing}):
+captured $+$ unsieved $=$ total, an exact accounting.
+\item \textbf{FFCaptureExhaustive $\Leftrightarrow$ FFMullinConjecture}:
+the two natural formulations are equivalent.
+\end{itemize}
+The pool partition identity gives quantitative control:
+if the total number of monic irreducibles of degree~$\leq D$ is~$M$,
+then among the first~$N > M$ terms, at least one has degree~$> D$.
+Dead End~\#129 (FFLM structurally false---cyclotomic Galois groups)
+is sidestepped entirely: degree escape uses only finiteness and
+injectivity, not monodromy.
+
 \paragraph{What Would Close the Conjecture}
 
 The cleanest paths to MC:

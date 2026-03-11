@@ -40,6 +40,7 @@ import EM.FunctionField.Bootstrap
 import EM.FunctionField.CyclicWalkCoverage
 import EM.FunctionField.MultiplierCCSB
 import EM.FunctionField.SubgroupEscape
+import EM.FunctionField.WeakMC
 import EM.GaussEM.GaussConfinement
 import EM.GaussEM.GaussEMDefs
 import EM.GaussEM.GaussWalkStructure
