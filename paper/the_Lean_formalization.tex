@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 98~files
-totaling ${\sim}51{,}500$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 102~files
+totaling ${\sim}53{,}750$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -83,7 +83,7 @@ three leaf modules:
 \code{Population/WeakMullin.lean} & Missing primes, WM $\Rightarrow$ RD, EMBV $\Rightarrow$ MC & 362 \\
 \code{Population/WeakErgodicity.lean} & Squarefree accumulator, PE+PT+EMDImpliesCME & 160 \\
 \code{Population/Proof.lean} & MinFacResidueEquidist $\Rightarrow$ PE (analytic) & 187 \\
-\code{Population/ReciprocalSum.lean} & Generalized EM reciprocal sum divergence & 289 \\
+\code{Population/ReciprocalSum.lean} & Reciprocal sum divergence, pairwise decorrelation, Dead End~\#125 revival & 1056 \\
 \code{Population/TransferStrategy.lean} & PE + DSL $\Rightarrow$ MC, ensemble concentration & 273 \\
 \code{Population/Tauberian.lean} & One-sided Tauberian, L-series bounds, prime power stripping & 557 \\
 \code{Population/AbelChain.lean} & Abel summation chain: $(\log p)/p \to 1/p$ infrastructure & 641 \\
@@ -95,7 +95,7 @@ three leaf modules:
 \code{Ensemble/CRT.lean} & CRT equidistribution, sqfree residue averaging & 479 \\
 \code{Ensemble/Decorrelation.lean} & CRT-based decorrelation, Markov density bounds & 431 \\
 \code{Ensemble/FirstMoment.lean} & First moment, $\kappa = 2/3$, FM+VB $\Rightarrow$ RSD & 320 \\
-\code{Ensemble/PT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1125 \\
+\code{Ensemble/PT.lean} & Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation & 1092 \\
 \code{Ensemble/WeylChain.lean} & Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc} & 834 \\
 \code{Ensemble/CRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 631 \\
 \code{Ensemble/BaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 377 \\
@@ -106,6 +106,7 @@ three leaf modules:
 \code{Reduction/ShiftedDensity.lean} & Sieve density $g(r)$, algebraic properties & 251 \\
 \code{Reduction/VisitEquidist.lean} & ExcessEnergy $=$ visit deviation, SVE $\leftrightarrow$ VE & 187 \\
 \code{Reduction/SelfCorrecting.lean} & Lyapunov identity, SCD $\equiv$ SVE, Dead End \#120 & 624 \\
+\code{Reduction/WeakRecurrence.lean} & LinearDrift $\Rightarrow$ MC, VisitGrowth $\Rightarrow$ HH $\Rightarrow$ MC (threshold-free) & 425 \\
 \code{Reduction/SMSB.lean} & Per-class bad set analysis, Dead End \#121 & 459 \\
 \code{Reduction/Master.lean} & All reduction chains assembled, DSL $\Rightarrow$ MC & 210 \\
 \code{Reduction/DSLVariance.lean} & Population variance route to DSL, second moment & 365 \\
@@ -135,6 +136,7 @@ three leaf modules:
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 229 \\
 \code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 189 \\
+\code{Meta/DeadEnds.lean} & Dead end registry: 134 documented, 13 witnessed, 8 revivable & 220 \\
 \midrule
 \multicolumn{3}{l}{\emph{Iwaniec--Kowalski infrastructure}} \\
 \code{IK/Ch1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 434 \\
@@ -356,10 +358,10 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}50{,}900$ \\
-Files & 89 \\
-Theorems/lemmas & ${\sim}1{,}470$ \\
-Definitions & ${\sim}575$ \\
+Lines of Lean code & ${\sim}53{,}750$ \\
+Files & 102 \\
+Theorems/lemmas & ${\sim}1{,}850$ \\
+Definitions & ${\sim}740$ \\
 \code{sorry} occurrences & \textbf{0} \\
 Open hypotheses (stated as \code{def}) & ${\sim}50$ \\
 Mathlib version & v4.29.0-rc1 \\
@@ -481,6 +483,10 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Doubly stochastic transitions & Proved & \code{group\_walk\_doubly\_stochastic} \\
 \quad Zero expected drift (uniform multiplier) & Proved & \code{uniform\_multiplier\_zero\_drift} \\
 \quad SVE $\Rightarrow$ SCD above threshold (equivalence) & Proved & \code{sve\_implies\_scd\_above\_threshold} \\
+\quad LinearDrift $\Rightarrow$ MC (one-sided upper suffices) & Proved & \code{linearDrift\_implies\_mc} \\
+\quad VisitGrowth $\Rightarrow$ HH $\Rightarrow$ MC (threshold-free) & Proved & \code{visitGrowth\_implies\_mc} \\
+\quad Cumulative drift free lower bound & Proved & \code{cumulativeDrift\_lower\_bound} \\
+\quad One-sided upper drift $\Rightarrow$ MC & Proved & \code{upper\_drift\_bound\_implies\_mc} \\
 \quad Per-class bad set partition identity & Proved & \code{badVisitsInClass\_card\_sum\_eq} \\
 \quad Pigeonhole: some class small bad set & Proved & \code{exists\_class\_small\_bad\_set} \\
 \quad Population energy $\geq 0$ & Proved & \code{populationCharEnergy\_nonneg} \\
@@ -508,6 +514,10 @@ Mathlib version & v4.29.0-rc1 \\
 \quad CharVarianceImpliesConcentration & Proved & \code{char\_variance\_implies\_concentration\_proved} \\
 \quad EnsembleMultEquidistImpliesCharMeanZero & Proved & \code{ensemble\_mult\_equidist\_char\_mean\_zero} \\
 \quad JSE base case (tower rule) & Proved & \code{jse\_base\_case} \\
+\quad PSD+IVB $\Rightarrow$ variance $\leq (V{+}1)K$ & Proved & \code{psd\_ivb\_implies\_variance\_bound\_proved} \\
+\quad Individual variance $\leq 1/4$ (genSeq $\geq 2$) & Proved & \code{individual\_variance\_quarter} \\
+\quad Variance $=$ double sum of covariances & Proved & \code{variance\_eq\_double\_sum\_cov} \\
+\quad Dead End~\#125 pairwise revival landscape & Proved & \code{dead\_end\_125\_pairwise\_revival} \\
 \quad CRT fiber determines genSeq & Proved & \code{crt\_fiber\_determines\_genSeq} \\
 \quad CRT fiber propagates across steps & Proved & \code{crt\_fiber\_propagates} \\
 \quad Walk readout from multipliers & Proved & \code{walk\_readout\_from\_multipliers} \\
@@ -599,6 +609,8 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Dead End~\#132: $L$-function factorization circular & Documented & \code{dead\_end\_132\_witness} \\
 \quad Dead End~\#133: self-similar FE framework mismatch & Documented & \code{dead\_end\_133\_witness} \\
 \quad Dead End~\#134: no Tauberian lever for $L_{\mathrm{EM}}$ & Documented & \code{tauberian\_lever\_absent\_witness} \\
+\quad Dead End~\#135: number field extensions invisible & Documented & \code{dead\_end\_135\_certificate} \\
+\quad Dead end registry (134 dead ends, 13 witnessed, 8 revivable) & Proved & \code{dead\_end\_registry} \\
 \midrule
 \multicolumn{3}{l}{\emph{Integer-level $T$-iteration}} \\
 \quad $T$-orbit $=$ shifted accumulators & Proved & \code{emIterationT\_iterate\_eq} \\
@@ -663,6 +675,10 @@ Mathlib version & v4.29.0-rc1 \\
 \quad HilbertCscBilinearBridge & \textbf{Open} & \code{HilbertCscBilinearBridge} \\
 \quad EnsembleConcentration & \textbf{Open} & \code{EnsembleConcentration} \\
 \quad RecipSumConcentration & \textbf{Open} & \code{RecipSumConcentration} \\
+\quad PairwiseStepDecorrelation (covariance $\to 0$) & \textbf{Open} & \code{PairwiseStepDecorrelation} \\
+\quad EnsembleMeanDivergence & \textbf{Open} & \code{EnsembleMeanDivergence} \\
+\quad LinearMeanGrowth ($\mathbb{E}[S_K] \geq \kappa K$) & \textbf{Open} & \code{LinearMeanGrowth} \\
+\quad ChebyshevConcentration (Chebyshev bridge) & \textbf{Open} & \code{ChebyshevConcentration} \\
 \quad CharSumVarianceBound & \textbf{Open} & \code{CharSumVarianceBound} \\
 \quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
 \quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\
@@ -678,6 +694,7 @@ Mathlib version & v4.29.0-rc1 \\
 \quad SecondMomentSquaredBound & \textbf{Open} & \code{SecondMomentSquaredBound} \\
 \quad FourPointPCVImpliesSMSB & \textbf{Open} & \code{FourPointPCVImpliesSMSB} \\
 \quad SelfCorrectingDrift ($R(N) = o(N^2)$) & \textbf{Open} & \code{SelfCorrectingDrift} \\
+\quad LinearDrift ($|R(N)| \leq CN$) & \textbf{Open} & \code{LinearDrift} \\
 \quad TailWindowDecorrelation (cross terms vanish) & \textbf{Open} & \code{TailWindowDecorrelation} \\
 \quad TWDImpliesCCSB (TWD $\Rightarrow$ CCSB bridge) & \textbf{Open} & \code{TWDImpliesCCSB} \\
 \quad CrossPrimeDecorrelation (walk independence at distinct primes) & \textbf{Open} & \code{CrossPrimeDecorrelation} \\

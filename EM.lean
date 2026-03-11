@@ -72,6 +72,7 @@ import EM.LargeSieve.Spectral
 import EM.LargeSieve.Structural
 import EM.LargeSieve.WalkAnalysis
 import EM.Meta.Blueprint
+import EM.Meta.DeadEnds
 import EM.Meta.Registry
 import EM.Population.AbelChain
 import EM.Population.AlladiDensity
@@ -90,6 +91,7 @@ import EM.Reduction.ShiftedDensity
 import EM.Reduction.TailIdentity
 import EM.Reduction.TailWindow
 import EM.Reduction.VisitEquidist
+import EM.Reduction.WeakRecurrence
 import EM.SDDS.Bridge
 import EM.SDDS.Dynamics
 import EM.SDDS.Reduction

@@ -280,14 +280,19 @@ mathematical content is: does the factoring operation destroy enough
 correlation for character sums to cancel?
 
 \paragraph{Dead Ends as a Roadmap.}
-Over 121~potential approaches were explored and found to be dead ends,
-grouped into five categories: ensemble-to-orbit transfer failures,
-independence/linearity violations, wrong algebraic structure, reduction
-to single-modulus CCSB, and the multiplier-to-walk transfer barrier.
-The full catalogue is in Appendix~\ref{app:dead-ends}.
+Over 134~potential approaches were explored and found to be dead ends,
+grouped into eight categories: orbit specificity~(OS),
+technique mismatch~(TM), scale mismatch~(SM), circularity~(CI),
+structurally false~(SF), collapse~(CO), decorrelation gap~(DG),
+and aggregate gap~(AG).
+Of these, 13~have formal Lean witnesses and 8~have weak-MC revival
+score~$\geq 2$---meaning they contribute to weaker forms of the
+conjecture despite being dead for full MC\@.
+The full catalogue is in \code{Meta/DeadEnds.lean} and
+Appendix~\ref{app:dead-ends}.
 
 \paragraph{The Four-Way Blocker.}
-The majority of the 121~dead ends reduce to a single meta-obstacle:
+The majority of the 134~dead ends reduce to a single meta-obstacle:
 every known technique for proving equidistribution of sequences on
 finite groups requires at least \emph{one} of (1)~independence of
 steps, (2)~multiplicativity of the generating function,
@@ -396,7 +401,16 @@ $L(N{+}1) = L(N) + 2d_{w(N)}(N) + (q{-}2)/(q{-}1)$ telescopes to
 $L(N) = 2R(N) + O(N)$, and $R(N) = o(N^2)$ (SCD) implies VE and
 hence MC\@.  The zero-bias property under uniform multipliers is
 proved; the orbit-specificity gap---does SCD hold for the EM
-orbit?---remains open (\S\ref{sec:open}).
+orbit?---remains open (\S\ref{sec:open}).  A weaker variant
+\emph{LinearDrift} ($|R(N)| \leq CN$) also implies MC
+(\lean{EM/Reduction/WeakRecurrence.lean}{linearDrift\_implies\_mc})
+via a threshold-free route: LinearDrift~$\Rightarrow$~VisitGrowth%
+~$\Rightarrow$~HH~$\Rightarrow$~MC, where VisitGrowth ($V(a,N) \to
+\infty$ for all~$a$) bypasses the $\mathrm{FiniteMCBelow}$ threshold
+entirely.  A free unconditional lower bound
+$R(N) \geq -N(q{-}2)/(2(q{-}1))$ is proved
+(\code{cumulativeDrift\_lower\_bound}), so only the one-sided
+upper bound $R(N) \leq CN$ is needed.
 
 \medskip
 These four features---growth, coprimality, the $\minFac$ selection
@@ -612,6 +626,31 @@ $\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \MC$,
 \noindent where DSLHitting only requires that the walk hits~$-1$ for a
 positive density of starting points, rather than full equidistribution.
 
+\paragraph{Pairwise Decorrelation and Weak MC}
+
+Dead End~\#125 proved that pairwise cancellation does not imply $k$-wise
+(XOR counterexample), killing the CCSB+CPD~$\to$~UPE route.  However,
+\emph{variance bounds only use $k=2$}: the identity
+$\mathrm{Var}(\sum_j X_j) = \sum_j \mathrm{Var}(X_j) + 2\sum_{j<k}\mathrm{Cov}(X_j, X_k)$
+means pairwise decorrelation suffices for concentration.  The
+formalization proves this revival chain:
+
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{dead\_end\_125\_pairwise\_revival}]
+\label{thm:pairwise-revival}
+PairwiseStepDecorrelation $+$ LinearMeanGrowth $+$
+ChebyshevConcentration $\;\Longrightarrow\;$
+AlmostAllSquarefreeRSD\@.
+\end{theorem}
+
+\noindent The proved intermediate results include:
+$\mathrm{Var}[1/\mathrm{genSeq}(n,k)] \leq 1/4$ (from $\mathrm{genSeq} \geq 2$),
+the variance decomposition identity, and
+PSD$+$IVB~$\Rightarrow$~$\mathrm{Var}[S_K] \leq (V{+}1)K$
+(\code{psd\_ivb\_implies\_variance\_bound\_proved}).
+The remaining open hypotheses (PSD, linear mean growth, Chebyshev bridge)
+are strictly weaker than CME---they require only pairwise covariance
+decay averaged over starting points, not conditional equidistribution.
+
 \paragraph{What Would Close the Conjecture}
 
 The cleanest paths to MC:
@@ -728,7 +767,7 @@ hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
 The formalization has exhaustively explored all known proof strategies
-across 121~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
+across 134~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
 counterexample (Dead End~\#117), the cofactor identity's failure to
 escape the Marginal/Joint Barrier (Dead End~\#115), and the exhaustion
 of all four DSL proof directions (algebraic identities, cofactor
