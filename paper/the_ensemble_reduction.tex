@@ -470,6 +470,95 @@ PartialSMLB$(1/4, 0)$ holds unconditionally
 (\lean{EM/Ensemble/FirstMoment.lean}{partial\_smlb\_zero\_unconditional}),
 giving a concrete (though non-divergent) threshold at one step.
 
+\paragraph{The death density bridge.}
+\label{sec:death-density}
+The mod-6 analysis above proves SMLB at~$k=0$ and~$k=1$
+unconditionally, but extending to all~$k$ requires a structural
+argument.  A \emph{death density bridge} generalizes the single-prime
+approach: when $\Prod{n}(k) \equiv -1 \pmod{q}$ for a prime~$q$, the
+next generalized multiplier satisfies $q \mid \Prod{n}(k)+1$, so
+$\seq{n}(k) = \minFac(\Prod{n}(k)+1) \leq q$
+(\lean{EM/Ensemble/CRT.lean}{genSeq\_le\_of\_genProd\_neg\_one}).
+Combined with $\seq{n}(k) \geq 3$ for $k \geq 1$
+(Theorem~\ref{thm:genSeq-ge-three}), this gives $1/\seq{n}(k)
+\geq 1/q$ on the ``death fiber''
+$\{n : \Prod{n}(k) \equiv -1 \pmod{q}\}$.
+
+\begin{theorem}[\lean{EM/Ensemble/CRT.lean}{ensembleAvg\_ge\_death\_density}]
+\label{thm:death-density-bridge}
+For any prime $q \geq 3$, step $k \geq 1$:
+\[
+  \mathbb{E}\bigl[1/\seq{\cdot}(k)\bigr]
+  \;\geq\;
+  \frac{\mathrm{density}\{\Prod{n}(k) \equiv -1 \!\!\pmod{q}\}}{q}.
+\]
+\end{theorem}
+
+\begin{proof}
+Split the ensemble sum by the death fiber.  On the fiber,
+each term $\geq 1/q$; on the complement, each term $\geq 0$.
+The sum on the fiber is therefore at least
+$\#\{\text{fiber}\}/q$.  Dividing by the total squarefree
+count gives the density bound.
+\end{proof}
+
+\noindent At $q = 3$: since $-1 \equiv 2 \pmod{3}$ and $3 \mid
+\Prod{n}(k)+1$ forces $\seq{n}(k) = 3$ (odd
+and divisible by~$3$), the bound becomes
+$\mathbb{E}[1/\seq{\cdot}(k)] \geq d_2/3$ where~$d_2$ is the
+density of genProd~$\equiv 2 \pmod{3}$
+(\lean{EM/Ensemble/CRT.lean}{ensembleAvg\_ge\_mod3\_density}).
+The general bridge unifies with the mod-3 case:
+$\mathrm{AccumMod3LB}(c) \Leftrightarrow
+\mathrm{DeathDensityLB}(3, c)$
+(\lean{EM/Ensemble/CRT.lean}{accumMod3LB\_iff\_deathDensity3}).
+
+A positive lower bound on the death density at any single
+prime~$q \geq 3$ for all steps~$k$ yields the full chain:
+
+\begin{theorem}[\lean{EM/Ensemble/CRT.lean}{death\_density\_implies\_prsd}]
+\label{thm:death-density-prsd}
+For any prime $q \geq 3$ and constant $c > 0$:
+\[
+  \mathrm{DeathDensityLB}(q, c)
+  \;\Longrightarrow\;
+  \mathrm{SMLB}\bigl(\min(1/4,\, c/q)\bigr)
+  \;\Longrightarrow\;
+  \mathrm{PositiveDensityRSD}.
+\]
+\end{theorem}
+
+\noindent The four routes are assembled in
+\lean{EM/Ensemble/CRT.lean}{ewe\_landscape\_extended}.
+
+\paragraph{Conditional MFRE and the summability argument.}
+A more refined approach avoids fixing a single prime~$q$.  The
+\textbf{MFREConditional} hypothesis
+(\lean{EM/Ensemble/CRT.lean}{MFREConditional})
+states that for squarefree~$m$ with $m \equiv c \pmod{q}$
+(where $c \neq 0, -1$), the conditional distribution
+of $\minFac(m{+}1) \bmod q$ on each nonzero class converges
+to $1/(q{-}1) + O(1/q^2)$, with the $O$-constant
+depending only on~$q$.  By CRT, conditioning on~$m \bmod q$
+constrains one coordinate; the remaining coordinates are
+approximately independent for squarefree integers
+(\code{crt\_multiplier\_invariance}).  The correction term
+$g(q) - 1/q = 1/(q(q^2{-}1))$ (\code{sieveDensity\_sub\_inv})
+gives the error scale.
+
+The orbit-to-population transfer---whether the ensemble
+values $\Prod{n}(k)$ inherit the population-level
+conditional density---is captured by the
+\textbf{EnsembleSelectionLemma}
+(\lean{EM/Ensemble/CRT.lean}{EnsembleSelectionLemma}).
+If both hypotheses hold, the total error in
+$\mathbb{E}[1/\seq{\cdot}(k)]$ is bounded by a
+convergent sum $\sum_q O(1/q^3) < \infty$, giving
+SMLB with a universal constant:
+$\mathrm{MFREConditional} + \mathrm{EnsembleSelection}
+\Rightarrow \mathrm{SMLB}(1/6)$
+(\lean{EM/Ensemble/CRT.lean}{MFRECondImpliesSMLB}).
+
 \subsection{The DSL Route to MC}
 \label{sec:dsl-route}
 
