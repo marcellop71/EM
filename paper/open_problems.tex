@@ -425,6 +425,17 @@ The cleanest paths to MC:
   channel is not systematically avoided.  This is the same
   orbit-specificity gap as SieveTransfer, approached from a different
   mathematical toolkit.
+
+\item \textbf{Prove LinearMeanGrowth} (weak MC route): show that
+  the ensemble mean of $\sum_{k < K} 1/\seq{n}(k)$ over squarefree
+  starting points $n \leq X$ grows as $\kappa K$ for some $\kappa > 0$.
+  This single hypothesis implies a \emph{positive density} of starting
+  points have divergent reciprocal sums
+  (\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}).
+  LMG follows from \textbf{FirstMomentStep} (each step contributes
+  $\sim\kappa$ on average), whose $k = 0$ case is population-level
+  (unconditional from analytic number theory); for $k \geq 1$ it
+  requires a ``first-moment DSL'' strictly weaker than full DSL\@.
 \end{enumerate}
 
 \paragraph{Does the Walk Hit $-1$?}
@@ -727,6 +738,9 @@ ways that current analytic number theory does not.
 \quad HilbertCscBilinearBridge & \textbf{Open} & \code{HilbertCscBilinearBridge} \\
 \quad EnsembleConcentration & \textbf{Open} & \code{EnsembleConcentration} \\
 \quad RecipSumConcentration & \textbf{Open} & \code{RecipSumConcentration} \\
+\quad \textbf{LinearMeanGrowth} (1-hyp weak MC route) & \textbf{Open} & \code{LinearMeanGrowth} \\
+\quad PairwiseStepDecorrelation (2-hyp density-1 route) & \textbf{Open} & \code{PairwiseStepDecorrelation} \\
+\quad FirstMomentStep (each step contributes $\kappa$) & \textbf{Open} & \code{FirstMomentStep} \\
 \quad CharSumVarianceBound & \textbf{Open} & \code{CharSumVarianceBound} \\
 \quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
 \quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\

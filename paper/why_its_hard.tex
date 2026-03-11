@@ -647,9 +647,24 @@ $\mathrm{Var}[1/\mathrm{genSeq}(n,k)] \leq 1/4$ (from $\mathrm{genSeq} \geq 2$),
 the variance decomposition identity, and
 PSD$+$IVB~$\Rightarrow$~$\mathrm{Var}[S_K] \leq (V{+}1)K$
 (\code{psd\_ivb\_implies\_variance\_bound\_proved}).
-The remaining open hypotheses (PSD, linear mean growth, Chebyshev bridge)
-are strictly weaker than CME---they require only pairwise covariance
-decay averaged over starting points, not conditional equidistribution.
+The Chebyshev bridge is now proved
+(\code{chebyshev\_concentration\_proved}), and PSD$+$IVB~$\Rightarrow$~variance
+bound is proved, leaving exactly two open hypotheses: PSD and LMG\@.
+
+A further simplification drops PSD entirely.  Since
+$S_K(n) \leq K/2$ deterministically (each term $\leq 1/2$), a partition
+argument shows that LMG alone implies a positive density of starting
+points have divergent reciprocal sums:
+
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}]
+\label{thm:positive-density-rsd}
+$\mathrm{LinearMeanGrowth} \;\Longrightarrow\; \mathrm{PositiveDensityRSD}$.
+\end{theorem}
+
+\noindent This is a 1-hypothesis route (vs.\ 2 for density~1),
+and the hypothesis LMG is strictly weaker than CME---it requires
+only that the ensemble mean grows linearly, not conditional
+equidistribution.
 
 \paragraph{Function Field Analog}
 

@@ -310,6 +310,40 @@ Divergence: $\sum_{k < K} 1/\seq{n}(k) \to \infty$ for
 almost all squarefree~$n$.
 \end{theorem}
 
+\paragraph{Positive density from the first moment alone.}
+The density-1 result above requires both the first moment (linear
+mean growth) and a variance bound (from pairwise step decorrelation).
+A simpler route, formalized in
+\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd},
+shows that linear mean growth \emph{alone} yields a positive density
+of squarefree starting points with divergent reciprocal sums.
+
+The argument is elementary.  Each term $1/\seq{n}(k) \leq 1/2$
+(since $\seq{n}(k)$ is prime, hence $\geq 2$), so
+$S_K(n) \leq K/2$ deterministically
+(\lean{EM/Population/ReciprocalSum.lean}{recipPartialSum\_le\_half\_K}).
+If the ensemble mean satisfies $\mathbb{E}[S_K] \geq \kappa K$ (the
+\textbf{LinearMeanGrowth} hypothesis, which follows from
+FirstMomentStep), a partition of the ensemble into
+$\{S_K \geq M\}$ and $\{S_K < M\}$ gives
+\[
+  \mathrm{density}\{S_K \geq M\}
+  \;\geq\;
+  \frac{\kappa K - M}{K/2 - M}
+  \;\xrightarrow{K \to \infty}\;
+  2\kappa.
+\]
+Taking $\delta = \kappa/2$ yields a 1-hypothesis route:
+\[
+  \mathrm{LMG}
+  \;\Longrightarrow\;
+  \text{PositiveDensityRSD},
+\]
+compared to the 2-hypothesis route
+PSD~$+$~LMG~$\Rightarrow$~AASRSD (density~1).
+With $\kappa \geq 1/3$ from the Buchstab weight at $p=2$,
+the positive density is at least $\delta = 1/6$.
+
 \subsection{The DSL Route to MC}
 \label{sec:dsl-route}
 
