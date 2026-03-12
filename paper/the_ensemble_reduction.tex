@@ -531,6 +531,86 @@ For any prime $q \geq 3$ and constant $c > 0$:
 \noindent The four routes are assembled in
 \lean{EM/Ensemble/CRT.lean}{ewe\_landscape\_extended}.
 
+\paragraph{The absorption mechanism.}
+\label{sec:absorption}
+While the death density bridge (Theorem~\ref{thm:death-density-bridge})
+converts positive death density into SMLB, the death density itself
+decays over time due to an \emph{absorption mechanism}.  The mod-$q$
+dynamics of $\Prod{n}(k)$ has three structural properties, all
+machine-verified
+(\lean{EM/Ensemble/CRT.lean}{absorption\_kills\_death\_density}):
+
+\begin{enumerate}[nosep]
+\item \textbf{State~$0$ is absorbing}
+  (\lean{EM/Ensemble/CRT.lean}{genProd\_mod\_zero\_absorbing}):
+  if $q \mid \Prod{n}(k)$, then $q \mid \Prod{n}(k{+}j)$ for all $j \geq 0$,
+  since divisibility is preserved under the recurrence
+  $\Prod{n}(k{+}1) = \Prod{n}(k) \cdot \seq{n}(k)$.
+\item \textbf{Death feeds absorption}
+  (\lean{EM/Ensemble/CRT.lean}{death\_implies\_absorption}):
+  when $\Prod{n}(k) \equiv -1 \pmod{q}$ and $\seq{n}(k) = q$,
+  we get $\Prod{n}(k{+}1) = \Prod{n}(k) \cdot q \equiv 0 \pmod{q}$,
+  so the orbit is absorbed.
+  For $q = 3$ this always fires
+  (\lean{EM/Ensemble/CRT.lean}{mod3\_death\_implies\_absorption}).
+\item \textbf{Absorbed $\neq$ death}
+  (\lean{EM/Ensemble/CRT.lean}{absorbed\_not\_in\_death\_class}):
+  for $q \geq 2$, the absorbed state $0$ differs from the death
+  state $-1$ in $\ZZ/q\ZZ$, so absorbed orbits \emph{never return} to
+  the death class
+  (\lean{EM/Ensemble/CRT.lean}{death\_then\_never\_death\_again}).
+\end{enumerate}
+
+\noindent Together, these show that each visit to the death class
+permanently removes an orbit from future death events.
+Consequently, $\mathrm{DeathDensityLB}(q, c)$ for any fixed $c > 0$
+is heuristically false: the death density decays roughly as
+$O\bigl((1 - 1/(q{-}1))^k\bigr)$ as orbits accumulate in the
+absorbing state.  This does not close the SMLB route---the decay
+rate is not formalized---but it reveals the structural obstacle.
+
+\paragraph{The divergence hierarchy.}
+\label{sec:divergence-hierarchy}
+When the step mean lower bound SMLB cannot be established with a
+\emph{uniform} constant~$c$ across all steps, a weaker condition
+may still suffice.  Two relaxations are formalized in
+\texttt{FirstMoment.lean}:
+
+\begin{definition}[\defname{DecayingSMLB}
+  (\lean{EM/Ensemble/FirstMoment.lean}{DecayingSMLB})]
+A sequence $f(k) > 0$ with $\sum_k f(k) = \infty$ is a
+\emph{decaying step mean lower bound} if
+$\mathbb{E}[1/\seq{\cdot}(k)] \geq f(k)$ for all~$k$
+(eventually in $X$).
+\end{definition}
+
+\begin{definition}[\defname{FirstMomentDivergence}
+  (\lean{EM/Ensemble/FirstMoment.lean}{FirstMomentDivergence})]
+$\mathbb{E}\bigl[\sum_{k<K} 1/\seq{\cdot}(k)\bigr] \to \infty$
+as $K \to \infty$.
+\end{definition}
+
+\noindent The hierarchy is:
+\[
+  \mathrm{SMLB}(c)
+  \;\Longrightarrow\;
+  \mathrm{DecayingSMLB}(\text{const})
+  \;\Longrightarrow\;
+  \mathrm{FMD},
+\]
+both implications proved
+(\lean{EM/Ensemble/FirstMoment.lean}{smlb\_implies\_decaying\_smlb},
+\lean{EM/Ensemble/FirstMoment.lean}{decaying\_smlb\_implies\_fmd}).
+However, the reverse implications fail:
+DecayingSMLB captures a scenario where each step mean decays but
+the cumulative contribution diverges (e.g.\ $f(k) = 1/k$),
+while FMD does \emph{not} imply PositiveDensityRSD---it says only
+that the expected partial sum grows, not that a positive proportion
+of starting points have large partial sums.  The critical gap is
+exactly the passage from first-moment divergence to concentration,
+which requires variance bounds
+(\S\ref{sec:variance-route}).
+
 \paragraph{Conditional MFRE and the summability argument.}
 A more refined approach avoids fixing a single prime~$q$.  The
 \textbf{MFREConditional} hypothesis

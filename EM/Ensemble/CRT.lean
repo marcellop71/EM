@@ -949,6 +949,113 @@ theorem crt_blindness_landscape :
 
 end CRTBlindness
 
+/-! ## Absorption Mechanism: Why AccumMod3LB and DeathDensityLB Are Heuristically False
+
+The mod-q dynamics of `genProd n k` has an **absorption mechanism** that causes the
+death density to decay over time:
+
+1. **State 0 is absorbing**: If `q | genProd n k`, then `q | genProd n (k + j)` for all `j ≥ 0`.
+   This is because `genProd n (k+1) = genProd n k * genSeq n k`, and divisibility is preserved
+   under multiplication.
+
+2. **Death feeds absorption**: When `genProd n k ≡ -1 mod q` and `k ≥ 1`, the proved theorem
+   `genSeq_eq_three_of_genProd_mod3` (for q=3) shows `genSeq n k = q`. Then
+   `genProd n (k+1) = genProd n k * q ≡ 0 mod q`, so the orbit is absorbed.
+   More generally, `genSeq_le_of_genProd_neg_one` gives `genSeq n k ≤ q`, and when
+   equality holds, absorption follows.
+
+3. **Absorbed ≠ death**: For `q ≥ 2`, `0 ≠ -1` in `ZMod q`, so absorbed orbits can never
+   return to the death class. This means the death density can only decrease over time.
+
+Together, these show that `DeathDensityLB q c` for any `c > 0` is heuristically false:
+the death density `d_k(q-1)` decays as orbits get absorbed, roughly as `O((1-1/(q-1))^k)`.
+
+The theorems below formalize the three structural facts (absorption permanence, death-to-absorption
+transition, and absorbed-vs-death incompatibility). They do NOT attempt to quantify the decay
+rate, which would require population-level dynamics beyond the current infrastructure.
+-/
+
+section AbsorptionMechanism
+
+/-- **Absorption is permanent**: if `q | genProd n k`, then `q | genProd n (k + j)` for all `j`.
+    This follows from the recurrence `genProd n (k+1) = genProd n k * genSeq n k` and the
+    fact that divisibility is preserved under multiplication. -/
+theorem genProd_mod_zero_absorbing (q n k j : Nat) (h : q ∣ genProd n k) :
+    q ∣ genProd n (k + j) := by
+  induction j with
+  | zero => exact h
+  | succ j ih =>
+    rw [Nat.add_succ, genProd_succ]
+    exact dvd_mul_of_dvd_left ih _
+
+/-- **Death feeds absorption (when genSeq = q)**: if `genProd n k ≡ -1 mod q` and
+    `genSeq n k = q`, then `q | genProd n (k + 1)`. This is because
+    `genProd n (k+1) = genProd n k * q`, and `q | q` gives `q | genProd n (k+1)`. -/
+theorem death_implies_absorption {q n k : Nat} (_hq : 2 ≤ q)
+    (_hmod : (genProd n k : ZMod q) = -1) (hseq : genSeq n k = q) :
+    q ∣ genProd n (k + 1) := by
+  rw [genProd_succ, hseq]
+  exact dvd_mul_left q (genProd n k)
+
+/-- **Absorbed state is not the death state**: if `q | genProd n k` and `q ≥ 2`, then
+    `genProd n k` is NOT in residue class `-1 mod q`. This is because `q | genProd n k`
+    means `(genProd n k : ZMod q) = 0`, and `0 ≠ -1` in `ZMod q` when `q ≥ 2`. -/
+theorem absorbed_not_in_death_class {q n k : Nat} (hq : 2 ≤ q)
+    (hdvd : q ∣ genProd n k) : ¬((genProd n k : ZMod q) = -1) := by
+  haveI : Fact (1 < q) := ⟨by omega⟩
+  intro hmod
+  have h0 : (genProd n k : ZMod q) = 0 := by
+    rwa [ZMod.natCast_eq_zero_iff]
+  have h01 : (0 : ZMod q) = -1 := h0 ▸ hmod
+  exact absurd (neg_eq_zero.mp h01.symm) one_ne_zero
+
+/-- **Death at mod 3 implies absorption at the next step**: when `genProd n k ≡ 2 mod 3`,
+    `k ≥ 1`, and `n ≥ 1`, the proved `genSeq_eq_three_of_genProd_mod3` gives `genSeq n k = 3`,
+    so `genProd n (k+1) = genProd n k * 3 ≡ 0 mod 3`. -/
+theorem mod3_death_implies_absorption {n k : Nat} (hn : 1 ≤ n) (hk : 1 ≤ k)
+    (hmod : (genProd n k : ZMod 3) = 2) : 3 ∣ genProd n (k + 1) := by
+  have hseq := genSeq_eq_three_of_genProd_mod3 hn hk hmod
+  exact death_implies_absorption (by omega) (by rw [hmod]; decide) hseq
+
+/-- **Absorption kills death density**: a landscape theorem witnessing the three
+    structural facts that make `DeathDensityLB q c` heuristically false for any `c > 0`:
+
+    (1) Absorption is permanent: once `q | genProd`, it stays forever.
+    (2) Absorbed ≠ death: `0 ≠ -1` in `ZMod q` for `q ≥ 2`.
+    (3) Death feeds absorption when `genSeq = q` (which holds whenever
+        `genProd ≡ -1 mod q` and `genSeq ≤ q`, as proved by `genSeq_le_of_genProd_neg_one`).
+
+    This does NOT prove that `DeathDensityLB` is false (that would require quantitative
+    population dynamics), but formalizes the mechanism by which death density decays. -/
+theorem absorption_kills_death_density (q : Nat) (hq : Nat.Prime q) (_hq3 : 3 ≤ q) :
+    -- (1) Absorption is permanent
+    (∀ n k j, q ∣ genProd n k → q ∣ genProd n (k + j)) ∧
+    -- (2) Absorbed state ≠ death state
+    (∀ n k, q ∣ genProd n k → ¬((genProd n k : ZMod q) = -1)) ∧
+    -- (3) Death feeds absorption (when genSeq = q)
+    (∀ n k, (genProd n k : ZMod q) = -1 → genSeq n k = q → q ∣ genProd n (k + 1)) :=
+  ⟨fun n k j h => genProd_mod_zero_absorbing q n k j h,
+   fun _ _ h => absorbed_not_in_death_class hq.two_le h,
+   fun _ _ hmod hseq => death_implies_absorption hq.two_le hmod hseq⟩
+
+/-- **Permanence of absorption**: once absorbed, the orbit stays absorbed at all future steps.
+    Combined with `death_implies_absorption`, this means any orbit that hits the death state
+    and has `genSeq = q` at that step will be permanently absorbed from that step onward. -/
+theorem death_then_permanent_absorption {q n k : Nat} (hq : 2 ≤ q)
+    (hmod : (genProd n k : ZMod q) = -1) (hseq : genSeq n k = q)
+    (j : Nat) : q ∣ genProd n (k + 1 + j) := by
+  exact genProd_mod_zero_absorbing q n (k + 1) j (death_implies_absorption hq hmod hseq)
+
+/-- **Once absorbed, never in death class again**: if an orbit passes through the death state
+    at step `k` with `genSeq n k = q`, it can never return to the death class. -/
+theorem death_then_never_death_again {q n k : Nat} (hq : Nat.Prime q) (_hq3 : 3 ≤ q)
+    (hmod : (genProd n k : ZMod q) = -1) (hseq : genSeq n k = q)
+    (j : Nat) : ¬((genProd n (k + 1 + j) : ZMod q) = -1) :=
+  absorbed_not_in_death_class hq.two_le
+    (death_then_permanent_absorption hq.two_le hmod hseq j)
+
+end AbsorptionMechanism
+
 /-! ## Summary of Proof Chain
 
 The CRT equidistribution framework establishes the following chain:

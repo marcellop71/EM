@@ -585,6 +585,147 @@ theorem smlb_k0_unconditional :
 
 end StepMeanLowerBound
 
+/-! ## FirstMomentDivergence and DecayingSMLB
+
+The hypothesis `FirstMomentStep κ` assumes each step mean converges to a
+**fixed** positive constant κ. Analysis suggests this is likely false:
+the death density absorption mechanism implies E[1/genSeq(n,k)] ~ C/(k log k) -> 0.
+
+However, the **partial sums** still diverge: sum 1/(k log k) = infinity.
+
+We formalize the weaker `FirstMomentDivergence` (E[S_K] -> infinity, without
+requiring linear growth) and the even weaker `DecayingSMLB` (decaying step
+mean lower bounds with divergent sum).
+
+**Key limitation**: `FirstMomentDivergence` does NOT imply `PositiveDensityRSD`.
+The partition argument gives density >= (E[S_K] - M)/(K/2 - M), which tends
+to 0 when E[S_K] grows sublinearly in K. `LinearMeanGrowth` (E[S_K] >= kappa*K)
+is genuinely needed for `PositiveDensityRSD`. -/
+
+section FirstMomentDivergence
+
+/-- **First moment divergence**: the ensemble mean of the partial reciprocal sum
+    diverges as K -> infinity. Strictly weaker than `LinearMeanGrowth` (which
+    requires linear growth rate). Equivalent to `EnsembleMeanDivergence` from
+    `ReciprocalSum.lean` (modulo the `ensembleAvg`/`sfAvg` definitional equality).
+
+    If E[1/genSeq(n,k)] ~ C/(k log k), then E[S_K] ~ C log log K -> infinity,
+    but sublinearly. This would satisfy `FirstMomentDivergence` but NOT
+    `LinearMeanGrowth` or `PositiveDensityRSD`. -/
+def FirstMomentDivergence : Prop :=
+  ∀ M : ℝ, ∃ K₀ : ℕ, ∀ K ≥ K₀, ∃ X₀ : ℕ, ∀ X ≥ X₀,
+    M ≤ ensembleAvg X (fun n => recipPartialSum n K)
+
+/-- LinearMeanGrowth implies FirstMomentDivergence: linear growth trivially
+    gives divergence. -/
+theorem lmg_implies_fmd : LinearMeanGrowth → FirstMomentDivergence := by
+  intro hlmg M
+  -- LinearMeanGrowth → EnsembleMeanDivergence (already proved)
+  have hemd := linear_mean_growth_implies_emd hlmg M
+  obtain ⟨K₀, hK₀⟩ := hemd
+  refine ⟨K₀, fun K hK => ?_⟩
+  obtain ⟨X₀, hX₀⟩ := hK₀ K hK
+  exact ⟨X₀, fun X hX => by
+    have h := hX₀ X hX
+    -- sfAvg and ensembleAvg are definitionally equal
+    simp only [ensembleAvg, sqfreeCount] at *
+    exact h⟩
+
+/-- FirstMomentStep implies FirstMomentDivergence via LinearMeanGrowth. -/
+theorem fms_implies_fmd {κ : ℝ} (hκ : 0 < κ) :
+    FirstMomentStep κ → FirstMomentDivergence :=
+  fun h => lmg_implies_fmd (first_moment_step_implies_lmg hκ h)
+
+/-- StepMeanLowerBound implies FirstMomentDivergence via LinearMeanGrowth. -/
+theorem smlb_implies_fmd {c : ℝ} (hc : 0 < c) :
+    StepMeanLowerBound c → FirstMomentDivergence :=
+  fun h => lmg_implies_fmd (smlb_implies_lmg hc h)
+
+/-- **Decaying step mean lower bound**: the step means E[1/genSeq(n,k)] are bounded
+    below by a sequence f(k) > 0 whose sum diverges. This captures the scenario
+    where each step mean decays (e.g. f(k) ~ C/(k log k)) but the cumulative
+    contribution still grows without bound.
+
+    Strictly weaker than `StepMeanLowerBound c` (which requires f(k) >= c > 0
+    for all k). Strictly stronger than `FirstMomentDivergence` (which only
+    asserts the mean diverges without providing explicit lower bounds). -/
+def DecayingSMLB (f : ℕ → ℝ) : Prop :=
+  (∀ k, 0 < f k) ∧ (¬Summable f) ∧
+  ∀ k, ∃ X₀ : ℕ, ∀ X ≥ X₀,
+    f k ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ))
+
+/-- DecayingSMLB implies FirstMomentDivergence: the divergent sum of step lower
+    bounds forces the ensemble mean of S_K to diverge.
+
+    Proof: since f is non-negative and not summable, the partial sums
+    sum_{k<K} f(k) tend to +infinity. For each K, by linearity of the ensemble
+    average, E[S_K] = sum_{k<K} E[1/genSeq(n,k)] >= sum_{k<K} f(k) for X large
+    enough (taking the max of the thresholds X_k for k < K). -/
+theorem decaying_smlb_implies_fmd {f : ℕ → ℝ} :
+    DecayingSMLB f → FirstMomentDivergence := by
+  intro ⟨hpos, hns, hstep⟩ M
+  -- Since f is nonneg and not summable, partial sums tend to +infinity
+  have htend : Filter.Tendsto
+      (fun n => ∑ i ∈ Finset.range n, f i) Filter.atTop Filter.atTop := by
+    rwa [← not_summable_iff_tendsto_nat_atTop_of_nonneg (fun k => le_of_lt (hpos k))]
+  -- Extract K₀ from the divergent partial sums
+  rw [Filter.tendsto_atTop_atTop] at htend
+  obtain ⟨K₀, hK₀⟩ := htend M
+  refine ⟨K₀, fun K hK => ?_⟩
+  -- For each k < K, get the threshold X_k from hstep
+  have hthresh : ∀ k, k ∈ Finset.range K →
+      ∃ Xk : ℕ, ∀ X ≥ Xk,
+        f k ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) :=
+    fun k _ => hstep k
+  let threshold : ℕ → ℕ := fun k => (hstep k).choose
+  let X₀ := (Finset.range K).sup threshold
+  refine ⟨X₀, fun X hX => ?_⟩
+  -- E[S_K] = sum_{k<K} E[1/genSeq(n,k)] >= sum_{k<K} f(k) >= M
+  suffices h : M ≤ ensembleAvg X (fun n => recipPartialSum n K) from h
+  simp_rw [show ∀ n, recipPartialSum n K =
+    ∑ k ∈ Finset.range K, 1 / (genSeq n k : ℝ) from fun _ => rfl]
+  rw [ensembleAvg_sum_range]
+  calc M ≤ ∑ i ∈ Finset.range K, f i := hK₀ K hK
+    _ ≤ ∑ k ∈ Finset.range K, ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+        apply Finset.sum_le_sum
+        intro k hk
+        exact (hstep k).choose_spec X
+          (le_trans (Finset.le_sup (f := threshold) hk) hX)
+
+/-- StepMeanLowerBound(c) is a special case of DecayingSMLB with constant f(k) = c. -/
+theorem smlb_implies_decaying_smlb {c : ℝ} (hc : 0 < c) :
+    StepMeanLowerBound c → DecayingSMLB (fun _ => c) := by
+  intro hsmlb
+  refine ⟨fun _ => hc, ?_, hsmlb⟩
+  -- Constant positive sequence is not summable: partial sums = c·n → ∞
+  rw [not_summable_iff_tendsto_nat_atTop_of_nonneg (fun _ => le_of_lt hc)]
+  rw [Filter.tendsto_atTop_atTop]
+  intro M
+  refine ⟨Nat.ceil (M / c) + 1, fun K hK => ?_⟩
+  simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+  have hK_bound : M / c < K := by
+    calc M / c ≤ ↑(Nat.ceil (M / c)) := Nat.le_ceil _
+      _ < ↑(Nat.ceil (M / c)) + 1 := by linarith
+      _ ≤ (K : ℝ) := by exact_mod_cast hK
+  calc M = c * (M / c) := by field_simp
+    _ ≤ c * K := by
+        apply mul_le_mul_of_nonneg_left _ (le_of_lt hc)
+        exact le_of_lt hK_bound
+    _ = (K : ℝ) * c := by ring
+
+/-- Landscape theorem for the divergence hierarchy:
+    SMLB -> DecayingSMLB -> FMD, and LMG -> FMD.
+    FMD does NOT imply PositiveDensityRSD (sublinear growth is insufficient). -/
+theorem divergence_hierarchy :
+    (∀ c : ℝ, 0 < c → StepMeanLowerBound c → DecayingSMLB (fun _ => c)) ∧
+    (∀ f : ℕ → ℝ, DecayingSMLB f → FirstMomentDivergence) ∧
+    (LinearMeanGrowth → FirstMomentDivergence) :=
+  ⟨fun _ hc => smlb_implies_decaying_smlb hc,
+   fun _ => decaying_smlb_implies_fmd,
+   lmg_implies_fmd⟩
+
+end FirstMomentDivergence
+
 /-! ## FMS implies κ ≥ 1/4 -/
 
 section FMSKappaLowerBound
