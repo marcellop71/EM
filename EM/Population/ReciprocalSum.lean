@@ -604,7 +604,7 @@ private theorem finset_chebyshev (X K : Nat) (M mu sigma2 : ℝ)
     3. Monotonicity of density in K: {S_K < M} ⊆ {S_{K₀} < M}, so
        density_K ≤ density_{K₀} ≤ ε -/
 theorem chebyshev_concentration_proved : ChebyshevConcentration := by
-  intro ⟨κ, hκ, hmean_growth⟩ ⟨C, hC, hvar⟩
+  rintro ⟨κ, hκ, hmean_growth⟩ ⟨C, hC, hvar⟩
   -- Need: ∀ M > 0, ∀ ε > 0, ∃ K₀, ∀ K ≥ K₀, ∃ X₀, ∀ X ≥ X₀, density ≤ ε
   intro M hM ε hε
   -- Choose K₀ large enough:

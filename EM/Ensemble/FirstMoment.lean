@@ -1063,7 +1063,7 @@ private theorem sqfreeCount_plus_fourth_ninth (X : Nat) :
   linarith
 
 /-- n ≡ 1 mod 6 ↔ n odd and n % 3 = 1 (for n ≥ 1). -/
-private theorem mod6_eq_one_iff {n : Nat} (hn : 1 ≤ n) :
+private theorem mod6_eq_one_iff {n : Nat} (_hn : 1 ≤ n) :
     n % 6 = 1 ↔ (¬ Even n ∧ n % 3 = 1) := by
   constructor
   · intro h
@@ -1096,7 +1096,7 @@ private theorem count_one_mod_six_ge (X : Nat) :
   simp [Finset.card_range] at this; exact this
 
 /-- For n coprime to 6 and not squarefree, there exists d ≥ 5 coprime to 6 with d²|n. -/
-private theorem exists_sq_factor_of_nonsf_coprime6 {n : Nat} (hn : 1 ≤ n)
+private theorem exists_sq_factor_of_nonsf_coprime6 {n : Nat} (_hn : 1 ≤ n)
     (hnsf : ¬ Squarefree n) (hodd : ¬ Even n) (hmod3 : n % 3 = 1) :
     ∃ d : Nat, 5 ≤ d ∧ d * d ∣ n := by
   -- n not squarefree means ∃ p prime with p² | n
@@ -1121,7 +1121,7 @@ private theorem exists_sq_factor_of_nonsf_coprime6 {n : Nat} (hn : 1 ≤ n)
   omega
 
 /-- Non-squarefree n ≡ 1 mod 6 with d²|n: at most X/(d²) + 1 such n in [1,X]. -/
-private theorem count_nonsf_with_sq_factor (X d : Nat) (hd : 2 ≤ d) :
+private theorem count_nonsf_with_sq_factor (X d : Nat) (_hd : 2 ≤ d) :
     ((Finset.Icc 1 X).filter (fun n => d * d ∣ n)).card ≤ X / (d * d) + 1 := by
   -- Map n to n/(d²) gives injection into [0, X/d²]
   calc ((Finset.Icc 1 X).filter (fun n => d * d ∣ n)).card
@@ -1263,7 +1263,7 @@ private theorem sum_inv_sq_le_telescoping (K M : Nat) (hK : 2 ≤ K) (hKM : K �
             by_cases hle : K ≤ n
             · -- K ≤ n, induction step
               rw [show Finset.Icc K (n + 1) = Finset.Icc K n ∪ {n + 1} from by
-                ext x; simp [Finset.mem_Icc, Finset.mem_union, Finset.mem_singleton]; omega]
+                ext x; simp [Finset.mem_Icc]; omega]
               rw [Finset.sum_union (by
                 simp [Finset.disjoint_singleton_right, Finset.mem_Icc])]
               rw [Finset.sum_singleton, ih hle]

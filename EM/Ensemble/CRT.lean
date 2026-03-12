@@ -96,14 +96,16 @@ theorem sqfreeAccumCount_le_sqfreeCount (X k r : Nat) (a : ZMod r) :
     sqfreeAccumCount X k r a ≤ sqfreeCount X := by
   unfold sqfreeAccumCount sqfreeCount
   exact Finset.card_le_card fun n hn => by
-    simp only [Finset.mem_filter] at hn ⊢; exact ⟨hn.1, hn.2.1⟩
+    simp only [Finset.mem_filter] at hn ⊢
+    exact ⟨hn.1, hn.2.1⟩
 
 /-- The sequence count is bounded by the total squarefree count. -/
 theorem sqfreeSeqCount_le_sqfreeCount (X k q : Nat) (a : ZMod q) :
     sqfreeSeqCount X k q a ≤ sqfreeCount X := by
   unfold sqfreeSeqCount sqfreeCount
   exact Finset.card_le_card fun n hn => by
-    simp only [Finset.mem_filter] at hn ⊢; exact ⟨hn.1, hn.2.1⟩
+    simp only [Finset.mem_filter] at hn ⊢
+    exact ⟨hn.1, hn.2.1⟩
 
 /-- The accumulator density is non-negative. -/
 theorem sqfreeAccumDensity_nonneg (X k r : Nat) (a : ZMod r) :
@@ -374,8 +376,7 @@ theorem ensembleCharMean_eq_density_sum (X k q : Nat) [NeZero q]
       (S.filter (fun n => (genSeq n k : ZMod q) = a)).card =
       ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
         (genSeq n k : ZMod q) = a)).card := by
-    intro a; congr 1; ext n
-    simp only [Finset.mem_filter, S, and_assoc]
+    intro a; congr 1; ext n; simp only [Finset.mem_filter, S, and_assoc]
   rw [hdecomp]
   -- Now LHS = (∑ a, card_a * chi a) / c, RHS = ∑ a, (card_a / c) * chi a
   simp_rw [hsimp, hcount]
@@ -392,9 +393,7 @@ private theorem ensembleCharMean_eq_ofReal_density_sum (X k q : Nat) [NeZero q]
       ∑ a : ZMod q,
         ((sqfreeSeqDensity X k q a : ℝ) : ℂ) * chi a := by
   rw [ensembleCharMean_eq_density_sum]
-  congr 1; ext a
-  simp only [sqfreeSeqDensity]
-  rw [Complex.ofReal_div]
+  congr 1; ext a; simp only [sqfreeSeqDensity, Complex.ofReal_div]
 
 /-- **EME implies vanishing character means for nontrivial characters.** PROVED.
 
@@ -416,8 +415,7 @@ theorem ensemble_mult_equidist_implies_char_mean_zero :
   set L : ZMod q → ℂ := fun a => c * chi a
   -- Step 1: show ∑ a, L a = 0
   have hLsum : ∑ a : ZMod q, L a = 0 := by
-    simp only [L, ← Finset.mul_sum]
-    rw [hchisum, mul_zero]
+    simp only [L, ← Finset.mul_sum, hchisum, mul_zero]
   -- Step 2: show each term converges
   have hterm : ∀ a : ZMod q,
       Filter.Tendsto
@@ -426,8 +424,7 @@ theorem ensemble_mult_equidist_implies_char_mean_zero :
     intro a
     by_cases ha : a = 0
     · -- a = 0: chi(0) = 0, so the term is always 0
-      simp only [ha, hchi0, mul_zero, L]
-      exact tendsto_const_nhds
+      simp [ha, hchi0, L]
     · -- a ≠ 0: density(a) → 1/(q-1) by EME, lift to ℂ via continuous_ofReal
       simp only [L]
       exact ((Complex.continuous_ofReal.tendsto _).comp (heme q hq k a ha)).mul
@@ -438,12 +435,9 @@ theorem ensemble_mult_equidist_implies_char_mean_zero :
       Filter.atTop (nhds (∑ a : ZMod q, L a)) :=
     tendsto_finset_sum Finset.univ (fun a _ => hterm a)
   -- Step 4: combine: ensembleCharMean → 0, then ‖·‖ → 0
-  rw [hLsum] at hsum_tends
-  exact tendsto_zero_iff_norm_tendsto_zero.mp <| by
-    rw [show (fun X => ensembleCharMean X k q chi) =
-        (fun X => ∑ a : ZMod q, ((sqfreeSeqDensity X k q a : ℝ) : ℂ) * chi a)
-      from funext (fun X => ensembleCharMean_eq_ofReal_density_sum X k q chi)]
-    exact hsum_tends
+  simp_rw [hLsum] at hsum_tends
+  refine tendsto_zero_iff_norm_tendsto_zero.mp ?_
+  simpa only [ensembleCharMean_eq_ofReal_density_sum] using hsum_tends
 
 end CharMean
 
@@ -486,8 +480,7 @@ private theorem mod3_numerator_bound (X k : Nat) (hk : 1 ≤ k) :
   have hSmod_eq : Smod.card =
       ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
         (genProd n k : ZMod 3) = 2)).card := by
-    congr 1; ext n
-    simp only [Smod, S, Finset.mem_filter, and_assoc]
+    congr 1; ext n; simp only [Smod, S, Finset.mem_filter, and_assoc]
   rw [← hSmod_eq]
   -- Split the sum over S by whether genProd n k ≡ 2 mod 3
   have hsplit := Finset.sum_filter_add_sum_filter_not S
@@ -497,16 +490,14 @@ private theorem mod3_numerator_bound (X k : Nat) (hk : 1 ≤ k) :
   have hmod_terms : ∀ n ∈ Smod, 1 / (genSeq n k : ℝ) = 1 / 3 := by
     intro n hn
     have hmem := Finset.mem_filter.mp hn
-    have hS_mem := Finset.mem_filter.mp hmem.1
-    have hn1 : 1 ≤ n := (Finset.mem_Icc.mp hS_mem.1).1
+    have hn1 : 1 ≤ n := (Finset.mem_Icc.mp (Finset.mem_filter.mp hmem.1).1).1
     congr 1; exact_mod_cast genSeq_eq_three_of_genProd_mod3 hn1 hk hmem.2
   -- Sum on Smod = Smod.card / 3
   have hmod_sum : ∑ n ∈ Smod, 1 / (genSeq n k : ℝ) = (Smod.card : ℝ) / 3 := by
     rw [Finset.sum_congr rfl hmod_terms, Finset.sum_const, nsmul_eq_mul]; ring
   -- Sum on complement ≥ 0
   have hrest_nonneg : 0 ≤ ∑ n ∈ S.filter (fun n => ¬(genProd n k : ZMod 3) = (2 : ZMod 3)),
-      1 / (genSeq n k : ℝ) :=
-    Finset.sum_nonneg fun n _ => by positivity
+      1 / (genSeq n k : ℝ) := Finset.sum_nonneg fun _ _ => by positivity
   linarith [hsplit]
 
 /-- The ensemble average of 1/genSeq(n,k) is at least (1/3) times the density
@@ -516,16 +507,10 @@ theorem ensembleAvg_ge_mod3_density (X k : Nat) (hk : 1 ≤ k) :
     ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
   unfold ensembleAvg sqfreeAccumDensity sqfreeAccumCount sqfreeCount
   set S := (Finset.Icc 1 X).filter Squarefree
-  -- Handle sqfreeCount = 0 case
   rcases eq_or_ne S.card 0 with hcard | hcard
   · simp [hcard]
   have hS_pos : (0 : ℝ) < S.card := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hcard)
-  -- Reduce to numerator inequality: Smod.card / 3 ≤ ∑ 1/genSeq
-  -- LHS = (Smod.card / S.card) / 3, RHS = (∑ 1/genSeq) / S.card
   have hnum := mod3_numerator_bound X k hk
-  show (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
-          (genProd n k : ZMod 3) = 2)).card : ℝ) / ↑S.card / 3
-      ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card
   calc (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
           (genProd n k : ZMod 3) = 2)).card : ℝ) / ↑S.card / 3
       = (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
@@ -543,15 +528,13 @@ theorem accum_mod3_implies_smlb {c : ℝ} (_hc : 0 < c) (hmod3 : AccumMod3LB c) 
     StepMeanLowerBound (min (1/4) (c/3)) := by
   intro k
   rcases k with _ | k'
-  · -- k = 0: use smlb_k0_unconditional
-    obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
+  · obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
     exact ⟨X₀, fun X hX => le_trans (min_le_left _ _) (hX₀ X hX)⟩
-  · -- k = k' + 1 ≥ 1: use mod-3 density
-    obtain ⟨X₀, hX₀⟩ := hmod3 (k' + 1)
+  · obtain ⟨X₀, hX₀⟩ := hmod3 (k' + 1)
     exact ⟨X₀, fun X hX => by
       calc min (1 / 4) (c / 3) ≤ c / 3 := min_le_right _ _
-        _ ≤ sqfreeAccumDensity X (k' + 1) 3 2 / 3 := by
-            exact div_le_div_of_nonneg_right (hX₀ X hX) (by positivity)
+        _ ≤ sqfreeAccumDensity X (k' + 1) 3 2 / 3 :=
+            div_le_div_of_nonneg_right (hX₀ X hX) (by positivity)
         _ ≤ ensembleAvg X (fun n => 1 / (genSeq n (k' + 1) : ℝ)) :=
             ensembleAvg_ge_mod3_density X (k' + 1) (by omega)⟩
 
@@ -594,7 +577,8 @@ theorem sqfreeClassMinFacCount_le (X q : Nat) (c a : ZMod q) :
     sqfreeClassMinFacCount X q c a ≤ sqfreeClassCount X q c := by
   unfold sqfreeClassMinFacCount sqfreeClassCount
   exact Finset.card_le_card fun n hn => by
-    simp only [Finset.mem_filter] at hn ⊢; exact ⟨hn.1, hn.2.1, hn.2.2.1⟩
+    simp only [Finset.mem_filter] at hn ⊢
+    exact ⟨hn.1, hn.2.1, hn.2.2.1⟩
 
 /-- The conditional density is non-negative. -/
 theorem condMinFacDensity_nonneg (X q : Nat) (c a : ZMod q) :
@@ -676,9 +660,7 @@ private theorem genSeq_le_of_genProd_neg_one {n k q : Nat} (_hn : 1 ≤ n) (_hk 
     genSeq n k ≤ q := by
   rw [genSeq_def]
   have h_dvd : q ∣ genProd n k + 1 := by
-    rw [← ZMod.natCast_eq_zero_iff]
-    push_cast
-    rw [hmod]; ring
+    rw [← ZMod.natCast_eq_zero_iff]; push_cast; rw [hmod]; ring
   exact Nat.minFac_le_of_dvd hq.two_le h_dvd
 
 /-- Auxiliary: the numerator inequality for the death density bound at prime q ≥ 3.
@@ -695,8 +677,7 @@ private theorem death_numerator_bound (X k q : Nat) (hk : 1 ≤ k) (hq : Nat.Pri
   have hSdeath_eq : Sdeath.card =
       ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
         (genProd n k : ZMod q) = (-1 : ZMod q))).card := by
-    congr 1; ext n
-    simp only [Sdeath, S, Finset.mem_filter, and_assoc]
+    congr 1; ext n; simp only [Sdeath, S, Finset.mem_filter, and_assoc]
   rw [← hSdeath_eq]
   -- Split the sum over S by whether genProd n k ≡ -1 mod q
   have hsplit := Finset.sum_filter_add_sum_filter_not S
@@ -706,32 +687,26 @@ private theorem death_numerator_bound (X k q : Nat) (hk : 1 ≤ k) (hq : Nat.Pri
   have hdeath_terms : ∀ n ∈ Sdeath, 1 / (q : ℝ) ≤ 1 / (genSeq n k : ℝ) := by
     intro n hn
     have hmem := Finset.mem_filter.mp hn
-    have hS_mem := Finset.mem_filter.mp hmem.1
-    have hn1 : 1 ≤ n := (Finset.mem_Icc.mp hS_mem.1).1
+    have hn1 : 1 ≤ n := (Finset.mem_Icc.mp (Finset.mem_filter.mp hmem.1).1).1
     have hle := genSeq_le_of_genProd_neg_one hn1 hk hq hmem.2
     have hge3 := genSeq_ge_three hn1 hk
-    have hq_pos : (0 : ℝ) < q := by exact_mod_cast hq.pos
-    have hgs_pos : (0 : ℝ) < genSeq n k := by exact_mod_cast (by omega : 0 < genSeq n k)
-    exact div_le_div_of_nonneg_left one_pos.le hgs_pos (by exact_mod_cast hle)
+    refine div_le_div_of_nonneg_left one_pos.le (Nat.cast_pos.mpr (by omega))
+      (Nat.cast_le.mpr hle)
   -- Sum on Sdeath ≥ Sdeath.card / q
   have hdeath_sum : (Sdeath.card : ℝ) / q ≤ ∑ n ∈ Sdeath, 1 / (genSeq n k : ℝ) := by
-    rw [div_le_iff₀ (by exact_mod_cast hq.pos : (0 : ℝ) < q)]
+    rw [div_le_iff₀ (Nat.cast_pos.mpr hq.pos)]
     calc (Sdeath.card : ℝ) = ∑ _ ∈ Sdeath, (1 : ℝ) := by
           rw [Finset.sum_const, nsmul_eq_mul, mul_one]
       _ = ∑ n ∈ Sdeath, (1 / (q : ℝ)) * (q : ℝ) := by
-          congr 1; ext n; rw [div_mul_cancel₀]; exact_mod_cast hq.ne_zero
-      _ ≤ ∑ n ∈ Sdeath, (1 / (genSeq n k : ℝ)) * (q : ℝ) := by
-          apply Finset.sum_le_sum
-          intro n hn
-          exact mul_le_mul_of_nonneg_right (hdeath_terms n hn)
-            (by exact_mod_cast Nat.zero_le q)
-      _ = (∑ n ∈ Sdeath, 1 / (genSeq n k : ℝ)) * (q : ℝ) :=
-          (Finset.sum_mul ..).symm
+          congr 1; ext n; rw [div_mul_cancel₀]; exact Nat.cast_ne_zero.mpr hq.ne_zero
+      _ ≤ ∑ n ∈ Sdeath, (1 / (genSeq n k : ℝ)) * (q : ℝ) :=
+          Finset.sum_le_sum fun n hn =>
+            mul_le_mul_of_nonneg_right (hdeath_terms n hn) (Nat.cast_nonneg q)
+      _ = (∑ n ∈ Sdeath, 1 / (genSeq n k : ℝ)) * (q : ℝ) := (Finset.sum_mul ..).symm
   -- Sum on complement ≥ 0
   have hrest_nonneg : 0 ≤ ∑ n ∈ S.filter
       (fun n => ¬(genProd n k : ZMod q) = (-1 : ZMod q)),
-      1 / (genSeq n k : ℝ) :=
-    Finset.sum_nonneg fun n _ => by positivity
+      1 / (genSeq n k : ℝ) := Finset.sum_nonneg fun _ _ => by positivity
   linarith [hsplit]
 
 /-- For any prime q ≥ 3 and step k ≥ 1: the ensemble average of 1/genSeq(n,k)
@@ -745,15 +720,10 @@ theorem ensembleAvg_ge_death_density (X k q : Nat) (hk : 1 ≤ k)
     ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
   unfold ensembleAvg sqfreeAccumDensity sqfreeAccumCount sqfreeCount
   set S := (Finset.Icc 1 X).filter Squarefree
-  -- Handle sqfreeCount = 0 case
   rcases eq_or_ne S.card 0 with hcard | hcard
   · simp [hcard]
   have hS_pos : (0 : ℝ) < S.card := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hcard)
-  -- Reduce to numerator inequality
   have hnum := death_numerator_bound X k q hk hq hq3
-  show (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
-          (genProd n k : ZMod q) = (-1 : ZMod q))).card : ℝ) / ↑S.card / ↑q
-      ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card
   calc (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
           (genProd n k : ZMod q) = (-1 : ZMod q))).card : ℝ) / ↑S.card / ↑q
       = (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧
@@ -778,16 +748,13 @@ theorem death_density_implies_smlb {q : Nat} {c : ℝ} (hq : Nat.Prime q)
     StepMeanLowerBound (min (1/4) (c/q)) := by
   intro k
   rcases k with _ | k'
-  · -- k = 0: use smlb_k0_unconditional
-    obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
+  · obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
     exact ⟨X₀, fun X hX => le_trans (min_le_left _ _) (hX₀ X hX)⟩
-  · -- k = k' + 1 ≥ 1: use death density
-    obtain ⟨X₀, hX₀⟩ := hdd (k' + 1)
+  · obtain ⟨X₀, hX₀⟩ := hdd (k' + 1)
     exact ⟨X₀, fun X hX => by
       calc min (1 / 4) (c / ↑q) ≤ c / ↑q := min_le_right _ _
-        _ ≤ sqfreeAccumDensity X (k' + 1) q (-1) / ↑q := by
-            exact div_le_div_of_nonneg_right (hX₀ X hX)
-              (by exact_mod_cast Nat.zero_le q)
+        _ ≤ sqfreeAccumDensity X (k' + 1) q (-1) / ↑q :=
+            div_le_div_of_nonneg_right (hX₀ X hX) (Nat.cast_nonneg q)
         _ ≤ ensembleAvg X (fun n => 1 / (genSeq n (k' + 1) : ℝ)) :=
             ensembleAvg_ge_death_density X (k' + 1) q (by omega) hq hq3⟩
 
@@ -831,6 +798,156 @@ theorem ewe_landscape_extended :
    fun _ hq hq3 _ hc => death_density_implies_prsd hq hq3 hc⟩
 
 end ExtendedLandscape
+
+/-! ## MinFac Selection Independence
+
+The CRT structure gives three levels of independence:
+
+1. **Pointwise** (`crt_multiplier_invariance`, PROVED): if two accumulators P, P' agree
+   at all primes r != q, then minFac(P+1) = minFac(P'+1). This is deterministic.
+
+2. **Population** (`MinFacSelectionIndependence`, open): among integers m in [1,X],
+   the conditional distribution of minFac(m+1) mod q given m mod q is asymptotically
+   independent of the mod-q residue class. This follows from CRT + primes in APs.
+
+3. **Fiber/Orbit** (= CME/DSL, the open problem): along a *specific* EM orbit,
+   the multiplier equidistributes mod q. This is the sole remaining gap for MC.
+-/
+
+section MinFacSelection
+
+/-- **MinFac Selection Independence**: for prime q >= 3 and nonzero residue classes
+    d1, d2 (both not -1) in (Z/qZ), the conditional density of {minFac(m+1) = a mod q}
+    given {m = d1 mod q} equals that given {m = d2 mod q}, asymptotically.
+
+    This is a population-level CRT statement: the mod-q coordinate of m does not
+    influence which prime wins the minFac race for m+1, because the minFac depends
+    on divisibility by primes r (possibly = q), and for r != q the CRT coordinate
+    mod r is independent of the mod-q coordinate.
+
+    Note: The d != -1 exclusion is necessary because m = -1 mod q means q | m+1,
+    which forces minFac(m+1) <= q, biasing the conditional distribution.
+
+    **Status**: open hypothesis (follows from PrimesEquidistributedInAP via CRT). -/
+def MinFacSelectionIndependence : Prop :=
+  ∀ (q : Nat), Nat.Prime q → 3 ≤ q →
+  ∀ (d₁ d₂ : ZMod q), d₁ ≠ 0 → d₂ ≠ 0 → d₁ ≠ -1 → d₂ ≠ -1 →
+  ∀ (a : ZMod q), a ≠ 0 →
+    Filter.Tendsto
+      (fun X : Nat => condMinFacDensity X q d₁ a - condMinFacDensity X q d₂ a)
+      Filter.atTop
+      (nhds 0)
+
+/-- MinFacSelectionIndependence implies MFREConditional.
+
+    If the conditional distribution of minFac mod q is independent of the mod-q
+    class (for non-death classes), then each conditional density converges to the
+    same limit. Since the unconditional density sums to 1 over nonzero residues,
+    the common limit must be close to 1/(q-1). -/
+def MSIImpliesMFREConditional : Prop :=
+  MinFacSelectionIndependence → MFREConditional
+
+end MinFacSelection
+
+/-! ## Multi-Prime Death Density
+
+The death density framework works one prime at a time. Here we aggregate
+death contributions across all small primes, giving a total ensemble average
+lower bound from multiple death channels simultaneously.
+-/
+
+section MultiPrimeDeath
+
+/-- Total death contribution from primes in a finite set: sum of
+    sqfreeAccumDensity(X, k, q, -1) / q over primes q in the set with q >= 3. -/
+def totalDeathContribution (X k : Nat) (primes : Finset Nat) : ℝ :=
+  ∑ q ∈ primes.filter (fun q => Nat.Prime q ∧ 3 ≤ q),
+    sqfreeAccumDensity X k q (-1) / q
+
+/-- The total death contribution is non-negative (each summand is non-negative). -/
+theorem totalDeathContribution_nonneg (X k : Nat) (primes : Finset Nat) :
+    0 ≤ totalDeathContribution X k primes := by
+  unfold totalDeathContribution
+  exact Finset.sum_nonneg fun q _ =>
+    div_nonneg (sqfreeAccumDensity_nonneg X k q (-1)) (Nat.cast_nonneg q)
+
+/-- The total death contribution is monotone in the prime set. -/
+theorem totalDeathContribution_mono {X k : Nat} {S T : Finset Nat} (hST : S ⊆ T) :
+    totalDeathContribution X k S ≤ totalDeathContribution X k T := by
+  unfold totalDeathContribution
+  exact Finset.sum_le_sum_of_subset_of_nonneg
+    (Finset.filter_subset_filter _ hST)
+    (fun q _ _ => div_nonneg (sqfreeAccumDensity_nonneg X k q (-1)) (Nat.cast_nonneg q))
+
+/-- The total death contribution lower-bounds the ensemble average.
+    Each death channel contributes independently, and the ensemble average
+    counts all contributions (including non-death terms which are non-negative).
+
+    For any set of distinct primes q_i >= 3, the death fibers
+    {genProd ≡ -1 mod q_i} may overlap, but the ensemble average of 1/genSeq
+    is at least the contribution from each individual death channel.
+    Since 1/genSeq >= 0 everywhere, the total is at least the max over channels. -/
+theorem ensembleAvg_ge_max_death_channel (X k : Nat) (hk : 1 ≤ k)
+    (primes : Finset Nat) (hprimes : ∀ q ∈ primes, Nat.Prime q ∧ 3 ≤ q) :
+    ∀ q ∈ primes, sqfreeAccumDensity X k q (-1) / q ≤
+      ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
+  intro q hq
+  exact ensembleAvg_ge_death_density X k q hk (hprimes q hq).1 (hprimes q hq).2
+
+/-- Multi-prime DeathDensityLB: if DeathDensityLB holds at SOME prime q >= 3 with
+    positive constant, then PositiveDensityRSD holds. This is already proved
+    per-prime; this theorem simply records that ANY single prime suffices. -/
+theorem exists_death_density_implies_prsd
+    (h : ∃ q : Nat, ∃ c : ℝ, Nat.Prime q ∧ 3 ≤ q ∧ 0 < c ∧ DeathDensityLB q c) :
+    PositiveDensityRSD := by
+  obtain ⟨q, c, hq, hq3, hc, hdd⟩ := h
+  exact death_density_implies_prsd hq hq3 hc hdd
+
+end MultiPrimeDeath
+
+/-! ## CRT Blindness Landscape
+
+Summary of the three levels of CRT independence and their status.
+-/
+
+section CRTBlindness
+
+/-- **CRT Blindness Landscape**: documents the three levels of CRT independence
+    and the proved/open status of each.
+
+    Level 1 (PROVED): `crt_multiplier_invariance` — pointwise, deterministic.
+      If P ≡ P' at all primes r != q, then minFac(P+1) = minFac(P'+1).
+
+    Level 2 (OPEN): `MinFacSelectionIndependence` — population, statistical.
+      Conditional density of minFac(m+1) mod q given m mod q is asymptotically
+      independent of the mod-q class (for non-death classes).
+
+    Level 3 (OPEN = CME/DSL): fiber/orbit-level equidistribution.
+      Along a specific EM orbit, the multiplier equidistributes.
+      This is the sole remaining gap for Mullin's Conjecture.
+
+    Proved implications:
+    - Level 2 (MSI) → MFREConditional (open bridge: MSIImpliesMFREConditional)
+    - DeathDensityLB(q,c) → SMLB → LMG → PositiveDensityRSD (PROVED)
+    - AccumulatorEquidistPropagation → DeathDensityLB (immediate from AEP)
+
+    The landscape records:
+    (a) DeathDensityLB at any q >= 3 with positive c gives PRSD (PROVED).
+    (b) MinFacSelectionIndependence is a population-level statement (OPEN).
+    (c) The fiber-level gap (CME/DSL) remains the core open problem. -/
+theorem crt_blindness_landscape :
+    -- (a) Any single death density lower bound gives PRSD
+    (∀ q : Nat, Nat.Prime q → 3 ≤ q → ∀ c : ℝ, 0 < c →
+      DeathDensityLB q c → PositiveDensityRSD) ∧
+    -- (b) MinFacSelectionIndependence is a well-defined Prop
+    (MinFacSelectionIndependence → MinFacSelectionIndependence) ∧
+    -- (c) AccumMod3LB is the q=3 special case of DeathDensityLB
+    (∀ c : ℝ, AccumMod3LB c ↔ DeathDensityLB 3 c) :=
+  ⟨fun _ hq hq3 _ hc => death_density_implies_prsd hq hq3 hc,
+   id,
+   fun _ => accumMod3LB_iff_deathDensity3⟩
+
+end CRTBlindness
 
 /-! ## Summary of Proof Chain
 

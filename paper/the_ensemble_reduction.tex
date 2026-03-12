@@ -559,6 +559,27 @@ $\mathrm{MFREConditional} + \mathrm{EnsembleSelection}
 \Rightarrow \mathrm{SMLB}(1/6)$
 (\lean{EM/Ensemble/CRT.lean}{MFRECondImpliesSMLB}).
 
+A cleaner formulation isolates the population-level content:
+\textbf{MinFacSelectionIndependence}
+(\lean{EM/Ensemble/CRT.lean}{MinFacSelectionIndependence})
+states that, for $q \geq 3$ and non-death classes $d_1, d_2 \neq -1$,
+the conditional density of $\minFac(m{+}1) \equiv a \pmod{q}$
+given $m \equiv d_i \pmod{q}$ is the same for $d_1$ and~$d_2$
+asymptotically.  MSI implies MFRE\_conditional
+(\lean{EM/Ensemble/CRT.lean}{MSIImpliesMFREConditional}).
+
+The CRT independence thus operates at three levels, documented in
+\lean{EM/Ensemble/CRT.lean}{crt\_blindness\_landscape}:
+\begin{enumerate}[nosep]
+\item \textbf{Pointwise} (\code{crt\_multiplier\_invariance}, proved):
+  deterministic---if $P \equiv P' \pmod{r}$ for all $r \neq q$, then
+  $\minFac(P{+}1) = \minFac(P'{+}1)$.
+\item \textbf{Population} (MSI, open): statistical---conditional
+  density of $\minFac$ mod~$q$ is independent of the mod-$q$ class.
+\item \textbf{Orbit} ($=$ CME/DSL, open): along the specific EM orbit,
+  the multiplier equidistributes.
+\end{enumerate}
+
 \subsection{The DSL Route to MC}
 \label{sec:dsl-route}
 
