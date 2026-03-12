@@ -561,6 +561,190 @@ or as an arbitrary multiplicative walk) rather than exploiting the
 specific arithmetic of the EM construction.
 
 %% =========================================================================
+\subsection{The NAAD Conjecture}
+\label{sec:naad}
+%% =========================================================================
+
+The preceding analysis---the four-way blocker, the telescope exhaustion,
+the dead-end catalogue---identifies a structural gap that no existing
+theory covers.  We now name this gap and state a precise conjecture.
+
+\paragraph{Three theories that almost apply.}
+Three mature mathematical theories converge on the class of problems to
+which MC belongs, without covering it.
+
+\emph{Arithmetic dynamics} (Silverman, Baker--DeMarco) studies iteration
+of algebraic maps $\varphi \colon \mathbb{P}^1 \to \mathbb{P}^1$ over
+number fields.  The theory requires the map to be a \emph{fixed}
+polynomial or rational function; the EM map
+$T(P) = P \cdot \minFac(P{+}1)$ is non-algebraic, since the multiplier
+depends on the factorization of~$P{+}1$.
+
+\emph{Multiplicative number theory} (Alladi, Hildebrand, Granville,
+Soundararajan) gives precise asymptotics for the distribution of
+$\minFac$, $\max\mathrm{Fac}$, $\Omega$, $\omega$ \emph{over the
+population} of integers.  But it does not control these functions along
+a specific deterministic orbit.
+
+\emph{Computational pseudorandomness} (Blum--Micali, Goldreich--Levin)
+studies when deterministic iteration produces outputs
+indistinguishable from random.  The theory requires computational
+hardness (one-wayness against polynomial-time adversaries) and operates
+in the Boolean setting $\{0,1\}^n$, not the arithmetic setting~$\ZZ$.
+
+The EM sequence sits at the intersection: an iterated map on~$\ZZ$
+(arithmetic dynamics) whose multiplier is~$\minFac$ (multiplicative
+number theory), whose pseudorandom behavior---if true---arises from
+the opacity of integer factorization (computational pseudorandomness).
+
+\paragraph{Arithmetic iteration maps.}
+
+\begin{definition}[\defname{Arithmetic iteration map}]
+\label{def:aim}
+An \emph{arithmetic iteration map} is a function
+$T \colon \ZZ_{>0} \to \ZZ_{>0}$ of the form $T(x) = x \cdot m(x)$,
+where $m(x) \in \ZZ_{>1}$ is the \emph{multiplier}, determined by the
+arithmetic of~$x$.  The orbit from seed~$x_0$ is the sequence
+$x_0, T(x_0), T^2(x_0), \ldots$
+\end{definition}
+
+\noindent The map is \emph{non-autonomous}: the multiplier $m(x_n)$
+depends on the state~$x_n$, which changes at every step.  Unlike
+autonomous dynamics (a fixed map applied repeatedly), the effective
+transformation changes at each iteration.
+
+\begin{example}[\defname{Examples}]
+\begin{enumerate}[nosep]
+\item \textbf{Euclid--Mullin}: $T(P) = P \cdot \minFac(P{+}1)$.
+\item \textbf{Largest-factor Euclid}: $T(P) = P \cdot \max\mathrm{Fac}(P{+}1)$.
+  Same structure, different selection rule; provably misses
+  primes~\cite{CoxVdP1968}.
+\item \textbf{Random-factor Euclid}: $T(P) = P \cdot
+  \mathrm{rand\-Fac}(P{+}1)$.  The walk is a genuine random walk on
+  $(\ZZ/q\ZZ)^\times$; equidistribution follows from
+  Diaconis--Shahshahani mixing.
+\end{enumerate}
+\end{example}
+
+\noindent For a prime~$q$, the \emph{walk} is the projection
+$w_n = T^n(x_0) \bmod q$ onto $(\ZZ/q\ZZ)^\times$, satisfying the
+multiplicative recurrence $w_{n+1} = w_n \cdot m_n \bmod q$ where
+$m_n = m(x_n) \bmod q$.  This is the walk framework of
+Section~\ref{sec:walk}, now abstracted to a class of maps.
+
+\paragraph{Four structural properties.}
+We identify four properties that control the walk's behavior.  All four
+are verified for the EM map (the first three are proved; the fourth
+follows from standard ANT).
+
+\begin{enumerate}[nosep]
+\item \textbf{CRT-blindness} (= Property~1 of \S\ref{sec:crt-equidist}):
+  $m(x) \bmod q$ is asymptotically independent of $x \bmod q$ in the
+  population.  For EM, this is the algebraic fact
+  \lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}.
+
+\item \textbf{Super-exponential growth}: $T^n(x_0) \geq 2^{2^n}$ for
+  $n \geq n_0$.  For EM, $\Prod{2}(n) \geq 2^{n+1}$
+  (\lean{EM/LargeSieve/Basic.lean}{prod\_lower\_bound\_for\_sieve}).
+  This creates the information bottleneck: the walk position uses
+  $O(\log q)$ bits to describe a state with $\Omega(2^n)$ bits.
+
+\item \textbf{Generating multipliers}: the residues
+  $\{m(x_n) \bmod q\}_{n \geq 0}$ generate $(\ZZ/q\ZZ)^\times$.
+  For EM, this is SubgroupEscape, proved unconditionally via PRE
+  (Theorem~\ref{thm:pre}).
+
+\item \textbf{Population equidistribution}: $m(x) \bmod q$ is
+  equidistributed over $(\ZZ/q\ZZ)^\times$ in the population.  For EM,
+  this follows from Alladi's formula combined with Dirichlet's theorem
+  (scaffolded in \code{AlladiDensity.lean}).
+\end{enumerate}
+
+\begin{conjecture}[\defname{NAAD Equidistribution}]
+\label{conj:naad}
+Let $T(x) = x \cdot m(x)$ be an arithmetic iteration map satisfying
+Properties~1--4 for all primes $q \geq q_0$.  Let $x_0 \in \ZZ_{>0}$
+with $\gcd(x_0, q) = 1$.  Then the walk $w_n = T^n(x_0) \bmod q$
+equidistributes in $(\ZZ/q\ZZ)^\times$:
+\[
+  \text{for every non-trivial } \chi \colon (\ZZ/q\ZZ)^\times \to
+  \mathbb{C}^\times,\quad
+  \frac{1}{N}\Bigl|\sum_{n < N} \chi(w_n)\Bigr| \;\to\; 0
+  \quad\text{as } N \to \infty.
+\]
+\end{conjecture}
+
+\begin{theorem}
+NAAD Equidistribution for the EM map implies MC.
+\end{theorem}
+
+\begin{proof}
+The EM map satisfies Properties~1--4.  NAAD applied with $x_0 = 2$
+gives CCSB, which implies MC through the machine-verified chain
+$\mathrm{CCSB} \Rightarrow \mathrm{MC}$
+(\lean{EM/Equidist/SelfCorrecting.lean}{complex\_csb\_mc'}).
+\end{proof}
+
+\paragraph{The three-level gap.}
+NAAD Equidistribution is the assertion that Level~3 of the CRT
+hierarchy (\S\ref{sec:crt-equidist}) follows from Levels~1--2.
+The conjecture's content is precisely the orbit-specificity
+transfer: Properties~1--4 describe the \emph{function}~$m$;
+the conjecture asks whether the \emph{orbit} inherits the function's
+statistical behavior.  The entire infrastructure of this
+formalization---56{,}420~lines---reduces to this single question.
+
+\paragraph{Relation to Collatz.}
+Tao~\cite{Tao2019Collatz} proved that almost all Collatz orbits attain almost
+bounded values, using a random model for Syracuse random variables.
+Both Collatz and EM involve non-autonomous iteration maps with CRT
+structure; both have random models that behave well; both face the
+transfer problem from random model to actual orbit.  The key
+difference: the Collatz map is piecewise linear mod~2 (clean
+algebraic structure in the 2-adic coordinate), while the EM map
+involves factoring, which has no algebraic shortcut.  This makes EM
+harder to analyze but also more ``pseudorandom''---the factoring
+channel is a stronger scrambler than the 2-adic valuation.
+
+\paragraph{Why NAAD requires new mathematics.}
+The four-way blocker (\S\ref{sec:hash-heuristic}) applies to any
+arithmetic iteration map: Properties~1--4 explicitly exclude
+independence, multiplicativity, algebraic-geometric structure, and
+ergodic stationarity.  NAAD Equidistribution asks whether these four
+properties \emph{collectively} substitute for any single classical
+assumption.  The 134~dead ends documented in the formalization
+(Appendix~\ref{app:dead-ends}) confirm that no existing technique
+closes this gap.
+
+\paragraph{NAAD open problems.}
+Beyond the full conjecture, several intermediate problems are
+independently interesting:
+
+\begin{enumerate}[nosep]
+\item \textbf{Weak NAAD} (almost-all starting points): prove that for
+  almost all squarefree~$x_0$, the walk equidistributes.  Partially
+  achieved: SD~$\Rightarrow$~cancellation for a.a.\ starting points
+  (\lean{EM/Ensemble/EnsemblePT.lean}{sd\_implies\_cancellation}).
+
+\item \textbf{Quantitative NAAD} (correlation decay): prove
+  $|\mathrm{Cov}(\chi(w_n), \chi(w_{n+k}))| \leq C \alpha^{-k}$
+  for some $\alpha > 1$.  This would give NAAD via van der Corput
+  with $|\sum \chi(w_n)| = O(\sqrt{N})$.
+
+\item \textbf{CRTPropagationStep}: prove that accumulator
+  equidistribution propagates across ensemble steps.  This is a
+  population-level statement with no orbit-specificity barrier,
+  amenable to CRT~$+$~Alladi.
+
+\item \textbf{NAAD for other maps}: study variants
+  $T(x) = x \cdot \max\mathrm{Fac}(x{+}1)$,
+  $T(x) = x \cdot \Omega(x{+}1)$, etc.  The comparison illuminates the
+  role of the selection rule: minFac gives slow growth and guaranteed
+  capture (\S\ref{sec:selectability}); maxFac gives fast growth and
+  provable failure.
+\end{enumerate}
+
+%% =========================================================================
 \subsection{Open Problems and Paths Forward}
 \label{sec:open}
 %% =========================================================================
