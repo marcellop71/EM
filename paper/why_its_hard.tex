@@ -1092,10 +1092,27 @@ If the factor set has $|F| \geq 2$ elements in $(\ZZ/q\ZZ)^\times$
 infinitely often (with non-summable spectral gap), the product
 $\prod(1 - \gamma_k) \to 0$
 (\lean{EM/Advanced/VanishingNoise.lean}{product\_contraction\_tendsto}),
-giving CCSB\@.  The sole open hypothesis is
-\textbf{InfinitelyManyLargeFactorSets}: that the Euclid numbers
+which would give CCSB---but only if the walk actually \emph{averages}
+over~$F$.  A proved counterexample
+(\lean{EM/Advanced/VanishingNoise.lean}{selection\_vs\_average\_gap})
+shows the gap cleanly: for any fixed selection $s \in S$, the
+pointwise norm $\|\chi(s)\| = 1$ (zero contraction), even when the
+average over~$S$ contracts strictly below~$1$.
+Since $\minFac$ selects \emph{one specific element} of the factor set,
+the spectral gap alone does not imply CCSB\@.
+
+The formalization defines the factor set residues
+(\lean{EM/Advanced/VanishingNoise.lean}{factorSetResidues})
+and proves that the walk multiplier lies in it
+(\lean{EM/Advanced/VanishingNoise.lean}{multZ\_in\_factorSetResidues}).
+Two open hypotheses remain:
+\textbf{InfinitelyManyLargeFactorSets} (that the Euclid numbers
 $\Prod{2}(n)+1$ have at least two prime factors $\geq q$ for
-infinitely many~$n$ with non-summable spectral gap.
+infinitely many~$n$) and
+\textbf{MinFacUnbiased} (that $\minFac$ selection is asymptotically
+unbiased over the squarefree ensemble).
+The latter is the orbit-specificity barrier
+restated in spectral language.
 
 \paragraph{Does the Walk Hit $-1$?}
 

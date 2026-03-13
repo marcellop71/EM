@@ -434,3 +434,221 @@ theorem vanishing_noise_landscape :
            product_contraction_tendsto gamma hpos hle hdiv⟩
 
 end Landscape
+
+
+/-! ## Part 6: Selection Counterexample — Fixed Selection Does Not Contract
+
+The spectral gap (Part 1) shows that AVERAGING over a generating set S gives
+strict contraction: |sum_{s in S} chi(s)| < |S|. But the EM walk does NOT
+average over the factor set — it SELECTS a specific element (the smallest
+prime factor via minFac).
+
+This section proves that selecting ANY fixed element from S gives |chi(s)| = 1:
+zero contraction, regardless of how good the spectral gap is. This is the
+mathematical reason why `MinFacUnbiased` (Part 7) is needed as a separate
+hypothesis — it cannot be derived from the spectral gap alone.
+
+This documents Dead End #130: SE (subgroup escape / generation) does not imply
+DH (dynamical hitting) because generation != coverage. -/
+
+section SelectionCounterexample
+
+/-- Selecting a FIXED element from a generating set gives zero spectral contraction.
+    For ANY group element s, the character value chi(s) has norm exactly 1.
+    This contrasts with averaging over S, where the norm is strictly less than |S|.
+
+    The mathematical point: the spectral gap is a property of AVERAGING over S,
+    not of selecting a specific element. The minFac rule picks ONE element
+    from the factor set, not the average. -/
+theorem selection_no_contraction {G : Type*} [CommGroup G] [Fintype G]
+    (chi : G →* ℂˣ) (S : Finset G) (s : G) (_hs : s ∈ S) :
+    ‖(chi s : ℂ)‖ = 1 :=
+  char_norm_one_of_hom chi s
+
+/-- The identity element always gives norm 1 under any character.
+    When 1 in S (as required for spectral gap), selecting 1 gives zero contraction
+    even though the spectral gap guarantees strict inequality for the AVERAGE. -/
+theorem selection_no_contraction_identity {G : Type*} [CommGroup G] [Fintype G]
+    (chi : G →* ℂˣ) (S : Finset G) (_hone : (1 : G) ∈ S) :
+    ‖(chi 1 : ℂ)‖ = 1 :=
+  char_norm_one_of_hom chi 1
+
+/-- The gap between averaging and selection, quantified.
+    For a generating set with spectral gap, the average contraction is
+    |sum chi(s)| / |S| < 1, but the pointwise norm is always exactly 1.
+    The difference 1 - |sum chi(s)|/|S| > 0 is the spectral gap,
+    which is entirely lost when selecting a single element. -/
+theorem selection_vs_average_gap {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
+    (chi : G →* ℂˣ) (S : Finset G)
+    (hgen : Subgroup.closure (S : Set G) = ⊤)
+    (hone : (1 : G) ∈ S)
+    (hcard : 2 ≤ S.card)
+    (hnt : chi ≠ 1)
+    (s : G) (_hs : s ∈ S) :
+    -- The average contracts strictly...
+    ‖∑ x ∈ S, (chi x : ℂ)‖ / ↑S.card < 1
+    -- ...but selection gives exactly 1
+    ∧ ‖(chi s : ℂ)‖ = 1 :=
+  ⟨spectral_contraction_lt_one chi S hgen hone hcard hnt,
+   char_norm_one_of_hom chi s⟩
+
+end SelectionCounterexample
+
+
+/-! ## Part 7: Factor Set and MinFac Selection Bridge
+
+The **factor set** of prod(n)+1 at a prime q consists of the prime factors of
+prod(n)+1 that are at least q, viewed as residues mod q. The walk multiplier
+seq(n+1) mod q is always in this set (when seq(n+1) >= q).
+
+The spectral gap applies to the AVERAGE over the factor set, but the EM walk
+SELECTS the minimum (via minFac). Bridging from average to selection requires
+the `MinFacUnbiased` hypothesis — the selection bias averages out over the
+squarefree ensemble.
+
+This is the precise formalization of Dead End #90 (orbit specificity) in the
+spectral gap language. -/
+
+section FactorSetBridge
+
+variable {q : ℕ} [Fact (Nat.Prime q)]
+
+/-- The **factor set** of prod(n)+1 at prime q: the set of prime factors p of
+    prod(n)+1 with p >= q, projected to their residues mod q.
+
+    When the walk is at the death state (walkZ q n = -1), q itself divides
+    prod(n)+1, so the factor set is nonempty. When |factorSet| >= 2 as
+    residues, the spectral gap gives contraction for the average over these
+    residues.
+
+    We bound the range to [0, prod n + 2) to make the Finset finite. -/
+def factorSetResidues (n : ℕ) : Finset (ZMod q) :=
+  ((Finset.range (prod n + 2)).filter (fun p =>
+    Nat.Prime p ∧ q ≤ p ∧ p ∣ (prod n + 1))).image (fun p => ((p : ℕ) : ZMod q))
+
+/-- Bridge: Euclid.IsPrime implies Nat.Prime. -/
+private theorem isPrime_implies_natPrime' {p : ℕ} (hp : IsPrime p) : Nat.Prime p := by
+  rw [Nat.prime_def_minFac]
+  refine ⟨hp.1, ?_⟩
+  have hmf_dvd := Nat.minFac_dvd p
+  have hne1 : p ≠ 1 := by have := hp.1; omega
+  have hmf_ge : 2 ≤ p.minFac := (Nat.minFac_prime hne1).two_le
+  rcases hp.2 p.minFac hmf_dvd with h | h
+  · omega
+  · exact h
+
+/-- The walk multiplier seq(n+1) mod q is in the factor set residues,
+    provided seq(n+1) >= q.
+
+    Since seq(n+1) = minFac(prod(n)+1) is prime and divides prod(n)+1,
+    and seq(n+1) < prod(n)+2 (being a factor of prod(n)+1 >= 2),
+    the result follows from membership in the filtered range. -/
+
+theorem multZ_in_factorSetResidues (n : ℕ) (hge : q ≤ seq (n + 1)) :
+    (seq (n + 1) : ZMod q) ∈ factorSetResidues (q := q) n := by
+  simp only [factorSetResidues, Finset.mem_image, Finset.mem_filter, Finset.mem_range]
+  refine ⟨seq (n + 1), ⟨?_, isPrime_implies_natPrime' (seq_isPrime (n + 1)),
+    hge, seq_dvd_succ_prod n⟩, rfl⟩
+  -- seq(n+1) is in range(prod n + 2)
+  have hdvd := seq_dvd_succ_prod n
+  have hprod_pos : 0 < prod n + 1 := by have := prod_ge_two n; omega
+  exact lt_of_le_of_lt (Nat.le_of_dvd hprod_pos hdvd) (by omega)
+
+/-- **MinFacSelectionBias**: the structural claim that the minFac selection
+    introduces a bias between the walk's character value and the factor-set
+    average. This is the precise obstacle identified by Dead End #130.
+
+    In the EM walk, seq(n+1) = minFac(prod(n)+1) is the SMALLEST prime factor.
+    The spectral gap applies to the average over ALL factors >= q, but the walk
+    uses only the smallest. Whether this selection is biased depends on the
+    correlation between the size ordering of factors and their residues mod q.
+
+    This is a documentation marker (True placeholder). -/
+def MinFacSelectionBias : Prop := True
+
+/-- **MinFacUnbiased**: Over the squarefree ensemble, the minFac selection is
+    asymptotically unbiased for character sums.
+
+    Informally: for a nontrivial character chi mod q,
+      (1/#{sf in [2,X]}) * sum_{n sf} chi(seq(n+1) mod q)
+    converges to the same limit as the factor-set average version.
+
+    This hypothesis sits BETWEEN:
+    - PopulationEquidist (too weak: only says primes equidistribute, not orbit-specific)
+    - CME (too strong: gives full conditional equidist, not just unbiasedness)
+
+    It is the spectral-gap-specific formulation of SelectionBiasNeutral from
+    FFMultiplierCCSB.lean, and maps to Dead End #90 (orbit specificity).
+
+    This is a documentation marker (True placeholder). -/
+def MinFacUnbiased : Prop := True
+
+/-- The factor set is nonempty at the death state: when walkZ q n = -1,
+    q itself is a prime factor of prod(n)+1 that is >= q. -/
+theorem factorSetResidues_nonempty_at_death (n : ℕ) (hdeath : walkZ q n = -1) :
+    (factorSetResidues (q := q) n).Nonempty := by
+  simp only [factorSetResidues, Finset.image_nonempty, Finset.filter_nonempty_iff,
+    Finset.mem_range]
+  have hdvd := target_in_death_fiber n hdeath
+  have hprime := (Fact.out : Nat.Prime q)
+  exact ⟨q, lt_of_le_of_lt (Nat.le_of_dvd (by have := prod_ge_two n; omega) hdvd) (by omega),
+    hprime, le_refl q, hdvd⟩
+
+end FactorSetBridge
+
+
+/-! ## Part 8: Extended Landscape -/
+
+section LandscapeV2
+
+/-- **Extended Vanishing Noise Landscape**: Summary including the selection
+    counterexample and factor set infrastructure.
+
+    PROVED results (Parts 1-6):
+    1. SpectralGap: |sum chi(s)| < |S| for nontrivial chi on generating sets
+    2. CharNormIsometry: deterministic steps preserve contraction
+    3. TargetInDeathFiber: q | prod(n)+1 at death state
+    4. ProductContraction: prod(1-gamma_k) -> 0 when sum gamma_k = +infty
+    5. SelectionCounterexample: fixed selection gives |chi(s)| = 1 (no contraction)
+    6. FactorSetMembership: seq(n+1) mod q is in the factor set
+
+    OPEN hypotheses (Parts 5, 7):
+    A. InfinitelyManyLargeFactorSets: |F_q(k)| >= 2 infinitely often
+    B. MinFacUnbiased: selection bias averages out over the ensemble
+
+    Dead End Documentation:
+    - #90: orbit specificity (MinFacUnbiased is the precise gap)
+    - #130: generation != coverage (selection counterexample proves this) -/
+theorem vanishing_noise_landscape_v2 :
+    -- 1. Spectral gap
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (S : Finset G),
+       Subgroup.closure (S : Set G) = ⊤ → (1 : G) ∈ S → 2 ≤ S.card → chi ≠ 1 →
+       ‖∑ s ∈ S, (chi s : ℂ)‖ < ↑S.card)
+    ∧
+    -- 2. Selection gives zero contraction (counterexample to naive spectral → CCSB)
+    (∀ (G : Type*) [CommGroup G] [Fintype G]
+       (chi : G →* ℂˣ) (s : G), ‖(chi s : ℂ)‖ = 1)
+    ∧
+    -- 3. Factor set nonempty at death
+    (∀ (q : ℕ) [Fact (Nat.Prime q)] (n : ℕ),
+       walkZ q n = -1 → (factorSetResidues (q := q) n).Nonempty)
+    ∧
+    -- 4. Walk multiplier is in the factor set (under seq(n+1) >= q)
+    (∀ (q : ℕ) [Fact (Nat.Prime q)] (n : ℕ),
+       q ≤ seq (n + 1) → (seq (n + 1) : ZMod q) ∈ factorSetResidues (q := q) n)
+    ∧
+    -- 5. Product contraction to 0
+    (∀ (gamma : ℕ → ℝ),
+       (∀ k, 0 < gamma k) → (∀ k, gamma k ≤ 1) → ¬Summable gamma →
+       Filter.Tendsto (fun N => ∏ k ∈ Finset.range N, (1 - gamma k))
+         Filter.atTop (nhds 0)) := by
+  exact ⟨fun G _ _ _ chi S hgen hone hcard hnt =>
+           spectral_gap_with_identity chi S hgen hone hcard hnt,
+         fun G _ _ chi s => char_norm_one_of_hom chi s,
+         fun q _ n hdeath => factorSetResidues_nonempty_at_death n hdeath,
+         fun q _ n hge => multZ_in_factorSetResidues n hge,
+         fun gamma hpos hle hdiv =>
+           product_contraction_tendsto gamma hpos hle hdiv⟩
+
+end LandscapeV2
