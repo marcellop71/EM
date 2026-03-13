@@ -652,3 +652,305 @@ theorem vanishing_noise_landscape_v2 :
            product_contraction_tendsto gamma hpos hle hdiv⟩
 
 end LandscapeV2
+
+
+/-! ## Part 9: Mean Character Value and Averaged Character Product
+
+We define the **mean character value** over a Finset and prove basic norm bounds.
+The **averaged character product** telescopes these over multiple steps. -/
+
+section MeanCharValue
+
+variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
+
+/-- The mean character value over a Finset: (1/|S|) * sum_{s in S} chi(s). -/
+def meanCharValue (chi : G →* ℂˣ) (S : Finset G) : ℂ :=
+  (∑ s ∈ S, (chi s : ℂ)) / ↑S.card
+
+omit [DecidableEq G] in
+/-- The mean character value has norm at most 1 for any nonempty Finset.
+    Proof: triangle inequality gives |sum chi(s)| <= sum |chi(s)| = |S|, divide by |S|. -/
+theorem meanCharValue_norm_le_one (chi : G →* ℂˣ) (S : Finset G)
+    (hne : S.Nonempty) :
+    ‖meanCharValue chi S‖ ≤ 1 := by
+  simp only [meanCharValue]
+  have hcard_pos : (0 : ℝ) < ↑S.card := by positivity
+  rw [Complex.norm_div, Complex.norm_natCast, div_le_one hcard_pos]
+  calc ‖∑ s ∈ S, (chi s : ℂ)‖
+      ≤ ∑ s ∈ S, ‖(chi s : ℂ)‖ := norm_sum_le S _
+    _ = ∑ s ∈ S, (1 : ℝ) := by congr 1; ext s; exact char_norm_one_of_hom chi s
+    _ = ↑S.card := by simp
+
+/-- If there exist s, t in S with chi(s) != chi(t), the mean character value
+    has norm strictly less than 1.
+    Proof: spectral_gap_of_distinct_values gives |sum| < |S|, divide by |S|. -/
+theorem meanCharValue_norm_lt_one_of_distinct (chi : G →* ℂˣ) (S : Finset G)
+    (hcard : 2 ≤ S.card)
+    (hdist : ∃ s ∈ S, ∃ t ∈ S, (chi s : ℂ) ≠ (chi t : ℂ)) :
+    ‖meanCharValue chi S‖ < 1 := by
+  simp only [meanCharValue]
+  have hcard_pos : (0 : ℝ) < ↑S.card := by positivity
+  rw [Complex.norm_div, Complex.norm_natCast, div_lt_one hcard_pos]
+  exact spectral_gap_of_distinct_values chi S hcard hdist
+
+end MeanCharValue
+
+
+/-! ## Part 10: Averaged Character Product -/
+
+section AvgCharProduct
+
+variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
+
+/-- The product of mean character values over N steps. -/
+def avgCharProduct (chi : G →* ℂˣ) (S : ℕ → Finset G) (N : ℕ) : ℂ :=
+  ∏ k ∈ Finset.range N, meanCharValue chi (S k)
+
+omit [Fintype G] [DecidableEq G] in
+/-- Norm of the averaged character product is bounded by the product of norms.
+    Uses the fact that C is a normed field, so |prod z_k| = prod |z_k|. -/
+theorem avgCharProduct_norm_eq (chi : G →* ℂˣ) (S : ℕ → Finset G) (N : ℕ) :
+    ‖avgCharProduct chi S N‖ = ∏ k ∈ Finset.range N, ‖meanCharValue chi (S k)‖ := by
+  simp only [avgCharProduct]
+  exact norm_prod (Finset.range N) _
+
+omit [DecidableEq G] in
+/-- If all S(k) are nonempty, the averaged character product has norm at most 1. -/
+theorem avgCharProduct_norm_le_one (chi : G →* ℂˣ) (S : ℕ → Finset G)
+    (hne : ∀ k, (S k).Nonempty) (N : ℕ) :
+    ‖avgCharProduct chi S N‖ ≤ 1 := by
+  rw [avgCharProduct_norm_eq]
+  apply Finset.prod_le_one
+  · intro k _; exact norm_nonneg _
+  · intro k hk
+    exact meanCharValue_norm_le_one chi (S k) (hne k)
+
+end AvgCharProduct
+
+
+/-! ## Part 11: Product Contraction Implies Averaged Sums Vanish -/
+
+section AvgContraction
+
+variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
+
+omit [Fintype G] [DecidableEq G] in
+/-- If the spectral gaps gamma_k = 1 - |meanCharValue chi (S k)| are all positive
+    and their sum diverges, then the averaged character product tends to 0 in norm.
+
+    Proof: |avgCharProduct| = prod |meanCharValue| = prod (1 - gamma_k) -> 0
+    by product_contraction_tendsto. -/
+theorem avgCharProduct_tendsto_zero (chi : G →* ℂˣ) (S : ℕ → Finset G)
+    (hgap_pos : ∀ k, 0 < 1 - ‖meanCharValue chi (S k)‖)
+    (hgap_le : ∀ k, 1 - ‖meanCharValue chi (S k)‖ ≤ 1)
+    (hdiv : ¬Summable (fun k => 1 - ‖meanCharValue chi (S k)‖)) :
+    Filter.Tendsto (fun N => ‖avgCharProduct chi S N‖) Filter.atTop (nhds 0) := by
+  -- Rewrite |avgCharProduct| = prod (1 - gamma_k)
+  have heq : ∀ N, ‖avgCharProduct chi S N‖ =
+      ∏ k ∈ Finset.range N, (1 - (1 - ‖meanCharValue chi (S k)‖)) := by
+    intro N
+    rw [avgCharProduct_norm_eq]
+    congr 1; ext k; ring
+  simp_rw [heq]
+  simp_rw [show ∀ k, 1 - (1 - ‖meanCharValue chi (S k)‖) = ‖meanCharValue chi (S k)‖
+    from fun k => by ring]
+  -- Now we need: prod ‖meanCharValue‖ -> 0
+  -- This is prod (1 - gamma) -> 0 with gamma = 1 - ‖meanCharValue‖
+  -- Rewrite back
+  have heq2 : ∀ N, ∏ k ∈ Finset.range N, ‖meanCharValue chi (S k)‖ =
+      ∏ k ∈ Finset.range N, (1 - (1 - ‖meanCharValue chi (S k)‖)) := by
+    intro N; congr 1; ext k; ring
+  simp_rw [heq2]
+  exact product_contraction_tendsto _ hgap_pos hgap_le hdiv
+
+end AvgContraction
+
+
+/-! ## Part 12: Proper InfinitelyManyLargeFactorSets and Product Multiset -/
+
+section IMLFS
+
+variable {q : ℕ} [Fact (Nat.Prime q)]
+
+/-- **InfinitelyManyLargeFactorSets'**: For each prime q, infinitely many steps n
+    have at least 2 distinct factor set residues mod q.
+    This ensures the spectral gap gives strict contraction infinitely often. -/
+def InfinitelyManyLargeFactorSets' (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  ∀ N : ℕ, ∃ n, N ≤ n ∧ 2 ≤ (factorSetResidues (q := q) n).card
+
+end IMLFS
+
+
+/-! ## Part 13: Product Multiset and Character Sum Identity
+
+We define the multiset of all achievable products from selecting one element
+from each of S(0), ..., S(N-1), and prove the key character sum factorization
+identity by induction. -/
+
+section ProductMultiset
+
+variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
+
+/-- The multiset of all achievable products from selecting one element
+    from each of S(0), ..., S(N-1).
+    - N = 0: the multiset is {1}
+    - N + 1: for each g in the N-step multiset and each s in S(N), form g * s -/
+def productMultiset (S : ℕ → Finset G) : ℕ → Multiset G
+  | 0 => {1}
+  | n + 1 => (productMultiset S n).bind (fun g => (S n).val.map (fun s => g * s))
+
+omit [Fintype G] [DecidableEq G] in
+/-- The cardinality of the product multiset equals the product of set sizes. -/
+theorem productMultiset_card (S : ℕ → Finset G) :
+    ∀ N, Multiset.card (productMultiset S N) =
+      ∏ k ∈ Finset.range N, (S k).card := by
+  intro N
+  induction N with
+  | zero => simp [productMultiset]
+  | succ n ih =>
+    simp only [productMultiset, Finset.prod_range_succ]
+    rw [Multiset.card_bind]
+    -- card o f = const (S n).card since f maps each g to (S n).val.map (g * ·)
+    have hconst : Multiset.map (Multiset.card ∘ fun g => Multiset.map (fun s => g * s) (S n).val)
+        (productMultiset S n) =
+        Multiset.map (fun _ => (S n).card) (productMultiset S n) := by
+      congr 1; ext g
+      simp only [Function.comp, Multiset.card_map, Finset.card_val]
+    rw [hconst, Multiset.map_const', Multiset.sum_replicate, ih, smul_eq_mul, mul_comm]
+
+omit [Fintype G] [DecidableEq G] in
+/-- **Character sum factorization**: The sum of chi over the product multiset
+    equals the product of per-step character sums.
+
+    This is the key identity: sum_{sigma} chi(prod sigma) = prod_k (sum_{s in S_k} chi(s)).
+
+    Proof by induction on N:
+    - N = 0: both sides are 1 (chi(1) = 1 and empty product = 1)
+    - N + 1: expand the bind, use multiplicativity of chi and factor out -/
+theorem char_sum_productMultiset (chi : G →* ℂˣ) (S : ℕ → Finset G) :
+    ∀ N, ((productMultiset S N).map (fun g => (chi g : ℂ))).sum =
+      ∏ k ∈ Finset.range N, (∑ s ∈ S k, (chi s : ℂ)) := by
+  intro N
+  induction N with
+  | zero =>
+    simp [productMultiset, map_one chi, Units.val_one]
+  | succ n ih =>
+    simp only [productMultiset, Finset.prod_range_succ]
+    -- Expand: multiset = bind of (product n) over (fun g => S(n).val.map (g * ·))
+    rw [Multiset.map_bind]
+    -- sum of bind = sum of sums
+    simp only [Multiset.sum_bind]
+    -- Each inner sum: for fixed g, sum over s in S(n) of chi(g * s)
+    -- = chi(g) * sum chi(s)
+    have inner_eq : (productMultiset S n).map
+        (fun g => ((S n).val.map (fun s => g * s)).map (fun x => (chi x : ℂ)) |>.sum) =
+        (productMultiset S n).map
+        (fun g => (chi g : ℂ) * ∑ s ∈ S n, (chi s : ℂ)) := by
+      congr 1; ext g
+      simp only [Multiset.map_map, Function.comp, map_mul, Units.val_mul]
+      rw [Multiset.sum_map_mul_left]
+      rfl
+    rw [inner_eq, Multiset.sum_map_mul_right, ih]
+
+omit [Fintype G] [DecidableEq G] in
+/-- The product multiset at step 0 is {1}. -/
+theorem productMultiset_zero (S : ℕ → Finset G) :
+    productMultiset S 0 = {1} := rfl
+
+end ProductMultiset
+
+
+/-! ## Part 14: Path Existence via Character Products
+
+The **path existence** theorem states: if for all nontrivial characters chi,
+the averaged character products tend to 0, then every element of G appears
+in the product multiset for large enough N.
+
+The proof uses:
+1. char_sum_productMultiset (PROVED): character sum over paths = product of per-step sums
+2. Character orthogonality (standard representation theory)
+3. Counting: count(a,N)/totalPaths = 1/|G| + (1/|G|) sum_{chi!=1} conj(chi(a)) * avgCharProduct
+4. When avgCharProduct -> 0, the count is eventually positive
+
+We state the existence as an open Prop since character orthogonality for
+arbitrary finite commutative groups (with G ->* C*) requires substantial
+assembly from Mathlib's MulChar API. -/
+
+section PathExistence
+
+variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
+
+/-- **Path existence from averaged character product vanishing** (open Prop):
+    If the averaged character products tend to 0 for all nontrivial chi,
+    then every element of G is achieved by some selection from the S_k.
+
+    The path count identity (from character orthogonality) gives:
+      count(a,N)/totalPaths(N) = 1/|G| + (1/|G|) sum_{chi!=1} conj(chi(a)) * avgCharProduct(chi,S,N)
+
+    When avgCharProduct -> 0 for all nontrivial chi, the ratio -> 1/|G| > 0,
+    so count(a,N) > 0 for large N.
+
+    This requires Fintype on the character group of G, which is available via
+    MulChar in Mathlib but requires nontrivial assembly for the G ->* C* form. -/
+def PathExistenceFromVanishing (G : Type*) [CommGroup G] [Fintype G]
+    [DecidableEq G] : Prop :=
+  ∀ (S : ℕ → Finset G),
+    (∀ k, (S k).Nonempty) →
+    (∀ k, 2 ≤ (S k).card) →
+    (∀ (chi : G →* ℂˣ), chi ≠ 1 →
+      Filter.Tendsto (fun N => ‖avgCharProduct chi S N‖) Filter.atTop (nhds 0)) →
+    ∀ a : G, ∃ N, a ∈ (productMultiset S N).toFinset
+
+end PathExistence
+
+
+/-! ## Part 15: Stochastic MC Landscape -/
+
+section StochasticMCLandscape
+
+/-- **Stochastic MC Landscape**: Summary of the Tier 1 framework.
+
+    ALL PROVED (Parts 9-13):
+    1. meanCharValue_norm_le_one: |mean chi S| <= 1 for nonempty S
+    2. meanCharValue_norm_lt_one_of_distinct: strict when distinct chi-values exist
+    3. avgCharProduct_norm_eq: |avgCharProduct| = prod |meanCharValue|
+    4. avgCharProduct_norm_le_one: bounded by 1
+    5. avgCharProduct_tendsto_zero: vanishes when spectral gaps diverge
+    6. char_sum_productMultiset: character sum = product of per-step sums (KEY IDENTITY)
+    7. productMultiset_card: |paths| = prod |S_k|
+
+    OPEN (standard representation theory, not project-specific):
+    8. PathExistenceFromVanishing: avgCharProduct -> 0 for all chi != 1 implies
+       every group element appears in the product multiset
+
+    The chain for Stochastic MC:
+    IMLFS' -> spectral gap at infinitely many steps -> avgCharProduct -> 0
+    -> PathExistenceFromVanishing -> exists selection to -1 -/
+theorem stochastic_mc_landscape :
+    -- 1. Mean char value bounded by 1
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (S : Finset G), S.Nonempty →
+       ‖meanCharValue chi S‖ ≤ 1)
+    ∧
+    -- 2. Strict bound when distinct values exist
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (S : Finset G), 2 ≤ S.card →
+       (∃ s ∈ S, ∃ t ∈ S, (chi s : ℂ) ≠ (chi t : ℂ)) →
+       ‖meanCharValue chi S‖ < 1)
+    ∧
+    -- 3. Product norm factorization
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (S : ℕ → Finset G) (N : ℕ),
+       ‖avgCharProduct chi S N‖ = ∏ k ∈ Finset.range N, ‖meanCharValue chi (S k)‖)
+    ∧
+    -- 4. Character sum factorization over product multiset
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (S : ℕ → Finset G) (N : ℕ),
+       ((productMultiset S N).map (fun g => (chi g : ℂ))).sum =
+         ∏ k ∈ Finset.range N, (∑ s ∈ S k, (chi s : ℂ))) := by
+  exact ⟨fun G _ _ _ chi S hne => meanCharValue_norm_le_one chi S hne,
+         fun G _ _ _ chi S hcard hdist => meanCharValue_norm_lt_one_of_distinct chi S hcard hdist,
+         fun G _ _ _ chi S N => avgCharProduct_norm_eq chi S N,
+         fun G _ _ _ chi S N => char_sum_productMultiset chi S N⟩
+
+end StochasticMCLandscape
