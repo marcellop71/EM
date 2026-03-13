@@ -57,183 +57,16 @@ Under DH, every prime that never appears in the sequence (with SE
 satisfied) is infinitely selectable.
 \end{theorem}
 
-\paragraph{The random-factor variant is easy.}
-Consider a variant of the Euclid--Mullin construction where, instead of
-the smallest prime factor, one picks a \emph{random} prime factor
-of~$\Prod{2}(n)+1$ at each step.  In this variant, MC follows from
-classical mixing theory.  For any target
-prime~$p$, the residue $r_n = \Prod{2}(n) \bmod p$ performs a
-multiplicative walk on $(\ZZ/p\ZZ)^\times$.  In the random-factor
-variant, each multiplier is a random element of the group; once the
-multipliers generate the full group (which PRE guarantees), the walk
-is a genuine random walk with full support.  By classical
-equidistribution on finite groups (Diaconis--Shahshahani), the walk
-mixes in $O(\log p)$ steps:
-$r_n = -1$ (i.e., $p \mid \Prod{2}(n)+1$) occurs with
-frequency $\to 1/(p\!-\!1)$---infinitely often with
-probability~1.  When $p$ divides the Euclid number, the random rule
-selects~$p$ with probability $1/|F(S_n)|$ (which may miss), but
-cofinal hitting provides infinitely many chances, so~$p$ is
-eventually selected.
-
-\paragraph{The lpf variant is hard---yet structurally better.}
-The actual Euclid--Mullin sequence uses
-$\seq{2}(n{+}1) = \minFac(\Prod{2}(n){+}1)$, a \emph{deterministic}
-function of the walk position.  Compared to the random-factor variant,
-$\minFac$ has three measurable advantages:
-
-\smallskip
-\begin{center}
-\begin{tabular}{l@{\quad}l@{\quad}l}
-\toprule
- & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
-\midrule
-\textbf{Selection when $q \mid P(n){+}1$}
-  & Probability $1/|F(S_n)|$ & Probability~1 \\
-\textbf{Accumulator growth}
-  & Faster (random $\geq \minFac$) & Slowest possible \\
-\textbf{Hits on $-1$ needed}
-  & Infinitely many & \textbf{One} (lethal hit) \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\smallskip\noindent
-\emph{Selection efficiency.}\enspace Past the sieve gap, 0-accessibility
-guarantees: if $q \mid \Prod{2}(n)+1$ then
-$q = \minFac(\Prod{2}(n)+1)$---selection is certain, not
-probabilistic.  \emph{Growth rate.}\enspace Since
-$\minFac(N) \leq p$ for any factor~$p$ of~$N$, the accumulator
-$\Prod{2}(n)$ grows minimally under the $\minFac$ rule, giving
-exponentially more steps before it becomes astronomically large---more
-chances for~$q$ to divide.  \emph{Lethality.}\enspace The inductive
-bootstrap shows one single hit suffices: $\MC({<}\,q)$ ensures~$q$
-is minimal whenever it divides, so hitting $-1$ once means~$q$
-enters the sequence.  The random variant requires infinitely many
-hits to overcome low per-hit selection probability.
-
-\emph{MinFac is strictly better in every measurable dimension.
-So why can't we prove it works?}
-
-\paragraph{The independence trade-off.}
-The answer is surgical: the random variant possesses a single property
-that $\minFac$ lacks, and that property is the \emph{only thing the
-proof uses}.
-
-The property is \textbf{independence of multiplier from walk
-position}.  In the random-factor variant, the multiplier at step~$n$
-is selected independently of which residue class
-$\Prod{2}(n) \bmod q$ occupies.  Walk position and multiplier are
-independent random variables, and independence is the engine that
-drives mixing.  Diaconis--Shahshahani's theorem applies whenever the
-multipliers are i.i.d.\ from a distribution whose support generates
-the group.
-
-In the $\minFac$ variant, the multiplier is
-$\minFac(\Prod{2}(n){+}1) \bmod q$---a deterministic function of the
-full integer~$\Prod{2}(n)+1$.  The CRT multiplier invariance
-(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}) shows
-that the outcome is independent of $\Prod{2}(n) \bmod q$ at the
-\emph{population} level: for generic integers, knowing the mod-$q$
-residue does not predict $\minFac$.  But for the specific orbit~$n=2$,
-the multiplier is a deterministic value, and mixing theorems for
-deterministic sequences cannot be invoked.
-
-The random variant thus sacrifices selection efficiency (it may
-miss~$q$ even when $q$ divides) in exchange for statistical
-independence.  The $\minFac$ variant has perfect selection but no
-independence:
-
-\smallskip
-\begin{center}
-\begin{tabular}{l@{\quad}l@{\quad}l}
-\toprule
- & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
-\midrule
-Selection & Bad ($1/k$ chance) & Perfect \\
-Mixing & Random walk theorem & Unproved \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\smallskip\noindent
-The random variant's proof: mixing $\to$ cofinal hitting $\to$
-infinitely many chances compensate for low per-hit probability.
-The $\minFac$ variant needs only one hit---absurdly less than the
-random variant achieves---but has no way to produce even that one
-without mixing.
-
-\paragraph{The stochastic domination failure.}
-\label{sec:stoch-dom}
-The natural instinct is to argue by \emph{stochastic domination}:
-if the random walk visits~$-1$ cofinally, and $\minFac$ is ``better
-in every way,'' then $\minFac$ should also visit~$-1$.  This argument
-fails because the two processes \emph{diverge after one step}.
-
-At step~$n$, both processes face the same Euclid number
-$\Prod{2}(n)+1$ with factor set~$F(S_n)$.  The random variant picks a
-uniformly random element of~$F(S_n)$; the $\minFac$ variant picks the
-minimum.  After this step, the two processes have different
-accumulators (they multiplied by different primes), so they face
-different Euclid numbers at the next step.  The processes explore
-completely different trajectories.  Domination fails because the
-two walks live on different probability spaces after step~1; we
-cannot compare them step-by-step.
-
-A subtler comparison uses \emph{visit measures}.  Define
-$\mu_{\mathrm{rand}}(a) = \lim_{N} \frac{1}{N}|\{n < N :
-w_q^{\mathrm{rand}}(n) = a\}|$ and analogously
-$\mu_{\min}(a)$ for the $\minFac$ walk.  For the random variant,
-$\mu_{\mathrm{rand}} = $ uniform on $(\ZZ/q\ZZ)^\times$ by mixing.
-For $\minFac$, CME/CCSB asserts $\mu_{\min} \approx$ uniform, and
-DSL asserts this follows from PE\@.  The comparison
-$\mu_{\min}(-1) \geq 1/(q{-}1)$ is precisely what needs proof, and is
-the content of DSL\@.
-
-\paragraph{CRT blindness as the organizing principle.}
-The self-correcting feedback mechanism (\S\ref{sec:visit-eqd})
-provides the intuition for \emph{why} $\mu_{\min} \approx$ uniform.
-If the walk concentrates on a class~$a$, then at each visit:
-(1)~the Euclid number satisfies $\Prod{2}(n)+1 \equiv a+1 \pmod{q}$;
-(2)~by MinFacSelectionIndependence (Level~2 CRT,
-\lean{EM/Ensemble/CRT.lean}{MinFacSelectionIndependence}),
-$\minFac$ of numbers $\equiv a{+}1 \pmod{q}$ is equidistributed
-mod~$q$ in the population; (3)~the next multiplier scatters the
-walk away from~$a$ toward all classes.  Concentration generates
-negative feedback pushing toward uniformity---proved as
-infrastructure
-(\code{lyapunov\_one\_step}, \code{uniform\_multiplier\_zero\_drift},
-\code{group\_walk\_doubly\_stochastic}).
-What remains open is whether the feedback is strong enough to force
-equidistribution---i.e., Self-Correcting Drift (SCD), shown
-equivalent to SVE (Dead End~\#120).
-
-At the broadest level, the question becomes: \emph{for any
-deterministic CRT-blind, 0-accessible selection rule~$\sigma$
-applied to the factor set $F(S_n)$ at each step, must the resulting
-walk hit~$-1$ cofinally?}  A positive answer would cover $\minFac$
-as a special case (and explain the random variant a fortiori).  The
-answer is \emph{no} in general---the $\ZZ/4\ZZ$ counterexample
-(\lean{EM/FunctionField/CyclicWalkCoverage.lean}%
-{alternating\_walk\_misses\_two}, Dead End~\#130)
-exhibits a deterministic walk with generating support that
-permanently misses an element.  But that counterexample uses an
-adversarial selection rule, not a CRT-blind one.  The real question
-is: \emph{does CRT-blindness + 0-accessibility + sieve gap +
-super-exponential growth force hitting?}  This is DSL, restated in
-the language of selection rules.
-
-The inductive bootstrap (Section~\ref{sec:bootstrap}) partially
-resolves the comparison:
-$\MC({<}\,p)$ ensures all primes below~$p$ are in the sequence,
-hence divide~$\Prod{2}(n)$, hence cannot divide~$\Prod{2}(n)+1$.
-Past a computable stage, $p$ is the \emph{smallest} available factor
-whenever it divides the Euclid number---reducing the $\minFac$
-variant to the ``any-factor'' variant for the tail of the sequence.
-But the gap between ``any-factor'' and ``random'' remains:
-in the any-factor regime, \emph{selection} is solved,
-yet \emph{hitting} is not, because hitting requires the population-to-orbit
-transfer that DSL encodes.
+The comparison between the $\minFac$ rule and alternative selection
+rules---random factor, $\{\minFac, \operatorname{secondMinFac}\}$,
+and the function field analog---reveals why independence is the key
+missing ingredient.  Section~\ref{sec:variants} develops these
+variants in detail; the core observation is that the random variant
+possesses \textbf{independence of multiplier from walk position}
+(the sole property needed for mixing), while $\minFac$ trades
+independence for perfect selection efficiency.  Stochastic domination
+fails because the two processes diverge after one step
+(\S\ref{sec:stoch-dom}).
 
 \paragraph{The Marginal/Joint Barrier}
 \label{sec:oracle}
@@ -1114,101 +947,16 @@ unbiased over the squarefree ensemble).
 The latter is the orbit-specificity barrier
 restated in spectral language.
 
-\paragraph{Stochastic MC: path existence.}
-What \emph{can} be proved is a weaker, combinatorial statement:
-under InfinitelyManyLargeFactorSets, there \emph{exists} a selection
-path through the factor sets that hits~$-1$ for every prime~$q$.
-The formalization proves the complete chain:
-\begin{enumerate}[nosep]
-\item Define the \emph{mean character value} $\bar\chi(S) = |S|^{-1}\sum_{s \in S}\chi(s)$
-  and the \emph{averaged character product} $\prod_{k < N}\bar\chi(S_k)$.
-\item When $S_k$ contains elements with distinct $\chi$-values,
-  $\|\bar\chi(S_k)\| < 1$
-  (\lean{EM/Advanced/VanishingNoise.lean}{meanCharValue\_norm\_lt\_one\_of\_distinct}).
-  If the spectral gaps $1 - \|\bar\chi(S_k)\|$ diverge in sum, the
-  product tends to~$0$.
-\item The \emph{character sum factorization identity}
-  (\lean{EM/Advanced/VanishingNoise.lean}{char\_sum\_productMultiset})
-  shows $\sum_\sigma \chi(\prod_k \sigma_k)
-  = \prod_k \bigl(\sum_{s \in S_k}\chi(s)\bigr)$,
-  where $\sigma$ ranges over all selection paths.
-\item A \textbf{Fourier counting argument}
-  (\lean{EM/Advanced/VanishingNoise.lean}{pathExistenceFromVanishing\_proved},
-  ${\sim}160$~lines)
-  proves: if the averaged products vanish for all nontrivial~$\chi$,
-  then every element of~$G$ appears in the product multiset.
-  The proof constructs the MulChar~$\leftrightarrow$~$(G \to^* \mathbb{C}^\times)$ bridge,
-  derives character orthogonality for abstract groups, and applies the
-  Fourier identity $|G| \cdot \operatorname{count}(a, M)
-  = \sum_\chi \overline{\chi(a)}\cdot(\sum_{g \in M}\chi(g))$.
-\end{enumerate}
-This gives a machine-verified ``stochastic MC'': if the factor sets
-of $\Prod{2}(n)+1$ have sufficiently many distinct residues mod~$q$
-infinitely often, then \emph{some} selection from those factor sets
-reaches every residue class---but not necessarily the $\minFac$ selection.
-An independent two-point formulation
-(\lean{EM/Advanced/VanishingNoise.lean}{twoPointCharValue\_norm\_lt\_one})
-shows that even a tiny $\varepsilon$-bias coin flip between two factors
-with distinct character values gives strict spectral contraction, using
-strict convexity of the unit ball in~$\mathbb{C}$.
-
-\paragraph{Self-consistent $\varepsilon$-walk.}
-The stochastic MC above is \emph{physically inconsistent}: the factor
-sets are taken from the $\minFac$ walk, but the selections do not feed
-back into the accumulator.  The formalization also defines a
-\textbf{self-consistent $\varepsilon$-walk}
-(\lean{EM/Advanced/VanishingNoise.lean}{epsWalkProd})
-in which the chosen factor---either $\minFac(P(n){+}1)$ or
-$\operatorname{secondMinFac}(P(n){+}1)$---becomes the actual multiplier,
-updating the accumulator and producing a new Euclid number at the next
-step.  A decision sequence $\sigma : \mathbb{N} \to \mathrm{Bool}$
-determines the choice; the all-true sequence recovers the EM walk
-(\lean{EM/Advanced/VanishingNoise.lean}{epsWalkProd\_emDecision}).
-The function $\operatorname{secondMinFac}(n)$ (second-smallest prime
-factor) is defined and proved prime, divisor of~$n$, and
-$\geq \minFac(n)$.
-
-This self-consistent walk generates a \emph{binary branching tree}
-of depth~$N$ with $2^N$ leaves, where each internal node has its own
-path-dependent factor set.  The \emph{tree character sum}
-(\lean{EM/Advanced/VanishingNoise.lean}{treeCharSum}),
-a weighted sum of $\chi(\text{leaf position})$ over all leaves, is proved
-$\leq 1$ in norm.  Unlike the product multiset of Parts~9--15, this sum
-does \textbf{not} factorize as $\prod_k \bar\chi(S_k)$: the left and
-right subtrees start from different accumulators, so their character sums
-differ.  The open hypothesis
-\defname{TreeContractionHypothesis}
-asserts that the tree character sum tends to zero for all nontrivial~$\chi$;
-it is strictly weaker than DSL (which requires the deterministic path to
-mix) but strictly stronger than the product approximation.
-
-\paragraph{Non-self-consistent variant MC.}
-An independent route bypasses the tree contraction problem entirely.
-At each EM step~$n$, form the two-element unit set
-$\{\minFac(P(n){+}1),\, \operatorname{secondMinFac}(P(n){+}1)\} \bmod q$
-in $(\ZZ/q\ZZ)^\times$.  When one factor equals~$q$
-(a non-unit), fall back to $\operatorname{Finset.univ}$, whose
-mean character value is~$0$ by orthogonality---giving perfect contraction
-(\lean{EM/Advanced/VanishingNoiseVariant.lean}{meanCharValue\_univ\_eq\_zero}).
-Under \defname{UFDStrong}---spectral gaps of the padded unit sets
-are non-summable for every nontrivial~$\chi$---the
-sparse product contraction machinery (Part~19) gives vanishing averaged
-products, and the Fourier counting argument (Part~14) yields
-path existence.  Concretely:
-\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_from\_ufd\_strong\_proved}]
-\label{thm:variant-mc}
-For every prime $q \geq 3$, if $\mathrm{UFDStrong}(q)$ holds, then
-every element of $(\ZZ/q\ZZ)^\times$ is representable as a product
-of selections from $\{\minFac,\operatorname{secondMinFac}\}$ of
-consecutive Euclid numbers.  In particular, some selection path
-hits~$-1$.
-\end{theorem}
-\noindent
-This does \textbf{not} imply standard MC: the selection~$\sigma$ may
-differ per prime~$q$, and the virtual accumulator
-$\prod_k \text{factor}_{\sigma(k)}$ is not the EM accumulator
-$P(n)$.  The gap is the same orbit-specificity barrier
-(Dead End~\#130).
+The vanishing noise perspective also motivates the
+$\{\minFac, \operatorname{secondMinFac}\}$ variant MC
+(Section~\ref{sec:minfac-secondminfac}), which proves that
+\emph{some} selection from two-point factor sets reaches every
+residue class---under a single open spectral hypothesis
+(UFDStrong).  The stochastic MC chain and the self-consistent
+$\varepsilon$-walk branching tree are developed in
+Section~\ref{sec:variants}; the function field analog
+(Section~\ref{sec:function-field}) confirms that the difficulty is
+orbit-specificity, not analytic number theory.
 
 \paragraph{Does the Walk Hit $-1$?}
 

@@ -740,3 +740,321 @@ theorem variant_mc_landscape :
          fun n => ⟨minFac_always_divides_euclid n, secondMinFac_always_divides_euclid n⟩⟩
 
 end NonSelfConsistentVariant
+
+
+/-! ## Part 22: Routes to UFDStrong
+
+Three independent routes reducing `UFDStrong` to progressively weaker hypotheses,
+plus assembly theorems and a landscape theorem.
+
+* Route 1: `MinFacRatioEscape` (quantitative: per-chi, infinitely many steps with
+  gap bounded below by a fixed positive constant) implies `UFDStrong` directly.
+* Route 2: `MinFacRatioEscapeQual` (qualitative: per-chi, infinitely many steps
+  with card >= 2 and distinct chi-values) implies `MinFacRatioEscape` via finite
+  group pigeonhole: the gap function has finite range, so positive gaps are
+  bounded away from 0.
+* Route 3: `OrbitMFRE` (orbit-level minFac residue equidistribution) implies
+  `MinFacRatioEscapeQual` because equidistribution prevents character values from
+  being confined to a proper coset.
+
+All three compose with the proved chain `UFDStrong => VariantMC`.
+-/
+
+section RoutesToUFDStrong
+
+variable {q : ℕ} [hqp : Fact (Nat.Prime q)]
+
+/-! ### Utility: Non-summability from frequently exceeding a fixed threshold -/
+
+/-- If a nonneg sequence has infinitely many terms above a fixed positive threshold,
+    the sequence is not summable. Proof: summable implies convergence to 0,
+    contradicting the infinitely-many-large-terms condition. -/
+theorem not_summable_of_frequently_ge (f : ℕ → ℝ) (hf_nonneg : ∀ n, 0 ≤ f n)
+    {δ : ℝ} (hδ : 0 < δ) (hinf : ∀ N, ∃ n, N ≤ n ∧ δ ≤ f n) :
+    ¬Summable f := by
+  intro hsum
+  have htends := hsum.tendsto_atTop_zero
+  rw [Metric.tendsto_atTop] at htends
+  obtain ⟨N₀, hN₀⟩ := htends δ hδ
+  obtain ⟨n, hn, hfn⟩ := hinf N₀
+  have h := hN₀ n hn
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (hf_nonneg n)] at h
+  linarith
+
+/-- Non-summability when a nonneg function with finite range has infinitely many
+    positive values. The key insight: a finite set of positive reals has a positive
+    minimum, providing the uniform lower bound needed for non-summability. -/
+theorem not_summable_of_frequently_pos_finite_range (f : ℕ → ℝ) (hf_nonneg : ∀ n, 0 ≤ f n)
+    (hfinite : Set.Finite (Set.range f))
+    (hinf : ∀ N, ∃ n, N ≤ n ∧ 0 < f n) :
+    ¬Summable f := by
+  -- The positive values in the range form a finite nonempty set
+  set posRange := {x ∈ hfinite.toFinset | (0 : ℝ) < x} with hposRange_def
+  have hne : posRange.Nonempty := by
+    obtain ⟨n, -, hfn⟩ := hinf 0
+    exact ⟨f n, by rw [hposRange_def, Finset.mem_filter]; exact ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hfn⟩⟩
+  -- The minimum of posRange is positive
+  set δ := posRange.min' hne
+  have hδ_pos : 0 < δ := by
+    have hmem := Finset.min'_mem posRange hne
+    rw [Finset.mem_filter] at hmem
+    exact hmem.2
+  -- Every positive value of f is >= δ
+  have hδ_le : ∀ n, 0 < f n → δ ≤ f n := by
+    intro n hfn
+    apply Finset.min'_le
+    rw [Finset.mem_filter]
+    exact ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hfn⟩
+  -- Apply the quantitative non-summability lemma
+  exact not_summable_of_frequently_ge f hf_nonneg hδ_pos
+    (fun N => by obtain ⟨n, hn, hfn⟩ := hinf N; exact ⟨n, hn, hδ_le n hfn⟩)
+
+/-! ### Route 1: MinFacRatioEscape (quantitative) => UFDStrong -/
+
+/-- **MinFacRatioEscape** (quantitative): For each nontrivial character chi on
+    (ZMod q)ˣ, there exists a fixed positive spectral gap threshold delta such that
+    infinitely many steps n have gap >= delta at the padded unit set.
+
+    This is the quantitative version that directly feeds into non-summability.
+    The qualitative version `MinFacRatioEscapeQual` (card >= 2 + distinct chi-values)
+    implies this via the finite-group argument. -/
+def MinFacRatioEscape (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  ∀ (chi : (ZMod q)ˣ →* ℂˣ), chi ≠ 1 →
+    ∃ (δ : ℝ), 0 < δ ∧
+      ∀ N, ∃ n, N ≤ n ∧ δ ≤ 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖
+
+/-- MinFacRatioEscape directly implies UFDStrong: the quantitative gap bound
+    feeds into non-summability via `not_summable_of_frequently_ge`. -/
+theorem ratio_escape_implies_ufdStrong (hre : MinFacRatioEscape q) :
+    UFDStrong q := by
+  intro chi hchi
+  obtain ⟨δ, hδ_pos, hinf⟩ := hre chi hchi
+  exact not_summable_of_frequently_ge _ (fun n => paddedUnitSet_gap_nonneg chi n) hδ_pos hinf
+
+/-! ### Route 2: Qualitative MinFacRatioEscape => Quantitative (finite group argument) -/
+
+/-- **MinFacRatioEscapeQual** (qualitative): For each nontrivial character chi,
+    infinitely many steps n have (a) rawTwoPointUnitSet with card >= 2, and
+    (b) the chi-values at the two lifted primes are distinct.
+
+    This is the more natural number-theoretic condition. -/
+def MinFacRatioEscapeQual (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  ∀ (chi : (ZMod q)ˣ →* ℂˣ), chi ≠ 1 →
+    ∀ N, ∃ n, N ≤ n ∧
+      2 ≤ (rawTwoPointUnitSet (q := q) n).card ∧
+      (chi (liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q)) : ℂ) ≠
+      (chi (liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q)) : ℂ)
+
+/-- When rawTwoPointUnitSet has card >= 2, paddedUnitSet equals rawTwoPointUnitSet. -/
+theorem paddedUnitSet_eq_raw_of_card (n : ℕ)
+    (hcard : 2 ≤ (rawTwoPointUnitSet (q := q) n).card) :
+    paddedUnitSet (q := q) n = rawTwoPointUnitSet (q := q) n := by
+  simp only [paddedUnitSet, if_pos hcard]
+
+/-- The rawTwoPointUnitSet contains liftToUnit of minFac. -/
+theorem liftToUnit_minFac_mem_raw (n : ℕ) :
+    liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q)
+      ∈ rawTwoPointUnitSet (q := q) n := by
+  simp [rawTwoPointUnitSet, Finset.mem_insert, Finset.mem_singleton]
+
+/-- The rawTwoPointUnitSet contains liftToUnit of secondMinFac. -/
+theorem liftToUnit_secondMinFac_mem_raw (n : ℕ) :
+    liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q)
+      ∈ rawTwoPointUnitSet (q := q) n := by
+  simp [rawTwoPointUnitSet, Finset.mem_insert, Finset.mem_singleton]
+
+/-- At a qualitative escape step, the gap at paddedUnitSet is strictly positive.
+    Key: rawTwoPointUnitSet has card >= 2, so paddedUnitSet = rawTwoPointUnitSet,
+    and distinct chi-values give strict contraction via `meanCharValue_norm_lt_one_of_distinct`. -/
+theorem gap_pos_at_escape (n : ℕ) (chi : (ZMod q)ˣ →* ℂˣ)
+    (hcard : 2 ≤ (rawTwoPointUnitSet (q := q) n).card)
+    (hdiff : (chi (liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q)) : ℂ) ≠
+             (chi (liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q)) : ℂ)) :
+    0 < 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ := by
+  rw [paddedUnitSet_eq_raw_of_card n hcard]
+  have hlt := meanCharValue_norm_lt_one_of_distinct chi (rawTwoPointUnitSet (q := q) n) hcard
+    ⟨liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q),
+     liftToUnit_minFac_mem_raw n,
+     liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q),
+     liftToUnit_secondMinFac_mem_raw n,
+     hdiff⟩
+  linarith
+
+/-- The gap function n -> 1 - ||meanCharValue chi (paddedUnitSet n)|| has finite range.
+    This follows from the fact that paddedUnitSet maps N to Finset (ZMod q)^x, which is
+    a Fintype (power set of a finite type). So the composition through meanCharValue
+    and norm produces only finitely many distinct values. -/
+theorem gap_function_finite_range (chi : (ZMod q)ˣ →* ℂˣ) :
+    Set.Finite (Set.range (fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖)) := by
+  -- paddedUnitSet maps to Finset (ZMod q)ˣ, which is a Fintype
+  -- The composition gap ∘ paddedUnitSet factors through this Fintype
+  apply Set.Finite.subset
+    (Set.Finite.image (fun S => 1 - ‖meanCharValue chi S‖)
+      (Set.toFinite (Set.univ : Set (Finset (ZMod q)ˣ))))
+  intro x hx
+  obtain ⟨n, rfl⟩ := hx
+  exact ⟨paddedUnitSet (q := q) n, Set.mem_univ _, rfl⟩
+
+/-- The qualitative MinFacRatioEscape implies the quantitative version.
+    Proof: the gap function has finite range (by `gap_function_finite_range`),
+    escape steps give positive gaps (by `gap_pos_at_escape`), and a finite set
+    of positive reals has a positive minimum. -/
+theorem qual_implies_quant (hq : MinFacRatioEscapeQual q) : MinFacRatioEscape q := by
+  intro chi hchi
+  -- The gap function has finite range
+  have hfin := gap_function_finite_range (q := q) chi
+  -- Escape steps give positive gaps
+  have hpos : ∀ N, ∃ n, N ≤ n ∧
+      0 < 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ := by
+    intro N
+    obtain ⟨n, hn, hcard, hdiff⟩ := hq chi hchi N
+    exact ⟨n, hn, gap_pos_at_escape n chi hcard hdiff⟩
+  -- Extract the positive values in the range
+  set posRange := {x ∈ hfin.toFinset | (0 : ℝ) < x}
+  have hne : posRange.Nonempty := by
+    obtain ⟨n, -, hfn⟩ := hpos 0
+    exact ⟨_, by rw [Finset.mem_filter]; exact ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hfn⟩⟩
+  set δ := posRange.min' hne
+  have hδ_pos : 0 < δ := by
+    have hmem := Finset.min'_mem posRange hne
+    rw [Finset.mem_filter] at hmem
+    exact hmem.2
+  have hδ_le : ∀ n, 0 < 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ →
+      δ ≤ 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ := by
+    intro n hfn
+    apply Finset.min'_le
+    rw [Finset.mem_filter]
+    exact ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hfn⟩
+  exact ⟨δ, hδ_pos, fun N => by
+    obtain ⟨n, hn, hfn⟩ := hpos N
+    exact ⟨n, hn, hδ_le n hfn⟩⟩
+
+/-- The qualitative MinFacRatioEscape implies UFDStrong. Composition of
+    `qual_implies_quant` and `ratio_escape_implies_ufdStrong`. -/
+theorem qual_escape_implies_ufdStrong (hq : MinFacRatioEscapeQual q) :
+    UFDStrong q :=
+  ratio_escape_implies_ufdStrong (qual_implies_quant hq)
+
+/-! ### Route 3: OrbitMFRE => MinFacRatioEscapeQual
+
+OrbitMFRE says that for each unit a in (ZMod q)ˣ, the density of steps n where
+liftToUnit(minFac(prod(n)+1)) = a tends to 1/(q-1). Under this, for any nontrivial
+character chi, the density of steps where chi(minFac-unit) takes any particular value
+is at most |ker(chi)|/(q-1) < 1, so infinitely many steps have a non-default chi-value.
+
+Combined with the fact that secondMinFac also divides prod(n)+1 and gives a unit in
+(ZMod q)ˣ, we get infinitely many steps where chi-values at minFac and secondMinFac
+can differ.
+
+The formal proof requires density-based arguments (eventually, density of steps with
+chi(minFac) = chi(secondMinFac) is bounded away from 1). This involves quantitative
+Fourier analysis on the finite group, which we state as an open Prop and document
+the proof strategy. -/
+
+/-- **OrbitMFRE**: Orbit-level minFac residue equidistribution. For each unit a in
+    (ZMod q)ˣ, the density of steps n where liftToUnit(minFac(prod(n)+1)) = a
+    converges to 1/(q-1). -/
+def OrbitMFRE (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  ∀ (a : (ZMod q)ˣ), ∀ ε > 0, ∃ N₀, ∀ N ≥ N₀,
+    |((Finset.range N).filter (fun n =>
+        liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q) = a)).card / (N : ℝ) -
+     1 / (Fintype.card (ZMod q)ˣ : ℝ)| < ε
+
+/-- **OrbitMFREImpliesEscapeQual**: OrbitMFRE implies qualitative MinFacRatioEscape.
+
+    Proof sketch: Under OrbitMFRE, for any nontrivial chi, the density of steps where
+    chi(minFac-unit) = 1 is at most |ker(chi)|/(q-1) < 1 (since chi is nontrivial,
+    ker(chi) is a proper subgroup). So at positive density, chi(minFac-unit) != 1.
+    At these steps, either (a) rawTwoPointUnitSet has card < 2 (covered by fallback),
+    or (b) card >= 2 and chi(minFac-unit) != chi(secondMinFac-unit) = 1 does not
+    hold trivially -- we need chi(minFac) != chi(secondMinFac) specifically.
+
+    The gap between "chi(minFac) takes non-identity value" and "chi(minFac) != chi(secondMinFac)"
+    requires additional analysis of secondMinFac distribution. This is a genuine gap
+    when secondMinFac = minFac mod q at those steps. We formalize this as an open Prop
+    documenting the proof strategy. -/
+def OrbitMFREImpliesEscapeQual (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  2 < q → OrbitMFRE q → MinFacRatioEscapeQual q
+
+/-! ### Assembly chains: composing routes to VariantMC -/
+
+/-- **Route 1 assembly**: Quantitative MinFacRatioEscape => UFDStrong => VariantMC. -/
+theorem route1_mfre_to_variant_mc (hq3 : 2 < q) (hre : MinFacRatioEscape q) :
+    ∀ (a : (ZMod q)ˣ), ∃ N,
+      a ∈ (productMultiset (paddedUnitSet (q := q)) N).toFinset :=
+  ufdStrong_implies_path_existence hq3 (ratio_escape_implies_ufdStrong hre)
+
+/-- **Route 2 assembly**: Qualitative MinFacRatioEscapeQual => UFDStrong => VariantMC. -/
+theorem route2_qual_to_variant_mc (hq3 : 2 < q) (hq : MinFacRatioEscapeQual q) :
+    ∀ (a : (ZMod q)ˣ), ∃ N,
+      a ∈ (productMultiset (paddedUnitSet (q := q)) N).toFinset :=
+  ufdStrong_implies_path_existence hq3 (qual_escape_implies_ufdStrong hq)
+
+/-- **Route 3 assembly**: OrbitMFRE + bridge => UFDStrong => VariantMC. -/
+theorem route3_orbit_to_variant_mc (hq3 : 2 < q)
+    (hbridge : OrbitMFREImpliesEscapeQual q) (hmfre : OrbitMFRE q) :
+    ∀ (a : (ZMod q)ˣ), ∃ N,
+      a ∈ (productMultiset (paddedUnitSet (q := q)) N).toFinset :=
+  route2_qual_to_variant_mc hq3 (hbridge hq3 hmfre)
+
+/-- **Route 1 to UFDStrong assembly**: quantitative escape directly gives UFDStrong. -/
+theorem route1_to_ufdStrong (hre : MinFacRatioEscape q) : UFDStrong q :=
+  ratio_escape_implies_ufdStrong hre
+
+/-- **Route 2 to UFDStrong assembly**: qualitative escape gives UFDStrong via
+    the finite-range argument. -/
+theorem route2_to_ufdStrong (hq : MinFacRatioEscapeQual q) : UFDStrong q :=
+  qual_escape_implies_ufdStrong hq
+
+/-- **Route 3 to UFDStrong assembly**: OrbitMFRE + bridge gives UFDStrong. -/
+theorem route3_to_ufdStrong
+    (hq3 : 2 < q) (hbridge : OrbitMFREImpliesEscapeQual q) (hmfre : OrbitMFRE q) :
+    UFDStrong q :=
+  qual_escape_implies_ufdStrong (hbridge hq3 hmfre)
+
+/-! ### Landscape theorem -/
+
+/-- **Routes to UFDStrong Landscape**: summary of Part 22.
+
+    ALL internal reductions PROVED (no sorry). Open hypotheses:
+    A. MinFacRatioEscape (quantitative spectral gap at infinitely many steps)
+    B. MinFacRatioEscapeQual (qualitative: card >= 2 + distinct chi-values i.o.)
+    C. OrbitMFRE (orbit-level minFac equidistribution)
+    D. OrbitMFREImpliesEscapeQual (density argument bridge)
+
+    PROVED reductions:
+    1. not_summable_of_frequently_ge (utility)
+    2. not_summable_of_frequently_pos_finite_range (finite range + i.o. positive => not summable)
+    3. ratio_escape_implies_ufdStrong (Route 1: quantitative => UFDStrong)
+    4. qual_implies_quant (Route 2: qualitative => quantitative via finite group)
+    5. qual_escape_implies_ufdStrong (Route 2 composed)
+    6. gap_function_finite_range (paddedUnitSet finite range)
+    7. gap_pos_at_escape (positive gap at escape steps)
+    8. route1/2/3_to_variant_mc (assembly chains to VariantMC) -/
+theorem routes_to_ufdStrong_landscape :
+    -- 1. Quantitative MinFacRatioEscape => UFDStrong
+    (MinFacRatioEscape q → UFDStrong q)
+    ∧
+    -- 2. Qualitative MinFacRatioEscapeQual => quantitative MinFacRatioEscape
+    (MinFacRatioEscapeQual q → MinFacRatioEscape q)
+    ∧
+    -- 3. Qualitative => UFDStrong (composed)
+    (MinFacRatioEscapeQual q → UFDStrong q)
+    ∧
+    -- 4. Gap function has finite range (structural fact)
+    Set.Finite (Set.range (fun n => 1 - ‖meanCharValue (1 : (ZMod q)ˣ →* ℂˣ) (paddedUnitSet (q := q) n)‖))
+    ∧
+    -- 5. Not summable from frequently positive + finite range (utility)
+    (∀ (f : ℕ → ℝ), (∀ n, 0 ≤ f n) → Set.Finite (Set.range f) →
+      (∀ N, ∃ n, N ≤ n ∧ 0 < f n) → ¬Summable f)
+    ∧
+    -- 6. Route 3 with bridge: OrbitMFRE + bridge => UFDStrong
+    (2 < q → OrbitMFREImpliesEscapeQual q → OrbitMFRE q → UFDStrong q) :=
+  ⟨ratio_escape_implies_ufdStrong,
+   qual_implies_quant,
+   qual_escape_implies_ufdStrong,
+   gap_function_finite_range 1,
+   fun f hnn hfin hinf => not_summable_of_frequently_pos_finite_range f hnn hfin hinf,
+   fun hq3 hbridge hmfre => route3_to_ufdStrong hq3 hbridge hmfre⟩
+
+end RoutesToUFDStrong

@@ -1,0 +1,503 @@
+%% =========================================================================
+\section{Variants of the Conjecture}
+\label{sec:variants}
+%% =========================================================================
+
+The Euclid--Mullin construction makes sense with any factor-selection
+rule: at each step, $\Prod{2}(n)+1$ has a non-empty set of prime
+factors, and the rule picks one.  Mullin's Conjecture is specific to
+the $\minFac$ rule.  This section collects the known variants---some
+easy, some provably incomplete, one almost closed---and uses them to
+locate standard MC within a broader landscape.
+
+\subsection{The Selection Rule Landscape}
+\label{sec:selection-landscape}
+
+Fix an initial prime $p_0 = 2$.  Given a \emph{selection rule}
+$\sigma$ that, for any integer $N \geq 2$, chooses a prime factor
+$\sigma(N) \mid N$, define:
+\begin{align}
+  P_\sigma(0) &= 2, &
+  P_\sigma(n{+}1) &= P_\sigma(n) \cdot \sigma(P_\sigma(n)+1).
+\end{align}
+The selection rule determines the sequence; the running product
+$P_\sigma(n)$ determines the sequence history.
+Five rules are studied in the formalization:
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+\textbf{Selection rule} $\sigma$ & \textbf{MC status} & \textbf{Key property} \\
+\midrule
+Random (uniform) & Easy (mixing) & Independence \\
+$\minFac$ (standard EM) & \textbf{Open} (DSL) & Deterministic, lethal \\
+$\{\minFac, \operatorname{secondMinFac}\}$ & \textbf{Open} (UFDStrong) & Two-point diversity \\
+Steered (Booker~\cite{BoSa2012}) & True (by construction) & Adversarial \\
+$\mathrm{maxFac}$ (Cox--vdP~\cite{CoxVdP1968}) & False & Misses primes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The landscape reveals a tension: the random rule is the easiest to
+analyze (mixing theory) but the worst at selection (probability
+$1/|F|$ per hit); $\minFac$ is the best at selection (lethal hits)
+but the hardest to analyze (deterministic, no independence); and the
+$\{\minFac, \operatorname{secondMinFac}\}$ variant sits between them,
+offering a two-point spectral contraction that is provably sufficient
+under a single open hypothesis.
+
+\subsection{The Random-Factor Variant}
+\label{sec:random-variant}
+
+Consider a variant where, instead of the smallest prime factor, one
+picks a \emph{random} prime factor of~$\Prod{2}(n)+1$ at each step.
+MC follows from classical mixing theory.  For any target prime~$p$,
+the residue $r_n = \Prod{2}(n) \bmod p$ performs a multiplicative walk
+on $(\ZZ/p\ZZ)^\times$.  Each multiplier is a random element of the
+group; once the multipliers generate the full group (which PRE
+guarantees, Theorem~\ref{thm:pre}), the walk is a genuine random walk
+with full support.  By Diaconis--Shahshahani equidistribution, the walk
+mixes in $O(\log p)$ steps: $r_n = -1$ occurs with frequency
+$\to 1/(p{-}1)$---infinitely often with probability~1.  When $p$
+divides the Euclid number, the random rule selects~$p$ with probability
+$1/|F(S_n)|$, but cofinal hitting provides infinitely many chances,
+so~$p$ is eventually selected.
+
+\paragraph{Comparison with $\minFac$.}
+The actual EM sequence uses
+$\seq{2}(n{+}1) = \minFac(\Prod{2}(n){+}1)$, a \emph{deterministic}
+function of the walk position.  Compared to the random-factor variant,
+$\minFac$ is strictly better in every measurable dimension:
+
+\smallskip
+\begin{center}
+\begin{tabular}{l@{\quad}l@{\quad}l}
+\toprule
+ & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
+\midrule
+\textbf{Selection when $q \mid P(n){+}1$}
+  & Probability $1/|F(S_n)|$ & Probability~1 \\
+\textbf{Accumulator growth}
+  & Faster (random $\geq \minFac$) & Slowest possible \\
+\textbf{Hits on $-1$ needed}
+  & Infinitely many & \textbf{One} (lethal hit) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+\emph{Selection efficiency.}\enspace Past the sieve gap, 0-accessibility
+guarantees: if $q \mid \Prod{2}(n)+1$ then
+$q = \minFac(\Prod{2}(n)+1)$---selection is certain, not
+probabilistic.  \emph{Growth rate.}\enspace Since
+$\minFac(N) \leq p$ for any factor~$p$ of~$N$, the accumulator
+$\Prod{2}(n)$ grows minimally under the $\minFac$ rule, giving
+exponentially more steps before it becomes astronomically large---more
+chances for~$q$ to divide.  \emph{Lethality.}\enspace The inductive
+bootstrap shows one single hit suffices: $\MC({<}\,q)$ ensures~$q$
+is minimal whenever it divides, so hitting $-1$ once means~$q$
+enters the sequence.  The random variant requires infinitely many
+hits to overcome low per-hit selection probability.
+
+\emph{MinFac is strictly better in every measurable dimension.
+So why can't we prove it works?}
+
+\paragraph{The independence trade-off.}
+The answer is surgical: the random variant possesses a single property
+that $\minFac$ lacks, and that property is the \emph{only thing the
+proof uses}.
+
+The property is \textbf{independence of multiplier from walk
+position}.  In the random-factor variant, the multiplier at step~$n$
+is selected independently of which residue class
+$\Prod{2}(n) \bmod q$ occupies.  Walk position and multiplier are
+independent random variables, and independence is the engine that
+drives mixing.  Diaconis--Shahshahani's theorem applies whenever the
+multipliers are i.i.d.\ from a distribution whose support generates
+the group.
+
+In the $\minFac$ variant, the multiplier is
+$\minFac(\Prod{2}(n){+}1) \bmod q$---a deterministic function of the
+full integer~$\Prod{2}(n)+1$.  The CRT multiplier invariance
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}) shows
+that the outcome is independent of $\Prod{2}(n) \bmod q$ at the
+\emph{population} level: for generic integers, knowing the mod-$q$
+residue does not predict $\minFac$.  But for the specific orbit~$n=2$,
+the multiplier is a deterministic value, and mixing theorems for
+deterministic sequences cannot be invoked.
+
+The random variant thus sacrifices selection efficiency (it may
+miss~$q$ even when $q$ divides) in exchange for statistical
+independence.  The $\minFac$ variant has perfect selection but no
+independence:
+
+\smallskip
+\begin{center}
+\begin{tabular}{l@{\quad}l@{\quad}l}
+\toprule
+ & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
+\midrule
+Selection & Bad ($1/k$ chance) & Perfect \\
+Mixing & Random walk theorem & Unproved \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The random variant's proof: mixing $\to$ cofinal hitting $\to$
+infinitely many chances compensate for low per-hit probability.
+The $\minFac$ variant needs only one hit---absurdly less than the
+random variant achieves---but has no way to produce even that one
+without mixing.
+
+\paragraph{The stochastic domination failure.}
+\label{sec:stoch-dom}
+The natural instinct is to argue by \emph{stochastic domination}:
+if the random walk visits~$-1$ cofinally, and $\minFac$ is ``better
+in every way,'' then $\minFac$ should also visit~$-1$.  This argument
+fails because the two processes \emph{diverge after one step}.
+
+At step~$n$, both processes face the same Euclid number
+$\Prod{2}(n)+1$ with factor set~$F(S_n)$.  The random variant picks a
+uniformly random element of~$F(S_n)$; the $\minFac$ variant picks the
+minimum.  After this step, the two processes have different
+accumulators (they multiplied by different primes), so they face
+different Euclid numbers at the next step.  The processes explore
+completely different trajectories.  Domination fails because the
+two walks live on different probability spaces after step~1; we
+cannot compare them step-by-step.
+
+A subtler comparison uses \emph{visit measures}.  Define
+$\mu_{\mathrm{rand}}(a) = \lim_{N} \frac{1}{N}|\{n < N :
+w_q^{\mathrm{rand}}(n) = a\}|$ and analogously
+$\mu_{\min}(a)$ for the $\minFac$ walk.  For the random variant,
+$\mu_{\mathrm{rand}} = $ uniform on $(\ZZ/q\ZZ)^\times$ by mixing.
+For $\minFac$, CME/CCSB asserts $\mu_{\min} \approx$ uniform, and
+DSL asserts this follows from PE\@.  The comparison
+$\mu_{\min}(-1) \geq 1/(q{-}1)$ is precisely what needs proof, and is
+the content of DSL\@.
+
+\subsection{The $\{\minFac, \operatorname{secondMinFac}\}$ Variant}
+\label{sec:minfac-secondminfac}
+
+The two-point variant interpolates between the random and deterministic
+extremes.  At each step, instead of a single deterministic choice or a
+fully random one, two specific factors are available:
+$\minFac(\Prod{2}(n)+1)$ and $\operatorname{secondMinFac}(\Prod{2}(n)+1)$.
+A decision sequence $\sigma : \NN \to \mathrm{Bool}$ selects between
+them; the all-true sequence recovers the standard EM walk.
+
+\paragraph{The $\varepsilon$-walk.}
+The formalization defines a
+\textbf{self-consistent $\varepsilon$-walk}
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{epsWalkProd})
+in which the chosen factor---either $\minFac(P(n){+}1)$ or
+$\operatorname{secondMinFac}(P(n){+}1)$---becomes the actual multiplier,
+updating the accumulator and producing a new Euclid number at the next
+step.
+The function $\operatorname{secondMinFac}(n)$ (second-smallest prime
+factor) is defined and proved prime, divisor of~$n$, and
+$\geq \minFac(n)$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{secondMinFac\_prime},
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{secondMinFac\_dvd},
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{minFac\_le\_secondMinFac}).
+
+This self-consistent walk generates a \emph{binary branching tree}
+of depth~$N$ with $2^N$ leaves, where each internal node has its own
+path-dependent factor set.  The \emph{tree character sum}
+(\lean{EM/Advanced/VanishingNoise.lean}{treeCharSum}),
+a weighted sum of $\chi(\text{leaf position})$ over all leaves, is proved
+$\leq 1$ in norm.  Unlike the product multiset of the stochastic MC, this sum
+does \textbf{not} factorize as $\prod_k \bar\chi(S_k)$: the left and
+right subtrees start from different accumulators, so their character sums
+differ.  The open hypothesis
+\defname{TreeContractionHypothesis}
+asserts that the tree character sum tends to zero for all nontrivial~$\chi$;
+it is strictly weaker than DSL but strictly stronger than the product approximation.
+
+\paragraph{Non-self-consistent variant MC.}
+An independent route bypasses the tree contraction problem entirely.
+At each EM step~$n$, form the two-element unit set
+$\{\minFac(P(n){+}1),\, \operatorname{secondMinFac}(P(n){+}1)\} \bmod q$
+in $(\ZZ/q\ZZ)^\times$.  When one factor equals~$q$
+(a non-unit), fall back to $\operatorname{Finset.univ}$, whose
+mean character value is~$0$ by orthogonality---giving perfect contraction
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{meanCharValue\_univ\_eq\_zero}).
+Under \defname{UFDStrong}---spectral gaps of the padded unit sets
+are non-summable for every nontrivial~$\chi$---the
+sparse product contraction machinery gives vanishing averaged
+products, and the Fourier counting argument yields
+path existence.  Concretely:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_from\_ufd\_strong\_proved}]
+\label{thm:variant-mc}
+For every prime $q \geq 3$, if $\mathrm{UFDStrong}(q)$ holds, then
+every element of $(\ZZ/q\ZZ)^\times$ is representable as a product
+of selections from $\{\minFac,\operatorname{secondMinFac}\}$ of
+consecutive Euclid numbers.  In particular, some selection path
+hits~$-1$.
+\end{theorem}
+
+The verified chain is:
+\[
+  \mathrm{UFDStrong}(q)
+  \;\Longrightarrow\;
+  \text{vanishing products}
+  \;\Longrightarrow\;
+  \text{path existence}
+  \;\Longrightarrow\;
+  \text{VariantMC}.
+\]
+Every arrow is machine-checked with zero \code{sorry}.
+
+\paragraph{The gap: UFDStrong.}
+\defname{UFDStrong}$(q)$ asserts: for each nontrivial character
+$\chi$ on $(\ZZ/q\ZZ)^\times$, the spectral gaps
+$1 - \|\bar\chi(\text{paddedUnitSet}_n)\|$ are non-summable.
+The hypothesis splits into two cases:
+\begin{enumerate}[nosep]
+\item \emph{Fallback case}: if infinitely many steps have
+  $\minFac \equiv \operatorname{secondMinFac} \pmod{q}$ (or one
+  equals~$q$), the padded set falls back to the full group, giving
+  perfect contraction (gap~$= 1$) at each such step.
+  Non-summability is immediate.
+  \textbf{Proved}:
+  \lean{EM/Advanced/VanishingNoiseVariant.lean}{ufd\_fallback\_not\_summable}.
+\item \emph{Diversity case}: if cofinitely many steps have two
+  distinct units mod~$q$, one needs the character values at those
+  units to differ infinitely often---i.e., the ratio
+  $\minFac/\operatorname{secondMinFac}$ does not persistently lie in
+  $\ker(\chi)$.  This is a genuine number-theoretic question about
+  Euclid number factorizations.  \textbf{Open}:
+  \code{UFDImpliesUFDStrong}.
+\end{enumerate}
+
+\paragraph{Variant MC does not imply standard MC.}
+The selection~$\sigma$ that achieves hitting may differ per
+prime~$q$, and the virtual accumulator
+$\prod_k \text{factor}_{\sigma(k)}$ is not the EM accumulator
+$P(n)$.  The gap is the same orbit-specificity barrier
+(Dead End~\#130,
+\lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}):
+generation does not imply coverage for deterministic walks.
+
+\paragraph{Comparison of open hypotheses.}
+Standard MC requires DSL (population-to-orbit transfer for $\minFac$
+residues).  The $\{\minFac, \operatorname{secondMinFac}\}$ variant
+requires UFDStrong (spectral diversity of two-point factor sets).
+Neither implies the other: DSL is about the \emph{selected} factor's
+equidistribution; UFDStrong is about the \emph{pair}'s spectral gap.
+But both are instances of the same meta-question: does the deterministic
+EM construction produce enough diversity in its factorizations to
+prevent persistent alignment with any fixed character?
+
+\subsection{The Function Field Analog}
+\label{sec:function-field}
+
+The Euclid--Mullin construction makes sense over any unique
+factorization domain.  Replacing $\ZZ$ by $\FF_p[t]$ and primes by
+monic irreducible polynomials gives a sequence
+\[
+  f_0 = t, \qquad
+  f_{n+1} = \text{min-degree monic irreducible factor of }
+  F(n) + 1,
+\]
+where $F(n) = f_0 \cdots f_n$ is the running product.  We call this the
+\textbf{FF-EM sequence} and state the function field analog of MC\@:
+
+\begin{conjecture}[\defname{FF-MC}]
+\lean{EM/FunctionField/Analog.lean}{FFMullinConjecture}
+Every monic irreducible polynomial in $\FF_p[t]$ eventually appears in
+the FF-EM sequence.
+\end{conjecture}
+
+The function field setting is instructive because the Weil bound---an
+\emph{open hypothesis} over $\ZZ$ (Wiener--Ikehara + Alladi)---is a
+\emph{theorem} over $\FF_p[t]$.  This eliminates the analytic number
+theory entirely: population equidistribution is free.  The question
+becomes: what remains after removing the ANT difficulty?
+
+\paragraph{What the Weil bound gives.}
+Let $Q \in \FF_p[t]$ be a monic irreducible of degree~$d$, and
+$\chi : (\FF_p[t]/(Q))^\times \to \mathbb{C}^\times$ a non-trivial
+multiplicative character.  The Weil bound for function fields states:
+\[
+  \Bigl|\sum_{\substack{\alpha \in \FF_p[t] \\ \deg \alpha < d}}
+  \chi(\alpha \bmod Q)\Bigr|
+  \;\leq\; (d - 1)\sqrt{p}.
+\]
+This immediately gives \textbf{population equidistribution}
+(\lean{EM/FunctionField/Analog.lean}{weil\_implies\_population\_equidist}):
+among all monic irreducibles, the residues modulo~$Q$ are
+equidistributed in $(\FF_p[t]/(Q))^\times$.  Over $\ZZ$, obtaining
+the analogous statement requires the Weighted PNT in Arithmetic
+Progressions (= Wiener--Ikehara), which is the sole unformalized ANT
+input.  Over $\FF_p[t]$, it is unconditional.
+
+\paragraph{What the Weil bound does not give.}
+Population equidistribution controls character sums over
+\emph{all} monic irreducibles---a generic sum.  FF-MC requires
+controlling the factorization of the \emph{specific} polynomial
+$F(n) + 1$, which is determined by the entire history of the
+sequence.  The Weil bound says nothing about which irreducible
+factor of a specific polynomial has the smallest degree.
+
+This is the \textbf{orbit-specificity barrier} (Dead End~\#127,
+\lean{EM/FunctionField/Analog.lean}{WeilDoesNotImplyFFDSL}),
+structurally identical to the integer case: no known result transfers
+population-level equidistribution to a specific deterministic orbit.
+The function field analog thus confirms that the difficulty of MC is
+\emph{not} the analytic number theory but the orbit transfer.
+
+\paragraph{The bootstrap: competitor exhaustion.}
+Over $\ZZ$, the bootstrap induction is clean: $\minFac$ selects a
+unique prime, so if $q \mid \Prod{2}(n)+1$ and all smaller primes
+have appeared, then $\seq{2}(n{+}1) = q$.  Over $\FF_p[t]$, multiple
+irreducibles of the same degree can divide $F(n)+1$, and the
+min-degree rule only guarantees that the selected factor has degree
+$\leq \deg Q$.
+
+The solution is \textbf{competitor exhaustion}
+(\lean{EM/FunctionField/Bootstrap.lean}{ff\_element\_capture}):
+there are finitely many monic irreducibles of each degree~$d$ over
+$\FF_p$ (exactly $\frac{1}{d}\sum_{e \mid d} \mu(d/e)\, p^e$ of
+them).  If $Q$ divides $F(n)+1$ cofinally, the hitting set
+$\{n : Q \mid F(n)+1\}$ is infinite.  At each such~$n$, the
+selected factor $f_{n+1}$ has $\deg f_{n+1} \leq \deg Q$ and is
+injective into the finite set of competitors
+(by \lean{EM/FunctionField/Bootstrap.lean}{ffSeq\_injective\_proved}).
+Since an injection from an infinite set to a finite set is
+impossible, eventually all competitors of degree $\leq \deg Q$
+are consumed, and $Q$ must be selected.
+
+\begin{theorem}[\lean{EM/FunctionField/Bootstrap.lean}{ff\_dh\_implies\_ffmc}]
+\label{thm:ff-bootstrap}
+$\mathrm{FFDynamicalHitting} \;\Longrightarrow\; \mathrm{FF\text{-}MC}$.
+\end{theorem}
+
+Here \defname{FFDynamicalHitting} asserts: for every monic irreducible
+$Q$ not in the sequence, $Q \mid F(n)+1$ for cofinally many~$n$.
+The proof is a strong induction on $\deg Q$: given FF-MC below
+degree~$d$, cofinal hits by~$Q$ plus competitor exhaustion force~$Q$
+to appear.
+
+\paragraph{SubgroupEscape via Weil.}
+Over $\ZZ$, SubgroupEscape (SE) is proved elementarily via
+PrimeResidueEscape.  Over $\FF_p[t]$, the Weil bound gives a
+quantitative version for \emph{large~$p$}.
+
+The idea: suppose all degree-1 multipliers $\{(t - a) \bmod Q : a \in \FF_p\}$
+lie in a proper subgroup $H \leq (\FF_p[t]/(Q))^\times$ of index~$\ell$.
+Then for any character~$\chi$ that kills~$H$ (i.e.,
+$\chi(h) = 1$ for $h \in H$), the character sum $\sum_{a \in \FF_p}
+\chi((t-a) \bmod Q) = p$ since every term is~$1$.  But the Weil bound
+gives $|\text{sum}| \leq (d-1)\sqrt{p}$, yielding $p \leq (d-1)\sqrt{p}$,
+i.e., $p \leq (d-1)^2$.
+
+\begin{theorem}[\lean{EM/FunctionField/SubgroupEscape.lean}{weil\_implies\_ff\_se}]
+\label{thm:ff-se}
+If $p \geq (d-1)^2 + 1$, then the degree-1 multipliers generate
+the full unit group $(\FF_p[t]/(Q))^\times$ for every monic
+irreducible~$Q$ of degree~$d$.
+\end{theorem}
+
+The threshold $(d-1)^2 + 1$ is sharp for this argument.
+For $d = 1$, SE holds for all~$p$ (the degree-1 images
+\emph{are} all nonzero elements of~$\FF_p$,
+\lean{EM/FunctionField/SubgroupEscape.lean}{ff\_se\_degree\_one}).
+For $d = 2$, the threshold is~$2$, so SE holds for all odd
+primes.
+
+\paragraph{The generation-to-coverage gap.}
+SE proves that the multipliers \emph{generate} the full unit group.
+Does this imply the walk \emph{visits}~$-1$?  No.
+
+\begin{example}[\lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}]
+\label{ex:z4}
+In $\ZZ/4\ZZ$, the alternating steps $\{1, 3, 1, 3, \ldots\}$
+generate the full group ($\gcd(1,3) = 1$), but the additive walk
+$0 \to 1 \to 0 \to 1 \to \cdots$ visits only $\{0, 1\}$, permanently
+missing $2$ and~$3$.
+\end{example}
+
+This is \textbf{Dead End~\#130}: SE does not imply DH.  Generation is
+an algebraic property (the subgroup generated by the step set is
+maximal); coverage is a dynamical property (the walk trajectory
+actually reaches every element).  The two coincide for random walks
+(Diaconis--Shahshahani) but diverge for deterministic ones.
+
+\paragraph{The three-level hierarchy.}
+The FF-MC reduction decomposes the orbit-specificity barrier into
+three levels of difficulty
+(\lean{EM/FunctionField/MultiplierCCSB.lean}{ff\_mc\_mult\_ccsb\_landscape}):
+
+\begin{enumerate}[nosep]
+\item \textbf{Population level} (solved).  Among \emph{all} monic
+  irreducibles of degree~$e$, character values are equidistributed.
+  Free from the Weil bound.
+
+\item \textbf{Fiber level} (open).  Among irreducible factors of a
+  \emph{specific} polynomial $f$ lying in a specific residue class
+  mod~$Q$, character values cancel.  This requires orbit-specific
+  information: Deligne's equidistribution theorem (Weil~II) applies
+  to algebraic families, not to the sequential FF-EM construction.
+
+\item \textbf{Selection level} (open).  Among the irreducible factors
+  of~$f$, the one of \emph{smallest degree} has unbiased character
+  value.  This is \defname{SelectionBiasNeutral}: does the greedy
+  min-degree rule preserve character cancellation?  It is a purely
+  combinatorial question, independent of algebraic geometry.
+\end{enumerate}
+
+The selection level is the true core of the difficulty.  Even if the
+Weil bound gives population equidistribution and Deligne gives
+fiber-level equidistribution, the minimum-degree selection could
+systematically bias character values.
+
+\paragraph{The cyclotomic obstruction.}
+A natural strategy for fiber-level information is the monodromy
+approach: if the Galois group of $F(n)+1$ is ``large'' (e.g.,
+contains the alternating group~$A_d$), then Deligne's equidistribution
+theorem~\cite{Deligne1980} constrains the Frobenius conjugacy class distribution
+and hence the factorization statistics.
+
+\begin{remark}[Dead End~\#129,
+\lean{EM/FunctionField/Analog.lean}{ff\_cyclotomic\_dead\_end}]
+\label{rem:fflm-false}
+The \textbf{FF Large Monodromy} hypothesis (Galois group of
+$F(n)+1$ eventually contains~$A_d$) is \emph{structurally false}.
+The product of all monic irreducibles of degree $\leq d$ over~$\FF_p$
+is $t^{p^d} - t$ (a standard identity).  Adding~$1$ gives
+$t^{p^d} - t + 1$, whose splitting field is contained in
+$\FF_{p^N}$ for some~$N$: the Galois group is \emph{abelian}.
+Since the FF-EM sequence greedily consumes all irreducibles of
+each degree, $F(n)$ eventually divides $t^{p^d} - t$, and the
+Galois group of $F(n)+1$ is forced to be abelian.  Abelian
+monodromy recovers only Dirichlet-type character sums---i.e.,
+population equidistribution, which is already free from Weil.
+\end{remark}
+
+This rules out the monodromy route to FF-MC entirely.  The Galois
+structure of the greedy Euclid construction is fundamentally different
+from that of a ``random'' polynomial of the same degree.
+
+\paragraph{Summary.}
+The function field analog isolates the difficulty of Mullin's
+Conjecture with surgical precision.  Removing the analytic number
+theory (by working over $\FF_p[t]$ where Weil replaces
+Wiener--Ikehara) reveals that the entire difficulty lies in the
+orbit-specificity transfer: from population statistics to a specific
+deterministic orbit.  The three dead ends (\#127: Weil does not
+imply FF-DSL; \#129: large monodromy is false; \#130: SE does not
+imply DH) collectively show that the function field setting, despite
+its algebraic advantages, faces the same fundamental barrier as the
+integer case.
+
+The formalization across five files (2{,}302~lines, zero
+\texttt{sorry}) makes the orbit-specificity barrier visible as a
+mathematical theorem, not merely a heuristic observation:
+\emph{every} algebraic tool that is available over function fields
+has been applied, and the residual is precisely the same open
+hypothesis (DSL/CME) that blocks MC over~$\ZZ$.
