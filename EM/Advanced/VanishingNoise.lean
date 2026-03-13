@@ -2,6 +2,8 @@ import EM.Reduction.DSLInfra
 import EM.Equidist.Bootstrap
 import Mathlib.Analysis.Convex.StrictConvexSpace
 import Mathlib.Analysis.InnerProductSpace.Convex
+import Mathlib.NumberTheory.MulChar.Duality
+import Mathlib.Analysis.Complex.Polynomial.Basic
 
 /-!
 # Vanishing Noise Framework: Spectral Gap and Walk Infrastructure
@@ -860,38 +862,209 @@ theorem productMultiset_zero (S : ℕ → Finset G) :
 end ProductMultiset
 
 
-/-! ## Part 14: Path Existence via Character Products
+/-! ## Part 14: Path Existence via Character Products (PROVED)
 
-The **path existence** theorem states: if for all nontrivial characters chi,
+The **path existence** theorem: if for all nontrivial characters chi,
 the averaged character products tend to 0, then every element of G appears
 in the product multiset for large enough N.
 
 The proof uses:
 1. char_sum_productMultiset (PROVED): character sum over paths = product of per-step sums
-2. Character orthogonality (standard representation theory)
-3. Counting: count(a,N)/totalPaths = 1/|G| + (1/|G|) sum_{chi!=1} conj(chi(a)) * avgCharProduct
-4. When avgCharProduct -> 0, the count is eventually positive
-
-We state the existence as an open Prop since character orthogonality for
-arbitrary finite commutative groups (with G ->* C*) requires substantial
-assembly from Mathlib's MulChar API. -/
+2. Character orthogonality for MulChar G C (from Mathlib)
+3. Bridge from MulChar G C to G ->* C* via toUnits
+4. The Fourier counting identity: |G| * count(a, M) = sum_f conj(f(a)) * sum_{g in M} f(g)
+5. When avgCharProduct -> 0, the count is eventually positive -/
 
 section PathExistence
 
 variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
 
-/-- **Path existence from averaged character product vanishing** (open Prop):
-    If the averaged character products tend to 0 for all nontrivial chi,
-    then every element of G is achieved by some selection from the S_k.
+/-! ### Bridge between MulChar G C and G ->* C* -/
 
-    The path count identity (from character orthogonality) gives:
-      count(a,N)/totalPaths(N) = 1/|G| + (1/|G|) sum_{chi!=1} conj(chi(a)) * avgCharProduct(chi,S,N)
+/-- Convert a MulChar G C into a group homomorphism G ->* C*. -/
+private noncomputable def mulCharToHom (chi : MulChar G ℂ) : G →* ℂˣ :=
+  chi.toUnitHom.comp toUnits.toMonoidHom
 
-    When avgCharProduct -> 0 for all nontrivial chi, the ratio -> 1/|G| > 0,
-    so count(a,N) > 0 for large N.
+/-- Convert a group homomorphism G ->* C* into a MulChar G C. -/
+private noncomputable def homToMulChar (f : G →* ℂˣ) : MulChar G ℂ :=
+  MulChar.ofUnitHom (f.comp toUnits.symm.toMonoidHom)
 
-    This requires Fintype on the character group of G, which is available via
-    MulChar in Mathlib but requires nontrivial assembly for the G ->* C* form. -/
+/-- The value of mulCharToHom at g equals the MulChar value. -/
+private theorem mulCharToHom_apply (chi : MulChar G ℂ) (g : G) :
+    (mulCharToHom chi g : ℂ) = chi g := by
+  simp [mulCharToHom, MulChar.coe_toUnitHom, toUnits]
+
+/-- homToMulChar is a left inverse of mulCharToHom. -/
+private theorem homToMulChar_mulCharToHom (chi : MulChar G ℂ) :
+    homToMulChar (mulCharToHom chi) = chi := by
+  ext g
+  simp [homToMulChar, mulCharToHom, MulChar.equivToUnitHom_symm_coe, MulChar.coe_toUnitHom,
+    toUnits]
+
+/-- mulCharToHom is a left inverse of homToMulChar. -/
+private theorem mulCharToHom_homToMulChar (f : G →* ℂˣ) :
+    mulCharToHom (homToMulChar f) = f := by
+  ext g
+  simp [mulCharToHom, homToMulChar, MulChar.coe_toUnitHom, MulChar.ofUnitHom_coe, toUnits]
+
+/-- The bijection between MulChar G C and G ->* C*. -/
+private noncomputable def mulCharHomEquiv : MulChar G ℂ ≃ (G →* ℂˣ) where
+  toFun := mulCharToHom
+  invFun := homToMulChar
+  left_inv := homToMulChar_mulCharToHom
+  right_inv := mulCharToHom_homToMulChar
+
+/-- mulCharToHom maps the trivial MulChar to the trivial hom. -/
+private theorem mulCharToHom_one : mulCharToHom (1 : MulChar G ℂ) = 1 := by
+  have h : ∀ g : G, (mulCharToHom (1 : MulChar G ℂ) g : ℂ) = ((1 : G →* ℂˣ) g : ℂ) := by
+    intro g
+    rw [mulCharToHom_apply, MulChar.one_apply (Group.isUnit g)]
+    simp [MonoidHom.one_apply, Units.val_one]
+  ext g
+  exact h g
+
+/-- mulCharToHom preserves nontriviality. -/
+private theorem mulCharToHom_ne_one {chi : MulChar G ℂ} (hne : chi ≠ 1) :
+    mulCharToHom chi ≠ 1 := by
+  intro h
+  apply hne
+  have := congr_arg homToMulChar h
+  rw [homToMulChar_mulCharToHom] at this
+  rw [this]; rw [← mulCharToHom_one]; exact homToMulChar_mulCharToHom 1
+
+/-- homToMulChar preserves nontriviality. -/
+private theorem homToMulChar_ne_one {f : G →* ℂˣ} (hne : f ≠ 1) :
+    homToMulChar f ≠ 1 := by
+  intro h
+  apply hne
+  have := congr_arg mulCharToHom h
+  rw [mulCharToHom_homToMulChar] at this
+  rw [this, mulCharToHom_one]
+
+/-! ### Character Orthogonality -/
+
+/-- Fintype instance for MulChar G C. -/
+private noncomputable instance mulCharFintypeInst : Fintype (MulChar G ℂ) :=
+  Fintype.ofFinite _
+
+/-- Fintype instance for G ->* C* via the bijection. -/
+private noncomputable instance homFintypeInst : Fintype (G →* ℂˣ) :=
+  Fintype.ofEquiv _ mulCharHomEquiv
+
+/-- Fintype.card Gˣ = Fintype.card G for groups (every element is a unit). -/
+private theorem card_units_eq_card : Fintype.card Gˣ = Fintype.card G :=
+  (Fintype.card_congr (toUnits (G := G)).toEquiv).symm
+
+/-- Fintype.card (G →* ℂˣ) = Fintype.card G via MulChar bridge. -/
+private theorem card_hom_eq_card : Fintype.card (G →* ℂˣ) = Fintype.card G := by
+  have h1 : Fintype.card (G →* ℂˣ) = Fintype.card (MulChar G ℂ) :=
+    Fintype.card_congr mulCharHomEquiv.symm
+  have hexp_pos : 0 < Monoid.exponent Gˣ :=
+    Monoid.exponent_pos_of_exists (Fintype.card Gˣ) Fintype.card_pos
+      (fun g => pow_card_eq_one)
+  haveI : NeZero (Monoid.exponent Gˣ : ℂ) := ⟨Nat.cast_ne_zero.mpr (by omega)⟩
+  have h2 : Fintype.card (MulChar G ℂ) = Fintype.card G := by
+    rw [show Fintype.card (MulChar G ℂ) = Nat.card (MulChar G ℂ) from
+      Nat.card_eq_fintype_card.symm,
+      MulChar.card_eq_card_units_of_hasEnoughRootsOfUnity G ℂ,
+      Nat.card_eq_fintype_card, card_units_eq_card]
+  omega
+
+/-- NeZero instance for the exponent of Gˣ in C. -/
+private theorem neZero_exponent_units :
+    NeZero (Monoid.exponent Gˣ : ℂ) := by
+  constructor
+  have hexp_pos : 0 < Monoid.exponent Gˣ :=
+    Monoid.exponent_pos_of_exists (Fintype.card Gˣ) Fintype.card_pos
+      (fun g => pow_card_eq_one)
+  exact Nat.cast_ne_zero.mpr (by omega)
+
+/-- Character orthogonality for MulChar: for a != 1, sum chi(a) = 0. -/
+private theorem mulChar_sum_eq_zero {a : G} (ha : a ≠ 1) :
+    ∑ chi : MulChar G ℂ, chi a = 0 := by
+  haveI := neZero_exponent_units (G := G)
+  obtain ⟨chi, hchi⟩ := MulChar.exists_apply_ne_one_of_hasEnoughRootsOfUnity G ℂ ha
+  exact eq_zero_of_mul_eq_self_left hchi
+    (by simp only [Finset.mul_sum, ← MulChar.mul_apply]
+        exact Fintype.sum_bijective _ (Group.mulLeft_bijective chi) _ _ fun _ => rfl)
+
+/-- Character orthogonality for G ->* C*: for a != 1, sum f(a) = 0. -/
+private theorem hom_sum_eq_zero {a : G} (ha : a ≠ 1) :
+    ∑ f : G →* ℂˣ, (f a : ℂ) = 0 := by
+  rw [show ∑ f : G →* ℂˣ, (f a : ℂ) =
+      ∑ chi : MulChar G ℂ, (mulCharToHom chi a : ℂ) from
+    (Fintype.sum_equiv mulCharHomEquiv _ _ (fun _ => rfl)).symm]
+  simp_rw [mulCharToHom_apply]
+  exact mulChar_sum_eq_zero ha
+
+/-- Combined orthogonality: sum_f f(g) = |G| if g = 1, 0 otherwise. -/
+private theorem hom_sum_eq (g : G) :
+    ∑ f : G →* ℂˣ, (f g : ℂ) = if g = 1 then ↑(Fintype.card G) else 0 := by
+  split_ifs with h
+  · subst h
+    simp only [map_one, Units.val_one, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one]
+    congr 1
+    exact card_hom_eq_card
+  · exact hom_sum_eq_zero h
+
+/-! ### Fourier Counting Identity -/
+
+/-- For g, a in G, sum_f conj(f(a)) * f(g) = |G| if g = a, 0 otherwise. -/
+private theorem hom_indicator_sum (a g : G) :
+    ∑ f : G →* ℂˣ, starRingEnd ℂ (f a : ℂ) * (f g : ℂ) =
+    if g = a then ↑(Fintype.card G) else 0 := by
+  -- conj(f(a)) = f(a^{-1}) since |f(a)| = 1 implies conj = inv
+  have conj_eq : ∀ f : G →* ℂˣ, starRingEnd ℂ (f a : ℂ) = (f a⁻¹ : ℂ) := by
+    intro f
+    rw [map_inv, Units.val_inv_eq_inv_val]
+    exact (Complex.inv_eq_conj (char_norm_one_of_hom f a)).symm
+  simp_rw [conj_eq, ← Units.val_mul, ← map_mul, mul_comm a⁻¹ g]
+  rw [hom_sum_eq (g * a⁻¹)]
+  simp only [mul_inv_eq_one, eq_comm (a := a)]
+
+/-- **Fourier counting identity**: for a in G and a multiset M,
+    |G| * count(a, M) = sum_f conj(f(a)) * (sum_{g in M} f(g)). -/
+private theorem char_count_formula (a : G) (M : Multiset G) :
+    (↑(Fintype.card G) : ℂ) * ↑(Multiset.count a M) =
+    ∑ f : G →* ℂˣ, starRingEnd ℂ (f a : ℂ) *
+      (M.map (fun g => (f g : ℂ))).sum := by
+  -- Swap sums and apply Fourier identity, by induction on M
+  induction M using Multiset.induction_on with
+  | empty => simp
+  | cons x M ih =>
+    simp only [Multiset.map_cons, Multiset.sum_cons, Multiset.count_cons]
+    simp_rw [mul_add]
+    rw [Finset.sum_add_distrib, ← ih]
+    -- LHS: |G| * ↑(count + if_indicator), RHS: (if x=a then |G| else 0) + |G| * ↑count
+    -- Handle by cases on a = x
+    by_cases hax : a = x
+    · subst hax; simp [hom_indicator_sum]; push_cast; ring
+    · have hxa : ¬(x = a) := fun h => hax h.symm
+      simp only [hom_indicator_sum, if_neg hxa, if_neg hax]
+      push_cast; ring
+
+/-- The character sum over the product multiset equals |M_N| * avgCharProduct. -/
+private theorem char_sum_eq_card_mul_avg
+    (f : G →* ℂˣ) (S : ℕ → Finset G) (hne : ∀ k, (S k).Nonempty) (N : ℕ) :
+    ((productMultiset S N).map (fun g => (f g : ℂ))).sum =
+    ↑(Multiset.card (productMultiset S N)) * avgCharProduct f S N := by
+  rw [char_sum_productMultiset, avgCharProduct, productMultiset_card]
+  simp only [meanCharValue]
+  -- Goal: ∏ (∑ f(s)) = ↑(∏ card) * ∏ ((∑ f(s)) / ↑card)
+  have hne_card : ∀ k, (↑((S k).card) : ℂ) ≠ 0 :=
+    fun k => Nat.cast_ne_zero.mpr (Finset.card_pos.mpr (hne k) |>.ne')
+  induction N with
+  | zero => simp
+  | succ n ih =>
+    simp only [Finset.prod_range_succ, Nat.cast_mul]
+    rw [ih]
+    -- LHS: A * B, RHS: (A₁ * card_n) * (A₂ * (B / card_n))
+    -- where A = A₁ * A₂ (from ih). Just use field_simp to clear denominators.
+    field_simp [hne_card n]
+
+/-! ### Path Existence Theorem -/
+
+/-- The original definition is now proved below. -/
 def PathExistenceFromVanishing (G : Type*) [CommGroup G] [Fintype G]
     [DecidableEq G] : Prop :=
   ∀ (S : ℕ → Finset G),
@@ -900,6 +1073,186 @@ def PathExistenceFromVanishing (G : Type*) [CommGroup G] [Fintype G]
     (∀ (chi : G →* ℂˣ), chi ≠ 1 →
       Filter.Tendsto (fun N => ‖avgCharProduct chi S N‖) Filter.atTop (nhds 0)) →
     ∀ a : G, ∃ N, a ∈ (productMultiset S N).toFinset
+
+/-- Uniform bound extraction: for finitely many tendsto-zero sequences, find N₀ such that
+    all are below epsilon for N >= N₀. -/
+private theorem uniform_bound_of_tendsto
+    {ι : Type*} (T : Finset ι) (f : ι → ℕ → ℝ)
+    (hf : ∀ i ∈ T, Filter.Tendsto (f i) Filter.atTop (nhds 0))
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ N₀, ∀ i ∈ T, ∀ N, N₀ ≤ N → f i N < ε := by
+  induction T using Finset.induction_on with
+  | empty => exact ⟨0, fun _ h => absurd h (by simp)⟩
+  | @insert a s hna ih_ind =>
+    obtain ⟨N₁, hN₁⟩ := ih_ind (fun i hi => hf i (Finset.mem_insert_of_mem hi))
+    have ha_tends := hf a (Finset.mem_insert_self a s)
+    rw [Metric.tendsto_atTop] at ha_tends
+    obtain ⟨N₂, hN₂⟩ := ha_tends ε hε
+    refine ⟨max N₁ N₂, fun i hi N hN => ?_⟩
+    rw [Finset.mem_insert] at hi
+    rcases hi with rfl | hi
+    · have h := hN₂ N (le_of_max_le_right hN)
+      rw [Real.dist_eq, sub_zero, abs_lt] at h
+      exact h.2
+    · exact hN₁ i hi N (le_of_max_le_left hN)
+
+/-- **PathExistenceFromVanishing PROVED**: If the averaged character products
+    tend to 0 for all nontrivial characters, then every element of G appears
+    in the product multiset for sufficiently large N. -/
+theorem pathExistenceFromVanishing_proved :
+    PathExistenceFromVanishing G := by
+  intro S hne _hcard hvanish a
+  -- It suffices to show count(a, M_N) > 0 for some N
+  suffices ∃ N, 0 < Multiset.count a (productMultiset S N) by
+    obtain ⟨N, hN⟩ := this
+    exact ⟨N, Multiset.mem_toFinset.mpr (Multiset.count_pos.mp hN)⟩
+  -- Handle |G| = 1 separately
+  by_cases hG1 : Fintype.card G = 1
+  · -- G is trivial, so a = 1
+    have ⟨d, hd⟩ := Fintype.card_eq_one_iff.mp hG1
+    have ha : a = d := hd a
+    have h1 : (1 : G) = d := hd 1
+    use 0
+    rw [productMultiset_zero]
+    rw [show a = 1 from ha.trans h1.symm]
+    simp
+  · -- |G| >= 2
+    have hcG_pos : (0 : ℝ) < Fintype.card G := Nat.cast_pos.mpr Fintype.card_pos
+    -- Collect nontrivial homs
+    set nontrivHoms := (Finset.univ : Finset (G →* ℂˣ)).filter (· ≠ 1)
+    -- Get uniform bound: for epsilon = 1/(2*|G|), find N₀ such that all
+    -- nontrivial avgCharProduct norms are below epsilon for N >= N₀
+    have heps : (0 : ℝ) < 1 / (2 * Fintype.card G) := by positivity
+    -- Extract tendsto for the norms of avgCharProducts on nontrivHoms
+    have htends : ∀ f ∈ nontrivHoms, Filter.Tendsto
+        (fun N => ‖avgCharProduct f S N‖) Filter.atTop (nhds 0) := by
+      intro f hf
+      exact hvanish f (by simp [nontrivHoms] at hf; exact hf)
+    obtain ⟨N₀, hN₀⟩ := uniform_bound_of_tendsto (ι := G →* ℂˣ)
+      nontrivHoms (fun f N => ‖avgCharProduct f S N‖) htends
+      (1 / (2 * Fintype.card G)) heps
+    -- Show count(a, M_{N₀}) > 0 by contradiction
+    use N₀
+    -- The product multiset always has positive cardinality
+    have hM_pos : 0 < Multiset.card (productMultiset S N₀) := by
+      rw [productMultiset_card]
+      exact Finset.prod_pos (fun k _ => Finset.card_pos.mpr (hne k))
+    -- Use the Fourier identity
+    by_contra hcount
+    push_neg at hcount
+    have hcount0 : Multiset.count a (productMultiset S N₀) = 0 := by omega
+    -- From char_count_formula: |G| * 0 = sum, so sum = 0
+    have hident := char_count_formula (G := G) a (productMultiset S N₀)
+    rw [hcount0, Nat.cast_zero, mul_zero] at hident
+    -- Split the sum: trivial character + nontrivial characters
+    have hsplit : ∑ f : G →* ℂˣ, starRingEnd ℂ (f a : ℂ) *
+        ((productMultiset S N₀).map (fun g => (f g : ℂ))).sum =
+        (↑(Multiset.card (productMultiset S N₀)) : ℂ) +
+        ∑ f ∈ nontrivHoms,
+          starRingEnd ℂ (f a : ℂ) *
+          ((productMultiset S N₀).map (fun g => (f g : ℂ))).sum := by
+      rw [← Finset.add_sum_erase Finset.univ _ (Finset.mem_univ (1 : G →* ℂˣ))]
+      congr 1
+      · -- trivial character contribution = |M|
+        simp [map_one, Units.val_one, Multiset.map_const', Multiset.sum_replicate,
+          nsmul_eq_mul, mul_one]
+      · apply Finset.sum_congr
+        · ext f; simp [nontrivHoms, Finset.mem_erase]
+        · intros; rfl
+    rw [hsplit] at hident
+    -- So |M| = -(error term)
+    set errTerm := ∑ f ∈ nontrivHoms,
+      starRingEnd ℂ (f a : ℂ) *
+      ((productMultiset S N₀).map (fun g => (f g : ℂ))).sum
+    have hM_eq : (↑(Multiset.card (productMultiset S N₀)) : ℂ) = -errTerm := by
+      -- hident : 0 = ↑card + errTerm, so card = -errTerm
+      have h := hident.symm  -- ↑card + errTerm = 0
+      linear_combination h
+    -- Take norms: |M| = |errTerm|
+    have hnorm_eq : (↑(Multiset.card (productMultiset S N₀)) : ℝ) = ‖errTerm‖ := by
+      have h1 : ‖(↑(Multiset.card (productMultiset S N₀)) : ℂ)‖ = ‖errTerm‖ := by
+        rw [hM_eq, norm_neg]
+      rwa [Complex.norm_natCast] at h1
+    -- Bound |errTerm|
+    have herr_bound : ‖errTerm‖ <
+        ↑(Multiset.card (productMultiset S N₀)) := by
+      calc ‖errTerm‖
+          ≤ ∑ f ∈ nontrivHoms,
+            ‖starRingEnd ℂ (f a : ℂ) *
+              ((productMultiset S N₀).map (fun g => (f g : ℂ))).sum‖ := norm_sum_le _ _
+        _ = ∑ f ∈ nontrivHoms,
+            ‖((productMultiset S N₀).map (fun g => (f g : ℂ))).sum‖ := by
+            congr 1; ext f
+            rw [norm_mul, RCLike.norm_conj, char_norm_one_of_hom f a, one_mul]
+        _ = ∑ f ∈ nontrivHoms,
+            ‖↑(Multiset.card (productMultiset S N₀)) * avgCharProduct f S N₀‖ := by
+            congr 1; ext f
+            rw [char_sum_eq_card_mul_avg f S hne N₀]
+        _ = ∑ f ∈ nontrivHoms,
+            (↑(Multiset.card (productMultiset S N₀)) *
+              ‖avgCharProduct f S N₀‖) := by
+            congr 1; ext f
+            rw [Complex.norm_mul, Complex.norm_natCast]
+        _ < ∑ _f ∈ nontrivHoms,
+            (↑(Multiset.card (productMultiset S N₀)) *
+              (1 / (2 * ↑(Fintype.card G)))) := by
+            apply Finset.sum_lt_sum
+            · intro f hf
+              apply mul_le_mul_of_nonneg_left (le_of_lt (hN₀ f hf N₀ le_rfl))
+              exact Nat.cast_nonneg _
+            · -- need at least one nontrivial hom (since |G| >= 2)
+              -- the character that separates a from 1 (or any nontrivial one)
+              have : ∃ f ∈ nontrivHoms, True := by
+                -- Need at least 2 homs, hence at least 1 nontrivial
+                have hcG_ge2 : 2 ≤ Fintype.card G := by
+                  have := Fintype.card_pos (α := G)
+                  by_contra h; push_neg at h
+                  exact hG1 (show Fintype.card G = 1 by linarith)
+                have h2 : 2 ≤ Fintype.card (G →* ℂˣ) := by
+                  rw [card_hom_eq_card]; exact hcG_ge2
+                haveI : Nontrivial (G →* ℂˣ) :=
+                  Fintype.one_lt_card_iff_nontrivial.mp (by linarith)
+                obtain ⟨f, hf⟩ := exists_ne (1 : G →* ℂˣ)
+                exact ⟨f, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hf⟩, trivial⟩
+              obtain ⟨f₀, hf₀, _⟩ := this
+              have hM_pos' : (0 : ℝ) < ↑(Multiset.card (productMultiset S N₀)) :=
+                Nat.cast_pos.mpr hM_pos
+              have hsmall := hN₀ f₀ hf₀ N₀ le_rfl
+              exact ⟨f₀, hf₀, by nlinarith⟩
+        _ = ↑nontrivHoms.card *
+            (↑(Multiset.card (productMultiset S N₀)) *
+              (1 / (2 * ↑(Fintype.card G)))) := by
+            rw [Finset.sum_const, nsmul_eq_mul]
+        _ ≤ (↑(Fintype.card G) - 1) *
+            (↑(Multiset.card (productMultiset S N₀)) *
+              (1 / (2 * ↑(Fintype.card G)))) := by
+            apply mul_le_mul_of_nonneg_right _ (by positivity)
+            have hntcard : (nontrivHoms.card : ℝ) ≤ ↑(Fintype.card G) - 1 := by
+              have heq : nontrivHoms = Finset.univ.erase (1 : G →* ℂˣ) := by
+                ext f; simp [nontrivHoms, Finset.mem_erase]
+              rw [heq, Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ,
+                card_hom_eq_card]
+              have : 1 ≤ Fintype.card G := Fintype.card_pos
+              push_cast [Nat.cast_sub this]
+              linarith
+            exact hntcard
+        _ = ↑(Multiset.card (productMultiset S N₀)) *
+            ((↑(Fintype.card G) - 1) / (2 * ↑(Fintype.card G))) := by ring
+        _ < ↑(Multiset.card (productMultiset S N₀)) * 1 := by
+            have hM_pos' : (0 : ℝ) < ↑(Multiset.card (productMultiset S N₀)) :=
+              Nat.cast_pos.mpr hM_pos
+            have hcG2 : 2 ≤ Fintype.card G := by
+              have := Fintype.card_pos (α := G)
+              by_contra h; push_neg at h
+              exact hG1 (show Fintype.card G = 1 by linarith)
+            have hcG : (1 : ℝ) < ↑(Fintype.card G) := by exact_mod_cast hcG2
+            have hfrac : (↑(Fintype.card G) - 1) / (2 * ↑(Fintype.card G)) < (1 : ℝ) := by
+              rw [div_lt_one (by positivity : (0 : ℝ) < 2 * ↑(Fintype.card G))]
+              linarith
+            nlinarith
+        _ = ↑(Multiset.card (productMultiset S N₀)) := mul_one _
+    -- Contradiction: |M| = |errTerm| and |errTerm| < |M|
+    linarith
 
 end PathExistence
 
@@ -910,7 +1263,7 @@ section StochasticMCLandscape
 
 /-- **Stochastic MC Landscape**: Summary of the Tier 1 framework.
 
-    ALL PROVED (Parts 9-13):
+    ALL PROVED (Parts 9-14):
     1. meanCharValue_norm_le_one: |mean chi S| <= 1 for nonempty S
     2. meanCharValue_norm_lt_one_of_distinct: strict when distinct chi-values exist
     3. avgCharProduct_norm_eq: |avgCharProduct| = prod |meanCharValue|
@@ -918,10 +1271,7 @@ section StochasticMCLandscape
     5. avgCharProduct_tendsto_zero: vanishes when spectral gaps diverge
     6. char_sum_productMultiset: character sum = product of per-step sums (KEY IDENTITY)
     7. productMultiset_card: |paths| = prod |S_k|
-
-    OPEN (standard representation theory, not project-specific):
-    8. PathExistenceFromVanishing: avgCharProduct -> 0 for all chi != 1 implies
-       every group element appears in the product multiset
+    8. PathExistenceFromVanishing: PROVED (character orthogonality + Fourier counting)
 
     The chain for Stochastic MC:
     IMLFS' -> spectral gap at infinitely many steps -> avgCharProduct -> 0
