@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 105~files
-totaling ${\sim}57{,}620$~lines.  The dependency chain is linear, with
+totaling ${\sim}58{,}150$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -126,7 +126,7 @@ three leaf modules:
 \code{Advanced/MarkovSieve.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 538 \\
 \code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
-\code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC framework, path existence (Fourier counting), two-point contraction & 1626 \\
+\code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, $\varepsilon$-walk with \code{secondMinFac} & 2158 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -680,6 +680,21 @@ Mathlib version & v4.29.0-rc1 \\
 \quad InfinitelyManyLargeFactorSets & \textbf{Open} & \code{InfinitelyManyLargeFactorSets} \\
 \quad InfinitelyManyDistinctFactorSteps & \textbf{Open} & \code{InfinitelyManyDistinctFactorSteps} \\
 \quad MinFacUnbiased (selection bias neutral) & \textbf{Open} & \code{MinFacUnbiased} \\
+\midrule
+\multicolumn{3}{l}{\emph{Sparse contraction and self-consistent $\varepsilon$-walk}} \\
+\quad Sparse $\prod a_k \to 0$ ($a_k \in [0,1]$, $\sum(1{-}a_k) = \infty$) & Proved & \code{sparse\_product\_contraction} \\
+\quad Sparse avg char product $\to 0$ & Proved & \code{sparse\_avgCharProduct\_tendsto\_zero} \\
+\quad Sparse two-point product $\to 0$ & Proved & \code{sparse\_twoPointCharProduct\_tendsto\_zero} \\
+\quad \code{secondMinFac} divides $n$ (for $n \geq 2$) & Proved & \code{secondMinFac\_dvd} \\
+\quad \code{secondMinFac} is prime (for $n \geq 2$) & Proved & \code{secondMinFac\_prime} \\
+\quad $\minFac(n) \leq \code{secondMinFac}(n)$ & Proved & \code{minFac\_le\_secondMinFac} \\
+\quad $\varepsilon$-walk factor divides accumulator $+ 1$ & Proved & \code{epsWalkFactor\_dvd} \\
+\quad $\varepsilon$-walk factor is prime & Proved & \code{epsWalkFactor\_prime} \\
+\quad All-true decisions recover EM walk & Proved & \code{epsWalkProd\_emDecision} \\
+\quad Tree character sum $\|\cdot\| \leq 1$ & Proved & \code{treeCharSum\_norm\_le\_one} \\
+\quad $\varepsilon$-walk landscape (7-clause conjunction) & Proved & \code{eps\_walk\_landscape} \\
+\quad TreeContractionHypothesis (tree char sum $\to 0$) & \textbf{Open} & \code{TreeContractionHypothesis} \\
+\quad UniformFactorDiversity ($\minFac \neq \code{secondMinFac}$ mod $q$ i.o.) & \textbf{Open} & \code{UniformFactorDiversity} \\
 \midrule
 \multicolumn{3}{l}{\emph{$L_{\mathrm{EM}}$ Dirichlet series}} \\
 \quad $\sum 1/\mathrm{prod}(n)$ converges (geometric comparison) & Proved & \code{accum\_reciprocal\_summable} \\

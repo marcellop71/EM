@@ -692,7 +692,7 @@ The conjecture's content is precisely the orbit-specificity
 transfer: Properties~1--4 describe the \emph{function}~$m$;
 the conjecture asks whether the \emph{orbit} inherits the function's
 statistical behavior.  The entire infrastructure of this
-formalization---57{,}620~lines---reduces to this single question.
+formalization---58{,}150~lines---reduces to this single question.
 
 \paragraph{Relation to Collatz.}
 Tao~\cite{Tao2019Collatz} proved that almost all Collatz orbits attain almost
@@ -1151,6 +1151,36 @@ An independent two-point formulation
 shows that even a tiny $\varepsilon$-bias coin flip between two factors
 with distinct character values gives strict spectral contraction, using
 strict convexity of the unit ball in~$\mathbb{C}$.
+
+\paragraph{Self-consistent $\varepsilon$-walk.}
+The stochastic MC above is \emph{physically inconsistent}: the factor
+sets are taken from the $\minFac$ walk, but the selections do not feed
+back into the accumulator.  The formalization also defines a
+\textbf{self-consistent $\varepsilon$-walk}
+(\lean{EM/Advanced/VanishingNoise.lean}{epsWalkProd})
+in which the chosen factor---either $\minFac(P(n){+}1)$ or
+$\operatorname{secondMinFac}(P(n){+}1)$---becomes the actual multiplier,
+updating the accumulator and producing a new Euclid number at the next
+step.  A decision sequence $\sigma : \mathbb{N} \to \mathrm{Bool}$
+determines the choice; the all-true sequence recovers the EM walk
+(\lean{EM/Advanced/VanishingNoise.lean}{epsWalkProd\_emDecision}).
+The function $\operatorname{secondMinFac}(n)$ (second-smallest prime
+factor) is defined and proved prime, divisor of~$n$, and
+$\geq \minFac(n)$.
+
+This self-consistent walk generates a \emph{binary branching tree}
+of depth~$N$ with $2^N$ leaves, where each internal node has its own
+path-dependent factor set.  The \emph{tree character sum}
+(\lean{EM/Advanced/VanishingNoise.lean}{treeCharSum}),
+a weighted sum of $\chi(\text{leaf position})$ over all leaves, is proved
+$\leq 1$ in norm.  Unlike the product multiset of Parts~9--15, this sum
+does \textbf{not} factorize as $\prod_k \bar\chi(S_k)$: the left and
+right subtrees start from different accumulators, so their character sums
+differ.  The open hypothesis
+\defname{TreeContractionHypothesis}
+asserts that the tree character sum tends to zero for all nontrivial~$\chi$;
+it is strictly weaker than DSL (which requires the deterministic path to
+mix) but strictly stronger than the product approximation.
 
 \paragraph{Does the Walk Hit $-1$?}
 
