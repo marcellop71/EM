@@ -283,6 +283,55 @@ $P(n)$.  The gap is the same orbit-specificity barrier
 \lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}):
 generation does not imply coverage for deterministic walks.
 
+\paragraph{Three routes to UFDStrong.}
+The formalization identifies a hierarchy of progressively weaker
+sufficient conditions for UFDStrong$(q)$:
+
+\begin{enumerate}[nosep]
+\item \textbf{Quantitative escape} (\defname{MinFacRatioEscape}):
+  for each nontrivial~$\chi$, there exists $\delta > 0$ such that
+  infinitely many steps have spectral gap $\geq \delta$.
+  Since a non-summable sequence with a positive lower bound infinitely
+  often is non-summable, this implies UFDStrong directly
+  (\lean{EM/Advanced/VanishingNoiseVariant.lean}{ratio\_escape\_implies\_ufdStrong}).
+
+\item \textbf{Qualitative escape} (\defname{MinFacRatioEscapeQual}):
+  for each nontrivial~$\chi$, infinitely many steps have
+  $\operatorname{card}(\text{rawTwoPointUnitSet}) \geq 2$ \emph{and}
+  $\chi(\minFac) \neq \chi(\operatorname{secondMinFac})$.
+  This implies quantitative escape via a finite-group pigeonhole
+  argument: on a finite group, the gap function takes finitely many
+  values, so being positive infinitely often gives a uniform positive
+  lower bound
+  (\lean{EM/Advanced/VanishingNoiseVariant.lean}{qual\_implies\_quant}).
+
+\item \textbf{Orbit-level minFac equidistribution} (\defname{OrbitMFRE}):
+  the residues $\minFac(\Prod{2}(n){+}1) \bmod q$ are equidistributed
+  among the units of $(\ZZ/q\ZZ)^\times$ in Cesàro density.
+  This is the weakest condition in the hierarchy: equidistributed
+  residues prevent persistent chi-degeneracy.  The bridge
+  OrbitMFRE $\Rightarrow$ MinFacRatioEscapeQual is \textbf{open}
+  (\code{OrbitMFREImpliesEscapeQual}).
+\end{enumerate}
+
+The assembled chain is:
+\[
+  \underbrace{\mathrm{OrbitMFRE}}_{\text{open}}
+  \;\xRightarrow{\text{open bridge}}\;
+  \mathrm{EscapeQual}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{EscapeQuant}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{UFDStrong}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{VariantMC}.
+\]
+Every arrow except the first is machine-checked with zero \code{sorry}.
+The most concrete attack target is MinFacRatioEscapeQual: one needs to
+show that $\minFac$ and $\operatorname{secondMinFac}$ do not
+persistently agree modulo every character.  OrbitMFRE faces the same
+orbit-specificity barrier as DSL for standard MC.
+
 \paragraph{Comparison of open hypotheses.}
 Standard MC requires DSL (population-to-orbit transfer for $\minFac$
 residues).  The $\{\minFac, \operatorname{secondMinFac}\}$ variant

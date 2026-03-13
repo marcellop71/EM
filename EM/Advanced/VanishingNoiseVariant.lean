@@ -1058,3 +1058,280 @@ theorem routes_to_ufdStrong_landscape :
    fun hq3 hbridge hmfre => route3_to_ufdStrong hq3 hbridge hmfre⟩
 
 end RoutesToUFDStrong
+
+
+/-! ## Part 23: Stochastic Two-Point MC
+
+### Overview
+
+This part connects the non-self-consistent variant MC machinery (Part 21) with the
+self-consistent tree framework (Part 20), and provides a clean quantitative
+statement about the "stochastic two-point MC" problem.
+
+**Key definitions**:
+* `fairCoin` -- constant epsilon schedule at 1/2
+* `fairTreeCharSum` -- tree character sum at fair coin weights
+* `TreeContractionAtHalf` -- tree contraction specialized to epsilon = 1/2
+* `StochasticTwoPointMC` -- under UFDStrong, every element has positive count
+
+**Key results**:
+* `stochastic_two_point_mc_proved` -- StochasticTwoPointMC PROVED from UFDStrong
+* `productMultiset_card_ge_two_pow` -- product multiset grows exponentially
+* `fairTreeCharSum_norm_le_one` -- fair tree character sum bounded by 1
+* `treeContraction_of_hypothesis` -- TreeContractionHypothesis implies TreeContractionAtHalf
+* `treeCharSum_at_zero_step` -- deterministic degeneration at epsilon = 0
+* `stochastic_two_point_mc_landscape` -- 7-part landscape theorem
+
+### Conceptual significance
+
+The stochastic two-point MC problem sits between two extremes:
+1. **Deterministic MC** (standard Mullin conjecture): the ALL-minFac walk hits -1 mod q
+2. **Full stochastic MC** (pathExistenceFromVanishing): SOME product of factor set elements
+   reaches every target
+
+Part 21 established (2) under UFDStrong via character orthogonality counting.
+Part 20 established the self-consistent tree framework where branching follows
+actual prime factorizations (not abstract factor sets).
+
+Part 23 bridges these: under UFDStrong, the non-self-consistent counting already
+gives positive multiset count for every target. The tree contraction machinery
+(TreeContractionAtHalf) provides a route for the self-consistent version, but
+requires the open TreeContractionHypothesis.
+
+The key gap between Parts 21 and 23 on one hand and standard MC on the other
+is the **selection coherence** problem: stochastic MC shows that for each prime q,
+SOME selection path reaches -1 mod q, but different primes q may require different
+selection sequences. Standard MC requires ONE fixed selection (all-minFac) to work
+for ALL primes simultaneously.
+-/
+
+section StochasticTwoPointMC
+
+variable {q : ℕ} [hqp : Fact (Nat.Prime q)]
+
+/-! ### Definitions -/
+
+/-- The fair coin epsilon schedule: constant 1/2 at every step. -/
+def fairCoin : ℕ → ℝ := fun _ => 1 / 2
+
+/-- The fair tree character sum: the branching tree character sum evaluated at
+    accumulator 2 (= prod 0) with constant epsilon = 1/2. -/
+def fairTreeCharSum (q : ℕ) [Fact (Nat.Prime q)] [NeZero q]
+    (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) : ℂ :=
+  treeCharSum q chi N 2 fairCoin
+
+/-- **TreeContractionAtHalf**: the tree character sum at fair coin weights vanishes
+    for all nontrivial characters. This is TreeContractionHypothesis specialized to
+    the constant epsilon = 1/2 schedule.
+
+    Strictly weaker than TreeContractionHypothesis (which quantifies over all
+    epsilon schedules with 0 < epsilon_k < 1).
+
+    Open Hypothesis. -/
+def TreeContractionAtHalf (q : ℕ) [Fact (Nat.Prime q)] [NeZero q] : Prop :=
+  ∀ (chi : (ZMod q)ˣ →* ℂˣ), chi ≠ 1 →
+    Filter.Tendsto (fun N => ‖fairTreeCharSum q chi N‖) Filter.atTop (nhds 0)
+
+/-- **StochasticTwoPointMC**: Under UFDStrong with q >= 3, every element of (ZMod q)ˣ
+    has positive count in the product multiset of padded unit sets at some depth N.
+    This is the non-self-consistent version: the "random paths" are abstract products
+    of factor set elements, not necessarily following the self-consistent tree. -/
+def StochasticTwoPointMC (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  2 < q → UFDStrong q →
+    ∀ (a : (ZMod q)ˣ), ∃ N,
+      0 < Multiset.count a (productMultiset (paddedUnitSet (q := q)) N)
+
+/-! ### fairCoin validity -/
+
+/-- fairCoin is strictly positive at every step. -/
+theorem fairCoin_pos : ∀ k, 0 < fairCoin k :=
+  fun _ => by norm_num [fairCoin]
+
+/-- fairCoin is strictly less than 1 at every step. -/
+theorem fairCoin_lt_one : ∀ k, fairCoin k < 1 :=
+  fun _ => by norm_num [fairCoin]
+
+/-- fairCoin is nonneg at every step. -/
+theorem fairCoin_nonneg : ∀ k, 0 ≤ fairCoin k :=
+  fun k => le_of_lt (fairCoin_pos k)
+
+/-- fairCoin is at most 1 at every step. -/
+theorem fairCoin_le_one : ∀ k, fairCoin k ≤ 1 :=
+  fun k => le_of_lt (fairCoin_lt_one k)
+
+/-! ### fairTreeCharSum properties -/
+
+/-- The fair tree character sum is bounded by 1 in norm. This follows from
+    `treeCharSum_norm_le_one` with the valid fairCoin weights. -/
+theorem fairTreeCharSum_norm_le_one [NeZero q]
+    (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
+    ‖fairTreeCharSum q chi N‖ ≤ 1 :=
+  treeCharSum_norm_le_one q chi N 2 fairCoin fairCoin_nonneg fairCoin_le_one
+
+/-- TreeContractionHypothesis (which quantifies over all valid epsilon schedules)
+    implies TreeContractionAtHalf (the special case epsilon = 1/2). -/
+theorem treeContraction_of_hypothesis [NeZero q]
+    (h : TreeContractionHypothesis q) :
+    TreeContractionAtHalf q :=
+  fun chi hchi => h chi hchi fairCoin fairCoin_pos fairCoin_lt_one
+
+/-! ### Exponential growth of product multiset -/
+
+/-- For q >= 3, the product multiset over padded unit sets has cardinality at least
+    2^N. This follows from `productMultiset_card` (cardinality = product of set sizes)
+    combined with `paddedUnitSet_card_ge_two` (each set has size >= 2). -/
+theorem productMultiset_card_ge_two_pow (hq3 : 2 < q) (N : ℕ) :
+    2 ^ N ≤ Multiset.card (productMultiset (paddedUnitSet (q := q)) N) := by
+  rw [productMultiset_card]
+  calc (2 : ℕ) ^ N
+      = ∏ _k ∈ Finset.range N, 2 := by simp [Finset.prod_const, Finset.card_range]
+    _ ≤ ∏ k ∈ Finset.range N, (paddedUnitSet (q := q) k).card :=
+        Finset.prod_le_prod' (fun k _ => paddedUnitSet_card_ge_two hq3 k)
+
+/-! ### StochasticTwoPointMC: proved from UFDStrong -/
+
+/-- **StochasticTwoPointMC PROVED**: Under UFDStrong with q >= 3, every element of
+    (ZMod q)ˣ has positive count in the product multiset of padded unit sets.
+
+    Proof chain: UFDStrong => sparse spectral contraction => vanishing averaged
+    character products => path existence (Fourier counting) => positive count.
+
+    The key step is `ufdStrong_implies_path_existence`, which gives membership in
+    `(productMultiset ...).toFinset`. Membership in toFinset is equivalent to
+    positive count via `Multiset.count_pos` and `Multiset.mem_toFinset`. -/
+theorem stochastic_two_point_mc_proved : StochasticTwoPointMC q := by
+  intro hq3 hufd a
+  obtain ⟨N, hN⟩ := ufdStrong_implies_path_existence hq3 hufd a
+  exact ⟨N, Multiset.count_pos.mpr (Multiset.mem_toFinset.mp hN)⟩
+
+/-! ### Deterministic degeneration: treeCharSum at epsilon = 0
+
+When all epsilon values are 0, the tree degenerates to a single path that always
+picks minFac. This is the deterministic EM walk. The tree character sum at epsilon = 0
+is then a product of character values along the deterministic path.
+
+We prove the one-step reduction showing that at epsilon = 0, the tree character sum
+factors as chiAt(minFac) times the recursive subtree at acc * minFac. -/
+
+/-- At epsilon = 0, the tree character sum at depth 0 is 1 (base case). -/
+theorem treeCharSum_at_zero_base (q' : ℕ) [Fact (Nat.Prime q')] [NeZero q']
+    (chi : (ZMod q')ˣ →* ℂˣ) (acc : ℕ) :
+    treeCharSum q' chi 0 acc (fun _ => (0 : ℝ)) = 1 := rfl
+
+/-- At epsilon = 0, the one-step tree character sum reduces to the deterministic
+    (all-minFac) path: the secondMinFac branch has weight 0 and the minFac branch
+    has weight 1, so only the minFac contribution survives. -/
+theorem treeCharSum_at_zero_step (q' : ℕ) [Fact (Nat.Prime q')] [NeZero q']
+    (chi : (ZMod q')ˣ →* ℂˣ) (N : ℕ) (acc : ℕ) :
+    treeCharSum q' chi (N + 1) acc (fun _ => (0 : ℝ)) =
+    chiAt q' chi (acc + 1).minFac *
+      treeCharSum q' chi N (acc * (acc + 1).minFac) (fun _ => (0 : ℝ)) := by
+  simp only [treeCharSum]
+  have h0 : (fun _ : ℕ => (0 : ℝ)) ∘ Nat.succ = fun _ => (0 : ℝ) := by ext; simp
+  rw [h0]
+  push_cast
+  ring
+
+/-- The standard EM walk is the all-true epsilon-walk (bridge to Part 20). -/
+theorem epsWalkProd_standard (n : ℕ) :
+    epsWalkProd emDecision n = prod n :=
+  epsWalkProd_emDecision n
+
+/-! ### Relationship between self-consistent and non-self-consistent
+
+The non-self-consistent approach (Part 21 + StochasticTwoPointMC above) and the
+self-consistent tree approach (Part 20 + TreeContractionHypothesis) address different
+questions:
+
+1. **Non-self-consistent** (StochasticTwoPointMC): At each step n, the "factor set"
+   is {minFac(prod(n)+1), secondMinFac(prod(n)+1)} mod q. The product multiset
+   is formed by choosing one element from each factor set independently. The key
+   insight is that these factor sets are determined by the ACTUAL EM walk (which
+   always picks minFac), so the factor sets are FIXED regardless of which selection
+   path we consider through the product multiset.
+
+2. **Self-consistent** (TreeContractionHypothesis): The tree character sum tracks
+   what happens when the accumulator CHANGES based on the selection. If we pick
+   secondMinFac at step n, the accumulator at step n+1 is different, which changes
+   the factor set at step n+1. The tree character sum accounts for this coupling.
+
+The non-self-consistent version is PROVED (under UFDStrong) because the fixed
+factor sets allow the product contraction machinery to apply directly. The
+self-consistent version remains open because the path-dependent factor sets
+prevent factorization into a product.
+
+Despite this gap, the non-self-consistent result is still meaningful: it shows
+that the COMBINATORIAL COUNTING of paths through the padded unit sets covers
+every target. The issue is that the padded unit sets are computed from the
+deterministic EM walk, not from the alternative walk that would be induced by
+a different selection sequence. -/
+
+/-- The non-self-consistent and self-consistent approaches are connected:
+    if TreeContractionAtHalf holds AND the tree character sum controls the
+    product multiset counting (which it does NOT in general -- this is the
+    selection coherence gap), then a stronger variant MC would follow.
+
+    We record the relationship between the two frameworks:
+    - fairTreeCharSum at depth 0 is 1 (trivially)
+    - fairTreeCharSum is bounded by 1 at all depths
+    - TreeContractionHypothesis implies TreeContractionAtHalf
+    - StochasticTwoPointMC is proved from UFDStrong alone -/
+theorem self_consistent_vs_non_self_consistent [NeZero q] :
+    -- 1. Fair tree char sum at depth 0 is 1
+    (∀ (chi : (ZMod q)ˣ →* ℂˣ), fairTreeCharSum q chi 0 = 1)
+    ∧
+    -- 2. Fair tree char sum bounded by 1
+    (∀ (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ), ‖fairTreeCharSum q chi N‖ ≤ 1)
+    ∧
+    -- 3. General tree contraction implies fair-coin contraction
+    (TreeContractionHypothesis q → TreeContractionAtHalf q) :=
+  ⟨fun _chi => rfl,
+   fun chi N => fairTreeCharSum_norm_le_one chi N,
+   fun h => treeContraction_of_hypothesis h⟩
+
+/-! ### Landscape theorem -/
+
+/-- **Stochastic Two-Point MC Landscape**: summary of Part 23.
+
+    PROVED theorems (no open hypotheses used in proofs):
+    1. StochasticTwoPointMC: under UFDStrong, positive count for every target
+    2. Product multiset grows exponentially (card >= 2^N for q >= 3)
+    3. fairTreeCharSum bounded by 1
+    4. TreeContractionHypothesis implies TreeContractionAtHalf
+    5. Deterministic degeneration: treeCharSum at epsilon = 0 is the minFac path
+    6. Standard EM walk = all-true epsilon-walk (Part 20 bridge)
+
+    OPEN hypotheses documented:
+    A. TreeContractionAtHalf: tree char sum at fair coin vanishes
+       (strictly weaker than TreeContractionHypothesis)
+    B. UFDStrong: per-chi spectral gap non-summability (see Part 22 for routes) -/
+theorem stochastic_two_point_mc_landscape :
+    -- 1. StochasticTwoPointMC PROVED from UFDStrong
+    StochasticTwoPointMC q
+    ∧
+    -- 2. TreeContractionHypothesis implies TreeContractionAtHalf
+    (∀ [NeZero q], TreeContractionHypothesis q → TreeContractionAtHalf q)
+    ∧
+    -- 3. fairTreeCharSum norm bounded by 1
+    (∀ [NeZero q] (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ),
+      ‖fairTreeCharSum q chi N‖ ≤ 1)
+    ∧
+    -- 4. Product multiset card >= 2^N for q >= 3
+    (2 < q → ∀ N, 2 ^ N ≤
+      Multiset.card (productMultiset (paddedUnitSet (q := q)) N))
+    ∧
+    -- 5. treeCharSum at epsilon = 0 is 1 at depth 0 (deterministic degeneration)
+    (∀ (q' : ℕ) [Fact (Nat.Prime q')] [NeZero q']
+       (chi : (ZMod q')ˣ →* ℂˣ) (acc : ℕ),
+       treeCharSum q' chi 0 acc (fun _ => (0 : ℝ)) = 1)
+    ∧
+    -- 6. Standard EM walk is one leaf of the tree (Part 20 bridge)
+    (∀ n, epsWalkProd emDecision n = prod n) := by
+  exact ⟨stochastic_two_point_mc_proved,
+         fun h => treeContraction_of_hypothesis h,
+         fun chi N => fairTreeCharSum_norm_le_one chi N,
+         fun hq3 N => productMultiset_card_ge_two_pow hq3 N,
+         fun q' _ _ chi acc => rfl,
+         fun n => epsWalkProd_emDecision n⟩
+
+end StochasticTwoPointMC

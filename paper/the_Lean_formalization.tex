@@ -127,7 +127,7 @@ three leaf modules:
 \code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
 \code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, sparse contraction & 1814 \\
-\code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong & 743 \\
+\code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, routes to UFDStrong & 1060 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -708,6 +708,11 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Fallback case: raw card $< 2 \Rightarrow$ non-summable & Proved & \code{ufd\_fallback\_not\_summable} \\
 \quad Both factors of Euclid numbers are prime & Proved & \code{both\_factors\_prime} \\
 \quad UFDImpliesUFDStrong (element$\to$character diversity) & \textbf{Open} & \code{UFDImpliesUFDStrong} \\
+\multicolumn{3}{l}{\emph{Routes to UFDStrong}} \\
+\quad MinFacRatioEscape $\Rightarrow$ UFDStrong & Proved & \code{ratio\_escape\_implies\_ufdStrong} \\
+\quad MinFacRatioEscapeQual $\Rightarrow$ MinFacRatioEscape (pigeonhole) & Proved & \code{qual\_implies\_quant} \\
+\quad OrbitMFRE $\Rightarrow$ MinFacRatioEscapeQual & \textbf{Open} & \code{OrbitMFREImpliesEscapeQual} \\
+\quad Route~1/2/3 $\Rightarrow$ VariantMC assembly & Proved & \code{routes\_to\_ufdStrong\_landscape} \\
 \quad Variant MC landscape (7-clause conjunction) & Proved & \code{variant\_mc\_landscape} \\
 \midrule
 \multicolumn{3}{l}{\emph{Gaussian EM over $\ZZ[i]$}} \\

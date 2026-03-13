@@ -1,5 +1,5 @@
 %% =========================================================================
-\section{Open problems and summary of formally verified results}
+\section{Open Problems and Paths Forward}
 \label{sec:open}
 %% =========================================================================
 
@@ -205,168 +205,74 @@ $\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \MC$,
 positive density of starting points, rather than full equidistribution.
 
 \paragraph{The Adelic Decomposition of CME}
-\label{sec:adelic}
 
-The EM walk does not privilege any single prime: at each step, the race
-across \emph{all} coordinates of $\hat{\ZZ}^\times = \prod_p (\ZZ/p\ZZ)^\times$
-is run and the winner ($\minFac$) is selected.  The process is
-intrinsically adelic.  CRT multiplier invariance
-(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}) shows that
-$\minFac(\Prod{2}(n){+}1) \bmod q$ depends only on the residues of
-$\Prod{2}(n)$ at primes $r \neq q$: the multiplier at~$q$ is determined
-by the \emph{non-$q$ coordinates} of the walk.
-
-This structural observation decomposes CME into two independent conditions:
-
-\begin{itemize}[nosep]
-\item \textbf{Multiplier Marginal Equidistribution}~(MME): the
-  unconditional multiplier character sums
-  $\sum_{n<N} \chi(\multZ{2}{q}{n})$ vanish for each non-trivial~$\chi$.
-  This captures the \emph{analytic} content---the multiplier has no
-  preferred direction.
-\item \textbf{Multiplier--Walk Independence}~(MWI): the multiplier
-  character sum conditioned on $\walkZ{2}{q}{n} = a$ is bounded by
-  the unconditional sum plus $o(N)$.  This captures the
-  \emph{structural} content---knowing where the walk is does not predict
-  the multiplier.
-\end{itemize}
+The adelic framework (Section~\ref{sec:character}) decomposes CME into
+two independent components:
 
 \begin{theorem}[\lean{EM/Adelic/Equidist.lean}{cme\_iff\_adelic}]
-\label{thm:cme-iff-adelic}
-$\mathrm{CME} \;\Longleftrightarrow\; \mathrm{MWI} + \mathrm{MME}$.
+$\mathrm{CME} \;\Longleftrightarrow\; \mathrm{MWI} \,\wedge\, \mathrm{MME}$,
 \end{theorem}
 
-\begin{proof}
-$(\Rightarrow)$: CME gives MWI trivially (the conditional sum
-is already $o(N)$); CME gives MME by decomposing the unconditional sum
-into fibers
-$\sum_n \chi(m(n)) = \sum_{a} \sum_{\{n : w(n) = a\}} \chi(m(n))$
-via \code{Finset.sum\_fiberwise}, applying CME at each fiber with
-$\varepsilon' = \varepsilon / |\GG|$, and summing
-(\lean{EM/Adelic/Equidist.lean}{cme\_implies\_mme}).
+\noindent where \textbf{MWI} (Multiplier--Walk Independence) asserts
+that the conditional distribution of the multiplier given the walk
+position converges to the marginal, and \textbf{MME} (Marginal Multiplier
+Equidistribution) asserts that the marginal multiplier distribution
+converges to uniform.
 
-$(\Leftarrow)$: Given $\chi \neq 1$ and walk position~$a$, MWI bounds
-the conditional sum by $\|\sum \chi(m)\| + (\varepsilon/2)\cdot N$,
-and MME bounds the unconditional sum by $(\varepsilon/2)\cdot N$.
-Together: $\leq \varepsilon N$.
-\end{proof}
+The decomposition is proved in both directions
+(\code{cme\_implies\_mme}, \code{crt\_fiber\_mme\_implies\_cme}).
+MWI is the core difficulty: it is the formal statement that the
+factoring channel destroys the correlation between walk position and
+multiplier residue.  MME is morally a consequence of the population
+equidistribution (PE), but the transfer from population to orbit
+multipliers requires DSL\@.
 
-The equivalence shows that MME (analytic, from population equidistribution)
-and MWI (structural, from CRT + cross-prime decorrelation) are genuinely
-independent components.  The proved identity
-$\mathrm{MME} \Leftrightarrow \text{vanishing walk lag-1 autocorrelation}$
-(\lean{EM/Adelic/Equidist.lean}{mme\_iff\_walk\_autocorrelation},
-via \code{walk\_shift\_one\_correlation}) clarifies that CCSB (walk equidistribution)
-and MME (multiplier equidistribution, equivalently walk autocorrelation)
-are logically independent: neither implies the other.
-
-\medskip
-A key bridge is the \textbf{CRT Multiplier Fiber} hypothesis: for
-non-trivial $\chi, \psi : (\ZZ/q\ZZ)^\times \to \CC^\times$, the mixed sum
-$\sum_{n<N} \chi(\multZ{2}{q}{n}) \cdot \psi(\walkZ{2}{q}{n}) = o(N)$.
-This says that the multiplier and walk at prime~$q$ are decorrelated
-at the character level.
-
-\begin{theorem}[\lean{EM/Adelic/Equidist.lean}{crt\_fiber\_implies\_mwi\_proved}]
-\label{thm:crt-fiber-mwi}
-$\mathrm{CRTFiber} + \mathrm{MME} \;\Longrightarrow\; \mathrm{MWI}$.
-Hence $\mathrm{CRTFiber} + \mathrm{MME} \;\Longrightarrow\; \mathrm{CME}
-\;\Longrightarrow\; \mathrm{MC}$, with no open~Props.
-\end{theorem}
-
-\begin{proof}
-By Fourier inversion on the finite abelian group $\GG = (\ZZ/q\ZZ)^\times$:
+\noindent The CRT fiber structure provides a further decomposition:
 \[
-  \mathbf{1}_{w(n)=a}
-  \;=\; \frac{1}{|\GG|} \sum_{\psi \in \hat\GG}
-    \bar\psi(a) \cdot \psi(w(n)).
+\mathrm{CRTFiber} + \mathrm{MME}
+\;\xRightarrow{\text{proved}}\;
+\mathrm{MWI}
+\;\xRightarrow[\text{+ MME}]{\text{proved}}\;
+\mathrm{CME}
+\;\xRightarrow{\text{proved}}\;
+\mathrm{MC}.
 \]
-Substituting into the conditional sum
-$\sum_{\{n : w(n)=a\}} \chi(m(n))$ and exchanging sums gives
-\[
-  \frac{1}{|\GG|}\,\sum_\psi \bar\psi(a) \cdot
-  \sum_{n<N} \chi(m(n)) \cdot \psi(w(n)).
-\]
-The trivial character $\psi = 1$ contributes
-$(1/|\GG|) \cdot \|\sum \chi(m)\|$, bounded by MME\@.
-Each non-trivial~$\psi$ contributes a mixed character sum
-bounded by CRTFiber.  Triangle inequality
-(using $|\bar\psi(a)| = 1$) over the $|\GG|-1$ non-trivial characters
-gives $\|\text{conditional}\| \leq \|\text{unconditional}\| + \varepsilon N$.
+CRTFiber (the CRT fiber determines the next multiplier, proved in
+\code{crt\_fiber\_determines\_genSeq}) provides the structural basis for MWI\@.
+The proof uses Fourier inversion on the character indicator function
+(\code{crt\_fiber\_implies\_mwi\_proved}, $\sim$145 lines).
 
-The formal proof (145~lines) uses \code{char\_indicator\_expansion} for
-the Fourier inversion identity and \code{MulChar.equivToUnitHom} to
-bridge between \code{DirichletCharacter\;\CC\;q}
-(which is \code{Fintype} and has the orthogonality infrastructure)
-and the \code{(ZMod\;q)\textsuperscript{x}\;→*\;\CC\textsuperscript{x}}
-type used in the hypothesis definitions.
-\end{proof}
+MME is equivalent to vanishing walk lag-1 autocorrelation
+(\code{mme\_iff\_walk\_autocorrelation}), providing a purely
+walk-theoretic reformulation.  The landscape theorem
+\code{ccsb\_mme\_landscape} proves: CME~$\Rightarrow$~CCSB~$\wedge$~MME,
+and conversely CCSB~$\wedge$~MME~$+$~MWI~$\Rightarrow$~CME\@.
 
 \paragraph{The Profinite Weyl Criterion}
 
-The walk lives in $\hat{\ZZ}^\times = \prod_p (\ZZ/p\ZZ)^\times$.
-Uniform Profinite Equidistribution~(UPE) is the Weyl criterion for
-this compact abelian group: for any finite set of distinct primes
-$q_1, \ldots, q_k$ (not appearing in the sequence) and any product
-of non-trivial characters $\chi_i : (\ZZ/q_i\ZZ)^\times \to \CC^\times$,
-\[
-  \Bigl\|\sum_{n<N} \prod_{i=1}^k
-    \chi_i(\walkZ{2}{q_i}{n})\Bigr\| \;\leq\; \varepsilon N
-  \qquad\text{for all } N \geq N_0(\varepsilon).
-\]
+The \textbf{Uniform Profinite Equidistribution} (UPE) hypothesis
+asserts: for every $k \geq 1$ and every $k$-tuple of distinct primes
+$(q_1, \ldots, q_k)$, the joint distribution of
+$(w_{q_1}(n), \ldots, w_{q_k}(n))$ converges to uniform on
+$\prod_i (\ZZ/q_i\ZZ)^\times$.  UPE is the profinite analog of
+equidistribution: it asks for uniform distribution modulo all finite
+sets of primes simultaneously.
 
-\begin{theorem}[\lean{EM/Adelic/Profinite.lean}{uniform\_profinite\_implies\_ccsb},
-  \lean{EM/Adelic/Profinite.lean}{uniform\_profinite\_implies\_cpd}]
-\label{thm:upe-specializations}
-$\mathrm{UPE}$ implies both\/ $\mathrm{CCSB}$
-(specialization to $k{=}1$, via $\mathsf{Fin.prod\_univ\_one}$)
-and\/ $\mathrm{CPD}$
-(specialization to $k{=}2$, via $\mathsf{Fin.prod\_univ\_two}$).
-Hence $\mathrm{UPE} \Rightarrow \mathrm{MC}$.
+\begin{theorem}[\lean{EM/Adelic/ProfiniteEquidist.lean}{uniform\_profinite\_implies\_mc}]
+$\mathrm{UPE} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
-The natural question is whether the converse holds: does pairwise
-decorrelation (CCSB at $k{=}1$ plus CPD at $k{=}2$) bootstrap to the
-full $k$-wise condition~UPE\@?
+\noindent The proof: UPE at $k = 1$ gives CCSB
+(\code{uniform\_profinite\_implies\_ccsb}), which suffices.
+UPE at $k = 2$ gives CPD (Conditional Pairwise Decorrelation,
+\code{uniform\_profinite\_implies\_cpd}).  Dead End~\#125 shows
+that pairwise ($k = 2$) does NOT imply $k$-wise---the XOR
+counterexample is decisive---so UPE is genuinely stronger than
+CCSB~$\wedge$~CPD\@.
 
-\begin{remark}[Dead End~\#125]
-\label{rem:pairwise-k-wise}
-\textbf{No.}  The abstract XOR counterexample is decisive: three
-unit-modulus sequences $X_1, X_2, X_3 := X_1 \cdot X_2$ satisfy all
-pairwise cancellation conditions
-($\sum X_i \bar X_j = o(N)$) but have
-$\sum X_1 X_2 X_3 = \sum |X_1|^2 |X_2|^2 = N$.
-No standard inequality (Cauchy--Schwarz, H\"older, van~der Corput)
-bridges pairwise to $k$-wise.
-The Tao--Ter\"av\"ainen theorem~\cite{TaoTeravainenPairwise}
-(``pairwise implies higher'' for multiplicative functions) requires
-multiplicativity, which the EM walk lacks.  UPE therefore requires
-$k$-wise decorrelation for \emph{all}~$k$ as a primitive hypothesis,
-not derivable from $k{=}1$ and $k{=}2$ data alone.
-\end{remark}
-
-The hierarchy is:
-\[
-  \mathrm{UPE}
-  \;\Longrightarrow\;
-  \bigl\{\mathrm{CCSB},\;\mathrm{CPD}\bigr\}
-  \;\Longrightarrow\;
-  \mathrm{MC},
-  \qquad\text{but}\quad
-  \mathrm{CCSB} + \mathrm{CPD}
-  \;\not\Rightarrow\;
-  \mathrm{UPE}.
-\]
-CPD combined with CRT multiplier invariance gives MWI
-(conditional on \code{CPDImpliesCRTFiber}, the sole remaining bridge
-in the adelic framework).  The full adelic landscape
-(\lean{EM/Adelic/Equidist.lean}{adelic\_landscape}) witnesses five
-proved routes to MC through the adelic framework:
-CME~$\Leftrightarrow$~AdelicEquidist,
-AdelicEquidist~$\Rightarrow$~MC,
-MWI~$+$~MME~$\Rightarrow$~MC,
-CRTFiber~$+$~MME~$\Rightarrow$~CME (fully proved),
-and CPD~$+$~MME~$\Rightarrow$~MC (conditional on one bridge).
+The routes to MC via the adelic/profinite framework are collected in
+\code{profinite\_routes\_to\_mc} (3-route conjunction: UPE, CCSB,
+adelic, all proved).
 
 \paragraph{What Would Close the Conjecture}
 
@@ -425,39 +331,123 @@ The cleanest paths to MC:
   channel is not systematically avoided.  This is the same
   orbit-specificity gap as SieveTransfer, approached from a different
   mathematical toolkit.
-
-\item \textbf{Prove LinearMeanGrowth} (weak MC route): show that
-  the ensemble mean of $\sum_{k < K} 1/\seq{n}(k)$ over squarefree
-  starting points $n \leq X$ grows as $\kappa K$ for some $\kappa > 0$.
-  This single hypothesis implies a \emph{positive density} of starting
-  points have divergent reciprocal sums
-  (\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}).
-  LMG follows from \textbf{FirstMomentStep} (each step contributes
-  $\sim\kappa$ on average), whose $k = 0$ case is population-level
-  (unconditional from analytic number theory); for $k \geq 1$ it
-  requires a ``first-moment DSL'' strictly weaker than full DSL\@.
-  The weaker \textbf{StepMeanLowerBound}$(c)$ also suffices:
-  $\mathbb{E}[1/\seq{\cdot}(k)] \geq c$ eventually for each~$k$
-  implies LMG
-  (\lean{EM/Ensemble/FirstMoment.lean}{smlb\_implies\_lmg}).
-  The $k = 0$ case is proved unconditionally with $c = 1/4$
-  (\lean{EM/Ensemble/FirstMoment.lean}{ensembleAvg\_k0\_ge\_quarter});
-  additionally, $\seq{n}(k) \geq 3$ unconditionally for $k \geq 1$
-  (\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_ge\_three}).
-  A weaker \textbf{PartialSMLB}$(c, K_0)$ (SMLB for $k \leq K_0$ only)
-  yields a fixed mean lower bound; PartialSMLB$(1/4, 0)$ is
-  unconditional
-  (\lean{EM/Ensemble/FirstMoment.lean}{partial\_smlb\_zero\_unconditional}).
-  For $k = 1$, \textbf{Mod6DensityLB} is now proved unconditionally
-  via sieve bounds
-  (\lean{EM/Ensemble/FirstMoment.lean}{mod6\_density\_lb\_proved}),
-  giving $\mathbb{E}[1/\seq{\cdot}(1)] \geq 1/24$ unconditionally
-  (\lean{EM/Ensemble/FirstMoment.lean}{mod6\_density\_implies\_smlb\_k1}).
-  CRT extends to $k = 2$: for $n \equiv 19 \bmod 30$, the first three
-  primes are $2, 3, 5$
-  (\lean{EM/Ensemble/FirstMoment.lean}{genSeq\_two\_of\_mod30}).
-  Thus SMLB holds unconditionally for $k \leq 1$; the barrier is $k \geq 2$.
 \end{enumerate}
+
+\paragraph{The vanishing noise route.}
+A complementary perspective recasts the walk as a product of random
+and deterministic steps.  At each step, $\Prod{2}(n)+1$ has a set~$F$
+of prime factors; $\minFac$ selects the smallest, but the
+\emph{factor set} $F \bmod q$ acts as a ``noisy generating set'' in
+$(\ZZ/q\ZZ)^\times$.  The spectral gap lemma
+(\lean{EM/Advanced/VanishingNoise.lean}{spectral\_gap\_with\_identity})
+proves: for any generating set $S \ni 1$ in a finite abelian group
+and any nontrivial character~$\chi$,
+$\|\sum_{s \in S} \chi(s)\| < |S|$
+(strict inequality, using strict convexity of~$\mathbb{C}$).
+Deterministic walk steps---multiplying by a fixed element---preserve
+this contraction
+(\lean{EM/Advanced/VanishingNoise.lean}{char\_sum\_mul\_right\_norm}).
+If the factor set has $|F| \geq 2$ elements in $(\ZZ/q\ZZ)^\times$
+infinitely often (with non-summable spectral gap), the product
+$\prod(1 - \gamma_k) \to 0$
+(\lean{EM/Advanced/VanishingNoise.lean}{product\_contraction\_tendsto}),
+which would give CCSB---but only if the walk actually \emph{averages}
+over~$F$.  A proved counterexample
+(\lean{EM/Advanced/VanishingNoise.lean}{selection\_vs\_average\_gap})
+shows the gap cleanly: for any fixed selection $s \in S$, the
+pointwise norm $\|\chi(s)\| = 1$ (zero contraction), even when the
+average over~$S$ contracts strictly below~$1$.
+Since $\minFac$ selects \emph{one specific element} of the factor set,
+the spectral gap alone does not imply CCSB\@.
+
+The formalization defines the factor set residues
+(\lean{EM/Advanced/VanishingNoise.lean}{factorSetResidues})
+and proves that the walk multiplier lies in it
+(\lean{EM/Advanced/VanishingNoise.lean}{multZ\_in\_factorSetResidues}).
+Two open hypotheses remain:
+\textbf{InfinitelyManyLargeFactorSets} (that the Euclid numbers
+$\Prod{2}(n)+1$ have at least two prime factors $\geq q$ for
+infinitely many~$n$) and
+\textbf{MinFacUnbiased} (that $\minFac$ selection is asymptotically
+unbiased over the squarefree ensemble).
+The latter is the orbit-specificity barrier
+restated in spectral language.
+
+The vanishing noise perspective also motivates the
+$\{\minFac, \operatorname{secondMinFac}\}$ variant MC
+(Section~\ref{sec:minfac-secondminfac}), which proves that
+\emph{some} selection from two-point factor sets reaches every
+residue class---under a single open spectral hypothesis
+(UFDStrong).  The stochastic MC chain and the self-consistent
+$\varepsilon$-walk branching tree are developed in
+Section~\ref{sec:variants}; the function field analog
+(Section~\ref{sec:function-field}) confirms that the difficulty is
+orbit-specificity, not analytic number theory.
+
+\paragraph{Pairwise Decorrelation and Weak MC}
+
+Dead End~\#125 proved that pairwise cancellation does not imply $k$-wise
+(XOR counterexample), killing the CCSB+CPD~$\to$~UPE route.  However,
+\emph{variance bounds only use $k=2$}: the identity
+$\mathrm{Var}(\sum_j X_j) = \sum_j \mathrm{Var}(X_j) + 2\sum_{j<k}\mathrm{Cov}(X_j, X_k)$
+means pairwise decorrelation suffices for concentration.  The
+formalization proves this revival chain:
+
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{dead\_end\_125\_pairwise\_revival}]
+\label{thm:pairwise-revival}
+PairwiseStepDecorrelation $+$ LinearMeanGrowth $+$
+ChebyshevConcentration $\;\Longrightarrow\;$
+AlmostAllSquarefreeRSD\@.
+\end{theorem}
+
+\noindent The proved intermediate results include:
+$\mathrm{Var}[1/\mathrm{genSeq}(n,k)] \leq 1/4$ (from $\mathrm{genSeq} \geq 2$),
+the variance decomposition identity, and
+PSD$+$IVB~$\Rightarrow$~$\mathrm{Var}[S_K] \leq (V{+}1)K$
+(\code{psd\_ivb\_implies\_variance\_bound\_proved}).
+The Chebyshev bridge is now proved
+(\code{chebyshev\_concentration\_proved}), and PSD$+$IVB~$\Rightarrow$~variance
+bound is proved, leaving exactly two open hypotheses: PSD and LMG\@.
+
+A further simplification drops PSD entirely.  Since
+$S_K(n) \leq K/2$ deterministically (each term $\leq 1/2$), a partition
+argument shows that LMG alone implies a positive density of starting
+points have divergent reciprocal sums:
+
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}]
+\label{thm:positive-density-rsd}
+$\mathrm{LinearMeanGrowth} \;\Longrightarrow\; \mathrm{PositiveDensityRSD}$.
+\end{theorem}
+
+\noindent This is a 1-hypothesis route (vs.\ 2 for density~1),
+and the hypothesis LMG is strictly weaker than CME---it requires
+only that the ensemble mean grows linearly, not conditional
+equidistribution.
+
+\paragraph{Function Field Analog}
+
+Over $\FF_p[t]$, the FF-EM sequence has additional structural
+advantages.  The formalization proves
+(\code{FunctionField/WeakMC.lean}, 471~lines, zero \code{sorry}):
+\begin{itemize}[nosep]
+\item \textbf{Degree escape}
+(\lean{EM/FunctionField/WeakMC.lean}{ffSeq\_degree\_tendsto\_atTop}):
+$\deg(\mathrm{ffSeq}(n)) \to \infty$, unconditional from finiteness
+$+$ injectivity.
+\item \textbf{Capture count stabilization}: for each degree~$d$, the
+number of degree-$d$ irreducibles captured eventually stabilizes.
+\item \textbf{Pool partition identity}
+(\lean{EM/FunctionField/WeakMC.lean}{captureCount\_plus\_missing}):
+captured $+$ unsieved $=$ total, an exact accounting.
+\item \textbf{FFCaptureExhaustive $\Leftrightarrow$ FFMullinConjecture}:
+the two natural formulations are equivalent.
+\end{itemize}
+The pool partition identity gives quantitative control:
+if the total number of monic irreducibles of degree~$\leq D$ is~$M$,
+then among the first~$N > M$ terms, at least one has degree~$> D$.
+Dead End~\#129 (FFLM structurally false---cyclotomic Galois groups)
+is sidestepped entirely: degree escape uses only finiteness and
+injectivity, not monodromy.
 
 \paragraph{Does the Walk Hit $-1$?}
 
@@ -507,49 +497,6 @@ requires mechanisms beyond the simplest equidistribution
 framework.  The CME bypass sidesteps this barrier, but the barrier's
 existence means any proof must be genuinely subtle.
 
-\paragraph{Collapse certificates.}
-Two natural-seeming proof strategies---modelling the EM walk as a
-non-homogeneous Markov chain (Doeblin--Dobrushin ergodic theory) and
-adapting the multiplicative large sieve to the $\minFac$ selection
-rule---were assessed by formalization.  Both \emph{collapse
-definitionally} to existing open hypotheses:
-\begin{itemize}
-\item
-  \lean{EM/Advanced/MarkovSieve.lean}{doeblin\_eq\_cme}:
-  \texttt{DoeblinConvergenceForEM = CME} by \texttt{rfl}.
-  The Doeblin coefficient of ergodicity approaching~$1$ for the
-  empirical transition matrix of the EM walk is literally the
-  statement that conditional multiplier character sums vanish, which
-  is CME.
-\item
-  \lean{EM/Advanced/MarkovSieve.lean}{sieve\_orbit\_control\_eq\_ccsb}:
-  \texttt{SieveOrbitControl = CCSB} by \texttt{rfl}.
-  Pointwise-in-$q$ walk character sum bounds from sieve methods are
-  literally CCSB\@.
-\end{itemize}
-A definitional equality (\texttt{rfl}) is the strongest possible dead-end
-certificate: the type-checker confirms that the ``new'' hypothesis
-contains zero mathematical content beyond the existing one.
-The underlying obstruction is the \emph{orbit-specificity gap}
-(average-over-$q$ versus pointwise-in-$q$), which is structurally
-analogous to the gap between Chebotarev's density theorem
-(unconditional) and Artin's primitive root conjecture
-(conditional on GRH; Hooley 1967).
-
-The root cause is algebraic.  The identity
-\begin{equation}
-  \label{eq:minfac-min}
-  \minFac(nm) = \min\bigl(\minFac(n),\;\minFac(m)\bigr)
-  \qquad (n,m > 1),
-  \tag{$\checkmark$ \code{minFac\_mul\_eq\_min}}
-\end{equation}
-proved without any coprimality hypothesis, shows that $\minFac$ is a
-\emph{lattice} operation (min), not an algebraic one (product).
-Multiplicative number theory---Dirichlet series, the Hal\'asz theorem,
-pretentious distance---is designed for functions $f$ satisfying
-$f(nm) = f(n)f(m)$, and is structurally incompatible with a function
-obeying~\eqref{eq:minfac-min}.
-
 \paragraph{Assessment.}
 We believe the walk does hit~$-1$ at every prime, primarily because
 the self-correcting sieve mechanism provides a concrete dynamical
@@ -569,254 +516,18 @@ techniques---likely exploiting the specific arithmetic of the
 $\minFac$ rule on super-exponentially growing squarefree numbers in
 ways that current analytic number theory does not.
 
-\renewcommand{\arraystretch}{1.25}
-\footnotesize
-\begin{longtable}{@{}p{5.5cm}l>{\raggedright\arraybackslash}p{4.5cm}@{}}
-\toprule
-\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} \\
-\midrule
-\endfirsthead
-\toprule
-\textbf{Result} & \textbf{Status} & \textbf{Lean identifier} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{3}{r}{\emph{continued on next page}} \\
-\endfoot
-\bottomrule
-\endlastfoot
-\multicolumn{3}{l}{\emph{Sequence foundations}} \\
-\quad Every $\seq{2}(n)$ is prime & Proved & \code{seq\_isPrime} \\
-\quad No prime repeats & Proved & \code{seq\_injective} \\
-\midrule
-\multicolumn{3}{l}{\emph{Main reductions to MC}} \\
-\quad \textbf{DSL $\Rightarrow$ MC} (sole hypothesis, via ensemble) & \textbf{Proved} & \code{full\_chain\_dsl} \\
-\quad \textbf{SHH $\Rightarrow$ MC} (Single Hit Theorem) & Proved & \code{single\_hit\_implies\_mc} \\
-\quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting route) & Proved & \code{dynamical\_hitting\_implies\_mullin} \\
-\quad \textbf{CCSB $\Rightarrow$ MC} (single hypothesis) & Proved & \code{complex\_csb\_mc'} \\
-\quad \textbf{CME $\Rightarrow$ MC} (sharpest, all $d$) & Proved & \code{cme\_implies\_mc} \\
-\quad PE + DSL $\Rightarrow$ MC & Proved & \code{pe\_dsl\_implies\_mc} \\
-\quad PE + DSLHitting $\Rightarrow$ MC & Proved & \code{pe\_dsl\_hitting\_implies\_mc} \\
-\quad PE $\Rightarrow$ MC & Proved & \code{pe\_implies\_mullin} \\
-\quad HH $\Rightarrow$ MC & Proved & \code{hh\_implies\_mullin} \\
-\quad SE + MH $\Rightarrow$ MC & Proved & \code{se\_mixing\_implies\_mullin} \\
-\quad \textbf{WE $\Rightarrow$ MC} (single Prop) & Proved & \code{walk\_equidist\_mc} \\
-\midrule
-\multicolumn{3}{l}{\emph{Inductive bootstrap}} \\
-\quad PrimeResidueEscape (elementary) & Proved & \code{prime\_residue\_escape} \\
-\quad MC($<\!p$) + PRE $\Rightarrow$ SE($p$) & Proved & \code{mcBelow\_pre\_implies\_se} \\
-\quad $q$-roughness from MC($<\!q$) & Proved & \code{mcBelow\_implies\_seq\_ge} \\
-\quad One-prime gap & Proved & \code{mcBelow\_cofinal\_hit\_implies\_mc\_at} \\
-\quad mcBelow 11 & Proved & \code{concrete\_mcBelow\_11} \\
-\midrule
-\multicolumn{3}{l}{\emph{Algebraic framework}} \\
-\quad Confinement Theorem & Proved & \code{confinement\_forward/reverse} \\
-\quad PRE $\Leftrightarrow$ SE & Proved & \code{pre\_iff\_se} \\
-\quad SE $\Leftrightarrow$ character detection & Proved & \code{se\_iff\_char\_detection} \\
-\quad Maximal subgroup reduction & Proved & \code{se\_of\_maximal\_escape} \\
-\quad WHP $\Leftrightarrow$ HH & Proved & \code{whp\_iff\_hh} \\
-\quad SE density argument (CRT + QR) & Proved & \code{se\_qr\_obstruction} \\
-\midrule
-\multicolumn{3}{l}{\emph{Character sum chain}} \\
-\quad Fourier bridge: CCSB $\Rightarrow$ hit count lb & Proved & \code{complex\_csb\_implies\_hit\_count\_lb\_proved} \\
-\quad Decorrelation $\Rightarrow$ PED & Proved & \code{decorrelation\_implies\_ped} \\
-\quad NoLongRuns$(L)$ $\Rightarrow$ PED & Proved & \code{noLongRuns\_implies\_ped} \\
-\quad BRE $\Rightarrow$ PEDImpliesCSB & Proved & \code{block\_rotation\_implies\_ped\_csb} \\
-\quad CME $\Rightarrow$ CCSB (all $d$, bypasses BRE) & Proved & \code{cme\_implies\_ccsb} \\
-\quad CME $\Rightarrow$ MC & Proved & \code{cme\_implies\_mc} \\
-\quad Walk char recurrence ($\mathbb{C}$-valued) & Proved & \code{char\_walk\_recurrence} \\
-\quad Telescoping identity & Proved & \code{walk\_telescope\_identity} \\
-\quad Telescoping norm $\leq 2$ & Proved & \code{walk\_telescope\_norm\_bound} \\
-\quad Shift-one autocorrelation & Proved & \code{walk\_shift\_one\_correlation} \\
-\quad Order-2 sign-flip chain & Proved & \code{order2\_noLongRuns\_mc} \\
-\midrule
-\multicolumn{3}{l}{\emph{Walk dynamics}} \\
-\quad Walk--divisibility bridge & Proved & \code{walkZ\_eq\_neg\_one\_iff} \\
-\quad Products strictly monotone & Proved & \code{prod\_strictMono} \\
-\quad Fundamental trichotomy & Proved & \code{avoidance\_contradicts\_se\_mixing} \\
-\quad Self-avoidance dichotomy & Proved & \code{self\_avoidance\_dichotomy} \\
-\quad Scheduled walk coverage & Proved & \code{scheduled\_walk\_covers\_all} \\
-\midrule
-\multicolumn{3}{l}{\emph{Selectability analysis}} \\
-\quad Divisor freshness & Proved & \code{divisor\_not\_yet\_in\_seq} \\
-\quad Passed-over persistence & Proved & \code{passed\_over\_persists} \\
-\quad Selectability extinction & Proved & \code{selectability\_extinguished} \\
-\quad MC $\Rightarrow$ $\neg$InfinitelySelectable & Proved & \code{mc\_implies\_not\_infinitely\_selectable} \\
-\quad DH $\Rightarrow$ InfinitelySelectable & Proved & \code{dh\_implies\_infinitely\_selectable} \\
-\midrule
-\multicolumn{3}{l}{\emph{Sieve and orbit analysis}} \\
-\quad EMFE $\Leftrightarrow$ TailSE & Proved & \code{emfe\_iff\_tail\_se\_at} \\
-\quad TailSE $\Rightarrow$ CofinalEscape $\Rightarrow$ QuotientDH & Proved & \code{tail\_se\_gives\_sub\_dh} \\
-\quad Dirichlet: $\infty$ primes per residue class & Proved & \code{dirichlet\_residues\_independent} \\
-\quad Minimality sieve + coupling & Proved & \code{minimality\_sieve} \\
-\quad StrongSieveEquidist $\Rightarrow$ NoLongRunsAt & Proved & \code{strongSieveEquidist\_noLongRunsAt} \\
-\quad NoLongRunsAt $\Rightarrow$ PEDAt & Proved & \code{noLongRunsAt\_ped} \\
-\quad DPED $\Rightarrow$ PED & Proved & \code{dped\_implies\_ped} \\
-\quad PDE $+$ sieve chain $\Rightarrow$ MC & Proved & \code{primeDensity\_chain\_mc} \\
-\quad GLPFE $+$ SieveTransfer $\Rightarrow$ MC & Proved & \code{genericLPF\_chain\_mc} \\
-\quad SieveEquidist $\Rightarrow$ Dec & Proved & \code{sieve\_equidist\_implies\_decorrelation} \\
-\quad SieveEquidist $\Rightarrow$ PED & Proved & \code{sieve\_equidist\_implies\_ped} \\
-\midrule
-\multicolumn{3}{l}{\emph{Ensemble and DSL framework}} \\
-\quad Generalized EM: genProd, genSeq & Proved & \code{genProd\_two\_eq\_prod} \\
-\quad genSeq injective & Proved & \code{genSeq\_injective} \\
-\quad $n \mid \text{genProd}(n, k)$ & Proved & \code{start\_dvd\_genProd} \\
-\quad $\Prod{2}(n)$ squarefree & Proved & \code{prod\_squarefree} \\
-\quad Buchstab weight $\kappa(2) = 2/3$ & Proved & \code{buchstabWeight\_two} \\
-\quad FM + VB $\Rightarrow$ RSD & Proved & \code{first\_moment\_variance\_implies\_rsd} \\
-\quad CharConcentration $\Rightarrow$ Cancellation & Proved & \code{char\_concentration\_implies\_cancellation} \\
-\quad FEB $\Rightarrow$ CME (fiber energy) & Proved & \code{feb\_implies\_cme} \\
-\quad Cross term $=$ sum of fiber cross terms & Proved & \code{total\_cross\_term\_eq\_sum\_fiber} \\
-\quad $\|\chi(u)\| = 1$ for group chars & Proved & \code{char\_value\_norm\_one} \\
-\quad Energy $= N + 2 \sum$ cross terms & Proved & \code{char\_sum\_energy\_eq\_N\_plus\_cross} \\
-\quad $o(N)$ cross terms $\Rightarrow$ linear energy & Proved & \code{cross\_term\_controls\_growth} \\
-\quad ExcessEnergy $=$ visit deviation & Proved & \code{excessEnergy\_eq\_visit\_deviation} \\
-\quad SVE $\Leftrightarrow$ VE & Proved & \code{sve\_iff\_ve} \\
-\quad Population energy $\geq 0$ & Proved & \code{populationCharEnergy\_nonneg} \\
-\quad Population energy $=$ ensemble avg & Proved & \code{populationCharEnergy\_eq\_ensembleAvg} \\
-\quad Cross-term pair symmetry & Proved & \code{crossTermPair\_comm} \\
-\quad CSVB $\Rightarrow$ SecondMomentBound & Proved & \code{charSumVarianceBound\_implies\_secondMomentBound} \\
-\quad SD $\Rightarrow$ PairwiseCrossTermVanishing & Proved & \code{stepDecorrelation\_implies\_pairwiseVanishing} \\
-\quad Variance chain from bridges & Proved & \code{variance\_chain\_from\_bridges} \\
-\quad EnsembleConcentration $\Rightarrow$ AlmostAllSqfreeEqd & Proved & \code{ensemble\_concentration\_implies\_eqd} \\
-\quad SE $\Rightarrow$ NAO & Proved & \code{se\_implies\_nao} \\
-\quad Full CRT chain $\Rightarrow$ cancellation & Proved & \code{full\_crt\_chain\_implies\_cancellation} \\
-\quad WeylHittingBridge & Proved & \code{weyl\_hitting\_bridge\_proved} \\
-\quad PerChiCancellationBridge & Proved & \code{per\_chi\_cancellation\_bridge\_proved} \\
-\quad Walk cancellation ($n{=}2$) $\Rightarrow$ MC & Proved & \code{cancel\_weyl\_implies\_mc} \\
-\quad JSE $+$ MultCancelToWalkCancel $\Rightarrow$ MC & Proved & \code{jse\_transfer\_implies\_mc} \\
-\quad SD $\Rightarrow$ a.a.\ char sum cancellation & Proved & \code{sd\_implies\_cancellation} \\
-\quad 4-hypothesis master (SRE+CRT+Bridge+Decorr) & Proved & \code{ensemble\_pt\_master\_simplified} \\
-\quad GenHittingImpliesGenMC & Proved & \code{gen\_hitting\_implies\_gen\_mc\_proved} \\
-\quad DecorrelationImpliesVariance & Proved & \code{decorrelation\_implies\_variance\_proved} \\
-\quad CharVarianceImpliesConcentration & Proved & \code{char\_variance\_implies\_concentration\_proved} \\
-\quad EnsembleMultEquidistImpliesCharMeanZero & Proved & \code{ensemble\_mult\_equidist\_char\_mean\_zero} \\
-\quad JSE base case (tower rule) & Proved & \code{jse\_base\_case} \\
-\quad Cofactor identity: $w(n){+}1 = m(n) \cdot \mathrm{cof}(n)$ & Proved & \code{shifted\_walk\_eq\_mult\_mul\_cof} \\
-\quad Hit $\Leftrightarrow$ cofZ $= 0$ & Proved & \code{walkZ\_eq\_neg\_one\_iff\_cofZ\_zero} \\
-\quad genProd$(n,k)$ even for $k \geq 1$ (parity) & Proved & \code{genProd\_even\_of\_pos} \\
-\quad genSeq$(n,k) \geq 3$ for $k \geq 1$ (unconditional) & Proved & \code{genSeq\_ge\_three} \\
-\quad $\mathbb{E}[1/\text{genSeq}(\cdot,0)] \geq 1/4$ (unconditional) & Proved & \code{ensembleAvg\_k0\_ge\_quarter} \\
-\quad SMLB $\Rightarrow$ LMG $\Rightarrow$ PositiveDensityRSD & Proved & \code{smlb\_implies\_positive\_density\_rsd} \\
-\quad FMS$(\kappa) \Rightarrow \kappa \geq 1/4$ & Proved & \code{fms\_kappa\_ge\_quarter} \\
-\quad genSeq$(n,1) = 3$ for $n \equiv 1 \bmod 6$ sqfree & Proved & \code{genSeq\_one\_of\_mod6} \\
-\quad Parity + SMLB landscape (4-clause) & Proved & \code{parity\_smlb\_landscape} \\
-\quad genProd$(n,2) = 6n$ for $n \equiv 1 \bmod 6$ & Proved & \code{genProd\_two\_of\_mod6} \\
-\quad genSeq$(n,2) = 5$ for $n \equiv 19 \bmod 30$ & Proved & \code{genSeq\_two\_of\_mod30} \\
-\quad PartialSMLB $\Rightarrow$ mean lower bound & Proved & \code{partial\_smlb\_implies\_mean\_lower\_bound} \\
-\quad PartialSMLB$(1/4, 0)$ unconditional & Proved & \code{partial\_smlb\_zero\_unconditional} \\
-\quad Mod6DensityLB $\Rightarrow$ SMLB at $k{=}1$ & Proved & \code{mod6\_density\_implies\_smlb\_k1} \\
-\quad Mod6DensityLB proved (sieve) & Proved & \code{mod6\_density\_lb\_proved} \\
-\quad $\mathbb{E}[1/\text{genSeq}(\cdot,1)] \geq 1/24$ (unconditional) & Proved & (composition) \\
-\quad Non-sf mod-6 count $\leq X/24 + \sqrt{X}$ & Proved & \code{nonsf\_mod6\_count\_bound} \\
-\quad sqfreeCount inclusion-exclusion & Proved & \code{sqfreeCount\_plus\_fourth\_ninth} \\
-\midrule
-\multicolumn{3}{l}{\emph{UCE (sieve-based) route}} \\
-\quad UCE + UCEImpliesCME $\Rightarrow$ MC & Proved & \code{uce\_cme\_implies\_mc} \\
-\quad UCE + Alladi + DSL $\Rightarrow$ MC & Proved & \code{uce\_dsl\_implies\_mc} \\
-\quad $\Prod{2}(n)$ coprime to primes not in seq & Proved & \code{prod\_coprime\_of\_not\_in\_seq} \\
-\quad UCE landscape (summary conjunction) & Proved & \code{uce\_landscape} \\
-\midrule
-\multicolumn{3}{l}{\emph{FF-MC large-$p$ chain}} \\
-\quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & Proved & \code{ff\_dh\_implies\_ffmc} \\
-\quad FF-EM sequence injective & Proved & \code{ffSeq\_injective\_proved} \\
-\quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ & Proved & \code{weil\_implies\_ff\_se} \\
-\quad FF-SE unconditional for $d = 1$ & Proved & \code{ff\_se\_degree\_one} \\
-\quad $\ZZ/4\ZZ$ counterexample (generation $\neq$ coverage) & Proved & \code{alternating\_walk\_misses\_two} \\
-\quad Weil $\Rightarrow$ population multiplier CCSB & Proved & \code{weil\_implies\_population\_mult\_ccsb} \\
-\quad Selection bias chain & Proved & \code{selection\_bias\_chain} \\
-\midrule
-\multicolumn{3}{l}{\emph{Large sieve route}} \\
-\quad MultiModularCSB $\Rightarrow$ MC & Proved & \code{mmcsb\_implies\_mc} \\
-\quad BV chain $\Rightarrow$ MC & Proved & \code{bv\_chain\_mc} \\
-\quad ArithLS chain $\Rightarrow$ MC & Proved & \code{arith\_ls\_chain\_mc} \\
-\quad ALS chain $\Rightarrow$ MC & Proved & \code{als\_prime\_arith\_ls\_chain\_mc} \\
-\quad \textbf{WeakALS} (\S58) & \textbf{Proved} & \code{weak\_als\_from\_card\_bound} \\
-\quad Gauss sum inversion (\S57) & Proved & \code{char\_sum\_to\_exp\_sum} \\
-\quad \textbf{ALS $\Rightarrow$ PrimeArithLS} (\S65) & \textbf{Proved} & \code{als\_implies\_prime\_arith\_ls} \\
-\quad Hilbert chain $\Rightarrow$ ALS & Proved & \code{hilbert\_chain\_als} \\
-\quad HilbertInequality1 $\Rightarrow$ HilbertInequality (rescaling) & Proved & \code{hilbert\_rescale} \\
-\quad MittagLefflerCsc (Mittag-Leffler for $\csc$) & Proved & \code{mittag\_leffler\_csc\_proved} \\
-\quad CscBilinearBound $\Rightarrow$ GramOffDiag & Proved & \code{csc\_bilinear\_implies\_gram\_offdiag} \\
-\quad CrossRCesaroConvergence & Proved & \code{cross\_r\_cesaro\_convergence\_proved} \\
-\quad GramOffDiag $\Rightarrow$ ALS & Proved & \code{gram\_offdiag\_bilinear\_implies\_als} \\
-\quad Refined Gram off-diagonal bound & Proved & \code{gramMatrix\_offdiag\_bound\_dist} \\
-\quad Packing bound (pigeonhole) & Proved & \code{round\_sep\_card\_le} \\
-\quad Jordan's inequality (\S56) & Proved & \code{sin\_pi\_ge\_two\_mul} \\
-\quad Geometric sum bound (\S56) & Proved & \code{norm\_eAN\_geom\_sum\_le\_inv} \\
-\quad Parseval for ZMod.dft (\S53) & Proved & \code{zmod\_dft\_parseval} \\
-\quad Gauss sum norm $\|\tau\|^2 = p$ (\S54) & Proved & \code{gaussSum\_norm\_sq\_eq\_prime} \\
-\quad Walk autocorrelation identities (\S53) & Proved & \code{walkAutocorrelation\_*} \\
-\quad Character Parseval (\S60) & Proved & \code{char\_parseval\_units} \\
-\quad All 8 GCT internal lemmas (\S56--\S62) & Proved & \code{gct\_nontrivial\_char\_sum\_le} \\
-\midrule
-\multicolumn{3}{l}{\emph{Open hypotheses --- live targets}} \\
-\quad \textbf{DeterministicStabilityLemma} (sole hypothesis) & \textbf{Open} & \code{DeterministicStabilityLemma} \\
-\quad \textbf{DSLHitting} (weaker variant) & \textbf{Open} & \code{DSLHitting} \\
-\quad \textbf{SingleHitHypothesis} (weakest sufficient) & \textbf{Open} & \code{SingleHitHypothesis} \\
-\quad \textbf{DynamicalHitting} & \textbf{Open} & \code{DynamicalHitting} \\
-\quad \textbf{ComplexCharSumBound} & \textbf{Open} & \code{ComplexCharSumBound} \\
-\quad \textbf{MultiModularCSB} & \textbf{Open} & \code{MultiModularCSB} \\
-\quad DecorrelationHypothesis & \textbf{Open} & \code{DecorrelationHypothesis} \\
-\quad PositiveEscapeDensity & \textbf{Open} & \code{PositiveEscapeDensity} \\
-\quad \textbf{PEDImpliesComplexCSB} (sole sieve-route gap) & \textbf{Open} & \code{PEDImpliesComplexCSB} \\
-\quad NoLongRuns$(L)$ & \textbf{Open} & \code{NoLongRuns} \\
-\quad SieveEquidistribution & \textbf{Open} & \code{SieveEquidistribution} \\
-\quad MertensEscape & \textbf{Open} & \code{MertensEscape} \\
-\quad SieveAmplification & \textbf{Open} & \code{SieveAmplification} \\
-\quad \textbf{SieveTransfer} (genuine frontier) & \textbf{Open} & \code{SieveTransfer} \\
-\quad StrongSieveEquidist & \textbf{Open} & \code{StrongSieveEquidist} \\
-\quad DistributionalPED & \textbf{Open} & \code{DistributionalPED} \\
-\quad \textbf{BVImpliesMMCSB} (genuine frontier) & \textbf{Open} & \code{BVImpliesMMCSB} \\
-\quad GaussConductorTransfer (all lemmas proved) & \textbf{Open} & \code{GaussConductorTransfer} \\
-\quad PrimeArithLSImpliesMMCSB & \textbf{Open} & \code{PrimeArithLSImpliesMMCSB} \\
-\quad HilbertInequality (IK Lemma~7.8, $\delta$-separated) & \textbf{Open} & \code{HilbertInequality} \\
-\quad HilbertInequality1 (1-separated core) & \textbf{Open} & \code{HilbertInequality1} \\
-\quad HilbertCscBilinearBridge & \textbf{Open} & \code{HilbertCscBilinearBridge} \\
-\quad EnsembleConcentration & \textbf{Open} & \code{EnsembleConcentration} \\
-\quad RecipSumConcentration & \textbf{Open} & \code{RecipSumConcentration} \\
-\quad \textbf{LinearMeanGrowth} (1-hyp weak MC route) & \textbf{Open} & \code{LinearMeanGrowth} \\
-\quad PairwiseStepDecorrelation (2-hyp density-1 route) & \textbf{Open} & \code{PairwiseStepDecorrelation} \\
-\quad FirstMomentStep (each step contributes $\kappa$) & \textbf{Open} & \code{FirstMomentStep} \\
-\quad StepMeanLowerBound ($k{\geq}1$; $k{=}0$ proved) & \textbf{Open} & \code{StepMeanLowerBound} \\
-\quad Mod6DensityLB ($\Rightarrow$ SMLB at $k{=}1$) & Proved & \code{mod6\_density\_lb\_proved} \\
-\quad CharSumVarianceBound & \textbf{Open} & \code{CharSumVarianceBound} \\
-\quad PopulationEquidist & \textbf{Open} & \code{PopulationEquidist} \\
-\quad PopulationTransfer & \textbf{Open} & \code{PopulationTransfer} \\
-\quad EMDImpliesCME & \textbf{Open} & \code{EMDImpliesCME} \\
-\quad UniformConductorEquidist (sieve uniformity) & \textbf{Open} & \code{UniformConductorEquidist} \\
-\quad UCEImpliesCME (orbit-specificity bridge) & \textbf{Open} & \code{UCEImpliesCME} \\
-\quad JointStepEquidist (ensemble route gap) & \textbf{Open} & \code{JointStepEquidist} \\
-\quad MultCancelToWalkCancel ($\equiv$ CCSB, Dead End \#117) & \textbf{Open} & \code{MultCancelToWalkCancel} \\
-\quad PairwiseVanishingImpliesSMB (variance route) & \textbf{Open} & \code{PairwiseVanishingImpliesSMB} \\
-\quad SMBImpliesDSL (second moment $\Rightarrow$ DSL) & \textbf{Open} & \code{SMBImpliesDSL} \\
-\quad VarianceChainImpliesDSL (full variance chain) & \textbf{Open} & \code{VarianceChainImpliesDSL} \\
-\quad FFDynamicalHitting (cofinal $-1$ hits for FF-EM) & \textbf{Open} & \code{FFDynamicalHitting} \\
-\quad SelectionBiasNeutral (min-degree preserves cancel.) & \textbf{Open} & \code{SelectionBiasNeutral} \\
-\quad WalkCharExpansion (Fourier inversion on finite groups) & \textbf{Open} & \code{WalkCharExpansion} \\
-\midrule
-\multicolumn{3}{l}{\emph{Known theorems --- not yet in Mathlib}} \\
-\quad PrimeDensityEquipartition (PNT in APs) & Known & \code{PrimeDensityEquipartition} \\
-\quad GenericLPFEquidist (Alladi~\cite{Alladi1977}) & Known & \code{GenericLPFEquidist} \\
-\quad BombieriVinogradov & Known & \code{BombieriVinogradov} \\
-\quad AnalyticLargeSieve & Known & \code{AnalyticLargeSieve} \\
-\quad ArithmeticLargeSieve & Known & \code{ArithmeticLargeSieve} \\
-\midrule
-\multicolumn{3}{l}{\emph{Dead ends --- false or blocked}} \\
-\quad MultCSBImpliesMMCSB (false in general, \S\ref{sec:walk-bridge-false}) & \textbf{Dead} & \code{MultCSBImpliesMMCSB} \\
-\quad BlockRotationEstimate (impossible for $d \geq 3$, Remark~\ref{rem:bre-impossible}) & \textbf{Dead} & \code{BlockRotationEstimate} \\
-\quad MultCancelToWalkCancel (counterexample, Dead End~\#117) & \textbf{Dead} & \code{MultCancelToWalkCancel} \\
-\quad Cofactor identity (joint variable, Dead End~\#115) & \textbf{Dead} & shifted\_walk\_eq\_mult\_mul\_cof \\
-\quad Function field analog (Weil $\not\Rightarrow$ FF-DSL, Dead End~\#127) & \textbf{Dead} & \code{WeilDoesNotImplyFFDSL} \\
-\quad $p$-adic geometry (technique mismatch, Dead End~\#128) & \textbf{Dead} & \code{padicGeometryDeadEnd} \\
-\quad FFLM structurally false (cyclotomic, Dead End~\#129) & \textbf{Dead} & \code{ff\_cyclotomic\_dead\_end} \\
-\quad SE $\not\Rightarrow$ DH (generation $\neq$ coverage, Dead End~\#130) & \textbf{Dead} & \code{se\_does\_not\_imply\_dh} \\
-\quad Dobrushin coefficient $= 1$ (deterministic, Dead End~\#131) & \textbf{Dead} & \code{dobrushin\_coefficient\_one} \\
-\quad $L$-function factorization circular (Dead End~\#132) & \textbf{Dead} & \code{dead\_end\_132\_witness} \\
-\quad Self-similar FE $\neq$ Lapidus framework (Dead End~\#133) & \textbf{Dead} & \code{dead\_end\_133\_witness} \\
-\quad No Tauberian lever for $L_{\mathrm{EM}}$ (Dead End~\#134) & \textbf{Dead} & \code{tauberian\_lever\_absent\_witness} \\
-\end{longtable}
-\renewcommand{\arraystretch}{1.0}
-\normalsize
-
-
+One direction remains genuinely untried: exploiting the
+\emph{arithmetic of the seed} $x_0 = 2$.
+The multiplicative order $\mathrm{ord}_q(2)$ is large for most
+primes~$q$ (Artin's conjecture, proved under GRH by Hooley), and
+character sums $\sum \chi(g^n)$ cancel when $\mathrm{ord}(g)$ is
+large (Konyagin--Shparlinski).  This is exactly the pattern CCSB
+demands.  The fatal gap: the walk position
+$\Prod{2}(n) \bmod q = 2 \cdot \seq{2}(1) \cdots \seq{2}(n) \bmod q$
+is \emph{not} the geometric progression $2^n \bmod q$---the
+varying multipliers $\seq{2}(k)$ destroy the structure that makes
+exponential-sum bounds work (Dead End~\#135).  No mechanism has been
+found to convert Artin-type information about $\mathrm{ord}_q(2)$
+into walk equidistribution through a route that avoids Fourier
+analysis and Cauchy--Schwarz (Dead End~\#136).  Whether such a
+mechanism exists is, in our view, the most promising open question.
