@@ -420,7 +420,7 @@ mathematical content is: does the factoring operation destroy enough
 correlation for character sums to cancel?
 
 \paragraph{Dead Ends as a Roadmap.}
-Over 134~potential approaches were explored and found to be dead ends,
+Over 136~potential approaches were explored and found to be dead ends,
 grouped into eight categories: orbit specificity~(OS),
 technique mismatch~(TM), scale mismatch~(SM), circularity~(CI),
 structurally false~(SF), collapse~(CO), decorrelation gap~(DG),
@@ -432,7 +432,7 @@ The full catalogue is in \code{Meta/DeadEnds.lean} and
 Appendix~\ref{app:dead-ends}.
 
 \paragraph{The Four-Way Blocker.}
-The majority of the 134~dead ends reduce to a single meta-obstacle:
+The majority of the 136~dead ends reduce to a single meta-obstacle:
 every known technique for proving equidistribution of sequences on
 finite groups requires at least \emph{one} of (1)~independence of
 steps, (2)~multiplicativity of the generating function,
@@ -712,7 +712,7 @@ arithmetic iteration map: Properties~1--4 explicitly exclude
 independence, multiplicativity, algebraic-geometric structure, and
 ergodic stationarity.  NAAD Equidistribution asks whether these four
 properties \emph{collectively} substitute for any single classical
-assumption.  The 134~dead ends documented in the formalization
+assumption.  The 136~dead ends documented in the formalization
 (Appendix~\ref{app:dead-ends}) confirm that no existing technique
 closes this gap.
 
@@ -1131,7 +1131,7 @@ hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
 The formalization has exhaustively explored all known proof strategies
-across 134~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
+across 136~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
 counterexample (Dead End~\#117), the cofactor identity's failure to
 escape the Marginal/Joint Barrier (Dead End~\#115), and the exhaustion
 of all four DSL proof directions (algebraic identities, cofactor
@@ -1140,4 +1140,20 @@ that the proof, when found, will require genuinely new mathematical
 techniques---likely exploiting the specific arithmetic of the
 $\minFac$ rule on super-exponentially growing squarefree numbers in
 ways that current analytic number theory does not.
+
+One direction remains genuinely untried: exploiting the
+\emph{arithmetic of the seed} $x_0 = 2$.
+The multiplicative order $\mathrm{ord}_q(2)$ is large for most
+primes~$q$ (Artin's conjecture, proved under GRH by Hooley), and
+character sums $\sum \chi(g^n)$ cancel when $\mathrm{ord}(g)$ is
+large (Konyagin--Shparlinski).  This is exactly the pattern CCSB
+demands.  The fatal gap: the walk position
+$\Prod{2}(n) \bmod q = 2 \cdot \seq{2}(1) \cdots \seq{2}(n) \bmod q$
+is \emph{not} the geometric progression $2^n \bmod q$---the
+varying multipliers $\seq{2}(k)$ destroy the structure that makes
+exponential-sum bounds work (Dead End~\#135).  No mechanism has been
+found to convert Artin-type information about $\mathrm{ord}_q(2)$
+into walk equidistribution through a route that avoids Fourier
+analysis and Cauchy--Schwarz (Dead End~\#136).  Whether such a
+mechanism exists is, in our view, the most promising open question.
 
