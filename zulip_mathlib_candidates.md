@@ -1,6 +1,6 @@
 # Mathlib Contribution Candidates from the Euclid-Mullin Formalization
 
-The repository [EM](https://github.com/mparis-est/EM) (~45,000 lines, 72 files, zero sorry)
+The repository [EM](https://github.com/marcellop71/EM) (~56,430 lines, 105 files, zero sorry)
 formalizes reductions of the Mullin Conjecture in Lean 4 / Mathlib v4.29.0-rc1.
 Along the way it developed general-purpose mathematics that fills genuine gaps in Mathlib.
 Below are the strongest candidates, filtered for non-trivial proofs of well-established
@@ -235,3 +235,132 @@ transition matrix is doubly stochastic: each row and column sums to 1.
 | Identifier | Kind | Description |
 |---|---|---|
 | `group_walk_doubly_stochastic` | thm | Uniform multiplier gives doubly stochastic transitions |
+
+---
+
+## 14. Spectral Gap for Generating Sets on Finite Abelian Groups
+
+**File:** `VanishingNoise.lean:110` (~130 lines)
+
+If a finite subset S of a finite commutative group G generates G, contains the
+identity, and has |S| ≥ 2, then for any nontrivial character χ : G →* ℂˣ:
+
+```
+‖∑_{s ∈ S} χ(s)‖ < |S|
+```
+
+Equivalently, the spectral contraction `‖∑ χ(s)‖ / |S| < 1`.
+This is the standard spectral gap that drives mixing on Cayley graphs.
+The proof uses `StrictConvexSpace` (for `‖z + w‖ < 2` when z ≠ w on the unit circle)
+and `Subgroup.closure_le` to find an element where χ is nontrivial.
+
+A variant without the identity assumption is also proved: if there exist s, t ∈ S
+with χ(s) ≠ χ(t), then `‖∑ χ(s)‖ < |S|`.
+
+Completely missing from Mathlib. Self-contained.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `char_norm_one_of_hom` | thm | `‖χ(g)‖ = 1` for group hom χ : G →* ℂˣ (G finite) |
+| `exists_ne_one_of_nontrivial` | thm | Nontrivial χ on generators: ∃ s ∈ S with χ(s) ≠ 1 |
+| `norm_add_lt_two_of_ne` | thm | `‖z + w‖ < 2` for unit-norm z ≠ w (strict convexity) |
+| `spectral_gap_with_identity` | thm | `‖∑ χ(s)‖ < |S|` for nontrivial χ, generating S ∋ 1 |
+| `spectral_contraction_lt_one` | thm | Ratio form: `‖∑ χ(s)‖ / |S| < 1` |
+| `spectral_gap_of_distinct_values` | thm | Without 1 ∈ S: distinct χ-values ⇒ strict bound |
+
+---
+
+## 15. Infinite Product Contraction (Divergent Series ⇒ Vanishing Product)
+
+**File:** `VanishingNoise.lean:330` (~55 lines)
+
+For a sequence `γ_k ∈ (0, 1]` with divergent sum `∑ γ_k = +∞`:
+
+```
+∏_{k < N} (1 − γ_k) → 0  as  N → ∞
+```
+
+Proved using `1 − x ≤ exp(−x)` and the exponential:
+`∏(1 − γ_k) ≤ exp(−∑ γ_k) → 0`.
+
+This is a standard real analysis fact (e.g., Rudin, Principles 15.5) that is
+completely missing from Mathlib. Used in probability (Borel–Cantelli),
+dynamics (mixing), and number theory (Euler products).
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `product_contraction_tendsto` | thm | `∑ γ_k = ∞ ⇒ ∏(1 − γ_k) → 0` |
+
+---
+
+## 16. Irrationality of log(p)/log(q) for Distinct Primes
+
+**File:** `LFunction.lean:206` (~130 lines)
+
+For distinct primes p, q: `log(p) / log(q) ∉ ℚ`.
+
+The proof proceeds by contradiction: if `log(p)/log(q) = a/b` with a, b ∈ ℤ,
+then `p^b = q^a`, contradicting unique prime factorization.
+Handles all sign cases (a, b could be negative) carefully.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `prime_pow_ne_prime_pow` | thm | `p^a ≠ q^b` for distinct primes, positive exponents |
+| `log_ratio_irrational` | thm | `log(p)/log(q) ∉ ℚ` for distinct primes |
+
+---
+
+## 17. Discrete Abel Summation
+
+**File:** `AbelChain.lean:161` (~40 lines)
+
+The summation-by-parts identity for finite sums:
+
+```
+∑_{k=a}^{b-1} f(k)·(g(k+1) − g(k)) = f(b)·g(b) − f(a)·g(a) − ∑_{k=a}^{b-1} g(k+1)·(f(k+1) − f(k))
+```
+
+Used throughout analytic number theory (partial summation / Abel's summation formula).
+Not in Mathlib as a standalone lemma.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `discrete_abel` | thm | Abel summation formula (summation by parts) |
+
+---
+
+## 18. Log-Log Integrals via FTC
+
+**File:** `AbelChain.lean:31` (~80 lines)
+
+Explicit evaluation of two standard integrals via the fundamental theorem of calculus,
+plus sandwich inequalities between log-log differences and log ratios:
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `hasDerivAt_log_log` | thm | `d/dt[log(log t)] = 1/(t·log t)` for t > 1 |
+| `hasDerivAt_neg_inv_log` | thm | `d/dt[−(log t)⁻¹] = (t·(log t)²)⁻¹` |
+| `integral_inv_mul_log` | thm | `∫_a^b 1/(t·log t) dt = log(log b) − log(log a)` |
+| `integral_inv_mul_log_sq` | thm | `∫_a^b 1/(t·(log t)²) dt = 1/log(a) − 1/log(b)` |
+| `log_ratio_le` | thm | `(log b − log a)/log b ≤ log(log b) − log(log a)` |
+| `loglog_le_ratio` | thm | `log(log b) − log(log a) ≤ (log b − log a)/log a` |
+
+---
+
+## 19. Norm-Squared Partial Sum Telescoping (Inner Product Spaces)
+
+**File:** `DSLInfra.lean:58` (~50 lines)
+
+For a sequence `z_k` in an inner product space:
+
+```
+‖∑_{k<N} z_k‖² = ∑_{k<N} ‖z_k‖² + 2 · ∑_{k<N} ⟪∑_{j<k} z_j, z_k⟫
+```
+
+This is a pure Hilbert space identity (diagonal + cross-term decomposition of
+the squared norm of a partial sum). General-purpose, used in harmonic analysis,
+probability (variance decomposition), and signal processing.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `norm_sq_partial_sum_telescoping` | thm | ‖∑ z_k‖² = diagonal + 2·cross terms |
