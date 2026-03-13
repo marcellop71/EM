@@ -1182,6 +1182,34 @@ asserts that the tree character sum tends to zero for all nontrivial~$\chi$;
 it is strictly weaker than DSL (which requires the deterministic path to
 mix) but strictly stronger than the product approximation.
 
+\paragraph{Non-self-consistent variant MC.}
+An independent route bypasses the tree contraction problem entirely.
+At each EM step~$n$, form the two-element unit set
+$\{\minFac(P(n){+}1),\, \operatorname{secondMinFac}(P(n){+}1)\} \bmod q$
+in $(\ZZ/q\ZZ)^\times$.  When one factor equals~$q$
+(a non-unit), fall back to $\operatorname{Finset.univ}$, whose
+mean character value is~$0$ by orthogonality---giving perfect contraction
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{meanCharValue\_univ\_eq\_zero}).
+Under \defname{UFDStrong}---spectral gaps of the padded unit sets
+are non-summable for every nontrivial~$\chi$---the
+sparse product contraction machinery (Part~19) gives vanishing averaged
+products, and the Fourier counting argument (Part~14) yields
+path existence.  Concretely:
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_from\_ufd\_strong\_proved}]
+\label{thm:variant-mc}
+For every prime $q \geq 3$, if $\mathrm{UFDStrong}(q)$ holds, then
+every element of $(\ZZ/q\ZZ)^\times$ is representable as a product
+of selections from $\{\minFac,\operatorname{secondMinFac}\}$ of
+consecutive Euclid numbers.  In particular, some selection path
+hits~$-1$.
+\end{theorem}
+\noindent
+This does \textbf{not} imply standard MC: the selection~$\sigma$ may
+differ per prime~$q$, and the virtual accumulator
+$\prod_k \text{factor}_{\sigma(k)}$ is not the EM accumulator
+$P(n)$.  The gap is the same orbit-specificity barrier
+(Dead End~\#130).
+
 \paragraph{Does the Walk Hit $-1$?}
 
 The irreducible open question is not whether DH holds (cofinal

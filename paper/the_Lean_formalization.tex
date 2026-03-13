@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 105~files
-totaling ${\sim}58{,}150$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 106~files
+totaling ${\sim}59{,}300$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -126,7 +126,8 @@ three leaf modules:
 \code{Advanced/MarkovSieve.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 538 \\
 \code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
-\code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, $\varepsilon$-walk with \code{secondMinFac} & 2158 \\
+\code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, sparse contraction & 1814 \\
+\code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong & 743 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -134,6 +135,7 @@ three leaf modules:
 \code{FunctionField/WeakMC.lean} & Degree escape, pool partition, capture exhaustion (Dead End~\#129 revival) & 471 \\
 \code{GaussEM/GaussEMDefs.lean} & Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality & 290 \\
 \code{GaussEM/GaussWalkStructure.lean} & Gaussian walk: split/inert classification, norm kernel, orbit barrier & 331 \\
+\code{GaussEM/GaussConfinement.lean} & Integer walk confined to real axis, norm closure, Dead End~\#135 & 347 \\
 \midrule
 \multicolumn{3}{l}{\emph{Cross-check infrastructure}} \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 229 \\
@@ -695,6 +697,43 @@ Mathlib version & v4.29.0-rc1 \\
 \quad $\varepsilon$-walk landscape (7-clause conjunction) & Proved & \code{eps\_walk\_landscape} \\
 \quad TreeContractionHypothesis (tree char sum $\to 0$) & \textbf{Open} & \code{TreeContractionHypothesis} \\
 \quad UniformFactorDiversity ($\minFac \neq \code{secondMinFac}$ mod $q$ i.o.) & \textbf{Open} & \code{UniformFactorDiversity} \\
+\multicolumn{3}{l}{\emph{Non-self-consistent variant MC}} \\
+\quad Distinct primes give units in $\ZZ/q\ZZ$ & Proved & \code{prime\_ne\_isUnit\_zmod} \\
+\quad Padded unit set: card $\geq 2$ for $q \geq 3$ & Proved & \code{paddedUnitSet\_card\_ge\_two} \\
+\quad Character orthogonality: mean over full group $= 0$ & Proved & \code{meanCharValue\_univ\_eq\_zero} \\
+\quad UFDStrong $\Rightarrow$ vanishing averaged products & Proved & \code{ufdStrong\_implies\_vanishing} \\
+\quad UFDStrong $\Rightarrow$ path existence in $(\ZZ/q\ZZ)^\times$ & Proved & \code{ufdStrong\_implies\_path\_existence} \\
+\quad \textbf{VariantHitting} (UFDStrong $\Rightarrow$ hits $-1$) & \textbf{Proved} & \code{variant\_hitting\_proved} \\
+\quad \textbf{VariantMCFromUFDStrong} & \textbf{Proved} & \code{variant\_mc\_from\_ufd\_strong\_proved} \\
+\quad Fallback case: raw card $< 2 \Rightarrow$ non-summable & Proved & \code{ufd\_fallback\_not\_summable} \\
+\quad Both factors of Euclid numbers are prime & Proved & \code{both\_factors\_prime} \\
+\quad UFDImpliesUFDStrong (element$\to$character diversity) & \textbf{Open} & \code{UFDImpliesUFDStrong} \\
+\quad Variant MC landscape (7-clause conjunction) & Proved & \code{variant\_mc\_landscape} \\
+\midrule
+\multicolumn{3}{l}{\emph{Gaussian EM over $\ZZ[i]$}} \\
+\quad $1{+}i$ irreducible in $\ZZ[i]$ & Proved & \code{one\_plus\_i\_irreducible} \\
+\quad Gaussian product coprime to successor & Proved & \code{gaussProd\_coprime\_succ} \\
+\quad Norm strictly increasing & Proved & \code{norm\_gaussProd\_strict\_mono} \\
+\quad Integer walk confined to real axis & Proved & \code{confinement\_landscape} \\
+\quad Split/inert classification for Gaussian primes & Proved & \code{gaussPrimeType\_of\_prime} \\
+\quad $\gcd(p{+}1, p{-}1) = 2$ for odd primes & Proved & \code{unit\_group\_gcd\_structure} \\
+\quad No direct product decomposition of unit group & Proved & \code{no\_direct\_product\_decomposition} \\
+\quad Gaussian MC landscape (5-clause) & Proved & \code{gauss\_em\_landscape} \\
+\quad Gaussian walk landscape (9-clause) & Proved & \code{gauss\_walk\_landscape} \\
+\quad Dead End~\#GaussOS: orbit-specificity persists & Documented & \code{gauss\_orbit\_specificity\_barrier} \\
+\midrule
+\multicolumn{3}{l}{\emph{Cofinal orbit and weak recurrence}} \\
+\quad Cofinal orbit summary (3-step chain) & Proved & \code{cofinal\_orbit\_summary} \\
+\quad Quotient DH from index-2 escape & Proved & \code{quotient\_dh\_of\_index\_two\_escape} \\
+\quad LinearDrift $\Leftrightarrow$ SublinearLyapunov & Proved & \code{linearDrift\_iff\_sublinearLyapunov} \\
+\quad VisitGrowth $\Rightarrow$ HH $\Rightarrow$ MC & Proved & \code{visitGrowth\_implies\_mc} \\
+\quad LinearDrift $\Rightarrow$ MC (threshold-free) & Proved & \code{linearDrift\_implies\_mc} \\
+\quad Weak recurrence landscape & Proved & \code{weak\_recurrence\_landscape} \\
+\midrule
+\multicolumn{3}{l}{\emph{IK Ch.\,7 extensions}} \\
+\quad Hilbert $\Rightarrow$ circular ALS (Ces\`aro bypass) & Proved & \code{hilbert\_chain\_als\_circular} \\
+\quad Lemma~7.15 for squarefree moduli (CRT induction) & Proved & \code{lemma715\_proved} \\
+\quad Linnik small QNR from large sieve & Proved & \code{largeSieveAsSieve\_implies\_linnik\_proved} \\
 \midrule
 \multicolumn{3}{l}{\emph{$L_{\mathrm{EM}}$ Dirichlet series}} \\
 \quad $\sum 1/\mathrm{prod}(n)$ converges (geometric comparison) & Proved & \code{accum\_reciprocal\_summable} \\

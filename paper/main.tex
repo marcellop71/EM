@@ -18,7 +18,7 @@
 % Inline code: sans-serif, small, dark teal, with breakable underscores.
 \definecolor{codeink}{HTML}{1B6B6D}
 \newcommand{\code}[1]{%
-  {\color{codeink}\sffamily\small #1}%
+  \ifmmode\text{\color{codeink}\sffamily\small #1}\else{\color{codeink}\sffamily\small #1}\fi%
 }
 
 % Lean 4 source links for formally verified results.
