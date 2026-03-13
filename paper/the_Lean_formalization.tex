@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 105~files
-totaling ${\sim}56{,}650$~lines.  The dependency chain is linear, with
+totaling ${\sim}57{,}620$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -126,7 +126,7 @@ three leaf modules:
 \code{Advanced/MarkovSieve.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 538 \\
 \code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
-\code{Advanced/VanishingNoise.lean} & Spectral gap, factor set bridge, selection counterexample, product contraction & 655 \\
+\code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC framework, path existence (Fourier counting), two-point contraction & 1626 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -664,7 +664,21 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Walk multiplier $\in$ factor set & Proved & \code{multZ\_in\_factorSetResidues} \\
 \quad Factor set nonempty at death state & Proved & \code{factorSetResidues\_nonempty\_at\_death} \\
 \quad Extended landscape v2 (5-clause conjunction) & Proved & \code{vanishing\_noise\_landscape\_v2} \\
+\quad Mean char value $\leq 1$ (triangle inequality) & Proved & \code{meanCharValue\_norm\_le\_one} \\
+\quad Mean char value $< 1$ when distinct values & Proved & \code{meanCharValue\_norm\_lt\_one\_of\_distinct} \\
+\quad Averaged char product norm factorizes & Proved & \code{avgCharProduct\_norm\_eq} \\
+\quad Averaged char product $\to 0$ (gap divergence) & Proved & \code{avgCharProduct\_tendsto\_zero} \\
+\quad Product multiset cardinality $= \prod |S_k|$ & Proved & \code{productMultiset\_card} \\
+\quad \textbf{Char sum factorization} ($\sum_\sigma \chi(\prod\sigma) = \prod_k \sum_{s \in S_k} \chi(s)$) & \textbf{Proved} & \code{char\_sum\_productMultiset} \\
+\quad \textbf{Path existence from vanishing} (Fourier counting) & \textbf{Proved} & \code{pathExistenceFromVanishing\_proved} \\
+\quad Stochastic MC landscape (4-clause conjunction) & Proved & \code{stochastic\_mc\_landscape} \\
+\quad Two-point char value $\leq 1$ (convex combination) & Proved & \code{twoPointCharValue\_norm\_le\_one} \\
+\quad Two-point strict contraction (strict convexity) & Proved & \code{twoPointCharValue\_norm\_lt\_one} \\
+\quad Two-point product $\to 0$ (gap divergence) & Proved & \code{twoPointCharProduct\_tendsto\_zero} \\
+\quad Mean char value $=$ two-point at $\varepsilon = 1/2$ & Proved & \code{meanCharValue\_pair\_eq\_twoPoint} \\
+\quad Two-point contraction landscape (4-clause) & Proved & \code{two\_point\_contraction\_landscape} \\
 \quad InfinitelyManyLargeFactorSets & \textbf{Open} & \code{InfinitelyManyLargeFactorSets} \\
+\quad InfinitelyManyDistinctFactorSteps & \textbf{Open} & \code{InfinitelyManyDistinctFactorSteps} \\
 \quad MinFacUnbiased (selection bias neutral) & \textbf{Open} & \code{MinFacUnbiased} \\
 \midrule
 \multicolumn{3}{l}{\emph{$L_{\mathrm{EM}}$ Dirichlet series}} \\

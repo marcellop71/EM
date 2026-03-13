@@ -692,7 +692,7 @@ The conjecture's content is precisely the orbit-specificity
 transfer: Properties~1--4 describe the \emph{function}~$m$;
 the conjecture asks whether the \emph{orbit} inherits the function's
 statistical behavior.  The entire infrastructure of this
-formalization---56{,}420~lines---reduces to this single question.
+formalization---57{,}620~lines---reduces to this single question.
 
 \paragraph{Relation to Collatz.}
 Tao~\cite{Tao2019Collatz} proved that almost all Collatz orbits attain almost
@@ -1113,6 +1113,44 @@ infinitely many~$n$) and
 unbiased over the squarefree ensemble).
 The latter is the orbit-specificity barrier
 restated in spectral language.
+
+\paragraph{Stochastic MC: path existence.}
+What \emph{can} be proved is a weaker, combinatorial statement:
+under InfinitelyManyLargeFactorSets, there \emph{exists} a selection
+path through the factor sets that hits~$-1$ for every prime~$q$.
+The formalization proves the complete chain:
+\begin{enumerate}[nosep]
+\item Define the \emph{mean character value} $\bar\chi(S) = |S|^{-1}\sum_{s \in S}\chi(s)$
+  and the \emph{averaged character product} $\prod_{k < N}\bar\chi(S_k)$.
+\item When $S_k$ contains elements with distinct $\chi$-values,
+  $\|\bar\chi(S_k)\| < 1$
+  (\lean{EM/Advanced/VanishingNoise.lean}{meanCharValue\_norm\_lt\_one\_of\_distinct}).
+  If the spectral gaps $1 - \|\bar\chi(S_k)\|$ diverge in sum, the
+  product tends to~$0$.
+\item The \emph{character sum factorization identity}
+  (\lean{EM/Advanced/VanishingNoise.lean}{char\_sum\_productMultiset})
+  shows $\sum_\sigma \chi(\prod_k \sigma_k)
+  = \prod_k \bigl(\sum_{s \in S_k}\chi(s)\bigr)$,
+  where $\sigma$ ranges over all selection paths.
+\item A \textbf{Fourier counting argument}
+  (\lean{EM/Advanced/VanishingNoise.lean}{pathExistenceFromVanishing\_proved},
+  ${\sim}160$~lines)
+  proves: if the averaged products vanish for all nontrivial~$\chi$,
+  then every element of~$G$ appears in the product multiset.
+  The proof constructs the MulChar~$\leftrightarrow$~$(G \to^* \mathbb{C}^\times)$ bridge,
+  derives character orthogonality for abstract groups, and applies the
+  Fourier identity $|G| \cdot \operatorname{count}(a, M)
+  = \sum_\chi \overline{\chi(a)}\cdot(\sum_{g \in M}\chi(g))$.
+\end{enumerate}
+This gives a machine-verified ``stochastic MC'': if the factor sets
+of $\Prod{2}(n)+1$ have sufficiently many distinct residues mod~$q$
+infinitely often, then \emph{some} selection from those factor sets
+reaches every residue class---but not necessarily the $\minFac$ selection.
+An independent two-point formulation
+(\lean{EM/Advanced/VanishingNoise.lean}{twoPointCharValue\_norm\_lt\_one})
+shows that even a tiny $\varepsilon$-bias coin flip between two factors
+with distinct character values gives strict spectral contraction, using
+strict convexity of the unit ball in~$\mathbb{C}$.
 
 \paragraph{Does the Walk Hit $-1$?}
 
