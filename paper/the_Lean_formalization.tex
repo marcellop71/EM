@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 104~files
-totaling ${\sim}56{,}420$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 105~files
+totaling ${\sim}56{,}430$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -126,6 +126,7 @@ three leaf modules:
 \code{Advanced/MarkovSieve.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 538 \\
 \code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
+\code{Advanced/VanishingNoise.lean} & Spectral gap for generating sets, product contraction, walk isometry & 436 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -652,6 +653,14 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Dobrushin coefficient $= 1$ (deterministic) & Proved & \code{dobrushin\_coefficient\_one} \\
 \quad Dead End~\#131: Dobrushin inapplicable & Documented & \code{dead\_end\_131\_witness} \\
 \midrule
+\multicolumn{3}{l}{\emph{Vanishing noise / spectral contraction}} \\
+\quad Spectral gap: $\|\sum \chi(s)\| < |S|$ for generating $S \ni 1$ & Proved & \code{spectral\_gap\_with\_identity} \\
+\quad Spectral contraction $< 1$ (ratio form) & Proved & \code{spectral\_contraction\_lt\_one} \\
+\quad Walk step isometry: $\|\sum \chi(sg)\| = \|\sum \chi(s)\|$ & Proved & \code{char\_sum\_mul\_right\_norm} \\
+\quad $\prod(1-\gamma_k) \to 0$ when $\sum \gamma_k = \infty$ & Proved & \code{product\_contraction\_tendsto} \\
+\quad Vanishing noise landscape (4-clause conjunction) & Proved & \code{vanishing\_noise\_landscape} \\
+\quad InfinitelyManyLargeFactorSets & \textbf{Open} & \code{InfinitelyManyLargeFactorSets} \\
+\midrule
 \multicolumn{3}{l}{\emph{$L_{\mathrm{EM}}$ Dirichlet series}} \\
 \quad $\sum 1/\mathrm{prod}(n)$ converges (geometric comparison) & Proved & \code{accum\_reciprocal\_summable} \\
 \quad Self-similar head + tail decomposition & Proved & \code{em\_self\_similar\_decomposition} \\
@@ -662,8 +671,7 @@ Mathlib version & v4.29.0-rc1 \\
 \quad Dead End~\#133: self-similar FE framework mismatch & Documented & \code{dead\_end\_133\_witness} \\
 \quad Dead End~\#134: no Tauberian lever for $L_{\mathrm{EM}}$ & Documented & \code{tauberian\_lever\_absent\_witness} \\
 \quad Dead End~\#135: number field extensions invisible & Documented & \code{dead\_end\_135\_certificate} \\
-\quad Dead End~\#135: Konyagin--Shparlinski (varying multipliers) & Documented & \code{dead\_end\_135\_konyagin} \\
-\quad Dead End~\#136: arithmetic of~$2$ (no non-Fourier mechanism) & Documented & \code{dead\_end\_136\_arith\_two} \\
+\quad Dead End~\#136: Konyagin--Shparlinski (varying multipliers) & Documented & --- \\
 \quad Dead end registry (136 dead ends, 13 witnessed, 8 revivable) & Proved & \code{dead\_end\_registry} \\
 \midrule
 \multicolumn{3}{l}{\emph{Integer-level $T$-iteration}} \\

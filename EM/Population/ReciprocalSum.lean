@@ -4,42 +4,13 @@ import EM.Population.WeakMullin
 /-!
 # Reciprocal Sum Divergence for Generalized EM Sequences
 
-The **generalized EM sequence** from a squarefree starting point n iterates
-the Euclid–Mullin construction: P(0) = n, P(k+1) = P(k) · minFac(P(k)+1).
-Each P(k) is squarefree, and each em_n(k) = minFac(P(k)+1) is prime.
+Generalized EM sequence from squarefree n: P(0) = n, P(k+1) = P(k) * minFac(P(k)+1).
+Each P(k) is squarefree, each genSeq(n,k) = minFac(P(k)+1) is prime.
 
-**Main Theorem (RSD).** For almost all squarefree integers n (in the
-sense of natural density), the reciprocal sum ∑_k 1/em_n(k) diverges.
+**Main result**: PSD + LMG imply AlmostAllSquarefreeRSD (2 open hypotheses).
+LMG alone implies PositiveDensityRSD (1 open hypothesis).
 
-The proof uses:
-1. **First moment**: the average of ∑_{k<K} 1/em_n(k) over squarefree n ≤ X
-   is asymptotic to κK, where κ = E_{m ∈ S}[1/minFac(m)] > 0.
-2. **Variance bound**: Var[∑_{k<K} 1/em_n(k)] = O(K), from approximate
-   decorrelation between steps.
-3. **Chebyshev + Borel-Cantelli**: the exceptional set has density 0.
-
-## Main Results
-
-### Definitions
-* `genProd`     — generalized accumulator P(k) from starting point n
-* `genSeq`      — k-th prime em_n(k) = minFac(P(k)+1)
-* `recipPartialSum` — partial reciprocal sum ∑_{k<K} 1/em_n(k)
-
-### Proved Theorems
-* `genProd_pos`                      — P(k) ≥ 1 when n ≥ 1
-* `genSeq_prime`                     — em_n(k) is prime when n ≥ 1
-* `genSeq_dvd_genProd_succ`          — em_n(k) ∣ P(k)+1
-* `genSeq_coprime_genProd`           — Coprime em_n(k) P(k)
-* `genProd_squarefree`               — P(k) is squarefree when n is squarefree
-* `genProd_succ_in_shifted_squarefree` — P(k)+1 ∈ ShiftedSquarefree
-* `recipPartialSum_nonneg`           — partial sum ≥ 0
-* `recipPartialSum_mono`             — partial sum is non-decreasing
-
-### Open Hypotheses
-* `RecipSumConcentration`  — Chebyshev + decorrelation over starting points
-
-### Reduction
-* `concentration_implies_rsd` — RecipSumConcentration → AlmostAllSquarefreeRSD (PROVED)
+All three bridges are PROVED: IVB(1/4), PSDIVBImpliesVarianceBound, ChebyshevConcentration.
 -/
 
 noncomputable section
@@ -51,48 +22,42 @@ open Mullin Euclid MullinGroup RotorRouter
 
 section GeneralizedEM
 
-/-- The generalized EM **accumulator** starting from n.
-    P(0) = n, P(k+1) = P(k) · minFac(P(k)+1). -/
+/-- Generalized EM accumulator: P(0) = n, P(k+1) = P(k) * minFac(P(k)+1). -/
 def genProd (n : Nat) : Nat → Nat
   | 0 => n
   | k + 1 => genProd n k * Nat.minFac (genProd n k + 1)
 
-/-- The k-th prime in the generalized EM sequence from n:
-    em_n(k) = minFac(P(k) + 1). -/
+/-- The k-th prime: genSeq(n,k) = minFac(P(k)+1). -/
 def genSeq (n k : Nat) : Nat := Nat.minFac (genProd n k + 1)
 
-/-- Unfolding: genProd n (k+1) = genProd n k * genSeq n k. -/
+/-- genProd n (k+1) = genProd n k * genSeq n k. -/
 @[simp] theorem genProd_succ (n k : Nat) :
     genProd n (k + 1) = genProd n k * genSeq n k := rfl
 
-/-- Unfolding: genSeq n k = Nat.minFac (genProd n k + 1). -/
+/-- genSeq n k = Nat.minFac (genProd n k + 1). -/
 theorem genSeq_def (n k : Nat) : genSeq n k = Nat.minFac (genProd n k + 1) := rfl
 
-/-- The generalized accumulator is positive when starting from n ≥ 1. -/
+/-- The generalized accumulator is positive when starting from n >= 1. -/
 theorem genProd_pos {n : Nat} (hn : 1 ≤ n) (k : Nat) : 1 ≤ genProd n k := by
   induction k with
   | zero => exact hn
   | succ k ih =>
     simp only [genProd_succ]
-    have : 2 ≤ Nat.minFac (genProd n k + 1) :=
-      (Nat.minFac_prime (by omega)).two_le
     calc 1 ≤ 1 * 2 := by omega
       _ ≤ genProd n k * Nat.minFac (genProd n k + 1) :=
-          Nat.mul_le_mul ih this
+          Nat.mul_le_mul ih (Nat.minFac_prime (by omega)).two_le
 
-/-- The k-th generalized EM prime is prime when n ≥ 1. -/
+/-- The k-th generalized EM prime is prime when n >= 1. -/
 theorem genSeq_prime {n : Nat} (hn : 1 ≤ n) (k : Nat) :
-    Nat.Prime (genSeq n k) := by
-  rw [genSeq_def]
-  exact Nat.minFac_prime (by have := genProd_pos hn k; omega)
+    Nat.Prime (genSeq n k) :=
+  Nat.minFac_prime (by have := genProd_pos hn k; omega)
 
 /-- The k-th generalized EM prime divides P(k) + 1. -/
 theorem genSeq_dvd_genProd_succ (n k : Nat) :
     genSeq n k ∣ genProd n k + 1 :=
   Nat.minFac_dvd (genProd n k + 1)
 
-/-- The k-th generalized EM prime is coprime to the accumulator P(k).
-    Proof: genSeq n k ∣ P(k)+1, so gcd(genSeq n k, P(k)) ∣ gcd(P(k)+1, P(k)) = 1. -/
+/-- genSeq(n,k) is coprime to genProd(n,k). -/
 theorem genSeq_coprime_genProd {n : Nat} (_hn : 1 ≤ n) (k : Nat) :
     Nat.Coprime (genSeq n k) (genProd n k) := by
   rw [Nat.coprime_comm]
@@ -100,13 +65,10 @@ theorem genSeq_coprime_genProd {n : Nat} (_hn : 1 ≤ n) (k : Nat) :
     ((Nat.coprime_one_right_iff _).mpr trivial)).coprime_dvd_right
     (genSeq_dvd_genProd_succ n k)
 
-/-- **The generalized accumulator is squarefree** when the starting point is
-    squarefree. Proof by induction: at each step, the new prime genSeq n k
-    divides P(k)+1, hence is coprime to P(k), so the product of a squarefree
-    number and a new coprime prime remains squarefree. -/
+/-- genProd(n,k) is squarefree when n is squarefree. -/
 theorem genProd_squarefree {n : Nat} (hn : Squarefree n) (k : Nat) :
     Squarefree (genProd n k) := by
-  have hn_pos : 1 ≤ n := Nat.pos_of_ne_zero (Squarefree.ne_zero hn)
+  have hn_pos : 1 ≤ n := Nat.pos_of_ne_zero hn.ne_zero
   induction k with
   | zero => exact hn
   | succ k ih =>
@@ -115,11 +77,10 @@ theorem genProd_squarefree {n : Nat} (hn : Squarefree n) (k : Nat) :
       ⟨(genSeq_coprime_genProd hn_pos k).symm, ih,
        (genSeq_prime hn_pos k).squarefree⟩
 
-/-- Every generalized Euclid number P(k)+1 belongs to the shifted squarefree
-    population. This is the structural basis for the first moment argument. -/
+/-- P(k)+1 belongs to the shifted squarefree population. -/
 theorem genProd_succ_in_shifted_squarefree {n : Nat} (hn : Squarefree n) (k : Nat) :
     genProd n k + 1 ∈ ShiftedSquarefree := by
-  have hn_pos : 1 ≤ n := Nat.pos_of_ne_zero (Squarefree.ne_zero hn)
+  have hn_pos : 1 ≤ n := Nat.pos_of_ne_zero hn.ne_zero
   exact ⟨by have := genProd_pos hn_pos k; omega,
          by rw [show genProd n k + 1 - 1 = genProd n k from by omega]
             exact genProd_squarefree hn k⟩
@@ -136,24 +97,19 @@ def recipPartialSum (n K : Nat) : ℝ :=
   ∑ k ∈ Finset.range K, (1 : ℝ) / (genSeq n k : ℝ)
 
 /-- The partial reciprocal sum is non-negative. -/
-theorem recipPartialSum_nonneg (n K : Nat) : 0 ≤ recipPartialSum n K := by
-  apply Finset.sum_nonneg
-  intro k _
-  exact div_nonneg zero_le_one (Nat.cast_nonneg _)
+theorem recipPartialSum_nonneg (n K : Nat) : 0 ≤ recipPartialSum n K :=
+  Finset.sum_nonneg fun _ _ => div_nonneg zero_le_one (Nat.cast_nonneg _)
 
 /-- The partial reciprocal sum is non-decreasing in K. -/
 theorem recipPartialSum_mono (n K : Nat) :
     recipPartialSum n K ≤ recipPartialSum n (K + 1) := by
-  unfold recipPartialSum
-  rw [Finset.sum_range_succ]
-  have : 0 ≤ (1 : ℝ) / (genSeq n K : ℝ) := by positivity
-  linarith
+  simp only [recipPartialSum, Finset.sum_range_succ]
+  linarith [div_nonneg zero_le_one (Nat.cast_nonneg (α := ℝ) (genSeq n K))]
 
-/-- Each term in the reciprocal sum is at most 1/2 (since genSeq ≥ 2). -/
+/-- Each term in the reciprocal sum is at most 1/2 (since genSeq >= 2). -/
 theorem recipPartialSum_term_le_half {n : Nat} (hn : 1 ≤ n) (k : Nat) :
-    (1 : ℝ) / (genSeq n k : ℝ) ≤ 1 / 2 := by
-  have h2 : (2 : ℝ) ≤ (genSeq n k : ℝ) := by exact_mod_cast (genSeq_prime hn k).two_le
-  exact div_le_div_of_nonneg_left zero_le_one (by positivity : (0:ℝ) < 2) h2
+    (1 : ℝ) / (genSeq n k : ℝ) ≤ 1 / 2 :=
+  div_le_div_of_nonneg_left zero_le_one two_pos (by exact_mod_cast (genSeq_prime hn k).two_le)
 
 end ReciprocalPartialSums
 
@@ -166,14 +122,7 @@ section DivergenceDefinitions
 def recipSumDiverges (n : Nat) : Prop :=
   ∀ M : ℝ, ∃ K : Nat, M ≤ recipPartialSum n K
 
-/-- **Almost All Squarefree RSD**: for every bound M > 0, the density of
-    squarefree integers n whose reciprocal partial sums are all below M is zero.
-
-    This implies: for almost all squarefree n (density 1), the reciprocal sum
-    ∑_k 1/em_n(k) diverges.
-
-    This is weaker than ReciprocalDivergence (for the specific starting point
-    n = 2); the single-trajectory statement remains open. -/
+/-- For a.a. squarefree n (density 1), the reciprocal sum diverges. -/
 def AlmostAllSquarefreeRSD : Prop :=
   ∀ M : ℝ, 0 < M →
     Filter.Tendsto
@@ -183,13 +132,7 @@ def AlmostAllSquarefreeRSD : Prop :=
         ((Finset.Icc 1 X).filter Squarefree).card)
       Filter.atTop (nhds 0)
 
-/-- **Positive density RSD**: for every bound M > 0, a positive density of
-    squarefree starting points have their reciprocal partial sum ≥ M
-    (for all sufficiently large K and X).
-
-    This is strictly weaker than AlmostAllSquarefreeRSD (density 1), but follows
-    from LinearMeanGrowth alone (1 open hypothesis) without requiring
-    PairwiseStepDecorrelation. -/
+/-- Positive density of squarefree n have S_K(n) >= M. Weaker than AASRSD. -/
 def PositiveDensityRSD : Prop :=
   ∃ δ : ℝ, 0 < δ ∧
     ∀ M : ℝ, 0 < M →
@@ -204,30 +147,8 @@ end DivergenceDefinitions
 
 section AsymptoticHypothesis
 
-/-- **Reciprocal Sum Concentration**: for each bound M > 0 and tolerance ε > 0,
-    there exists K₀ such that for K ≥ K₀, the density of squarefree n ≤ X with
-    S_K(n) < M is eventually at most ε.
-
-    This is the quantitative consequence of the first moment (~ κK) and
-    variance bound (O(K)) via Chebyshev's inequality:
-
-    Pr_n[S_K(n) < M] ≤ Pr_n[|S_K(n) − κK| > κK − M] ≤ Var/(κK − M)² = O(1/K)
-
-    for K > M/κ. The O(1/K) → 0 as K → ∞, so K₀ can be chosen to make
-    this bound < ε.
-
-    The decorrelation between steps (approximate independence
-    of 1/em_n(j) and 1/em_n(k) when averaged over starting points n) ensures
-    the variance bound holds.
-
-    **Proof from standard ANT:** The first moment uses PE (Population
-    Equidistribution, proved from Dirichlet + sieve). The variance bound uses
-    CRT decorrelation (`crt_multiplier_invariance`, proved) and the +1 shift
-    destroying residue correlations.
-
-    **Quantifier structure**: ε appears before K₀, so K₀ can depend on ε.
-    This is the correct structure for Chebyshev-type arguments, where the
-    bound CK/(mean-M)² decreases with K but is a constant for fixed K. -/
+/-- Density of {S_K < M} eventually <= epsilon, for K large enough.
+    Quantitative consequence of first moment + variance via Chebyshev. -/
 def RecipSumConcentration : Prop :=
   ∀ M : ℝ, 0 < M → ∀ ε : ℝ, 0 < ε →
   ∃ K₀ : Nat,
@@ -252,24 +173,10 @@ private theorem forall_bounded_subset (M : ℝ) (X K : Nat) :
   simp only [Finset.mem_filter] at hn ⊢
   exact ⟨hn.1, hn.2.1, hn.2.2 K⟩
 
-private theorem card_ratio_le_of_subset {s t u : Finset Nat}
-    (hst : s ⊆ t) (hu : 0 < (u.card : ℝ)) :
-    (s.card : ℝ) / u.card ≤ (t.card : ℝ) / u.card :=
-  div_le_div_of_nonneg_right (by exact_mod_cast Finset.card_le_card hst) (le_of_lt hu)
-
-/-- **Concentration → Almost All Squarefree RSD.**
-
-    If RecipSumConcentration holds, then for any M > 0, the set
-    {n squarefree : ∀ K, S_K(n) < M} has density 0.
-
-    Proof: {n : ∀ K, S_K(n) < M} ⊆ {n : S_K(n) < M} for each K.
-    By concentration with tolerance ε, the density of the latter is ≤ ε
-    for K ≥ K₀(ε) and X ≥ X₀. Since the former is a subset, its density
-    is also ≤ ε. Since ε was arbitrary, the density → 0. -/
+/-- RecipSumConcentration implies AlmostAllSquarefreeRSD. -/
 theorem concentration_implies_rsd
     (hconc : RecipSumConcentration) : AlmostAllSquarefreeRSD := by
   intro M hM
-  rw [show nhds (0 : ℝ) = nhds 0 from rfl]
   rw [Metric.tendsto_atTop]
   intro ε hε
   -- Get K₀ from concentration with tolerance ε/2 (strict inequality from ≤)
@@ -278,26 +185,15 @@ theorem concentration_implies_rsd
   -- Use K = K₀: density of {n : S_{K₀} < M} ≤ ε/2 eventually
   obtain ⟨X₀, hX₀⟩ := hK₀ K₀ (le_refl _)
   refine ⟨X₀, fun X hX => ?_⟩
-  rw [Real.dist_eq, sub_zero]
-  -- The density of {n : ∀K, S_K(n) < M} ≤ density of {n : S_{K₀}(n) < M}
-  have h_card := Finset.card_le_card (forall_bounded_subset M X K₀)
-  have h_density_le : (((Finset.Icc 1 X).filter
-      (fun n => Squarefree n ∧ ∀ L, recipPartialSum n L < M)).card : ℝ) /
-    ((Finset.Icc 1 X).filter Squarefree).card ≤ ε / 2 := by
-    calc (((Finset.Icc 1 X).filter
-        (fun n => Squarefree n ∧ ∀ L, recipPartialSum n L < M)).card : ℝ) /
-      ((Finset.Icc 1 X).filter Squarefree).card
-        ≤ (((Finset.Icc 1 X).filter
-          (fun n => Squarefree n ∧ recipPartialSum n K₀ < M)).card : ℝ) /
-        ((Finset.Icc 1 X).filter Squarefree).card := by
-          apply div_le_div_of_nonneg_right (by exact_mod_cast h_card) (Nat.cast_nonneg _)
-      _ ≤ ε / 2 := hX₀ X hX
-  have h_nn : 0 ≤ (((Finset.Icc 1 X).filter
-      (fun n => Squarefree n ∧ ∀ L, recipPartialSum n L < M)).card : ℝ) /
-    ((Finset.Icc 1 X).filter Squarefree).card :=
-    div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
-  rw [abs_of_nonneg h_nn]
-  linarith
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _))]
+  calc _ ≤ (((Finset.Icc 1 X).filter
+        (fun n => Squarefree n ∧ recipPartialSum n K₀ < M)).card : ℝ) /
+      ((Finset.Icc 1 X).filter Squarefree).card :=
+        div_le_div_of_nonneg_right
+          (by exact_mod_cast Finset.card_le_card (forall_bounded_subset M X K₀))
+          (Nat.cast_nonneg _)
+    _ ≤ ε / 2 := hX₀ X hX
+    _ < ε := by linarith
 
 end MainReduction
 
@@ -308,14 +204,7 @@ section Connections
 /-- The standard EM accumulator P(0) = 2 equals genProd 2 0. -/
 theorem genProd_two_eq_prod_zero : genProd 2 0 = prod 0 := rfl
 
-/-- RSD for almost all squarefree n is a necessary condition for MC:
-    MC → every prime appears → ∑ 1/p over appearing primes diverges
-    → the reciprocal sums diverge for at least the standard trajectory.
-
-    This theorem asserts: if MC and RecipSumConcentration both hold,
-    then AlmostAllSquarefreeRSD holds. The MC implication is vacuous
-    here (MC is already used elsewhere in the project); the value is in
-    making the chain explicit. -/
+/-- MC + RecipSumConcentration implies AlmostAllSquarefreeRSD. -/
 theorem mc_and_concentration_implies_rsd
     (hconc : RecipSumConcentration) :
     AlmostAllSquarefreeRSD :=
@@ -325,20 +214,8 @@ end Connections
 
 /-! ## Pairwise Decorrelation Framework
 
-Dead End #125 proved: pairwise (k=2) cancellation does NOT imply k-wise (XOR
-counterexample). This killed the CCSB+CPD → UPE route.
-
-But variance bounds only use k=2:
-  Var(∑ X_j) = ∑ Var(X_j) + 2 ∑_{j<k} Cov(X_j, X_k)
-
-If Cov → 0 (pairwise), then Var grows at most linearly.
-If mean grows linearly (κK with κ > 0), Chebyshev gives concentration.
-
-So: PSD (pairwise, k=2) + FM (mean → κ) → RSC → AASRSD.
-
-This is genuinely weaker than CME. PSD does not require conditional
-equidistribution — only that the reciprocals at different steps are
-approximately uncorrelated when averaged over starting points. -/
+Variance bounds only need pairwise (k=2) decorrelation.
+PSD + LMG -> RSC -> AASRSD. Genuinely weaker than CME. -/
 
 section PairwiseDecorrelation
 
@@ -366,24 +243,7 @@ private def sfCov (X : Nat) (f g : Nat → ℝ) : ℝ :=
 
 /-! ### Definitions -/
 
-/-- **Pairwise step decorrelation**: the ensemble covariance of reciprocals
-    at distinct steps vanishes as X → ∞. For j ≠ k:
-
-    Cov_n[1/genSeq(n,j), 1/genSeq(n,k)] → 0
-
-    where the covariance is over squarefree starting points n ≤ X.
-
-    This is strictly weaker than k-wise independence (Dead End #125: XOR
-    counterexample shows pairwise does not imply 3-wise), but EXACTLY what
-    is needed for variance bounds, since
-
-    Var(∑_j X_j) = ∑_j Var(X_j) + 2 ∑_{j<k} Cov(X_j, X_k).
-
-    **Mathematical basis**: CRT decorrelation (`crt_multiplier_invariance`,
-    proved) ensures that genSeq(n,j) and genSeq(n,k) are approximately
-    independent when averaged over starting points, because the multiplier
-    at step k depends on the walk position at step k (via CRT fiber), which
-    is approximately independent of the walk position at step j. -/
+/-- Ensemble covariance Cov[1/genSeq(n,j), 1/genSeq(n,k)] -> 0 for j != k. -/
 def PairwiseStepDecorrelation : Prop :=
   ∀ (j k : ℕ), j ≠ k →
     Filter.Tendsto
@@ -391,45 +251,18 @@ def PairwiseStepDecorrelation : Prop :=
                                (fun n => (1 : ℝ) / genSeq n k))
       Filter.atTop (nhds 0)
 
-/-- **Ensemble mean divergence**: the ensemble average of the partial
-    reciprocal sum S_K(n) = ∑_{k<K} 1/genSeq(n,k) diverges as K → ∞.
-
-    If the first moment step gives E[1/genSeq(n,k)] → κ > 0, then by
-    linearity of expectation (finite sums), E[S_K] ≈ κK → ∞.
-
-    This captures the "mean grows linearly" half of the Chebyshev argument.
-
-    Formulation: for any bound M, there exists K₀ such that for K ≥ K₀,
-    the ensemble mean of S_K eventually exceeds M (as X → ∞). -/
+/-- E[S_K] -> infinity as K -> infinity. -/
 def EnsembleMeanDivergence : Prop :=
   ∀ M : ℝ, ∃ K₀ : ℕ, ∀ K ≥ K₀, ∃ X₀ : ℕ, ∀ X ≥ X₀,
     M ≤ sfAvg X (fun n => recipPartialSum n K)
 
-/-- **Individual variance bound**: the variance of 1/genSeq(n,k) over
-    squarefree starting points is uniformly bounded.
-
-    Since genSeq(n,k) ≥ 2 for squarefree n ≥ 1, we have 1/genSeq(n,k) ∈ (0, 1/2],
-    so Var[1/genSeq(n,k)] ≤ E[(1/genSeq(n,k))²] ≤ 1/4.
-
-    This is the diagonal contribution to Var[S_K]. -/
+/-- Var[1/genSeq(n,k)] <= V uniformly in k. -/
 def IndividualVarianceBound (V : ℝ) : Prop :=
   ∀ k : ℕ, ∃ X₀ : ℕ, ∀ X ≥ X₀,
     sfAvg X (fun n => ((1 : ℝ) / genSeq n k) ^ 2) -
     (sfAvg X (fun n => (1 : ℝ) / genSeq n k)) ^ 2 ≤ V
 
-/-- **PSD+IVB implies variance bound**: if the pairwise covariances vanish
-    and individual variances are bounded by V, then
-    Var[S_K] ≤ K·V + o(K) = O(K).
-
-    The variance decomposes as:
-    Var[S_K] = ∑_{j<K} Var[1/genSeq(n,j)] + 2 ∑_{j<k<K} Cov(j,k)
-             ≤ K·V + 2 ∑_{j<k<K} |Cov(j,k)|
-
-    Each |Cov(j,k)| → 0 by PSD. For a fixed K, the sum has K(K-1)/2 terms
-    and each → 0, so the sum → 0 (finite sum of vanishing terms).
-    Hence for large X, the sum ≤ K (say), giving Var ≤ K(V+1).
-
-    **Status**: PROVED (see `psd_ivb_implies_variance_bound_proved`). -/
+/-- PSD + IVB implies Var[S_K] = O(K). PROVED. -/
 def PSDIVBImpliesVarianceBound : Prop :=
   ∀ (V : ℝ), 0 < V →
     PairwiseStepDecorrelation → IndividualVarianceBound V →
@@ -437,17 +270,7 @@ def PSDIVBImpliesVarianceBound : Prop :=
       sfAvg X (fun n => (recipPartialSum n K) ^ 2) -
       (sfAvg X (fun n => recipPartialSum n K)) ^ 2 ≤ C * K
 
-/-- **Linear mean growth**: the ensemble mean of S_K grows linearly in K.
-    There exists κ > 0 such that for every K, the ensemble mean of S_K is
-    eventually (as X → ∞) at least κK.
-
-    This is the quantitative consequence of the first moment step:
-    E[1/genSeq n k] → κ implies E[S_K] ≈ κK by linearity. The constant κ
-    is the reciprocal constant (κ = E[1/minFac] ≥ 1/3 from the p=2 term).
-
-    LinearMeanGrowth is strictly stronger than EnsembleMeanDivergence (it
-    provides a RATE, not just eventual divergence), but is the natural
-    consequence of FirstMomentStep. -/
+/-- E[S_K] >= kappa * K eventually, for some kappa > 0. -/
 def LinearMeanGrowth : Prop :=
   ∃ κ : ℝ, 0 < κ ∧ ∀ K : ℕ, ∃ X₀ : ℕ, ∀ X ≥ X₀,
     κ * K ≤ sfAvg X (fun n => recipPartialSum n K)
@@ -464,21 +287,10 @@ theorem linear_mean_growth_implies_emd : LinearMeanGrowth → EnsembleMeanDiverg
       _ < ↑(Nat.ceil (M / κ)) + 1 := by linarith
       _ ≤ (K : ℝ) := by exact_mod_cast hK
   calc M = κ * (M / κ) := by field_simp
-    _ ≤ κ * K := by
-        apply mul_le_mul_of_nonneg_left _ (le_of_lt hκ)
-        exact le_of_lt hK_bound
+    _ ≤ κ * K := mul_le_mul_of_nonneg_left hK_bound.le hκ.le
     _ ≤ sfAvg X (fun n => recipPartialSum n K) := hX₀ X hX
 
-/-- **Chebyshev concentration**: if the mean grows linearly and the variance
-    grows at most linearly, then RecipSumConcentration holds.
-
-    Proof: for K large enough that κK > M, by one-sided Chebyshev:
-    Pr[S_K < M] ≤ Var/(mean - M)² ≤ CK/(κK - M)² → 0 as K → ∞.
-    The monotonicity of S_K in K (non-decreasing) ensures that the density
-    of {S_K < M} is non-increasing in K, so the bound for K₀ extends to
-    all K ≥ K₀.
-
-    **Status**: PROVED (see `chebyshev_concentration_proved`). -/
+/-- LMG + Var = O(K) implies RecipSumConcentration. PROVED. -/
 def ChebyshevConcentration : Prop :=
   LinearMeanGrowth →
   (∃ C : ℝ, 0 < C ∧ ∀ K : ℕ, ∃ X₀ : ℕ, ∀ X ≥ X₀,
@@ -592,17 +404,7 @@ private theorem finset_chebyshev (X K : Nat) (M mu sigma2 : ℝ)
         apply div_le_div_of_nonneg_left hsigma_nn (by positivity) _
         exact sq_le_sq' (by linarith) (by linarith)
 
-/-- **ChebyshevConcentration PROVED.**
-
-    Uses LinearMeanGrowth (mean ≥ κK) and variance bound (Var ≤ CK) to
-    establish RecipSumConcentration via one-sided Chebyshev inequality.
-
-    For K ≥ K₀ where K₀ is large enough that CK₀/(κK₀-M)² ≤ ε:
-    1. Mean ≥ κK > M for K large
-    2. Chebyshev: density ≤ CK/(κK-M)² ≤ CK₀/(κK₀-M)² ≤ ε
-       (using monotonicity: CK/(κK-M)² is decreasing for K > M/κ)
-    3. Monotonicity of density in K: {S_K < M} ⊆ {S_{K₀} < M}, so
-       density_K ≤ density_{K₀} ≤ ε -/
+/-- ChebyshevConcentration PROVED via one-sided Chebyshev + monotonicity. -/
 theorem chebyshev_concentration_proved : ChebyshevConcentration := by
   rintro ⟨κ, hκ, hmean_growth⟩ ⟨C, hC, hvar⟩
   -- Need: ∀ M > 0, ∀ ε > 0, ∃ K₀, ∀ K ≥ K₀, ∃ X₀, ∀ X ≥ X₀, density ≤ ε
@@ -747,11 +549,7 @@ private theorem variance_eq_double_sum_cov (X K : Nat) (f : Nat → Nat → ℝ)
   congr 1; ext j
   simp only [← Finset.sum_sub_distrib, sfCov]
 
-/-- **PSD + IVB implies variance bound (PROVED).**
-
-    For each fixed K, extract X₀ from IVB for each j < K and from PSD for
-    each pair (j,k), take the max. Diagonal terms contribute ≤ K·V, and
-    K²−K off-diagonal terms each contribute ≤ 1/K², giving total ≤ K·V + 1. -/
+/-- PSD + IVB -> Var[S_K] <= (V+1)*K. PROVED. -/
 theorem psd_ivb_implies_variance_bound_proved : PSDIVBImpliesVarianceBound := by
   intro V hV hpsd hivb
   refine ⟨V + 1, by linarith, ?_⟩
@@ -880,12 +678,7 @@ theorem psd_ivb_implies_variance_bound_proved : PSDIVBImpliesVarianceBound := by
           nlinarith [sq_nonneg ((K : ℝ) - 1)]
         nlinarith [Nat.cast_nonneg (α := ℝ) K]
 
-/-- **Individual variance bound from genSeq ≥ 2.**
-    Since genSeq(n,k) ≥ 2 for squarefree n ≥ 1, we have
-    (1/genSeq(n,k))² ≤ 1/4. So E[(1/genSeq)²] ≤ 1/4,
-    and Var = E[X²] - (E[X])² ≤ E[X²] ≤ 1/4.
-
-    We prove IndividualVarianceBound (1/4). -/
+/-- IVB(1/4) PROVED: from genSeq >= 2, so (1/genSeq)^2 <= 1/4. -/
 theorem individual_variance_quarter : IndividualVarianceBound (1 / 4) := by
   intro k
   use 0
@@ -919,30 +712,7 @@ theorem individual_variance_quarter : IndividualVarianceBound (1 / 4) := by
   have h_sq_nn : 0 ≤ (sfAvg X (fun n => (1 : ℝ) / ↑(genSeq n k))) ^ 2 := sq_nonneg _
   linarith
 
-/-- **genSeq ≥ 2 for squarefree starting points.** -/
-private theorem genSeq_ge_two {n : Nat} (hn : 1 ≤ n) (k : Nat) :
-    2 ≤ genSeq n k :=
-  (genSeq_prime hn k).two_le
-
-/-- **Reciprocal term in (0, 1/2].** -/
-private theorem recip_genSeq_le_half {n : Nat} (hn : 1 ≤ n) (k : Nat) :
-    (1 : ℝ) / genSeq n k ≤ 1 / 2 := by
-  have : (2 : ℝ) ≤ genSeq n k := by exact_mod_cast genSeq_ge_two hn k
-  exact div_le_div_of_nonneg_left zero_le_one (by positivity) this
-
-/-- **Reciprocal term is positive.** -/
-private theorem recip_genSeq_pos {n : Nat} (hn : 1 ≤ n) (k : Nat) :
-    0 < (1 : ℝ) / genSeq n k := by
-  have : (2 : ℝ) ≤ genSeq n k := by exact_mod_cast genSeq_ge_two hn k
-  positivity
-
-/-- **PSD + IVB + Chebyshev + LinearMeanGrowth → Concentration.**
-
-    The full chain combining all components:
-    1. PSD + IVB → VarianceBound (via PSDIVBImpliesVarianceBound)
-    2. LinearMeanGrowth + VarianceBound → Concentration (via ChebyshevConcentration)
-
-    This makes the open hypotheses explicit. -/
+/-- PSD + IVB + Chebyshev + LMG -> Concentration. -/
 theorem psd_chain_implies_concentration
     (h_psd : PairwiseStepDecorrelation)
     (h_ivb : IndividualVarianceBound (1 / 4))
@@ -953,9 +723,7 @@ theorem psd_chain_implies_concentration
   obtain ⟨C, hC_pos, hC⟩ := h_bridge (1 / 4) (by positivity) h_psd h_ivb
   exact h_cheb h_mean ⟨C, hC_pos, hC⟩
 
-/-- **PSD chain → Almost All Squarefree RSD.**
-
-    Full chain: PSD + IVB + bridges → Concentration → RSD. -/
+/-- PSD + IVB + bridges -> Concentration -> RSD. -/
 theorem psd_chain_implies_rsd
     (h_psd : PairwiseStepDecorrelation)
     (h_ivb : IndividualVarianceBound (1 / 4))
@@ -966,10 +734,7 @@ theorem psd_chain_implies_rsd
   concentration_implies_rsd
     (psd_chain_implies_concentration h_psd h_ivb h_bridge h_mean h_cheb)
 
-/-- **PSD → RSD with standard hypotheses.**
-
-    Simplified statement: PSD alone, together with the standard open bridges,
-    implies AlmostAllSquarefreeRSD. Uses `individual_variance_quarter` (PROVED). -/
+/-- PSD + bridges -> AASRSD. Uses `individual_variance_quarter`. -/
 theorem psd_implies_rsd_with_bridges
     (h_psd : PairwiseStepDecorrelation)
     (h_bridge : PSDIVBImpliesVarianceBound)
@@ -978,10 +743,7 @@ theorem psd_implies_rsd_with_bridges
     AlmostAllSquarefreeRSD :=
   psd_chain_implies_rsd h_psd individual_variance_quarter h_bridge h_mean h_cheb
 
-/-- **PSD → Concentration (simplified).**
-
-    Now that PSDIVBImpliesVarianceBound is PROVED, we can eliminate it
-    as a hypothesis. Only PSD + LinearMeanGrowth + Chebyshev remain. -/
+/-- PSD + LMG + Chebyshev -> Concentration (IVB + VB eliminated). -/
 theorem psd_chain_implies_concentration'
     (h_psd : PairwiseStepDecorrelation)
     (h_mean : LinearMeanGrowth)
@@ -990,10 +752,7 @@ theorem psd_chain_implies_concentration'
   psd_chain_implies_concentration h_psd individual_variance_quarter
     psd_ivb_implies_variance_bound_proved h_mean h_cheb
 
-/-- **PSD → RSD (simplified).**
-
-    With PSDIVBImpliesVarianceBound proved, only 3 hypotheses remain:
-    PSD (number theory), LinearMeanGrowth (first moment), Chebyshev (pure analysis). -/
+/-- PSD + LMG + Chebyshev -> AASRSD (3 hypotheses). -/
 theorem psd_implies_rsd'
     (h_psd : PairwiseStepDecorrelation)
     (h_mean : LinearMeanGrowth)
@@ -1001,21 +760,14 @@ theorem psd_implies_rsd'
     AlmostAllSquarefreeRSD :=
   concentration_implies_rsd (psd_chain_implies_concentration' h_psd h_mean h_cheb)
 
-/-- **PSD + LinearMeanGrowth → Concentration (fully simplified).**
-
-    Now that ChebyshevConcentration AND PSDIVBImpliesVarianceBound are both PROVED,
-    only 2 open hypotheses remain: PSD and LinearMeanGrowth. -/
+/-- PSD + LMG -> Concentration (all bridges proved). -/
 theorem psd_lmg_implies_concentration
     (h_psd : PairwiseStepDecorrelation)
     (h_mean : LinearMeanGrowth) :
     RecipSumConcentration :=
   psd_chain_implies_concentration' h_psd h_mean chebyshev_concentration_proved
 
-/-- **PSD + LinearMeanGrowth → RSD (fully simplified).**
-
-    The ultimate 2-hypothesis chain: PSD (number theory) + LinearMeanGrowth (first moment)
-    imply AlmostAllSquarefreeRSD. All three bridges (IVB, PSDIVBImpliesVarianceBound,
-    ChebyshevConcentration) are now PROVED. -/
+/-- PSD + LMG -> AASRSD (the ultimate 2-hypothesis chain). -/
 theorem psd_lmg_implies_rsd
     (h_psd : PairwiseStepDecorrelation)
     (h_mean : LinearMeanGrowth) :
@@ -1024,22 +776,13 @@ theorem psd_lmg_implies_rsd
 
 end PairwiseDecorrelation
 
-/-! ## Positive Density Route: LMG alone → PositiveDensityRSD
+/-! ## Positive Density Route: LMG alone -> PositiveDensityRSD
 
-LinearMeanGrowth alone implies a positive density of squarefree starting
-points have divergent reciprocal sums, WITHOUT requiring PairwiseStepDecorrelation.
-
-The argument is elementary: if the mean is at least κK and every value is at most K/2
-(from genSeq ≥ 2), then by a simple averaging/partition argument, the density
-of {S_K ≥ M} is at least (κK - M)/(K/2 - M), which tends to 2κ as K → ∞.
-
-This gives a 1-hypothesis route: LMG → PositiveDensityRSD,
-compared to the 2-hypothesis route: PSD + LMG → AlmostAllSquarefreeRSD. -/
+Elementary averaging: mean >= kappaK, values <= K/2, so density{S_K >= M} >= kappa/2. -/
 
 section PositiveDensityRoute
 
-/-- **Deterministic upper bound**: the partial reciprocal sum S_K(n) ≤ K/2
-    for all starting points n ≥ 1, since each term 1/genSeq(n,k) ≤ 1/2. -/
+/-- S_K(n) <= K/2 for all n >= 1. -/
 theorem recipPartialSum_le_half_K {n : Nat} (hn : 1 ≤ n) (K : Nat) :
     recipPartialSum n K ≤ K / 2 := by
   unfold recipPartialSum
@@ -1048,11 +791,7 @@ theorem recipPartialSum_le_half_K {n : Nat} (hn : 1 ≤ n) (K : Nat) :
         Finset.sum_le_sum (fun k _ => recipPartialSum_term_le_half hn k)
     _ = K / 2 := by rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; ring
 
-/-- **Averaging lower bound on density**: if the ensemble mean of f is at least μ,
-    every f(n) ≤ B, f(n) ≥ 0, and μ > M < B, then the density of {f ≥ M} is
-    at least (μ - M)/(B - M).
-
-    Proof: partition into {f ≥ M} and {f < M}, bound each part, solve for density. -/
+/-- If E[f] >= mu, f <= B, mu > M, then density{f >= M} >= (mu - M)/(B - M). -/
 private theorem density_lower_bound_from_mean
     (X : Nat) (f : Nat → ℝ) (μ M B : ℝ)
     (hμ : μ ≤ sfAvg X f)
@@ -1110,15 +849,7 @@ private theorem density_lower_bound_from_mean
   rw [div_le_div_iff₀ hBM_pos hcard_pos]
   linarith
 
-/-- **LinearMeanGrowth → PositiveDensityRSD (PROVED).**
-
-    Uses only LinearMeanGrowth (1 open hypothesis), without PairwiseStepDecorrelation.
-    Given κ from LMG, sets δ = κ/2. For any M > 0, chooses K₀ large enough that
-    κK > 2M and K/2 > M. Then by the averaging lemma:
-
-    density{S_K ≥ M} ≥ (κK - M)/(K/2 - M) ≥ κ/2 = δ
-
-    for all K ≥ K₀ and X sufficiently large. -/
+/-- LMG -> PositiveDensityRSD (1 open hypothesis, PROVED). -/
 theorem lmg_implies_positive_density_rsd :
     LinearMeanGrowth → PositiveDensityRSD := by
   intro ⟨κ, hκ, hlmg⟩
@@ -1195,36 +926,13 @@ theorem lmg_implies_positive_density_rsd :
 
 end PositiveDensityRoute
 
-/-! ## Landscape: Revival of Dead End #125
+/-! ## Landscape
 
-Dead End #125 proved that pairwise (k=2) cancellation does NOT imply k-wise
-cancellation (XOR counterexample). This killed the CCSB+CPD → UPE route.
-
-However, variance bounds ONLY need pairwise decorrelation (k=2):
-  Var(∑ X_j) = ∑ Var(X_j) + 2 ∑_{j<k} Cov(X_j, X_k)
-
-So PairwiseStepDecorrelation is sufficient for the variance bound, and hence
-for RecipSumConcentration, without needing k-wise independence.
-
-PROVED components (all three bridges):
-- **IndividualVarianceBound(1/4)**: from genSeq ≥ 2
-- **PSDIVBImpliesVarianceBound**: variance decomposition + limit arithmetic
-- **ChebyshevConcentration**: one-sided Chebyshev + monotonicity of partial sums
-
-Remaining open hypotheses (only 2):
-- **PairwiseStepDecorrelation**: pairwise covariances → 0 (from CRT + PE)
-- **LinearMeanGrowth**: mean grows linearly (from FirstMomentStep κ, κ > 0) -/
+All three bridges PROVED. Open: PSD and LMG. -/
 
 section Landscape
 
-/-- **Landscape theorem**: the PSD chain witnesses.
-
-    All three bridges are now PROVED:
-    - IndividualVarianceBound(1/4) from genSeq ≥ 2
-    - PSDIVBImpliesVarianceBound from variance decomposition
-    - ChebyshevConcentration from one-sided Chebyshev + monotonicity
-
-    Only PSD and LinearMeanGrowth remain as open hypotheses. -/
+/-- PSD chain landscape: all bridges proved, only PSD + LMG open. -/
 theorem dead_end_125_pairwise_revival :
     (PairwiseStepDecorrelation →
      LinearMeanGrowth →
@@ -1237,12 +945,7 @@ theorem dead_end_125_pairwise_revival :
    psd_ivb_implies_variance_bound_proved,
    chebyshev_concentration_proved⟩
 
-/-- **Extended landscape theorem**: including the positive density route.
-
-    Now includes:
-    - LMG alone → PositiveDensityRSD (1 open hypothesis, PROVED)
-    - PSD + LMG → AlmostAllSquarefreeRSD (2 open hypotheses)
-    - All three bridges PROVED -/
+/-- Extended landscape: includes positive density route (LMG alone). -/
 theorem positive_density_landscape :
     (LinearMeanGrowth → PositiveDensityRSD) ∧
     (PairwiseStepDecorrelation → LinearMeanGrowth → AlmostAllSquarefreeRSD) ∧

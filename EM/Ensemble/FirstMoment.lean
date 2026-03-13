@@ -111,8 +111,7 @@ theorem ensembleAvg_nonneg {X : Nat} {f : Nat → ℝ}
 /-- The ensemble average of a constant is that constant (when sqfreeCount > 0). -/
 theorem ensembleAvg_const {X : Nat} (c : ℝ) (hX : 0 < sqfreeCount X) :
     ensembleAvg X (fun _ => c) = c := by
-  have hne : (sqfreeCount X : ℝ) ≠ 0 :=
-    Nat.cast_ne_zero.mpr (by omega)
+  have hne : (sqfreeCount X : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
   simp only [ensembleAvg, Finset.sum_const, nsmul_eq_mul, sqfreeCount] at hne ⊢
   exact mul_div_cancel_left₀ c hne
 
@@ -148,19 +147,16 @@ def kappaPartial (B : Nat) : ℝ :=
     = (2/3) · 1 = 2/3. So kappaPartial 3 = (2/3)/2 = 1/3. -/
 theorem buchstabWeight_two : buchstabWeight 2 = 2 / 3 := by
   simp only [buchstabWeight]
-  -- Product over primes in range 2 = {0,1}, filtered by Nat.Prime = empty
   have : (Finset.range 2).filter Nat.Prime = ∅ := by native_decide
   rw [this, Finset.prod_empty, mul_one]
   exact sieveDensity_at_two
 
 /-- The Buchstab weight divided by p is non-negative for primes. -/
 private theorem buchstabWeight_div_nonneg {p : Nat} (hp : Nat.Prime p) :
-    0 ≤ buchstabWeight p / p := by
-  apply div_nonneg
-  · exact mul_nonneg (sieveDensity_pos hp.two_le).le
-      (Finset.prod_nonneg fun r hr =>
-        (one_sub_sieveDensity_pos (Finset.mem_filter.mp hr).2.two_le).le)
-  · positivity
+    0 ≤ buchstabWeight p / p :=
+  div_nonneg (mul_nonneg (sieveDensity_pos hp.two_le).le
+    (Finset.prod_nonneg fun r hr =>
+      (one_sub_sieveDensity_pos (Finset.mem_filter.mp hr).2.two_le).le)) (by positivity)
 
 /-- The partial κ is non-negative. -/
 theorem kappaPartial_nonneg (B : Nat) : 0 ≤ kappaPartial B :=
@@ -322,13 +318,11 @@ theorem first_moment_step_implies_lmg {κ : ℝ} (hκ : 0 < κ) :
   intro hfms
   refine ⟨κ / 2, by linarith, ?_⟩
   intro K
-  -- Extract thresholds from tendsto: for each k, eventually ≥ κ/2
   have hthresh : ∀ k : Nat, ∃ Xk : Nat, ∀ X ≥ Xk,
       κ / 2 ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
     intro k
-    have hev := (hfms k).eventually (Ioi_mem_nhds (by linarith : κ / 2 < κ))
-    rw [Filter.eventually_atTop] at hev
-    obtain ⟨N, hN⟩ := hev
+    obtain ⟨N, hN⟩ := Filter.eventually_atTop.mp
+      ((hfms k).eventually (Ioi_mem_nhds (by linarith : κ / 2 < κ)))
     exact ⟨N, fun X hX => (hN X hX).le⟩
   let threshold : Nat → Nat := fun k => (hthresh k).choose
   let X₀ := (Finset.range K).sup threshold
@@ -454,7 +448,6 @@ private theorem squarefree_half {m : Nat} (hm : Squarefree m) (heven : Even m) :
 private theorem odd_sf_card_ge_half (X : Nat) :
     ((Finset.Icc 1 X).filter Squarefree).card ≤
     2 * ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)).card := by
-  -- Partition squarefree into odd and even
   set S := (Finset.Icc 1 X).filter Squarefree
   set oddS := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)
   set evenS := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ Even n)
@@ -473,11 +466,9 @@ private theorem odd_sf_card_ge_half (X : Nat) :
     · rintro (⟨hmem, hsf, _⟩ | ⟨hmem, hsf, _⟩) <;> exact ⟨hmem, hsf⟩
   have h_card : S.card = oddS.card + evenS.card := by
     rw [h_union, Finset.card_union_of_disjoint h_disj]
-  -- Injection: even sf → odd sf by halving
   have h_inj : evenS.card ≤ oddS.card := by
     apply Finset.card_le_card_of_injOn (fun n => n / 2)
-    · -- Maps into oddS
-      intro n hn
+    · intro n hn
       rw [Finset.mem_coe, Finset.mem_filter] at hn
       have hmem := Finset.mem_Icc.mp hn.1
       have hsf := hn.2.1
@@ -488,12 +479,9 @@ private theorem odd_sf_card_ge_half (X : Nat) :
       have h1 : 1 ≤ n / 2 := by omega
       have h2 : n / 2 ≤ X := le_trans (Nat.div_le_self n 2) hmem.2
       exact ⟨⟨h1, h2⟩, hsf_half, hodd_half⟩
-    · -- Injective on even numbers: a/2 = b/2 and both even → a = b
-      intro a ha b hb hab
+    · intro a ha b hb hab
       rw [Finset.mem_coe, Finset.mem_filter] at ha hb
-      have ha_mul := Nat.div_mul_cancel ha.2.2.two_dvd  -- a / 2 * 2 = a
-      have hb_mul := Nat.div_mul_cancel hb.2.2.two_dvd  -- b / 2 * 2 = b
-      linarith
+      linarith [Nat.div_mul_cancel ha.2.2.two_dvd, Nat.div_mul_cancel hb.2.2.two_dvd]
   linarith [h_card, h_inj]
 
 /-- The ensemble average of 1/genSeq(n,0) is at least 1/4: odd squarefree n
@@ -620,16 +608,10 @@ def FirstMomentDivergence : Prop :=
     gives divergence. -/
 theorem lmg_implies_fmd : LinearMeanGrowth → FirstMomentDivergence := by
   intro hlmg M
-  -- LinearMeanGrowth → EnsembleMeanDivergence (already proved)
-  have hemd := linear_mean_growth_implies_emd hlmg M
-  obtain ⟨K₀, hK₀⟩ := hemd
-  refine ⟨K₀, fun K hK => ?_⟩
-  obtain ⟨X₀, hX₀⟩ := hK₀ K hK
-  exact ⟨X₀, fun X hX => by
-    have h := hX₀ X hX
-    -- sfAvg and ensembleAvg are definitionally equal
-    simp only [ensembleAvg, sqfreeCount] at *
-    exact h⟩
+  obtain ⟨K₀, hK₀⟩ := linear_mean_growth_implies_emd hlmg M
+  exact ⟨K₀, fun K hK => by
+    obtain ⟨X₀, hX₀⟩ := hK₀ K hK
+    exact ⟨X₀, fun X hX => by simp only [ensembleAvg, sqfreeCount] at *; exact hX₀ X hX⟩⟩
 
 /-- FirstMomentStep implies FirstMomentDivergence via LinearMeanGrowth. -/
 theorem fms_implies_fmd {κ : ℝ} (hκ : 0 < κ) :
@@ -664,53 +646,36 @@ def DecayingSMLB (f : ℕ → ℝ) : Prop :=
 theorem decaying_smlb_implies_fmd {f : ℕ → ℝ} :
     DecayingSMLB f → FirstMomentDivergence := by
   intro ⟨hpos, hns, hstep⟩ M
-  -- Since f is nonneg and not summable, partial sums tend to +infinity
   have htend : Filter.Tendsto
       (fun n => ∑ i ∈ Finset.range n, f i) Filter.atTop Filter.atTop := by
     rwa [← not_summable_iff_tendsto_nat_atTop_of_nonneg (fun k => le_of_lt (hpos k))]
-  -- Extract K₀ from the divergent partial sums
-  rw [Filter.tendsto_atTop_atTop] at htend
-  obtain ⟨K₀, hK₀⟩ := htend M
+  obtain ⟨K₀, hK₀⟩ := (Filter.tendsto_atTop_atTop.mp htend) M
   refine ⟨K₀, fun K hK => ?_⟩
-  -- For each k < K, get the threshold X_k from hstep
-  have hthresh : ∀ k, k ∈ Finset.range K →
-      ∃ Xk : ℕ, ∀ X ≥ Xk,
-        f k ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) :=
-    fun k _ => hstep k
   let threshold : ℕ → ℕ := fun k => (hstep k).choose
-  let X₀ := (Finset.range K).sup threshold
-  refine ⟨X₀, fun X hX => ?_⟩
-  -- E[S_K] = sum_{k<K} E[1/genSeq(n,k)] >= sum_{k<K} f(k) >= M
-  suffices h : M ≤ ensembleAvg X (fun n => recipPartialSum n K) from h
+  refine ⟨(Finset.range K).sup threshold, fun X hX => ?_⟩
   simp_rw [show ∀ n, recipPartialSum n K =
     ∑ k ∈ Finset.range K, 1 / (genSeq n k : ℝ) from fun _ => rfl]
   rw [ensembleAvg_sum_range]
   calc M ≤ ∑ i ∈ Finset.range K, f i := hK₀ K hK
-    _ ≤ ∑ k ∈ Finset.range K, ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
-        apply Finset.sum_le_sum
-        intro k hk
-        exact (hstep k).choose_spec X
-          (le_trans (Finset.le_sup (f := threshold) hk) hX)
+    _ ≤ ∑ k ∈ Finset.range K, ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) :=
+        Finset.sum_le_sum fun k hk =>
+          (hstep k).choose_spec X (le_trans (Finset.le_sup (f := threshold) hk) hX)
 
 /-- StepMeanLowerBound(c) is a special case of DecayingSMLB with constant f(k) = c. -/
 theorem smlb_implies_decaying_smlb {c : ℝ} (hc : 0 < c) :
     StepMeanLowerBound c → DecayingSMLB (fun _ => c) := by
   intro hsmlb
   refine ⟨fun _ => hc, ?_, hsmlb⟩
-  -- Constant positive sequence is not summable: partial sums = c·n → ∞
-  rw [not_summable_iff_tendsto_nat_atTop_of_nonneg (fun _ => le_of_lt hc)]
-  rw [Filter.tendsto_atTop_atTop]
-  intro M
-  refine ⟨Nat.ceil (M / c) + 1, fun K hK => ?_⟩
+  rw [not_summable_iff_tendsto_nat_atTop_of_nonneg (fun _ => le_of_lt hc),
+    Filter.tendsto_atTop_atTop]
+  intro M; refine ⟨Nat.ceil (M / c) + 1, fun K hK => ?_⟩
   simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-  have hK_bound : M / c < K := by
-    calc M / c ≤ ↑(Nat.ceil (M / c)) := Nat.le_ceil _
-      _ < ↑(Nat.ceil (M / c)) + 1 := by linarith
-      _ ≤ (K : ℝ) := by exact_mod_cast hK
+  have hK_bound : M / c < K := calc
+    M / c ≤ ↑(Nat.ceil (M / c)) := Nat.le_ceil _
+    _ < ↑(Nat.ceil (M / c)) + 1 := by linarith
+    _ ≤ (K : ℝ) := by exact_mod_cast hK
   calc M = c * (M / c) := by field_simp
-    _ ≤ c * K := by
-        apply mul_le_mul_of_nonneg_left _ (le_of_lt hc)
-        exact le_of_lt hK_bound
+    _ ≤ c * K := mul_le_mul_of_nonneg_left hK_bound.le hc.le
     _ = (K : ℝ) * c := by ring
 
 /-- Landscape theorem for the divergence hierarchy:
@@ -822,7 +787,6 @@ private theorem squarefree_third {m : Nat} (hm : Squarefree m) (hodd : ¬ Even m
 private theorem odd_coprime3_sf_card_ge_half (X : Nat) :
     ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)).card ≤
     2 * ((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))).card := by
-  -- Partition odd squarefree into coprime-to-3 and divisible-by-3
   set oddS := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)
   set copS := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ ¬ (3 ∣ n))
   set div3S := (Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n ∧ (3 ∣ n))
@@ -841,11 +805,9 @@ private theorem odd_coprime3_sf_card_ge_half (X : Nat) :
     · rintro (⟨hmem, hsf, hodd, _⟩ | ⟨hmem, hsf, hodd, _⟩) <;> exact ⟨hmem, hsf, hodd⟩
   have h_card : oddS.card = copS.card + div3S.card := by
     rw [h_union, Finset.card_union_of_disjoint h_disj]
-  -- Injection: div3S → copS by dividing by 3
   have h_inj : div3S.card ≤ copS.card := by
     apply Finset.card_le_card_of_injOn (fun n => n / 3)
-    · -- Maps into copS
-      intro n hn
+    · intro n hn
       rw [Finset.mem_coe, Finset.mem_filter] at hn
       have hmem := Finset.mem_Icc.mp hn.1
       have hsf := hn.2.1
@@ -858,12 +820,9 @@ private theorem odd_coprime3_sf_card_ge_half (X : Nat) :
         omega
       have h2 : n / 3 ≤ X := le_trans (Nat.div_le_self n 3) hmem.2
       exact ⟨⟨h1, h2⟩, hsf', hodd', hcop⟩
-    · -- Injective on div3S: a/3 = b/3 and both divisible by 3 → a = b
-      intro a ha b hb hab
+    · intro a ha b hb hab
       rw [Finset.mem_coe, Finset.mem_filter] at ha hb
-      have ha3 := Nat.div_mul_cancel ha.2.2.2
-      have hb3 := Nat.div_mul_cancel hb.2.2.2
-      linarith
+      linarith [Nat.div_mul_cancel ha.2.2.2, Nat.div_mul_cancel hb.2.2.2]
   linarith [h_card, h_inj]
 
 /-- #{sf in [1,X]} ≤ 4 · #{odd sf coprime to 3 in [1,X]}.
@@ -1175,53 +1134,24 @@ private theorem sqfreeCount_plus_fourth_ninth (X : Nat) :
     rw [← Finset.card_union_of_disjoint (Finset.disjoint_filter_filter_not _ _ _),
         Finset.filter_union_filter_not_eq]
   have hS_card : S.card = X := by simp [S, Nat.card_Icc]
-  -- Assembly: sqfreeCount + |A| + |B| ≤ X + |AB| + nonsf.card (approximately)
-  -- sqfreeCount + nonsf.card = X
-  -- |A| + |B| = |A∪B| + |AB| ≤ nonsf.card + |AB|
-  -- So sqfreeCount + |A| + |B| ≤ X - nonsf.card + nonsf.card + |AB| = X + |AB|
-  -- Wait: sqfreeCount = X - nonsf.card, and |A| + |B| ≤ nonsf.card + |AB|.
-  -- So sqfreeCount + |A| + |B| ≤ X - nonsf.card + nonsf.card + |AB| = X + |AB|.
+  -- sf + |A| + |B| ≤ X + |AB| via partition + inclusion-exclusion
   have : (S.filter Squarefree).card + A.card + B.card ≤ X + AB.card := by
-    -- A.card + B.card = (A∪B).card + AB.card ≤ nonsf.card + AB.card
     have h1 : A.card + B.card ≤ nonsf.card + AB.card := by linarith
-    -- sqfreeCount + nonsf = X
     linarith
-  -- sqfreeCount X + X/4 + X/9 ≤ X + X/36 + 2
-  -- |A| ≥ X/4, |B| ≥ X/9, |AB| ≤ X/36 + 1
-  -- Actually we need: sqfreeCount + X/4 + X/9 ≤ sqfreeCount + |A| + |B| ≤ X + |AB| ≤ X + X/36 + 1
-  -- But sqfreeCount + X/4 + X/9 ≤ sqfreeCount + |A| + |B| requires X/4 ≤ |A| and X/9 ≤ |B|.
-  -- That's backwards! We need sqfreeCount + X/4 + X/9 ≤ ..., and |A| ≥ X/4, so
-  -- sqfreeCount + X/4 + X/9 ≤ sqfreeCount + |A| + |B| ≤ X + |AB| ≤ X + X/36 + 1.
-  -- Hmm, sqfreeCount + X/4 ≤ sqfreeCount + |A| since X/4 ≤ |A|. Similarly X/9 ≤ |B|.
-  -- But we need sqfreeCount + X/4 + X/9 ≤ X + X/36 + 2.
-  -- sqfreeCount + |A| + |B| ≤ X + |AB|, so sqfreeCount ≤ X + |AB| - |A| - |B|.
-  -- sqfreeCount + X/4 + X/9 ≤ X + |AB| - |A| - |B| + X/4 + X/9.
-  -- Need: X + |AB| - |A| - |B| + X/4 + X/9 ≤ X + X/36 + 2.
-  -- i.e.: |AB| - |A| - |B| + X/4 + X/9 ≤ X/36 + 2.
-  -- i.e.: X/4 - |A| + X/9 - |B| + |AB| ≤ X/36 + 2.
-  -- Since X/4 ≤ |A| and X/9 ≤ |B|, we have X/4 - |A| ≤ 0 and X/9 - |B| ≤ 0.
-  -- So it suffices to show |AB| ≤ X/36 + 2. But we have |AB| ≤ X/36 + 1. ✓
   linarith
 
 /-- n ≡ 1 mod 6 ↔ n odd and n % 3 = 1 (for n ≥ 1). -/
 private theorem mod6_eq_one_iff {n : Nat} (_hn : 1 ≤ n) :
     n % 6 = 1 ↔ (¬ Even n ∧ n % 3 = 1) := by
   constructor
-  · intro h
-    constructor
-    · intro ⟨k, hk⟩; omega
-    · omega
-  · intro ⟨hodd, hmod3⟩
-    have h2 : n % 2 = 1 := by
-      rcases Nat.even_or_odd n with he | ho
-      · exact absurd he hodd
-      · exact Nat.odd_iff.mp ho
-    omega
+  · exact fun h => ⟨fun ⟨k, hk⟩ => by omega, by omega⟩
+  · exact fun ⟨hodd, hmod3⟩ => by
+      have : n % 2 = 1 := Nat.odd_iff.mp (Nat.not_even_iff_odd.mp hodd)
+      omega
 
 /-- Count of n ≡ 1 mod 6 in [1,X] is at least X/6. -/
 private theorem count_one_mod_six_ge (X : Nat) :
     X / 6 ≤ ((Finset.Icc 1 X).filter (fun n => n % 6 = 1)).card := by
-  -- The map k ↦ 6k + 1 for k ∈ Finset.range(X/6) injects into {n ∈ [1,X] : n%6=1}
   have : (Finset.range (X / 6)).card ≤
       ((Finset.Icc 1 X).filter (fun n => n % 6 = 1)).card := by
     apply Finset.card_le_card_of_injOn (fun k => 6 * k + 1)
@@ -1240,12 +1170,9 @@ private theorem count_one_mod_six_ge (X : Nat) :
 private theorem exists_sq_factor_of_nonsf_coprime6 {n : Nat} (_hn : 1 ≤ n)
     (hnsf : ¬ Squarefree n) (hodd : ¬ Even n) (hmod3 : n % 3 = 1) :
     ∃ d : Nat, 5 ≤ d ∧ d * d ∣ n := by
-  -- n not squarefree means ∃ p prime with p² | n
-  rw [Nat.squarefree_iff_prime_squarefree] at hnsf
-  push_neg at hnsf
+  rw [Nat.squarefree_iff_prime_squarefree] at hnsf; push_neg at hnsf
   obtain ⟨p, hp, hpdvd⟩ := hnsf
   refine ⟨p, ?_, hpdvd⟩
-  -- p ≥ 5 since p ≠ 2 (n odd) and p ≠ 3 (n%3=1 so 9 ∤ n)
   have hp2 : p ≠ 2 := by
     intro h; subst h
     obtain ⟨m, hm⟩ := hpdvd
@@ -1264,7 +1191,6 @@ private theorem exists_sq_factor_of_nonsf_coprime6 {n : Nat} (_hn : 1 ≤ n)
 /-- Non-squarefree n ≡ 1 mod 6 with d²|n: at most X/(d²) + 1 such n in [1,X]. -/
 private theorem count_nonsf_with_sq_factor (X d : Nat) (_hd : 2 ≤ d) :
     ((Finset.Icc 1 X).filter (fun n => d * d ∣ n)).card ≤ X / (d * d) + 1 := by
-  -- Map n to n/(d²) gives injection into [0, X/d²]
   calc ((Finset.Icc 1 X).filter (fun n => d * d ∣ n)).card
       ≤ (Finset.Icc 0 (X / (d * d))).card := by
         apply Finset.card_le_card_of_injOn (fun n => n / (d * d))
@@ -1274,13 +1200,8 @@ private theorem count_nonsf_with_sq_factor (X d : Nat) (_hd : 2 ≤ d) :
           exact ⟨Nat.zero_le _, Nat.div_le_div_right hn.1.2⟩
         · intro a ha b hb hab
           rw [Finset.mem_coe, Finset.mem_filter] at ha hb
-          have had := Nat.div_mul_cancel ha.2  -- a / (d*d) * (d*d) = a
-          have hbd := Nat.div_mul_cancel hb.2  -- b / (d*d) * (d*d) = b
-          have : (fun n => n / (d * d)) a = (fun n => n / (d * d)) b := hab
-          simp only at this
-          nlinarith
-    _ = X / (d * d) + 1 := by
-        rw [← Nat.range_succ_eq_Icc_zero, Finset.card_range]
+          nlinarith [Nat.div_mul_cancel ha.2, Nat.div_mul_cancel hb.2]
+    _ = X / (d * d) + 1 := by rw [← Nat.range_succ_eq_Icc_zero, Finset.card_range]
 
 /-- The union of {n ∈ [1,X] : d²|n} over d = 5,...,M covers all non-sf n ≡ 1 mod 6
     with smallest factor d ≤ M, so the card is bounded by ∑ (X/d² + 1). -/
@@ -1290,76 +1211,46 @@ private theorem nonsf_one_mod_six_le_sum (X : Nat) :
     ((Finset.Icc 1 X).filter
       (fun n => ¬ Squarefree n ∧ ¬ Even n ∧ n % 3 = 1)).card =
     ((Finset.Icc 1 X).filter (fun n => ¬ Even n ∧ n % 3 = 1)).card := by
-  rw [← Finset.card_union_of_disjoint]
-  · congr 1
-    ext n
-    simp only [Finset.mem_filter, Finset.mem_union]
-    constructor
-    · rintro (⟨hmem, hsf, hodd, hmod⟩ | ⟨hmem, hnsf, hodd, hmod⟩)
-      · exact ⟨hmem, hodd, hmod⟩
-      · exact ⟨hmem, hodd, hmod⟩
-    · intro ⟨hmem, hodd, hmod⟩
-      rcases Decidable.em (Squarefree n) with hsf | hnsf
-      · exact Or.inl ⟨hmem, hsf, hodd, hmod⟩
-      · exact Or.inr ⟨hmem, hnsf, hodd, hmod⟩
-  · rw [Finset.disjoint_filter]
-    intro n _ ⟨hsf, _, _⟩ ⟨hnsf, _, _⟩
-    exact hnsf hsf
+  rw [← Finset.card_union_of_disjoint (by
+    rw [Finset.disjoint_filter]; intro n _ ⟨hsf, _, _⟩ ⟨hnsf, _, _⟩; exact hnsf hsf)]
+  congr 1; ext n; simp only [Finset.mem_filter, Finset.mem_union]
+  constructor
+  · rintro (⟨hmem, _, hodd, hmod⟩ | ⟨hmem, _, hodd, hmod⟩) <;> exact ⟨hmem, hodd, hmod⟩
+  · intro ⟨hmem, hodd, hmod⟩
+    rcases Decidable.em (Squarefree n) with hsf | hnsf
+    · exact Or.inl ⟨hmem, hsf, hodd, hmod⟩
+    · exact Or.inr ⟨hmem, hnsf, hodd, hmod⟩
 
 /-- For d coprime to 6, d² ≡ 1 mod 6. -/
 private theorem sq_mod_six_of_coprime {d : Nat} (hd2 : ¬ 2 ∣ d) (hd3 : ¬ 3 ∣ d) :
     d * d % 6 = 1 := by
-  have h2 : d % 2 = 1 := by omega
-  have h3 : d % 3 ∈ ({1, 2} : Finset Nat) := by
-    simp only [Finset.mem_insert, Finset.mem_singleton]
-    omega
-  have h6 : d % 6 ∈ ({1, 5} : Finset Nat) := by
-    simp only [Finset.mem_insert, Finset.mem_singleton]
-    omega
-  simp only [Finset.mem_insert, Finset.mem_singleton] at h6
-  rw [Nat.mul_mod]
-  rcases h6 with h | h <;> simp [h]
+  have h6 : d % 6 = 1 ∨ d % 6 = 5 := by omega
+  rw [Nat.mul_mod]; rcases h6 with h | h <;> simp [h]
 
 /-- For d coprime to 6, #{n ≡ 1 mod 6 in [1,X] : d²|n} ≤ X/(6d²) + 1.
     Key: d coprime to 6 → d² ≡ 1 mod 6, so d²|n and n ≡ 1 mod 6 → n/d² ≡ 1 mod 6.
     The map n ↦ n/d² injects into {m ≡ 1 mod 6 in [1, X/d²]}. -/
 private theorem count_mod6_sq_factor (X d : Nat) (hd : 5 ≤ d) (hd2 : ¬ 2 ∣ d) (hd3 : ¬ 3 ∣ d) :
     ((Finset.Icc 1 X).filter (fun n => n % 6 = 1 ∧ d * d ∣ n)).card ≤ X / (6 * (d * d)) + 1 := by
-  -- The map n ↦ n/(d²) is an injection
-  -- Image: m ∈ [1, X/d²] with m ≡ 1 mod 6
-  -- Count of image ≤ X/(6d²) + 1
   have hdd_pos : 0 < d * d := by positivity
-  -- Injection into {m ≡ 1 mod 6 in [0, X/(d²)]}
   calc ((Finset.Icc 1 X).filter (fun n => n % 6 = 1 ∧ d * d ∣ n)).card
       ≤ ((Finset.range (X / (d * d) + 1)).filter (fun m => m % 6 = 1)).card := by
         apply Finset.card_le_card_of_injOn (fun n => n / (d * d))
         · intro n hn
           simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_Icc] at hn
           simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_range]
-          have hndvd := hn.2.2
-          have hmod := hn.2.1
-          have hle := hn.1.2
-          constructor
-          · exact Nat.lt_succ_of_le (Nat.div_le_div_right hle)
-          · -- n/d² ≡ 1 mod 6 since n ≡ 1 mod 6 and d² ≡ 1 mod 6
-            have hd2_mod := sq_mod_six_of_coprime hd2 hd3  -- d*d % 6 = 1
-            have hcancel := Nat.div_mul_cancel hndvd  -- n/(d*d) * (d*d) = n
-            -- n/(d²) * (d²) ≡ n mod 6, so (n/d² mod 6) * (d² mod 6) ≡ n mod 6
-            have h1 : (n / (d * d) * (d * d)) % 6 = n % 6 := by rw [hcancel]
-            rw [Nat.mul_mod] at h1
-            simp [hd2_mod, hmod] at h1
-            exact h1
-        · intro a ha b hb (hab : a / (d * d) = b / (d * d))
+          refine ⟨Nat.lt_succ_of_le (Nat.div_le_div_right hn.1.2), ?_⟩
+          have h1 : (n / (d * d) * (d * d)) % 6 = n % 6 := by
+            rw [Nat.div_mul_cancel hn.2.2]
+          rw [Nat.mul_mod] at h1
+          simp [sq_mod_six_of_coprime hd2 hd3, hn.2.1] at h1; exact h1
+        · intro a ha b hb hab
           simp only [Finset.mem_coe, Finset.mem_filter] at ha hb
-          have had := Nat.div_mul_cancel ha.2.2
-          have hbd := Nat.div_mul_cancel hb.2.2
-          nlinarith
+          nlinarith [Nat.div_mul_cancel ha.2.2, Nat.div_mul_cancel hb.2.2]
     _ ≤ X / (6 * (d * d)) + 1 := by
-        -- #{m ∈ {0,...,N} : m%6=1} ≤ N/6 + 1 via injection m ↦ m/6
         set N := X / (d * d)
-        -- Injection: m ↦ m/6 from {m ∈ range(N+1) : m%6=1} into range(N/6+1)
         have hcount : ((Finset.range (N + 1)).filter (fun m => m % 6 = 1)).card ≤ N / 6 + 1 := by
-          have hinj : ((Finset.range (N + 1)).filter (fun m => m % 6 = 1)).card ≤
+          have : ((Finset.range (N + 1)).filter (fun m => m % 6 = 1)).card ≤
               (Finset.range (N / 6 + 1)).card := by
             apply Finset.card_le_card_of_injOn (fun m => m / 6)
             · intro m hm
@@ -1370,10 +1261,8 @@ private theorem count_mod6_sq_factor (X d : Nat) (hd : 5 ≤ d) (hd2 : ¬ 2 ∣ 
               have ha1 := Nat.div_add_mod a 6
               have hb1 := Nat.div_add_mod b 6
               omega
-          simp only [Finset.card_range] at hinj
-          exact hinj
-        -- N/6 = X/(6*d²)
-        have hdiv : N / 6 = X / (6 * (d * d)) := by
+          simpa [Finset.card_range] using this
+        have : N / 6 = X / (6 * (d * d)) := by
           show X / (d * d) / 6 = X / (6 * (d * d))
           rw [Nat.div_div_eq_div_mul, mul_comm]
         linarith
@@ -1402,20 +1291,16 @@ private theorem sum_inv_sq_le_telescoping (K M : Nat) (hK : 2 ≤ K) (hKM : K �
           | zero => omega
           | succ n ih =>
             by_cases hle : K ≤ n
-            · -- K ≤ n, induction step
-              rw [show Finset.Icc K (n + 1) = Finset.Icc K n ∪ {n + 1} from by
+            · rw [show Finset.Icc K (n + 1) = Finset.Icc K n ∪ {n + 1} from by
                 ext x; simp [Finset.mem_Icc]; omega]
               rw [Finset.sum_union (by
                 simp [Finset.disjoint_singleton_right, Finset.mem_Icc])]
               rw [Finset.sum_singleton, ih hle]
               push_cast; ring
-            · -- K > n, so K = n + 1
-              push_neg at hle
-              have heq : K = n + 1 := by omega
-              subst heq
-              simp [Finset.Icc_self]
-        rw [htel]
-        linarith [div_nonneg (le_of_lt (show (0:ℝ) < 1 by norm_num)) (by linarith : (0:ℝ) ≤ (M:ℝ))]
+            · push_neg at hle
+              have : K = n + 1 := by omega
+              subst this; simp [Finset.Icc_self]
+        linarith [htel, div_nonneg (by norm_num : (0:ℝ) ≤ 1) (by positivity : (0:ℝ) ≤ (M:ℝ))]
 
 /-- The non-squarefree count among n ≡ 1 mod 6 in [1,X] is ≤ X/24 + Nat.sqrt X.
     Every such n has some d ≥ 5 coprime to 6 with d²|n. By CRT (d²≡1 mod 6),
@@ -1426,7 +1311,6 @@ private theorem nonsf_mod6_count_bound (X : Nat) :
   set B' := (Finset.Icc 1 X).filter (fun n => ¬ Squarefree n ∧ ¬ Even n ∧ n % 3 = 1)
   set sqrtX := Nat.sqrt X
   set Ds := (Finset.Icc 5 sqrtX).filter (fun d => ¬ 2 ∣ d ∧ ¬ 3 ∣ d)
-  -- Step 1: B' ⊆ union over d in Ds of {n : d²|n, n%6=1, n ∈ [1,X]}
   have hcontain : B' ⊆ Ds.biUnion (fun d =>
       (Finset.Icc 1 X).filter (fun n => n % 6 = 1 ∧ d * d ∣ n)) := by
     intro n hn
@@ -1453,7 +1337,6 @@ private theorem nonsf_mod6_count_bound (X : Nat) :
       simp only [Finset.mem_filter, Finset.mem_Icc]
       exact ⟨⟨hn1, hnX⟩, (mod6_eq_one_iff hn1).mpr ⟨hodd, hmod3⟩, hddvd⟩
     exact ⟨d, hd_mem, hn_mem⟩
-  -- Step 2: Union bound + per-d CRT bound + telescoping
   calc B'.card
       ≤ (Ds.biUnion (fun d => (Finset.Icc 1 X).filter
           (fun n => n % 6 = 1 ∧ d * d ∣ n))).card :=
@@ -1479,8 +1362,6 @@ private theorem nonsf_mod6_count_bound (X : Nat) :
               apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
               intro _ _ _; exact Nat.zero_le _
           _ ≤ X / 24 := by
-              -- Cast to R and use telescoping
-              -- Key: ↑(∑ X/(6d²)) ≤ (X:R)/24 ≤ ... so Nat sum ≤ X/24
               have hR : (↑(∑ d ∈ Finset.Icc 5 sqrtX, X / (6 * (d * d))) : ℝ) ≤
                   (X : ℝ) / 24 := by
                 calc (↑(∑ d ∈ Finset.Icc 5 sqrtX, X / (6 * (d * d))) : ℝ)
@@ -1509,7 +1390,6 @@ private theorem nonsf_mod6_count_bound (X : Nat) :
                           ext x; simp [Finset.mem_Icc]; omega]
                         simp; positivity
                   _ = (X : ℝ) / 24 := by ring
-              -- Transfer: Nat sum ≤ X/24 from real bound
               rw [Nat.le_div_iff_mul_le (by omega : 0 < 24)]
               have h24 : (↑(∑ d ∈ Finset.Icc 5 sqrtX, X / (6 * (d * d))) : ℝ) * 24 ≤ (X : ℝ) := by
                 linarith
@@ -1542,7 +1422,6 @@ theorem mod6_density_lb_proved : Mod6DensityLB := by
   have hsqrt : Nat.sqrt X ≤ X / 32 := sqrt_le_div_32 hX
   have hsf_ie : sqfreeCount X + X / 4 + X / 9 ≤ X + X / 36 + 2 :=
     sqfreeCount_plus_fourth_ninth X
-  -- A ≥ X/6 - X/24 - X/32 - 1
   have hA_R : (X : ℝ) / 6 - (X : ℝ) / 24 - (X : ℝ) / 32 - 1 ≤ (A : ℝ) := by
     have h1 : (↑(X / 6) : ℝ) ≤ (A : ℝ) + (B' : ℝ) := by
       exact_mod_cast (show X / 6 ≤ A + B' by omega)
@@ -1554,7 +1433,6 @@ theorem mod6_density_lb_proved : Mod6DensityLB := by
       have : X ≤ X / 6 * 6 + 5 := by omega
       linarith [show (↑X : ℝ) ≤ ↑(X / 6) * 6 + 5 from by exact_mod_cast this]
     linarith
-  -- sqfreeCount X ≤ 2X/3 + 5 (inclusion-exclusion with 4 and 9)
   have hsf_R : (sqfreeCount X : ℝ) ≤ 2 * (X : ℝ) / 3 + 5 := by
     have h1 : (sqfreeCount X : ℝ) + ↑(X/4) + ↑(X/9) ≤ (X : ℝ) + ↑(X/36) + 2 := by
       exact_mod_cast hsf_ie
@@ -1563,7 +1441,6 @@ theorem mod6_density_lb_proved : Mod6DensityLB := by
     have h3 : (X : ℝ) / 9 - 1 ≤ ↑(X / 9) := by
       linarith [show (↑X : ℝ) ≤ ↑(X / 9) * 9 + 8 from by exact_mod_cast (show X ≤ X / 9 * 9 + 8 by omega)]
     linarith [show ↑(X / 36) ≤ (X : ℝ) / 36 from Nat.cast_div_le]
-  -- sqfreeCount X / 8 ≤ A: follows from X ≥ 10000
   rw [div_le_iff₀ (show (0:ℝ) < 8 by norm_num)]
   have hX_pos : (10000 : ℝ) ≤ (X : ℝ) := by exact_mod_cast hX
   nlinarith

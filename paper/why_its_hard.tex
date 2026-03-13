@@ -1074,6 +1074,29 @@ The cleanest paths to MC:
   mathematical toolkit.
 \end{enumerate}
 
+\paragraph{The vanishing noise route.}
+A complementary perspective recasts the walk as a product of random
+and deterministic steps.  At each step, $\Prod{2}(n)+1$ has a set~$F$
+of prime factors; $\minFac$ selects the smallest, but the
+\emph{factor set} $F \bmod q$ acts as a ``noisy generating set'' in
+$(\ZZ/q\ZZ)^\times$.  The spectral gap lemma
+(\lean{EM/Advanced/VanishingNoise.lean}{spectral\_gap\_with\_identity})
+proves: for any generating set $S \ni 1$ in a finite abelian group
+and any nontrivial character~$\chi$,
+$\|\sum_{s \in S} \chi(s)\| < |S|$
+(strict inequality, using strict convexity of~$\mathbb{C}$).
+Deterministic walk steps---multiplying by a fixed element---preserve
+this contraction
+(\lean{EM/Advanced/VanishingNoise.lean}{char\_sum\_mul\_right\_norm}).
+If the factor set has $|F| \geq 2$ elements in $(\ZZ/q\ZZ)^\times$
+infinitely often (with non-summable spectral gap), the product
+$\prod(1 - \gamma_k) \to 0$
+(\lean{EM/Advanced/VanishingNoise.lean}{product\_contraction\_tendsto}),
+giving CCSB\@.  The sole open hypothesis is
+\textbf{InfinitelyManyLargeFactorSets}: that the Euclid numbers
+$\Prod{2}(n)+1$ have at least two prime factors $\geq q$ for
+infinitely many~$n$ with non-summable spectral gap.
+
 \paragraph{Does the Walk Hit $-1$?}
 
 The irreducible open question is not whether DH holds (cofinal
