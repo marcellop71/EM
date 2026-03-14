@@ -663,6 +663,32 @@ standard inductive bootstrap.  And
 \mathrm{MC}$, so the generalized conjecture specializes to the
 standard one.
 
+\paragraph{Bag arithmetic.}
+At each step~$k$, the Euclid number $\Prod{n}(k)+1$ has a ``bag'' of
+prime factors; the selected prime $\seq{n}(k)$ is the minimum of this
+bag.  The formalization
+(\code{Ensemble/BagArithmetic.lean}, 224~lines, zero \code{sorry})
+develops the bag-level quantities:
+\defname{genEuclidOmega}~$\omega(n,k) = |\text{primeFactors}(\Prod{n}(k)+1)|$
+(at least~1,
+\lean{EM/Ensemble/BagArithmetic.lean}{genEuclidOmega\_pos}
+{\color{leanink}$\checkmark$}),
+\defname{genBagDiversity} (number of distinct residue classes mod~$q$
+among the factors, $\leq \omega$ and $\leq q$),
+\defname{genFactorsInClass}~$F_a$ (factors in class~$a$, with the
+partition identity
+$\sum_a |F_a| = \omega$,
+\lean{EM/Ensemble/BagArithmetic.lean}{genFactorsInClass\_card\_sum}
+{\color{leanink}$\checkmark$}),
+and \defname{genEuclidCofactor} (the quotient
+$(\Prod{n}(k)+1)/\seq{n}(k)$, whose prime factors are a subset of
+the bag,
+\lean{EM/Ensemble/BagArithmetic.lean}{cofactor\_primeFactors\_subset}
+{\color{leanink}$\checkmark$}).
+For $k \geq 1$, all bag elements are $\geq 3$
+(\lean{EM/Ensemble/BagArithmetic.lean}{primeFactors\_ge\_three\_of\_pos}
+{\color{leanink}$\checkmark$}).
+
 \paragraph{Density variants.}
 Instead of proving $\mathrm{GenMC}(n)$ for the single orbit $n = 2$,
 one can ask how many starting points satisfy it.  Two density levels
