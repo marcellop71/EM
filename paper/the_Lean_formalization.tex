@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 107~files
-totaling ${\sim}60{,}500$~lines.  The dependency chain is linear, with
+totaling ${\sim}61{,}200$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -128,7 +128,7 @@ three leaf modules:
 \code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
 \code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, sparse contraction, phase transition & 2089 \\
-\code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure & 1966 \\
+\code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure, NFCE(5) reduction, intersection kernel dichotomy & 2623 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -764,6 +764,26 @@ Mathlib version & v4.29.0-rc1 \\
 \quad MinFacRatioEscapeQual $\Rightarrow$ NFCE & Proved & \code{qual\_escape\_implies\_nfce} \\
 \quad NFCE $\Rightarrow$ UFDStrong $\Rightarrow$ StochasticTwoPointMC & Proved & \code{nfce\_implies\_variant\_mc} \\
 \quad NFCE infrastructure landscape (5-clause) & Proved & \code{nfce\_infrastructure\_landscape} \\
+\multicolumn{3}{l}{\emph{NFCE(5) infrastructure}} \\
+\quad $|(\ZZ/5\ZZ)^\times| = 4$ & Proved & \code{units\_zmod\_five\_card} \\
+\quad Non-faithful nontrivial in order-4 group: $|\ker| = 2$ & Proved & \code{nonfaithful\_ker\_card\_eq\_two\_of\_order\_four} \\
+\quad Same character: $[\ker:\mathrm{index}] = 2$ & Proved & \code{nonfaithful\_ker\_index\_eq\_two\_of\_order\_four} \\
+\quad RatioKernelEscape $\Rightarrow$ NFCE(5) & Proved & \code{ratio\_escape\_implies\_nfce\_five} \\
+\quad RatioKernelEscape $\Rightarrow$ UFDStrong(5) & Proved & \code{ufdStrong\_five\_of\_ratio\_escape} \\
+\quad RatioKernelEscape $\Rightarrow$ StochasticTwoPointMC(5) & Proved & \code{variant\_mc\_five\_of\_ratio\_escape} \\
+\quad NFCE(5) landscape (4-clause) & Proved & \code{nfce\_five\_landscape} \\
+\multicolumn{3}{l}{\emph{Intersection kernel dichotomy}} \\
+\quad Coprime-order zpowers intersect trivially & Proved & \code{coprime\_order\_zpowers\_inf\_bot} \\
+\quad Element in both coprime-order zpowers is 1 & Proved & \code{mem\_both\_zpowers\_coprime\_eq\_one} \\
+\quad Cauchy: prime dividing $|G|$ $\Rightarrow$ element of that order & Proved & \code{exists\_zpowers\_of\_prime\_order} \\
+\quad $|G|$ has $\geq 2$ prime factors $\Rightarrow$ coprime-order pair & Proved & \code{exists\_coprime\_order\_pair} \\
+\quad Non-faithful char separating $g \neq 1$ exists & Proved & \code{exists\_nonfaithful\_separating\_char} \\
+\quad \textbf{NFCS} for groups with $\geq 2$ prime factors & \textbf{Proved} & \code{nonFaithfulCharSeparation\_of\_two\_prime\_factors} \\
+\quad NFCS for $(\ZZ/q\ZZ)^\times$ when $q{-}1$ has odd prime factor & Proved & \code{nonFaithfulCharSeparation\_units\_zmod} \\
+\quad TotalNFCEFailure $+$ cofinite $\Rightarrow$ TotalKernelConfinement & Proved & \code{total\_nfce\_failure\_implies\_confinement} \\
+\quad TKC $+$ separation $\Rightarrow$ ratio $= 1$ eventually & Proved & \code{total\_confinement\_implies\_ratio\_one} \\
+\quad Per-character: nonsummable or confined & Proved & \code{per\_char\_nonsummable\_or\_confined} \\
+\quad Intersection kernel landscape (3-clause) & Proved & \code{intersection\_kernel\_landscape} \\
 \midrule
 \multicolumn{3}{l}{\emph{Gaussian EM over $\ZZ[i]$}} \\
 \quad $1{+}i$ irreducible in $\ZZ[i]$ & Proved & \code{one\_plus\_i\_irreducible} \\

@@ -442,6 +442,51 @@ kernel confinement is a strong arithmetic constraint:
 $\minFac / \operatorname{secondMinFac} \bmod q$ eventually lies in a
 proper subgroup of the unit group.
 
+\paragraph{NFCE(5): reduction to a single quadratic escape.}
+For $q = 5$, the unit group $(\ZZ/5\ZZ)^\times$ has order~$4$
+(cyclic, $\cong \ZZ/4\ZZ$).  Its characters partition as: the trivial
+character, two faithful characters (order~$4$, handled unconditionally
+by FaithfulCharacterEscape), and one non-faithful nontrivial character
+(order~$2$, the unique quadratic character).  Thus NFCE(5) reduces to a
+single escape condition: the factor ratio
+$\minFac / \operatorname{secondMinFac} \bmod 5$ must leave the unique
+index-2 subgroup of $(\ZZ/5\ZZ)^\times$ infinitely often.
+The formalization proves that this
+\defname{RatioKernelEscape} condition suffices for the full chain
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_five\_of\_ratio\_escape}
+{\color{leanink}$\checkmark$}:
+RatioKernelEscape $\Rightarrow$ NFCE(5) $\Rightarrow$ UFDStrong(5)
+$\Rightarrow$ StochasticTwoPointMC(5).
+
+\paragraph{Intersection kernel dichotomy.}
+When NFCE fails for \emph{all} non-faithful nontrivial characters
+simultaneously (\defname{TotalNFCEFailure}), the factor ratio is
+eventually confined to every non-faithful kernel (from the
+summability-to-confinement lemma of Part~25).
+The intersection of these kernels is constrained by a group-theoretic
+fact: in a finite group whose order has $\geq 2$ distinct prime
+factors, there exist subgroups of coprime orders whose intersection is
+trivial
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{coprime\_order\_zpowers\_inf\_bot}
+{\color{leanink}$\checkmark$}).  Combined with Cauchy's theorem, this
+yields \defname{NonFaithfulCharSeparation}~(NFCS): for every
+$g \neq 1$, some non-faithful nontrivial character has $\chi(g) \neq 1$.
+NFCS is
+\textbf{proved} for all groups whose order has $\geq 2$ distinct prime
+factors
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{nonFaithfulCharSeparation\_of\_two\_prime\_factors}
+{\color{leanink}$\checkmark$}), which for $(\ZZ/q\ZZ)^\times$ covers
+all primes except $q = 2, 3, 5$ and Fermat primes (where $q - 1$ is a
+power of~$2$).
+Under NFCS, TotalNFCEFailure forces
+$\minFac / \operatorname{secondMinFac} \equiv 1 \pmod{q}$ eventually
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{total\_confinement\_implies\_ratio\_one}
+{\color{leanink}$\checkmark$}).
+The resulting \textbf{dichotomy}: for each qualifying~$q$, either
+NFCE($q$) holds (giving UFDStrong), or the two smallest prime factors
+become congruent mod~$q$ from some point on---a strong arithmetic
+rigidity.
+
 \paragraph{Comparison of open hypotheses.}
 Standard MC requires DSL (population-to-orbit transfer for $\minFac$
 residues).  The $\{\minFac, \operatorname{secondMinFac}\}$ variant
