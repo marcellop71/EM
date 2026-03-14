@@ -17,6 +17,7 @@ import EM.Core.Defs
 import EM.Core.Euclid
 import EM.Core.ResidueWalk
 import EM.Ensemble.BackwardDynamics
+import EM.Ensemble.BagArithmetic
 import EM.Ensemble.BaseCase
 import EM.Ensemble.CRT
 import EM.Ensemble.CRTFreedom
