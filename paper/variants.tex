@@ -575,16 +575,56 @@ asks: for $q \geq 3$ and every unit $a \in (\ZZ/q\ZZ)^\times$, does
 some binary decision sequence of finite length produce a walk from
 $\mathrm{acc} = 2$ landing in residue class~$a$?  This is the
 self-consistent analog of StochasticTwoPointMC.
-The proved chain so far:
-TreeContractionAtHalf $\xRightarrow{\checkmark}$ vanishing
-$\mathrm{pathCharSum}$
-(\lean{EM/Advanced/RandomTwoPointMC.lean}{pathCharSum\_vanishing\_of\_tree\_contraction}
-{\color{leanink}$\checkmark$}).
-The remaining gap from vanishing path character sums to positive
-path counts is identified as \defname{ChiAtMultiplicativity}:
-that the product of per-step $\mathrm{chiAt}$ values equals
-$\mathrm{chiAt}$ of the walk endpoint, which holds when each factor
-is coprime to~$q$.
+The Fourier bridge connects the tree to the path character sum.
+To connect path character sums to reached residue classes, one needs
+\defname{ChiAtMultiplicativity}: that $\mathrm{chiAt}(\mathrm{acc})
+\cdot \prod_k \mathrm{chiAt}(\text{factor}_k)
+= \mathrm{chiAt}(\text{endpoint})$, provided $q$ does not divide the
+endpoint.  This is \textbf{proved}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{chiAt\_multiplicativity\_proved}
+{\color{leanink}$\checkmark$})
+by induction on~$N$ with backward non-divisibility propagation:
+if $q \nmid P_N$, then $q \nmid P_k$ for all $k \leq N$
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{not\_dvd\_epsWalkProdFrom\_of\_le}
+{\color{leanink}$\checkmark$}),
+so every factor is coprime to~$q$ and $\mathrm{chiAt}$ is
+multiplicative.
+
+A full Fourier counting infrastructure is built on top: character
+orthogonality on $(\ZZ/q\ZZ)^\times$, death/survival partition
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{survival\_plus\_death}
+{\color{leanink}$\checkmark$}:
+$\mathrm{survivalCount} + \mathrm{deathCount} = 2^N$),
+the Fourier indicator formula
+$|G| \cdot \mathrm{pathCount}(a)
+= \sum_\chi \overline{\chi(a)} \cdot U(\chi, N)$,
+and norm bounds for the unit endpoint character sum.
+The chain is:
+\[
+  \mathrm{TCA}
+  \;\xRightarrow{\checkmark}\;
+  \text{vanishing pathCharSum}
+  \;\xRightarrow{\text{ChiAtMult}\ \checkmark}\;
+  \text{Fourier counting}
+  \;\xRightarrow{?}\;
+  \text{RandomTwoPointMC}.
+\]
+The remaining gap is \defname{PathSurvival}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{PathSurvival}):
+the ratio $\mathrm{survivalCount}(N) / \mathrm{deathCount}(N)$
+grows without bound.  Without positive survival at the same~$N$
+where pathCharSum is small, the Fourier inversion gives no
+information about unit classes.
+
+For $q = 3$, the analysis reveals a structural obstruction.
+Since $\mathrm{acc} = 2$ and $\minFac(3) = \operatorname{secondMinFac}(3) = 3$,
+the walk immediately dies: $3 \mid P_1 = 6$ on \emph{all} paths,
+and absorption is permanent.
+Thus PathSurvival(3) is false---but
+$\mathrm{TreeContractionAtHalf}(3)$ is \emph{also} false (the tree
+character sum is identically~$1$ at every depth, because all
+post-death factors are $\equiv 1 \pmod{3}$), making
+$\mathrm{TreeContractionImpliesRandomMC}(3)$ vacuously true.
 
 For $q = 3$, the \textbf{zero-mean property} gives maximal per-step
 contraction
@@ -592,9 +632,9 @@ contraction
 {\color{leanink}$\checkmark$}):
 $(1/2)\chi(a) + (1/2)\chi(b) = 0$ whenever $\chi(a) \neq \chi(b)$
 for a nontrivial character on $(\ZZ/3\ZZ)^\times$ (order~$2$, so
-$\chi$ maps to $\{1, -1\}$).  This is the structural reason why
-$q = 3$ is the most favorable case: every diverse step contributes
-zero to the character average, giving spectral gap~$1$.
+$\chi$ maps to $\{1, -1\}$).  Although this property is proved,
+the immediate death at $q = 3$ means the zero-mean steps are
+never reached from the standard starting point.
 
 \subsection{Ensemble MC: Almost Every Starting Point}
 \label{sec:ensemble-variant}

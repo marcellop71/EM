@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 109~files
-totaling ${\sim}62{,}500$~lines.  The dependency chain is linear, with
+totaling ${\sim}62{,}900$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -130,7 +130,7 @@ three leaf modules:
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
 \code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, sparse contraction, phase transition & 2089 \\
 \code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure, NFCE(5) reduction, intersection kernel dichotomy & 2623 \\
-\code{Advanced/RandomTwoPointMC.lean} & Self-consistent random two-point MC: generalized accumulator, path counting, Fourier bridge identity (proved), RandomTwoPointMC, $q{=}3$ zero-mean & 722 \\
+\code{Advanced/RandomTwoPointMC.lean} & Self-consistent random two-point MC: generalized accumulator, path counting, Fourier bridge identity (proved), ChiAtMultiplicativity (proved), Fourier counting infrastructure, death/survival partition, PathSurvival, $q{=}3$ zero-mean & 1092 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
