@@ -420,6 +420,28 @@ for all primes $q \geq 3$.
 \noindent The faithful half is free; only the non-faithful half
 remains open.
 
+\paragraph{NFCE infrastructure.}
+The formalization develops a precise characterization of what NFCE
+requires.  Define the \defname{factorRatio} at step~$n$ as
+$\mathrm{liftToUnit}(\minFac) \cdot
+\mathrm{liftToUnit}(\operatorname{secondMinFac})^{-1}$
+in~$(\ZZ/q\ZZ)^\times$.
+At non-fallback steps (raw card $\geq 2$), the spectral gap is zero
+if and only if this ratio lies in~$\ker(\chi)$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{gap\_zero\_iff\_ratio\_in\_ker}).
+NFCE thus reduces to: for each non-faithful nontrivial~$\chi$, the
+factor ratio does not eventually stay in~$\ker(\chi)$.
+
+If NFCE fails for a specific~$\chi$, the gaps are summable,
+which forces \defname{KernelConfinement}: the ratio is eventually
+confined to~$\ker(\chi)$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{summable\_implies\_ratio\_confined}).
+Since $\ker(\chi)$ has index $\geq 2$ for nontrivial~$\chi$
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{ker\_index\_ge\_two}),
+kernel confinement is a strong arithmetic constraint:
+$\minFac / \operatorname{secondMinFac} \bmod q$ eventually lies in a
+proper subgroup of the unit group.
+
 \paragraph{Comparison of open hypotheses.}
 Standard MC requires DSL (population-to-orbit transfer for $\minFac$
 residues).  The $\{\minFac, \operatorname{secondMinFac}\}$ variant
@@ -432,6 +454,164 @@ Neither DSL nor UFDStrong implies the other: DSL is about the
 But both are instances of the same meta-question: does the deterministic
 EM construction produce enough diversity in its factorizations to
 prevent persistent alignment with any fixed character?
+
+\subsection{Ensemble MC: Almost Every Starting Point}
+\label{sec:ensemble-variant}
+
+The variants above change the \emph{selection rule}; here we change the
+\emph{starting point}.  The generalized EM construction
+(Section~\ref{sec:ensemble}) parametrizes the sequence by its initial
+value~$n$: $\Prod{n}(0) = n$,
+$\seq{n}(k) = \minFac(\Prod{n}(k)+1)$,
+$\Prod{n}(k{+}1) = \Prod{n}(k)\cdot\seq{n}(k)$.
+The standard orbit is $n = 2$.
+
+\begin{definition}[\lean{EM/Ensemble/WeylChain.lean}{GenMullinConjecture}]
+$\mathrm{GenMC}(n)$: every prime appears in the generalized EM
+sequence from~$n$, i.e.\ $\forall q$ prime, $\exists k$,
+$\seq{n}(k) = q$.
+\end{definition}
+
+The reduction
+\lean{EM/Ensemble/WeylChain.lean}{gen\_hitting\_implies\_gen\_mc\_proved}
+{\color{leanink}$\checkmark$} proves that cofinal walk hitting
+implies~$\mathrm{GenMC}(n)$ for every squarefree~$n$, mirroring the
+standard inductive bootstrap.  And
+\lean{EM/Ensemble/WeylChain.lean}{gen\_mc\_two\_implies\_mc}
+{\color{leanink}$\checkmark$} shows $\mathrm{GenMC}(2) \Rightarrow
+\mathrm{MC}$, so the generalized conjecture specializes to the
+standard one.
+
+\paragraph{Density variants.}
+Instead of proving $\mathrm{GenMC}(n)$ for the single orbit $n = 2$,
+one can ask how many starting points satisfy it.  Two density levels
+are formalized:
+
+\begin{itemize}
+\item \textbf{PositiveDensityRSD}
+  (\lean{EM/Population/ReciprocalSum.lean}{PositiveDensityRSD}):
+  a positive density~$\delta > 0$ of squarefree~$n$ have divergent
+  reciprocal sums $\sum_k 1/\seq{n}(k) = \infty$.
+
+\item \textbf{AlmostAllSquarefreeRSD}
+  (\lean{EM/Population/ReciprocalSum.lean}{AlmostAllSquarefreeRSD}):
+  density~$1$ of squarefree~$n$ have divergent reciprocal sums.
+\end{itemize}
+
+\noindent
+The reciprocal sum is a natural proxy: if $\sum 1/\seq{n}(k)$
+diverges, then the primes appearing in the sequence from~$n$ cannot be
+confined to a thin set; although divergence alone does not formally
+imply~$\mathrm{GenMC}(n)$, it rules out the worst obstruction (a
+bounded sequence of captured primes).
+
+\paragraph{The one-hypothesis route: LMG.}
+The proved chain
+\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}
+{\color{leanink}$\checkmark$} shows:
+\[
+  \mathrm{LMG} \;\Longrightarrow\; \mathrm{PositiveDensityRSD},
+\]
+where \textbf{LinearMeanGrowth}~(LMG) asks that
+$\mathbb{E}_n[S_K(n)] \geq \kappa K$ for some $\kappa > 0$ and all
+$K$ large enough (here $S_K(n) = \sum_{k<K} 1/\seq{n}(k)$ is the
+partial reciprocal sum, averaged over squarefree~$n$).
+LMG is a \emph{population-level} statement: it involves no specific
+orbit, bypassing the orbit-specificity barrier that obstructs DSL\@.
+
+With the additional hypothesis PairwiseStepDecorrelation~(PSD)---that
+$\operatorname{Cov}[1/\seq{n}(j),\, 1/\seq{n}(k)] \to 0$ for
+$j \neq k$---the stronger conclusion follows:
+$\mathrm{PSD} + \mathrm{LMG} \Rightarrow \mathrm{AlmostAllSquarefreeRSD}$
+(\lean{EM/Population/ReciprocalSum.lean}{dead\_end\_125\_pairwise\_revival}
+{\color{leanink}$\checkmark$}).
+The bridges are all machine-verified:
+$\mathrm{IVB}(1/4)$ {\color{leanink}$\checkmark$},
+$\mathrm{PSD} + \mathrm{IVB} \Rightarrow$ variance bound
+{\color{leanink}$\checkmark$},
+Chebyshev concentration {\color{leanink}$\checkmark$}.
+
+\paragraph{CRT propagation and the first moment.}
+LMG follows from
+\textbf{FirstMomentStep}~(FMS):
+$\mathbb{E}_n[1/\seq{n}(k)] \to \kappa$ as $X \to \infty$ for each~$k$
+(\lean{EM/Ensemble/FirstMoment.lean}{FirstMomentStep}).
+FMS in turn follows from \textbf{CRTPropagationStep}
+(\lean{EM/Ensemble/CRT.lean}{CRTPropagationStep}):
+the equidistribution of $\Prod{n}(k) \bmod q$ (among coprime residues)
+propagates from step~$k$ to step~$k{+}1$.
+The chain is:
+\[
+  \mathrm{SRE}
+  \;+\; \mathrm{CRTPropagationStep}
+  \;\xRightarrow{\text{\color{leanink}$\checkmark$}}\;
+  \mathrm{AccumEquidist}
+  \;\Longrightarrow\;
+  \mathrm{FMS}(\kappa)
+  \;\Longrightarrow\;
+  \mathrm{LMG}
+  \;\xRightarrow{\text{\color{leanink}$\checkmark$}}\;
+  \mathrm{PositiveDensityRSD}.
+\]
+Here SRE (squarefree residue equidistribution) is the standard base
+case, and AccumEquidist~$\Rightarrow$~FMS uses population
+equidistribution of $\minFac$ via the Alladi--Buchstab weights.
+
+CRTPropagationStep now reduces to a cleaner open hypothesis:
+\textbf{EnsembleTransitionApprox}~(ETA,
+\lean{EM/Ensemble/BackwardDynamics.lean}{EnsembleTransitionApprox}),
+which says that the empirical transition probability---the fraction of
+squarefree~$n$ with $\Prod{n}(k) \equiv c$ whose multiplier satisfies
+$\seq{n}(k) \equiv b$---converges to $1/(q{-}1)$ for all nonzero
+$b, c$.  The proved reduction
+\lean{EM/Ensemble/BackwardDynamics.lean}{eta\_implies\_crt\_propagation}
+{\color{leanink}$\checkmark$} shows
+$\mathrm{ETA} \Rightarrow \mathrm{CRTPropagationStep}$
+via the backward density decomposition: the density at step $k{+}1$ is
+the matrix product of the density at step~$k$ with the transition
+matrix, and when both converge to~$1/(q{-}1)$, so does the product.
+The full chain
+\lean{EM/Ensemble/BackwardDynamics.lean}{eta\_sre\_implies\_prsd}
+{\color{leanink}$\checkmark$} composes this with the proved bridges to
+give $\mathrm{ETA} + \mathrm{SRE} \Rightarrow
+\mathrm{PositiveDensityRSD}$.
+
+The structural basis for ETA is CRT multiplier invariance
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}
+{\color{leanink}$\checkmark$}): $\minFac(\Prod{n}(k)+1)$ depends on
+the full integer, not just its residue mod~$q$, so the factoring
+outcome is ``$q$-blind.''
+
+\paragraph{Backward dynamics approach (Tao--Collatz analogy).}
+The backward dynamics infrastructure is formalized in
+\code{Ensemble/BackwardDynamics.lean} (494~lines).
+Joint counts, transition probabilities, their basic probability axioms
+(non-negativity, partition identity, sum-to-one), and the backward
+density decomposition are all proved.
+The approach follows Tao's backward
+dynamics for the Collatz conjecture~\cite{Tao2019Collatz}: for a
+target residue $a \in (\ZZ/q\ZZ)^\times$ at step~$k{+}1$,
+\[
+  F_{k+1}(a) = \sum_{c \in (\ZZ/q\ZZ)^\times} F_k(c) \cdot R(c, a, k, X),
+\]
+where $R(c, a, k, X) = 1/(q{-}1) + O(1/\log X)$ by CRT-blindness.
+When $F_k$ is already uniform, so is $F_{k+1}$, giving the induction
+step.  The key question is whether the error $O(1/\log X)$ accumulates
+across~$k$ (contraction vs.\ expansion of the deviation vector);
+super-exponential growth of $\Prod{n}(k)$ suggests contraction.
+
+\paragraph{Comparison with DSL.}
+The DSL route (Section~\ref{sec:ensemble}) proves MC for the single
+orbit $n = 2$, contingent on transferring population statistics to one
+deterministic trajectory.
+The ensemble route here proves a density result for \emph{almost all}
+starting points, contingent on CRTPropagationStep, which is a
+population-level hypothesis with no orbit-specificity.
+Neither subsumes the other: DSL would give MC directly; CRTPropagationStep
+gives PositiveDensityRSD (which does not formally imply MC for $n = 2$).
+However, the ensemble route faces a structurally easier barrier, since
+its open hypothesis is a statement about averages, not about one
+specific orbit.
 
 \subsection{Weak Mullin and Analytic Weakenings}
 \label{sec:weak-mullin}

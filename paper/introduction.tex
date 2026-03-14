@@ -142,16 +142,16 @@ The strategy proceeds in three stages:
 \
 
 \begin{enumerate}[nosep]
-\item \textbf{Reformulation.}  We recast ``does prime~$q$ appear?'' as
+\item \textbf{Reformulation and bootstrap.}  We recast ``does prime~$q$ appear?'' as
   ``does a multiplicative walk on the cyclic group $(\ZZ/q\ZZ)^\times$
-  hit the element~$-1$?''  This translation is exact
-  (Section~\ref{sec:walk}).
-\item \textbf{Bootstrap.}  We show that the algebraic precondition for
+  hit the element~$-1$?''  This translation is exact.
+  We then show that the algebraic precondition for
   the walk to reach~$-1$---that the multipliers generate the full
   group---is \emph{free}, following from the inductive hypothesis
-  that all primes below~$p$ have already appeared
-  (Section~\ref{sec:bootstrap}).  A single hit on~$-1$ past the
-  stage where all smaller primes are excluded suffices for MC\@.
+  that all primes below~$p$ have already appeared.
+  A single hit on~$-1$ past the
+  stage where all smaller primes are excluded suffices for MC
+  (Section~\ref{sec:walk}).
 \item \textbf{Reduction to DSL.}  We develop the character-analytic
   infrastructure to show CME~$\Rightarrow$~CCSB~$\Rightarrow$~MC
   (Section~\ref{sec:character}), then an ensemble averaging framework
@@ -231,10 +231,10 @@ information-theoretic structure of the EM dynamics.
 Section~\ref{app:agents} describes the human--AI methodology.
 The technical development begins in Section~\ref{sec:walk}, which
 reformulates MC as a walk-hitting problem,
-establishes the algebraic prerequisites, and derives the first missing prime's death channel avoidance.
-Section~\ref{sec:bootstrap} presents the inductive bootstrap---the
-core insight that SubgroupEscape is free---and proves the Single Hit
-Theorem, reducing MC to producing one hit at each prime.
+establishes the algebraic prerequisites, derives the first missing prime's death channel avoidance,
+and proves the Single Hit
+Theorem via the inductive bootstrap (SubgroupEscape is free),
+reducing MC to producing one hit at each prime.
 Section~\ref{sec:character} develops the character-analytic reduction
 (CCSB~$\Rightarrow$~MC), including the large sieve infrastructure, the
 spectral energy bridge, and the van der Corput--autocorrelation route.
