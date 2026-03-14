@@ -531,6 +531,71 @@ within~$K$ steps.  PRED itself is open; it should follow from
 MFRE (MinFacResidueEquidist) via CRT independence of the two
 smallest factors.
 
+\paragraph{Self-consistent random walk: the Fourier bridge.}
+The stochastic two-point variant above fixes the factor sets
+$\{p_1(n), p_2(n)\}$ from the \emph{actual} EM walk and randomizes
+the selection.  A stronger variant makes the construction
+\emph{self-consistent}: at each step, the accumulator determines the
+available factors, and the fair-coin choice feeds back into the next
+accumulator.  Formally, define
+$\mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, 0) = \mathrm{acc}$,
+$\mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, n{+}1)
+= P_n \cdot (\text{if } \sigma(n) \text{ then } \minFac(P_n{+}1)
+\text{ else } \operatorname{secondMinFac}(P_n{+}1))$
+where $P_n = \mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, n)$.
+The decision sequence $\sigma : \NN \to \mathrm{Bool}$ replaces the
+deterministic $\minFac$ rule with a random binary choice.
+
+The central result is the \textbf{Fourier bridge identity}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{fourier\_bridge\_identity\_proved}
+{\color{leanink}$\checkmark$}): for any accumulator $\mathrm{acc} \geq 2$,
+\[
+  \mathrm{treeCharSum}(q, \chi, N, \mathrm{acc}, \tfrac{1}{2})
+  \;=\;
+  \frac{1}{2^N}
+  \sum_{\sigma \in \{0,1\}^N}
+  \prod_{k < N} \mathrm{chiAt}(q, \chi,
+    \mathrm{epsWalkFactorFrom}(\mathrm{acc}, \sigma, k)).
+\]
+The proof is by induction on~$N$: at each step, the $2^N$ paths split
+by first bit into two halves corresponding to the left and right
+subtrees of the tree recursion; shift lemmas
+(\code{epsWalkProdFrom\_shift}, \code{epsWalkFactorFrom\_shift})
+connect the concatenated walk to the shifted walk at the new
+accumulator; the $\tfrac{1}{2}$ weights combine to match the tree
+recurrence.  Specializing to $\mathrm{acc} = 2$ gives the
+unconditional identity
+$\mathrm{fairTreeCharSum} = \mathrm{pathCharSum}$
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{fairTreeCharSum\_eq\_pathCharSum}
+{\color{leanink}$\checkmark$}).
+
+\defname{RandomTwoPointMC}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{RandomTwoPointMC})
+asks: for $q \geq 3$ and every unit $a \in (\ZZ/q\ZZ)^\times$, does
+some binary decision sequence of finite length produce a walk from
+$\mathrm{acc} = 2$ landing in residue class~$a$?  This is the
+self-consistent analog of StochasticTwoPointMC.
+The proved chain so far:
+TreeContractionAtHalf $\xRightarrow{\checkmark}$ vanishing
+$\mathrm{pathCharSum}$
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{pathCharSum\_vanishing\_of\_tree\_contraction}
+{\color{leanink}$\checkmark$}).
+The remaining gap from vanishing path character sums to positive
+path counts is identified as \defname{ChiAtMultiplicativity}:
+that the product of per-step $\mathrm{chiAt}$ values equals
+$\mathrm{chiAt}$ of the walk endpoint, which holds when each factor
+is coprime to~$q$.
+
+For $q = 3$, the \textbf{zero-mean property} gives maximal per-step
+contraction
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{mean\_char\_zero\_at\_diverse\_step\_three}
+{\color{leanink}$\checkmark$}):
+$(1/2)\chi(a) + (1/2)\chi(b) = 0$ whenever $\chi(a) \neq \chi(b)$
+for a nontrivial character on $(\ZZ/3\ZZ)^\times$ (order~$2$, so
+$\chi$ maps to $\{1, -1\}$).  This is the structural reason why
+$q = 3$ is the most favorable case: every diverse step contributes
+zero to the character average, giving spectral gap~$1$.
+
 \subsection{Ensemble MC: Almost Every Starting Point}
 \label{sec:ensemble-variant}
 
