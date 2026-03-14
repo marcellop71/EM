@@ -4,7 +4,7 @@ $a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, where $\text{lpf}$ is
 the least prime factor.
 Mullin's Conjecture (MC, 1963) asserts that every prime eventually
 appears.  We present a Lean~4 formalization
-(${\sim}58{,}900$~lines, 106~files, zero~\texttt{sorry}) that reduces MC to a
+(${\sim}59{,}800$~lines, 106~files, zero~\texttt{sorry}) that reduces MC to a
 single open hypothesis.
 
 The main result is the machine-verified chain
@@ -42,7 +42,10 @@ via a separate machine-verified chain, bypassing CME entirely.
 
 A \emph{variant MC} for the $\{\minFac, \operatorname{secondMinFac}\}$
 two-point selection rule is reduced to a single spectral hypothesis
-(UFDStrong) through a separate machine-verified chain.  The function
+(UFDStrong) through a separate machine-verified chain; for $q = 3$,
+a \emph{faithful character escape} argument closes UFDStrong
+unconditionally, giving StochasticTwoPointMC$(3)$ with zero open
+hypotheses.  The function
 field analog over~$\FF_p[t]$, where the Weil bound makes population
 equidistribution unconditional, confirms that the residual difficulty
 is orbit-specificity transfer, not analytic number theory.

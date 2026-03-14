@@ -10,7 +10,7 @@ certifies these results.
 \paragraph{Codebase Structure}
 
 The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 106~files
-totaling ${\sim}59{,}300$~lines.  The dependency chain is linear, with
+totaling ${\sim}59{,}800$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -126,8 +126,8 @@ three leaf modules:
 \code{Advanced/MarkovSieve.lean} & Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed & 538 \\
 \code{Advanced/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 704 \\
 \code{Advanced/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 448 \\
-\code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, sparse contraction & 1814 \\
-\code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, routes to UFDStrong & 1060 \\
+\code{Advanced/VanishingNoise.lean} & Spectral gap, stochastic MC, path existence, sparse contraction, phase transition & 2089 \\
+\code{Advanced/VanishingNoiseVariant.lean} & $\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$ & 1648 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/CyclicWalkCoverage.lean} & Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample & 549 \\
@@ -362,10 +362,10 @@ is the novel content.
 \begin{center}
 \begin{tabular}{lr}
 \toprule
-Lines of Lean code & ${\sim}56{,}650$ \\
-Files & 105 \\
-Theorems/lemmas & ${\sim}1{,}850$ \\
-Definitions & ${\sim}740$ \\
+Lines of Lean code & ${\sim}57{,}520$ \\
+Files & 106 \\
+Theorems/lemmas & ${\sim}1{,}890$ \\
+Definitions & ${\sim}750$ \\
 \code{sorry} occurrences & \textbf{0} \\
 Open hypotheses (stated as \code{def}) & ${\sim}50$ \\
 Mathlib version & v4.29.0-rc1 \\
@@ -697,6 +697,12 @@ Mathlib version & v4.29.0-rc1 \\
 \quad $\varepsilon$-walk landscape (7-clause conjunction) & Proved & \code{eps\_walk\_landscape} \\
 \quad TreeContractionHypothesis (tree char sum $\to 0$) & \textbf{Open} & \code{TreeContractionHypothesis} \\
 \quad UniformFactorDiversity ($\minFac \neq \code{secondMinFac}$ mod $q$ i.o.) & \textbf{Open} & \code{UniformFactorDiversity} \\
+\multicolumn{3}{l}{\emph{Phase transition characterization}} \\
+\quad Mixing phase ($\varepsilon > 0$): product $\to 0$ & Proved & \code{constEpsCharProduct\_tendsto\_zero} \\
+\quad Critical point ($\varepsilon = 0$): product norm $\equiv 1$ & Proved & \code{constEpsCharProduct\_norm\_one\_at\_zero} \\
+\quad Unit-modulus products ($\prod \chi(p_k)$, norm $= 1$) & Proved & \code{charProduct\_norm\_one} \\
+\quad Cesàro average bounded by~$1$ & Proved & \code{cesaroCharAvg\_norm\_le\_one} \\
+\quad Phase transition landscape (4-clause) & Proved & \code{phase\_transition\_landscape} \\
 \multicolumn{3}{l}{\emph{Non-self-consistent variant MC}} \\
 \quad Distinct primes give units in $\ZZ/q\ZZ$ & Proved & \code{prime\_ne\_isUnit\_zmod} \\
 \quad Padded unit set: card $\geq 2$ for $q \geq 3$ & Proved & \code{paddedUnitSet\_card\_ge\_two} \\
@@ -714,6 +720,27 @@ Mathlib version & v4.29.0-rc1 \\
 \quad OrbitMFRE $\Rightarrow$ MinFacRatioEscapeQual & \textbf{Open} & \code{OrbitMFREImpliesEscapeQual} \\
 \quad Route~1/2/3 $\Rightarrow$ VariantMC assembly & Proved & \code{routes\_to\_ufdStrong\_landscape} \\
 \quad Variant MC landscape (7-clause conjunction) & Proved & \code{variant\_mc\_landscape} \\
+\multicolumn{3}{l}{\emph{Stochastic Two-Point MC}} \\
+\quad \textbf{StochasticTwoPointMC} (UFDStrong $\Rightarrow$ positive count) & \textbf{Proved} & \code{stochastic\_two\_point\_mc\_proved} \\
+\quad Product multiset $\geq 2^N$ for $q \geq 3$ & Proved & \code{productMultiset\_card\_ge\_two\_pow} \\
+\quad fairTreeCharSum $\|\cdot\| \leq 1$ & Proved & \code{fairTreeCharSum\_norm\_le\_one} \\
+\quad TreeContractionHyp $\Rightarrow$ TreeContractionAtHalf & Proved & \code{treeContraction\_of\_hypothesis} \\
+\quad treeCharSum at $\varepsilon{=}0$: deterministic degeneration & Proved & \code{treeCharSum\_at\_zero\_step} \\
+\quad Self-consistent vs non-self-consistent bridge & Proved & \code{self\_consistent\_vs\_non\_self\_consistent} \\
+\quad Stochastic two-point landscape (6-clause) & Proved & \code{stochastic\_two\_point\_mc\_landscape} \\
+\quad TreeContractionAtHalf (fair-coin tree char sum $\to 0$) & \textbf{Open} & \code{TreeContractionAtHalf} \\
+\multicolumn{3}{l}{\emph{Faithful Character Escape}} \\
+\quad \textbf{FaithfulCharacterEscape} (unconditional for all $q \geq 3$) & \textbf{Proved} & \code{faithful\_character\_escape} \\
+\quad Faithful $\Leftrightarrow$ trivial kernel & Proved & \code{faithful\_iff\_trivial\_ker} \\
+\quad Faithful separates points ($a \neq b \Rightarrow \chi(a) \neq \chi(b)$) & Proved & \code{faithful\_distinct\_values} \\
+\quad Uniform positive gap for faithful characters & Proved & \code{faithful\_uniform\_gap} \\
+\quad Prime-order $\Rightarrow$ every nontrivial char faithful & Proved & \code{prime\_order\_nontrivial\_is\_faithful} \\
+\quad \textbf{UFDStrong(3)} unconditional & \textbf{Proved} & \code{ufdStrong\_three} \\
+\quad \textbf{StochasticTwoPointMC(3)} zero hypotheses & \textbf{Proved} & \code{variant\_mc\_three\_unconditional} \\
+\quad NFCE $\Rightarrow$ UFDStrong (faithful half free) & Proved & \code{nfce\_implies\_ufdStrong} \\
+\quad NFCE vacuous for prime-order groups & Proved & \code{nfce\_vacuous\_of\_prime\_order} \\
+\quad Faithful escape landscape (4-clause) & Proved & \code{faithful\_escape\_landscape} \\
+\quad NonFaithfulCharacterEscape ($q \geq 5$) & \textbf{Open} & \code{NonFaithfulCharacterEscape} \\
 \midrule
 \multicolumn{3}{l}{\emph{Gaussian EM over $\ZZ[i]$}} \\
 \quad $1{+}i$ irreducible in $\ZZ[i]$ & Proved & \code{one\_plus\_i\_irreducible} \\

@@ -1335,3 +1335,316 @@ theorem stochastic_two_point_mc_landscape :
          fun n => epsWalkProd_emDecision n⟩
 
 end StochasticTwoPointMC
+
+/-! ## Part 24: Faithful Character Escape and Unconditional Variant MC for q = 3
+
+### Overview
+
+A character `chi : (ZMod q)ˣ →* ℂˣ` is **faithful** if it is injective. For groups of
+prime order, every nontrivial character is faithful (by Lagrange's theorem: the kernel
+is a subgroup of prime-order group, so either trivial or the whole group; nontriviality
+excludes the whole group).
+
+The key insight is that for faithful characters, whenever the raw two-point unit set
+has card at least 2 (i.e., minFac and secondMinFac give distinct units mod q), the
+character values at these two units are automatically distinct. This gives a positive
+spectral gap at every non-fallback step, without any number-theoretic hypothesis.
+
+Combined with the `ufd_fallback_not_summable` result (which handles the case of
+infinitely many fallback steps), we get **unconditional** non-summability of spectral
+gaps for faithful nontrivial characters.
+
+For q = 3, the unit group `(ZMod 3)ˣ` has order 2 (prime!), so every nontrivial
+character is faithful. Therefore `UFDStrong 3` holds unconditionally, and the full
+`StochasticTwoPointMC 3` follows with zero open hypotheses.
+
+### Main results
+
+* `IsFaithfulChar` -- definition: chi is injective
+* `faithful_iff_trivial_ker` -- equivalence: injective ↔ trivial kernel
+* `faithful_distinct_values` -- a ≠ b → chi(a) ≠ chi(b) (as complex numbers)
+* `faithful_character_escape` -- unconditional non-summability for faithful nontrivial chi
+* `prime_order_nontrivial_is_faithful` -- nontrivial char of prime-order group is faithful
+* `ufdStrong_three` -- UFDStrong 3 unconditional
+* `variant_mc_three_unconditional` -- every element of (ZMod 3)ˣ reachable, zero hypotheses
+* `NonFaithfulCharacterEscape` -- open Prop for non-faithful characters (q > 3)
+* `faithful_escape_landscape` -- 4-clause summary theorem
+-/
+
+section FaithfulCharacterEscape
+
+variable {q : ℕ} [hqp : Fact (Nat.Prime q)]
+
+/-! ### IsFaithfulChar: definition and basic properties -/
+
+/-- A character `chi : (ZMod q)ˣ →* ℂˣ` is **faithful** if it is injective.
+    Equivalently, its kernel is trivial. For groups of prime order, every
+    nontrivial character is faithful. -/
+def IsFaithfulChar (q : ℕ) [Fact (Nat.Prime q)]
+    (chi : (ZMod q)ˣ →* ℂˣ) : Prop :=
+  Function.Injective chi
+
+/-- A character is faithful iff its kernel is trivial: every element mapping to 1
+    must be the identity. -/
+theorem faithful_iff_trivial_ker (chi : (ZMod q)ˣ →* ℂˣ) :
+    IsFaithfulChar q chi ↔ ∀ u : (ZMod q)ˣ, chi u = 1 → u = 1 := by
+  constructor
+  · intro hinj u hu
+    have h1 : chi u = chi 1 := by rw [hu, map_one]
+    exact hinj h1
+  · intro hker a b hab
+    have : chi (a * b⁻¹) = 1 := by
+      rw [map_mul, map_inv, hab, mul_inv_cancel]
+    have hab1 := hker _ this
+    have := mul_eq_one_iff_eq_inv.mp hab1
+    rw [this, inv_inv]
+
+/-- A faithful character separates points: distinct units have distinct character values
+    (viewed as complex numbers). -/
+theorem faithful_distinct_values (chi : (ZMod q)ˣ →* ℂˣ) (hfaith : IsFaithfulChar q chi)
+    {a b : (ZMod q)ˣ} (hab : a ≠ b) :
+    (chi a : ℂ) ≠ (chi b : ℂ) :=
+  Units.val_injective.ne (hfaith.ne hab)
+
+/-- When rawTwoPointUnitSet has card at least 2, the two lifted units are distinct. -/
+private theorem raw_card_two_implies_ne (n : ℕ)
+    (hcard : 2 ≤ (rawTwoPointUnitSet (q := q) n).card) :
+    liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q) ≠
+    liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q) := by
+  intro heq
+  have : rawTwoPointUnitSet (q := q) n =
+      {liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q)} := by
+    simp [rawTwoPointUnitSet, heq]
+  rw [this] at hcard
+  simp at hcard
+
+/-- At a non-fallback step, a faithful character has a positive spectral gap.
+    Key: card ≥ 2 means the two lifted units are distinct; faithfulness means
+    their character values are distinct; this gives strict contraction. -/
+theorem faithful_gap_pos_at_nonfallback (chi : (ZMod q)ˣ →* ℂˣ)
+    (hfaith : IsFaithfulChar q chi) (n : ℕ)
+    (hcard : 2 ≤ (rawTwoPointUnitSet (q := q) n).card) :
+    0 < 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ := by
+  have hne := raw_card_two_implies_ne n hcard
+  have hdiff := faithful_distinct_values chi hfaith hne
+  exact gap_pos_at_escape n chi hcard hdiff
+
+/-- For a faithful nontrivial character, there exists a uniform positive spectral gap
+    bound at all non-fallback steps. Proof: the gap function has finite range
+    (paddedUnitSet maps into a finite type), and faithfulness gives positive gap at
+    every non-fallback step. The minimum of the positive values in this finite range
+    is a uniform lower bound. -/
+theorem faithful_uniform_gap (chi : (ZMod q)ˣ →* ℂˣ)
+    (hfaith : IsFaithfulChar q chi) :
+    ∃ δ > 0, ∀ n, 2 ≤ (rawTwoPointUnitSet (q := q) n).card →
+      δ ≤ 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ := by
+  -- The gap function has finite range
+  have hfin := gap_function_finite_range (q := q) chi
+  -- At non-fallback steps, gaps are positive
+  have hpos : ∀ n, 2 ≤ (rawTwoPointUnitSet (q := q) n).card →
+      0 < 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ :=
+    fun n hcard => faithful_gap_pos_at_nonfallback chi hfaith n hcard
+  -- We need at least one non-fallback step to get a nonempty positive range
+  -- If no such step exists, any delta works vacuously
+  by_cases hexists : ∃ n, 2 ≤ (rawTwoPointUnitSet (q := q) n).card
+  · obtain ⟨n₀, hn₀⟩ := hexists
+    -- Extract positive values in the range
+    set posRange := {x ∈ hfin.toFinset | (0 : ℝ) < x}
+    have hne : posRange.Nonempty := by
+      exact ⟨_, by rw [Finset.mem_filter]; exact
+        ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n₀, rfl⟩, hpos n₀ hn₀⟩⟩
+    set δ := posRange.min' hne
+    have hδ_pos : 0 < δ := by
+      have hmem := Finset.min'_mem posRange hne
+      rw [Finset.mem_filter] at hmem
+      exact hmem.2
+    have hδ_le : ∀ n, 0 < 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ →
+        δ ≤ 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ := by
+      intro n hfn
+      apply Finset.min'_le
+      rw [Finset.mem_filter]
+      exact ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hfn⟩
+    exact ⟨δ, hδ_pos, fun n hcard => hδ_le n (hpos n hcard)⟩
+  · push_neg at hexists
+    exact ⟨1, one_pos, fun n hcard => absurd hcard (by exact Nat.not_le.mpr (by linarith [hexists n]))⟩
+
+/-! ### Faithful Character Escape: unconditional non-summability -/
+
+/-- **Faithful Character Escape**: For every prime q at least 3 and every faithful
+    nontrivial character, the spectral gaps of padded unit sets are non-summable.
+    UNCONDITIONAL -- no open hypotheses.
+
+    Proof by case split on whether infinitely many fallback steps exist:
+    - If infinitely many fallback steps: gaps include infinitely many 1's (by
+      `ufd_fallback_not_summable`), hence non-summable.
+    - If cofinitely many non-fallback steps: faithfulness gives a uniform positive
+      lower bound on the gap (by `faithful_uniform_gap`), and infinitely many
+      such steps give non-summability (by `not_summable_of_frequently_ge`). -/
+theorem faithful_character_escape (hq3 : 2 < q)
+    (chi : (ZMod q)ˣ →* ℂˣ) (hchi : chi ≠ 1)
+    (hfaithful : IsFaithfulChar q chi) :
+    ¬Summable (fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖) := by
+  -- Case split: infinitely many fallback steps, or cofinitely many non-fallback
+  by_cases h : ∀ N, ∃ n, N ≤ n ∧ ¬(2 ≤ (rawTwoPointUnitSet (q := q) n).card)
+  · -- Case A: infinitely many fallback steps
+    exact ufd_fallback_not_summable hq3 chi hchi h
+  · -- Case B: cofinitely many non-fallback steps
+    push_neg at h
+    obtain ⟨N₀, hN₀⟩ := h
+    -- Get uniform gap bound from faithfulness
+    obtain ⟨δ, hδ_pos, hδ_le⟩ := faithful_uniform_gap chi hfaithful
+    -- Infinitely many steps have gap >= delta
+    apply not_summable_of_frequently_ge _ (fun n => paddedUnitSet_gap_nonneg chi n) hδ_pos
+    intro N
+    -- Take n = max N N₀; then n >= N₀ so non-fallback, and n >= N
+    use max N N₀
+    constructor
+    · exact le_max_left N N₀
+    · exact hδ_le _ (hN₀ _ (le_max_right N N₀))
+
+/-! ### Prime-order groups: every nontrivial character is faithful -/
+
+/-- In a finite group of prime order, every nontrivial character is faithful (injective).
+
+    Proof: The kernel of chi is a subgroup of G. By Lagrange's theorem, its order
+    divides |G|. Since |G| is prime, |ker| is 1 or |G|. Since chi is nontrivial,
+    ker ≠ G (i.e., ker ≠ top). So ker = bot, which means chi is injective. -/
+theorem prime_order_nontrivial_is_faithful {G : Type*} [CommGroup G] [Fintype G]
+    (hprime : (Nat.card G).Prime)
+    (chi : G →* ℂˣ) (hchi : chi ≠ 1) :
+    Function.Injective chi := by
+  -- The kernel is a subgroup of a prime-order group, so bot or top
+  haveI : Fact (Nat.card G).Prime := Fact.mk hprime
+  have h_or := chi.ker.eq_bot_or_eq_top_of_prime_card
+  -- chi ≠ 1 means ker ≠ top
+  have h_ne_top : chi.ker ≠ ⊤ := by
+    rwa [Ne, MonoidHom.ker_eq_top_iff]
+  -- So ker = bot
+  have h_bot : chi.ker = ⊥ := h_or.resolve_right h_ne_top
+  -- bot kernel means injective
+  rwa [MonoidHom.ker_eq_bot_iff] at h_bot
+
+/-- Fintype.card (ZMod q)ˣ = q - 1 for prime q. -/
+theorem card_units_zmod_eq (hq : Nat.Prime q) : Fintype.card (ZMod q)ˣ = q - 1 := by
+  rw [ZMod.card_units_eq_totient, Nat.totient_prime hq]
+
+/-- Nat.card (ZMod q)ˣ = q - 1 for prime q. -/
+theorem natCard_units_zmod_eq (hq : Nat.Prime q) : Nat.card (ZMod q)ˣ = q - 1 := by
+  rw [Nat.card_eq_fintype_card, card_units_zmod_eq hq]
+
+/-! ### UFDStrong for q = 3: unconditional -/
+
+/-- For q = 3, the unit group has prime order 2, so every nontrivial character is faithful.
+    Combined with `faithful_character_escape`, this gives UFDStrong 3 unconditionally. -/
+theorem ufdStrong_three : letI := Fact.mk (by decide : Nat.Prime 3); UFDStrong 3 := by
+  letI : Fact (Nat.Prime 3) := Fact.mk (by decide)
+  intro chi hchi
+  have hprime : (Nat.card (ZMod 3)ˣ).Prime := by
+    rw [natCard_units_zmod_eq (by decide : Nat.Prime 3)]
+    decide
+  have hfaithful : IsFaithfulChar 3 chi :=
+    prime_order_nontrivial_is_faithful hprime chi hchi
+  exact faithful_character_escape (by norm_num : (2 : ℕ) < 3) chi hchi hfaithful
+
+/-- **Unconditional Variant MC for q = 3**: Every element of `(ZMod 3)ˣ` is reachable
+    with ZERO open hypotheses. This is the first unconditional result in the stochastic
+    MC framework.
+
+    Proof: `ufdStrong_three` (unconditional) feeds into `stochastic_two_point_mc_proved`. -/
+theorem variant_mc_three_unconditional :
+    letI := Fact.mk (by decide : Nat.Prime 3)
+    ∀ (a : (ZMod 3)ˣ), ∃ N,
+      0 < Multiset.count a
+        (productMultiset (paddedUnitSet (q := 3) ·) N) := by
+  letI : Fact (Nat.Prime 3) := Fact.mk (by decide)
+  intro a
+  exact stochastic_two_point_mc_proved (q := 3)
+    (by norm_num : (2 : ℕ) < 3) ufdStrong_three a
+
+/-! ### NonFaithfulCharacterEscape: the remaining gap for q > 3 -/
+
+/-- **FaithfulCharacterEscape**: All faithful nontrivial characters have non-summable
+    spectral gaps. This holds UNCONDITIONALLY for all primes q >= 3. -/
+def FaithfulCharacterEscape (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  ∀ (chi : (ZMod q)ˣ →* ℂˣ), chi ≠ 1 → IsFaithfulChar q chi →
+    ¬Summable (fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖)
+
+/-- **NonFaithfulCharacterEscape**: All non-faithful nontrivial characters have
+    non-summable spectral gaps. This is the SOLE remaining open hypothesis for
+    UFDStrong at primes q where `(ZMod q)ˣ` has composite order (i.e., q >= 5).
+
+    For q = 3, (ZMod 3)ˣ has prime order 2, so there are NO non-faithful nontrivial
+    characters, and this Prop is vacuously true. -/
+def NonFaithfulCharacterEscape (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
+  ∀ (chi : (ZMod q)ˣ →* ℂˣ), chi ≠ 1 → ¬IsFaithfulChar q chi →
+    ¬Summable (fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖)
+
+/-- FaithfulCharacterEscape holds unconditionally for all primes q >= 3. -/
+theorem faithful_escape_unconditional (hq3 : 2 < q) : FaithfulCharacterEscape q :=
+  fun chi hchi hfaith => faithful_character_escape hq3 chi hchi hfaith
+
+/-- FaithfulCharacterEscape + NonFaithfulCharacterEscape implies UFDStrong.
+    Every nontrivial character is either faithful or not, so the two cases cover all. -/
+theorem nfce_and_fce_implies_ufdStrong
+    (_hq3 : 2 < q)
+    (hfce : FaithfulCharacterEscape q)
+    (hnfce : NonFaithfulCharacterEscape q) :
+    UFDStrong q := by
+  intro chi hchi
+  by_cases hfaith : IsFaithfulChar q chi
+  · exact hfce chi hchi hfaith
+  · exact hnfce chi hchi hfaith
+
+/-- For primes where the unit group has prime order, NonFaithfulCharacterEscape is
+    vacuously true (there are no non-faithful nontrivial characters). -/
+theorem nfce_vacuous_of_prime_order
+    (hprime : (Nat.card (ZMod q)ˣ).Prime) :
+    NonFaithfulCharacterEscape q := by
+  intro chi hchi hnfaith
+  exact absurd (prime_order_nontrivial_is_faithful hprime chi hchi) hnfaith
+
+/-- NonFaithfulCharacterEscape is the sole remaining open hypothesis for UFDStrong
+    at primes q >= 3. Combined with `faithful_escape_unconditional`, it suffices. -/
+theorem nfce_implies_ufdStrong (hq3 : 2 < q)
+    (hnfce : NonFaithfulCharacterEscape q) :
+    UFDStrong q :=
+  nfce_and_fce_implies_ufdStrong hq3 (faithful_escape_unconditional hq3) hnfce
+
+/-! ### Landscape theorem -/
+
+/-- **Faithful Character Escape Landscape**: summary of Part 24.
+
+    PROVED UNCONDITIONALLY:
+    1. Faithful character escape for all q >= 3 (no open hypotheses)
+    2. UFDStrong(3) (no open hypotheses, since (ZMod 3)ˣ has prime order 2)
+    3. StochasticTwoPointMC(3): every element of (ZMod 3)ˣ reachable (zero hypotheses)
+    4. For q > 3: NonFaithfulCharacterEscape is the SOLE remaining open hypothesis
+
+    The mathematical content is clean: faithfulness = injectivity of characters.
+    For cyclic groups of prime order, every nontrivial character is faithful (Lagrange).
+    For (ZMod 3)ˣ of order 2, this closes UFDStrong entirely. -/
+theorem faithful_escape_landscape :
+    -- 1. Faithful character escape unconditional for all q >= 3
+    (∀ (q : ℕ) [Fact (Nat.Prime q)], 2 < q →
+      ∀ chi : (ZMod q)ˣ →* ℂˣ, chi ≠ 1 → IsFaithfulChar q chi →
+      ¬Summable (fun n => 1 - ‖meanCharValue chi (@paddedUnitSet q _ n)‖))
+    ∧
+    -- 2. UFDStrong(3) unconditional
+    (letI := Fact.mk (by decide : Nat.Prime 3); UFDStrong 3)
+    ∧
+    -- 3. StochasticTwoPointMC(3) unconditional: every element reachable
+    (letI := Fact.mk (by decide : Nat.Prime 3);
+     ∀ (a : (ZMod 3)ˣ), ∃ N,
+      0 < Multiset.count a
+        (productMultiset (paddedUnitSet (q := 3) ·) N))
+    ∧
+    -- 4. NFCE is the sole remaining open hypothesis for q > 3
+    (∀ (q : ℕ) [Fact (Nat.Prime q)], 2 < q →
+      NonFaithfulCharacterEscape q → UFDStrong q) :=
+  ⟨fun _q _ hq3 chi hchi hfaith =>
+     faithful_character_escape hq3 chi hchi hfaith,
+   ufdStrong_three,
+   variant_mc_three_unconditional,
+   fun _q _ hq3 hnfce => nfce_implies_ufdStrong hq3 hnfce⟩
+
+end FaithfulCharacterEscape

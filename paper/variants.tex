@@ -332,15 +332,214 @@ show that $\minFac$ and $\operatorname{secondMinFac}$ do not
 persistently agree modulo every character.  OrbitMFRE faces the same
 orbit-specificity barrier as DSL for standard MC.
 
+\paragraph{Stochastic Two-Point MC.}
+The non-self-consistent machinery yields a clean quantitative statement.
+Define the \defname{StochasticTwoPointMC} problem: under UFDStrong$(q)$
+with $q \geq 3$, does every element of $(\ZZ/q\ZZ)^\times$ appear with
+positive count in the product multiset of padded unit sets?
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{stochastic\_two\_point\_mc\_proved}]
+\label{thm:stochastic-two-point}
+$\mathrm{UFDStrong}(q) \;\Longrightarrow\; \mathrm{StochasticTwoPointMC}(q)$.
+\end{theorem}
+
+\noindent The product multiset grows exponentially
+($\geq 2^N$ paths for $q \geq 3$,
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{productMultiset\_card\_ge\_two\_pow}).
+A \defname{fairCoin} schedule ($\varepsilon = 1/2$ at every step) gives
+the \defname{fairTreeCharSum}---the tree character sum at constant
+$1/2$---which is bounded by~$1$ in norm
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{fairTreeCharSum\_norm\_le\_one}).
+TreeContractionHypothesis implies the weaker
+\defname{TreeContractionAtHalf}
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{treeContraction\_of\_hypothesis}),
+and at $\varepsilon = 0$ the tree degenerates to the deterministic
+$\minFac$ path
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{treeCharSum\_at\_zero\_step}).
+
+The gap between the non-self-consistent result (proved) and a
+\emph{self-consistent} stochastic MC is the \textbf{selection coherence}
+problem: the non-self-consistent product multiset uses factor sets from
+the actual EM walk (which always picks $\minFac$), so the factor sets
+are fixed and the product factorizes; in the self-consistent tree,
+picking $\operatorname{secondMinFac}$ at step~$n$ changes the
+accumulator, hence the factor set at step~$n{+}1$, preventing
+factorization.
+
+\paragraph{Faithful character escape.}
+A character $\chi$ on $(\ZZ/q\ZZ)^\times$ is \defname{faithful} if it
+is injective (equivalently, $\ker(\chi) = \{1\}$).  For faithful
+characters, whenever the raw two-point unit set has two distinct
+elements, their $\chi$-values are automatically distinct---giving a
+positive spectral gap at every non-fallback step, with no
+number-theoretic hypothesis.  Combined with the fallback case (gap $= 1$
+at fallback steps, already proved), this yields unconditional
+non-summability:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{faithful\_character\_escape}]
+\label{thm:faithful-escape}
+For every prime $q \geq 3$ and every faithful nontrivial character
+$\chi$ on $(\ZZ/q\ZZ)^\times$:
+\[
+  \sum_n \bigl(1 - \|\bar\chi(\text{paddedUnitSet}_n)\|\bigr)
+  = +\infty.
+\]
+Unconditional---zero open hypotheses.
+\end{theorem}
+
+\noindent For groups of prime order, every nontrivial character is
+faithful (by Lagrange: the kernel is a subgroup of a prime-order group,
+hence trivial or the whole group;
+\lean{EM/Advanced/VanishingNoiseVariant.lean}{prime\_order\_nontrivial\_is\_faithful}).
+Since $|(\ZZ/3\ZZ)^\times| = 2$ is prime, UFDStrong$(3)$ holds
+\emph{unconditionally}
+(\lean{EM/Advanced/VanishingNoiseVariant.lean}{ufdStrong\_three}), and
+the full chain closes:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{variant\_mc\_three\_unconditional}]
+\label{thm:variant-mc-3}
+$\mathrm{StochasticTwoPointMC}(3)$ holds with zero open hypotheses:
+every element of $(\ZZ/3\ZZ)^\times$ appears with positive count
+in the product multiset.
+\end{theorem}
+
+\noindent For primes $q \geq 5$ where $|(\ZZ/q\ZZ)^\times| = q{-}1$ is
+composite, non-faithful nontrivial characters exist, and the sole
+remaining open hypothesis is
+\defname{NonFaithfulCharacterEscape}---spectral gap non-summability
+for characters with nontrivial kernel.  The faithful/non-faithful
+decomposition is clean:
+
+\begin{theorem}[\lean{EM/Advanced/VanishingNoiseVariant.lean}{nfce\_implies\_ufdStrong}]
+\label{thm:nfce-ufdstrong}
+$\mathrm{NonFaithfulCharacterEscape}(q)
+\;\Longrightarrow\; \mathrm{UFDStrong}(q)$
+for all primes $q \geq 3$.
+\end{theorem}
+
+\noindent The faithful half is free; only the non-faithful half
+remains open.
+
 \paragraph{Comparison of open hypotheses.}
 Standard MC requires DSL (population-to-orbit transfer for $\minFac$
 residues).  The $\{\minFac, \operatorname{secondMinFac}\}$ variant
-requires UFDStrong (spectral diversity of two-point factor sets).
-Neither implies the other: DSL is about the \emph{selected} factor's
-equidistribution; UFDStrong is about the \emph{pair}'s spectral gap.
+requires UFDStrong (spectral diversity of two-point factor sets), and
+for $q = 3$ this is now \textbf{unconditional}; for $q \geq 5$ the
+residual hypothesis is NonFaithfulCharacterEscape.
+Neither DSL nor UFDStrong implies the other: DSL is about the
+\emph{selected} factor's equidistribution; UFDStrong is about the
+\emph{pair}'s spectral gap.
 But both are instances of the same meta-question: does the deterministic
 EM construction produce enough diversity in its factorizations to
 prevent persistent alignment with any fixed character?
+
+\subsection{Weak Mullin and Analytic Weakenings}
+\label{sec:weak-mullin}
+
+The variants above change the \emph{selection rule}; this subsection
+changes the \emph{conclusion}.  Instead of proving that every prime
+appears ($M = \emptyset$), one can ask that the set of missing
+primes is small, or that the EM reciprocal sum diverges.
+
+\paragraph{Missing primes and Weak Mullin.}
+Define the set of \emph{missing primes}
+\[
+M = \{p \in \mathbb{P} : p \neq \seq{2}(k) \text{ for all } k\}.
+\]
+MC is the assertion $M = \emptyset$.  A natural weakening asks only that
+$M$ is \emph{small} in an analytic sense:
+
+\begin{property}[\defname{WeakMullin} (\abbr{WM})]
+\lean{EM/Population/WeakMullin.lean}{WeakMullin}
+The reciprocal sum over missing primes converges:
+$\sum_{q \in M} 1/q < \infty$.
+\end{property}
+
+This is strictly weaker than MC (which gives $M = \emptyset$ and hence
+a trivially convergent empty sum) but strong enough to have a nontrivial
+consequence:
+
+\begin{property}[\defname{ReciprocalDivergence} (\abbr{RD})]
+\lean{EM/Population/WeakMullin.lean}{ReciprocalDivergence}
+The reciprocal sum over EM primes diverges:
+$\sum_{k=0}^{\infty} 1/\seq{2}(k) = \infty$.
+\end{property}
+
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{mc\_implies\_wm}]
+$\MC \Longrightarrow \mathrm{WM}$.
+\end{theorem}
+
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{wm\_implies\_rd}]
+\label{thm:wm-rd}
+$\mathrm{WM} \Longrightarrow \mathrm{RD}$.
+\end{theorem}
+
+\noindent
+The proof partitions $\mathbb{P} = A \cup M$ (appeared vs.\ missing),
+notes that both $\Sigma_A$ and $\Sigma_M$ converge under WM $+$ $\neg$RD,
+contradicting the divergence of $\sum_{p} 1/p$.
+
+\paragraph{Product divergence.}
+The negation of WM has a quantitative consequence: $\neg\mathrm{WM}$ gives
+$\sum_{q \in M} 1/(q{-}1) = \infty$, so the ``safe fraction'' product
+$\prod_{q \in F}(q{-}2)/(q{-}1) \leq e^{-\sum 1/(q-1)} \to 0$ and its
+reciprocal $\prod (q{-}1)/(q{-}2)$ exceeds any bound
+(\lean{EM/Population/WeakMullin.lean}{not\_wm\_product\_diverges}).
+The product $\prod (q{-}1)/(q{-}2)$ over missing primes measures the
+``confinement cost'': each missing prime~$q$ confines the walk to $q-2$
+of the $q-1$ units in $(\ZZ/q\ZZ)^\times$ (avoiding~$-1$).  If WM
+fails, this confinement cost is unbounded.
+
+\paragraph{Confined energy.}
+For a missing prime $q \geq 3$, the walk avoids $-1$ entirely, so the
+$N$ visits are distributed among only $q-2$ residues.  A pigeonhole
+argument gives a confined-energy lower bound
+(\lean{EM/Population/WeakMullin.lean}{per\_prime\_confined\_energy\_lb}):
+$N^2/(q{-}2) \leq (q{-}1)\sum_a V_N(a)^2$.
+The excess energy ratio $(q{-}1)/(q{-}2)$ compared to the
+equidistributed baseline $N^2/(q{-}1)$ is bounded away from~$1$.
+\defname{JointSVE}
+(\lean{EM/Population/WeakMullin.lean}{JointSVE})---joint subquadratic
+visit energy over any finite set of missing primes---implies MMCSB
+(\lean{EM/Population/WeakMullin.lean}{jointSVE\_implies\_mmcsb}),
+connecting the ``missing primes'' picture to the spectral route.
+
+\paragraph{The shifted squarefree population.}
+The EM accumulator $\Prod{2}(n)$ is squarefree
+(\lean{EM/Population/WeakErgodicity.lean}{prod\_squarefree}),
+so every Euclid number $\Prod{2}(n)+1$ belongs to the shifted
+squarefree population
+$\mathcal{S} = \{m \geq 2 : m{-}1 \text{ squarefree}\}$
+(density $6/\pi^2$).  This decomposes the orbit equidistribution
+problem into:
+\begin{itemize}[nosep]
+\item \textbf{Population Equidistribution (PE):} among elements of
+  $\mathcal{S}$, the smallest prime factor is equidistributed modulo
+  any prime~$q$ (provable by Selberg sieve $+$ Dirichlet).
+\item \textbf{Population Transfer (PT):} the EM trajectory samples
+  $\mathcal{S}$ without introducing mod-$q$ bias.
+  This is the open content.
+\end{itemize}
+The chain PE $+$ PT $+$ EMDImpliesCME $\Longrightarrow$ MC is proved
+(\lean{EM/Population/WeakErgodicity.lean}{pe\_transfer\_cme\_implies\_mc}).
+
+\paragraph{Pairwise decorrelation and positive density.}
+Dead End~\#125 proved that pairwise cancellation does not imply $k$-wise,
+but \emph{variance bounds only use $k=2$}.  The formalization proves the
+revival chain
+(\lean{EM/Population/ReciprocalSum.lean}{dead\_end\_125\_pairwise\_revival}):
+PairwiseStepDecorrelation $+$ LinearMeanGrowth $+$
+ChebyshevConcentration $\Longrightarrow$ AlmostAllSquarefreeRSD\@.
+A further simplification drops PSD entirely:
+
+\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}]
+\label{thm:positive-density-rsd}
+$\mathrm{LinearMeanGrowth} \;\Longrightarrow\; \mathrm{PositiveDensityRSD}$.
+\end{theorem}
+
+\noindent This is a 1-hypothesis route: LMG is strictly weaker than
+CME---it requires only that the ensemble mean grows linearly, not
+conditional equidistribution.
 
 \subsection{The Function Field Analog}
 \label{sec:function-field}

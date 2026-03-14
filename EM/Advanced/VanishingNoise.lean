@@ -1816,3 +1816,274 @@ theorem sparse_contraction_landscape :
          fun G _ _ _ => pathExistenceFromVanishing_proved⟩
 
 end SparseContraction
+
+
+/-! ## Part 24: Phase Transition Characterization of MC
+
+The Euler-Mullin walk's character products exhibit a sharp **phase transition**
+at epsilon = 0. We formalize this using the two-point character product framework:
+
+* **Part (A) — Mixing phase (epsilon > 0, constant)**: For any fixed epsilon in (0,1),
+  if infinitely many steps have distinct character values, the product
+  `prod_{k<N} [(1-eps)*chi(a_k) + eps*chi(b_k)]` tends to 0 in norm.
+  This is because the constant epsilon gives a uniform spectral gap at
+  contracting steps (over the finite group G, there are only finitely many
+  possible gap values), and infinitely many such gaps imply non-summability.
+
+* **Part (B) — Critical point (epsilon = 0)**: At epsilon = 0, the two-point value
+  reduces to chi(a), giving a product of unit-norm complex numbers. The product
+  norm is identically 1 for all N. So there is NO decay — the "walk" stays on
+  the unit circle.
+
+* **Part (C) — MC as Cesaro cancellation**: Mullin's Conjecture (via CCSB) is
+  equivalent to the assertion that the Cesaro average of the epsilon=0 products
+  (which are unit-modulus phases) cancels:
+  `(1/N) * |sum_{n<N} prod_{k<n} chi(m_k)| -> 0`.
+  This is the cancellation of unit-modulus phases on the circle.
+
+The phase transition: for ANY epsilon > 0, the product norm decays to 0 (easy,
+from spectral gap + infinite contraction). At epsilon = 0, the product norm
+stays at 1 and MC becomes a subtle Cesaro cancellation question. -/
+
+section PhaseTransition
+
+variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
+
+/-! ### Constant-epsilon character product -/
+
+omit [Fintype G] [DecidableEq G] in
+/-- Constant-epsilon character product: all steps use the same epsilon.
+    This is `twoPointCharProduct` with constant schedule. -/
+def constEpsCharProduct (chi : G →* ℂˣ) (p₁ p₂ : ℕ → G) (ε : ℝ) (N : ℕ) : ℂ :=
+  twoPointCharProduct chi p₁ p₂ (fun _ => ε) N
+
+/-! ### Part (B): Critical Point (epsilon = 0) -/
+
+omit [Fintype G] [DecidableEq G] in
+/-- At epsilon = 0, the two-point character value reduces to chi(a).
+    The weight (1-0) = 1 falls entirely on the first argument. -/
+theorem twoPointCharValue_zero (chi : G →* ℂˣ) (a b : G) :
+    twoPointCharValue chi a b 0 = (chi a : ℂ) := by
+  simp [twoPointCharValue]
+
+omit [DecidableEq G] in
+/-- At epsilon = 0, each factor of the character product has norm 1,
+    since it equals chi(a_k) which is a root of unity. -/
+theorem twoPointCharValue_norm_one_at_zero (chi : G →* ℂˣ) (a b : G) :
+    ‖twoPointCharValue chi a b 0‖ = 1 := by
+  rw [twoPointCharValue_zero, char_norm_one_of_hom]
+
+omit [DecidableEq G] in
+/-- **Part (B)**: At epsilon = 0, the character product has unit modulus for all N.
+    Each factor is chi(a_k) with |chi(a_k)| = 1, so the product of norms is 1^N = 1. -/
+theorem constEpsCharProduct_norm_one_at_zero
+    (chi : G →* ℂˣ) (p₁ p₂ : ℕ → G) (N : ℕ) :
+    ‖constEpsCharProduct chi p₁ p₂ 0 N‖ = 1 := by
+  simp only [constEpsCharProduct, twoPointCharProduct]
+  rw [norm_prod]
+  conv_lhs =>
+    arg 2; ext k
+    rw [twoPointCharValue_norm_one_at_zero chi (p₁ k) (p₂ k)]
+  exact Finset.prod_const_one
+
+/-! ### Utility: Non-summability from infinitely many terms above threshold -/
+
+/-- If a nonneg sequence has infinitely many terms above a fixed positive threshold,
+    the sequence is not summable. Proof: summable implies convergence to 0,
+    which contradicts infinitely many terms being above delta > 0. -/
+private theorem not_summable_of_io_ge_delta (f : ℕ → ℝ) (hf_nonneg : ∀ n, 0 ≤ f n)
+    {δ : ℝ} (hδ : 0 < δ) (hinf : ∀ N, ∃ n, N ≤ n ∧ δ ≤ f n) :
+    ¬Summable f := by
+  intro hsum
+  have htends := hsum.tendsto_atTop_zero
+  rw [Metric.tendsto_atTop] at htends
+  obtain ⟨N₀, hN₀⟩ := htends δ hδ
+  obtain ⟨n, hn, hfn⟩ := hinf N₀
+  have h := hN₀ n hn
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (hf_nonneg n)] at h
+  linarith
+
+/-! ### Part (A): Mixing Phase (epsilon > 0, constant) -/
+
+-- gap_function_finite_range_const removed (inlined into uniform_gap_at_contracting_steps)
+
+set_option linter.unusedSectionVars false in
+/-- At steps where chi(p1 k) != chi(p2 k), the spectral gap is positive.
+    With constant epsilon in (0,1), this gap depends only on the pair
+    (chi(p1 k), chi(p2 k)), and there are finitely many such pairs.
+    So the minimum positive gap delta_min > 0 exists, giving a uniform
+    lower bound for all contracting steps.
+
+    The proof uses the finite-range trick: the gap function takes finitely many
+    values (since G is finite), so the infimum of positive values is achieved. -/
+private theorem uniform_gap_at_contracting_steps
+    (chi : G →* ℂˣ) (p₁ p₂ : ℕ → G)
+    (ε : ℝ) (hε0 : 0 < ε) (hε1 : ε < 1)
+    (hdist : ∀ N, ∃ n ≥ N, (chi (p₁ n) : ℂ) ≠ (chi (p₂ n) : ℂ)) :
+    ∃ (δ : ℝ), 0 < δ ∧
+      ∀ n, (chi (p₁ n) : ℂ) ≠ (chi (p₂ n) : ℂ) →
+        δ ≤ 1 - ‖twoPointCharValue chi (p₁ n) (p₂ n) ε‖ := by
+  -- The set of gap values at contracting steps is a subset of a finite set
+  set gapFn := fun n => 1 - ‖twoPointCharValue chi (p₁ n) (p₂ n) ε‖
+  -- The range of gapFn is finite (since G is finite and ε is constant)
+  have hfin : Set.Finite (Set.range gapFn) := by
+    apply Set.Finite.subset (Set.finite_range (fun (p : G × G) =>
+      1 - ‖twoPointCharValue chi p.1 p.2 ε‖))
+    intro x ⟨n, hn⟩; exact ⟨(p₁ n, p₂ n), hn⟩
+  -- Collect all positive gap values
+  set posGaps := hfin.toFinset.filter (fun x => 0 < x) with hposGaps_def
+  -- There exists at least one contracting step
+  obtain ⟨n₀, _, hn₀_dist⟩ := hdist 0
+  have hgap_pos : 0 < gapFn n₀ :=
+    twoPointCharValue_spectral_gap chi (p₁ n₀) (p₂ n₀) ε hε0 hε1 hn₀_dist
+  -- So posGaps is nonempty
+  have hne : posGaps.Nonempty := by
+    use gapFn n₀
+    rw [hposGaps_def, Finset.mem_filter]
+    exact ⟨hfin.mem_toFinset.mpr ⟨n₀, rfl⟩, hgap_pos⟩
+  -- Take delta = min of posGaps
+  use posGaps.min' hne
+  constructor
+  · -- delta > 0 since all elements of posGaps are positive
+    have hmem := Finset.min'_mem posGaps hne
+    have : posGaps.min' hne ∈ hfin.toFinset.filter (fun x => 0 < x) := hmem
+    rw [Finset.mem_filter] at this
+    exact this.2
+  · -- For any contracting step, the gap is in posGaps, so >= delta
+    intro n hn
+    have hpos : 0 < gapFn n :=
+      twoPointCharValue_spectral_gap chi (p₁ n) (p₂ n) ε hε0 hε1 hn
+    apply Finset.min'_le
+    rw [hposGaps_def, Finset.mem_filter]
+    exact ⟨hfin.mem_toFinset.mpr ⟨n, rfl⟩, hpos⟩
+
+omit [DecidableEq G] in
+/-- **Part (A)**: For fixed epsilon in (0,1) with infinitely many steps having
+    distinct character values, the character product decays to 0 in norm.
+
+    Proof strategy:
+    1. By `uniform_gap_at_contracting_steps`, there exists delta > 0 such that
+       all contracting steps have gap >= delta.
+    2. By hypothesis, there are infinitely many contracting steps.
+    3. So infinitely many terms of the gap sequence are >= delta > 0.
+    4. By `not_summable_of_io_ge_delta`, the gap sequence is not summable.
+    5. By `sparse_twoPointCharProduct_tendsto_zero`, the product norm -> 0. -/
+theorem constEpsCharProduct_tendsto_zero
+    (chi : G →* ℂˣ) (p₁ p₂ : ℕ → G)
+    (ε : ℝ) (hε0 : 0 < ε) (hε1 : ε < 1)
+    (hdist : ∀ N, ∃ n ≥ N, (chi (p₁ n) : ℂ) ≠ (chi (p₂ n) : ℂ)) :
+    Filter.Tendsto (fun N => ‖constEpsCharProduct chi p₁ p₂ ε N‖)
+      Filter.atTop (nhds 0) := by
+  -- Step 1: Get the uniform gap delta
+  obtain ⟨δ, hδ_pos, hδ_le⟩ := uniform_gap_at_contracting_steps chi p₁ p₂ ε hε0 hε1 hdist
+  -- Step 2: The gap sequence is not summable
+  set gapSeq := fun k => 1 - ‖twoPointCharValue chi (p₁ k) (p₂ k) ε‖
+  have hgap_nonneg : ∀ k, 0 ≤ gapSeq k := by
+    intro k
+    simp only [gapSeq]
+    exact sub_nonneg.mpr (twoPointCharValue_norm_le_one chi (p₁ k) (p₂ k) ε hε0.le hε1.le)
+  have hgap_not_summable : ¬Summable gapSeq := by
+    apply not_summable_of_io_ge_delta gapSeq hgap_nonneg hδ_pos
+    intro N
+    obtain ⟨n, hn, hnd⟩ := hdist N
+    exact ⟨n, hn, hδ_le n hnd⟩
+  -- Step 3: Apply sparse contraction
+  -- constEpsCharProduct = twoPointCharProduct with constant epsilon
+  have heq : ∀ N, ‖constEpsCharProduct chi p₁ p₂ ε N‖ =
+      ‖twoPointCharProduct chi p₁ p₂ (fun _ => ε) N‖ := fun _ => rfl
+  simp_rw [heq]
+  exact sparse_twoPointCharProduct_tendsto_zero chi p₁ p₂ (fun _ => ε)
+    (fun _ => hε0.le) (fun _ => hε1.le) hgap_not_summable
+
+/-! ### Part (C): Cesaro Average and Connection to CCSB -/
+
+omit [DecidableEq G] in
+/-- Each summand in the Cesaro average has unit modulus:
+    `prod_{k<n} chi(p_k)` is a product of unit-norm complex numbers. -/
+theorem charProduct_norm_one (chi : G →* ℂˣ) (p : ℕ → G) (n : ℕ) :
+    ‖∏ k ∈ Finset.range n, (chi (p k) : ℂ)‖ = 1 := by
+  rw [norm_prod]
+  simp only [char_norm_one_of_hom, Finset.prod_const_one]
+
+omit [Fintype G] [DecidableEq G] in
+/-- The **Cesaro average** of the epsilon=0 character products.
+    At epsilon = 0, each product `prod_{k<n} chi(m_k)` has unit modulus.
+    The Cesaro average `(1/N) * sum_{n<N} prod_{k<n} chi(m_k)` captures the
+    cancellation behavior of these unit-modulus phases.
+
+    For the EM walk: `prod_{k<n} chi(multZ q k) = chi(walkZ q n) / chi(walkZ q 0)`,
+    so the Cesaro average of character products equals the normalized walk character
+    sum `(1/N) * sum_{n<N} chi(w(n))` (up to a constant phase factor).
+    CCSB says this tends to 0, which is exactly Mullin's Conjecture. -/
+def cesaroCharAvg (chi : G →* ℂˣ) (p : ℕ → G) (N : ℕ) : ℂ :=
+  (1 / (N : ℂ)) * ∑ n ∈ Finset.range N, ∏ k ∈ Finset.range n, (chi (p k) : ℂ)
+
+omit [DecidableEq G] in
+/-- The Cesaro average is bounded by 1 in norm, since it averages unit-modulus terms.
+    Each product `prod_{k<n} chi(p_k)` has norm 1 (product of unit-norm chars),
+    so the average of N such terms has norm at most 1. -/
+theorem cesaroCharAvg_norm_le_one (chi : G →* ℂˣ) (p : ℕ → G) (N : ℕ) (hN : 0 < N) :
+    ‖cesaroCharAvg chi p N‖ ≤ 1 := by
+  simp only [cesaroCharAvg]
+  rw [norm_mul, norm_div, norm_one, Complex.norm_natCast]
+  rw [one_div, inv_mul_le_iff₀ (Nat.cast_pos.mpr hN)]
+  have hprod_norm : ∀ n, ‖∏ k ∈ Finset.range n, (chi (p k) : ℂ)‖ = 1 :=
+    fun n => charProduct_norm_one chi p n
+  calc ‖∑ n ∈ Finset.range N, ∏ k ∈ Finset.range n, (chi (p k) : ℂ)‖
+      ≤ ∑ n ∈ Finset.range N, ‖∏ k ∈ Finset.range n, (chi (p k) : ℂ)‖ :=
+        norm_sum_le _ _
+    _ = ∑ n ∈ Finset.range N, (1 : ℝ) := by
+        congr 1; ext n; exact hprod_norm n
+    _ = ↑N := by simp
+    _ = ↑N * 1 := by ring
+
+/-! ### Phase Transition Landscape -/
+
+/-- **Phase transition landscape**: Summary of the epsilon-dependent behavior of
+    two-point character products.
+
+    ALL PROVED (Part 24):
+
+    Part A (Mixing): For ANY fixed epsilon in (0,1), if infinitely many steps have
+    distinct character values chi(a_k) != chi(b_k), the product norm tends to 0.
+    The constant epsilon gives a UNIFORM spectral gap (finite group argument).
+
+    Part B (Critical): At epsilon = 0, each factor has norm 1 (unit-modulus character
+    value), so the product norm is identically 1 for all N. No decay occurs.
+
+    The phase transition at epsilon = 0 is SHARP: epsilon > 0 gives decay to 0,
+    epsilon = 0 gives constant 1. MC (via CCSB) is the Cesaro cancellation of the
+    unit-modulus epsilon=0 products — the behavior right AT the critical point. -/
+theorem phase_transition_landscape :
+    -- Part A: mixing phase (constant epsilon > 0, product -> 0)
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (p₁ p₂ : ℕ → G) (ε : ℝ),
+       0 < ε → ε < 1 →
+       (∀ N, ∃ n ≥ N, (chi (p₁ n) : ℂ) ≠ (chi (p₂ n) : ℂ)) →
+       Filter.Tendsto (fun N => ‖constEpsCharProduct chi p₁ p₂ ε N‖)
+         Filter.atTop (nhds 0))
+    ∧
+    -- Part B: critical point (epsilon = 0, product norm = 1)
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (p₁ p₂ : ℕ → G) (N : ℕ),
+       ‖constEpsCharProduct chi p₁ p₂ 0 N‖ = 1)
+    ∧
+    -- Part C: Cesaro average of epsilon=0 products is bounded by 1
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (p : ℕ → G) (N : ℕ), 0 < N →
+       ‖cesaroCharAvg chi p N‖ ≤ 1)
+    ∧
+    -- Part D: each epsilon=0 product term has unit modulus
+    (∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
+       (chi : G →* ℂˣ) (p : ℕ → G) (n : ℕ),
+       ‖∏ k ∈ Finset.range n, (chi (p k) : ℂ)‖ = 1) := by
+  exact ⟨fun G _ _ _ chi p₁ p₂ ε hε0 hε1 hdist =>
+           constEpsCharProduct_tendsto_zero chi p₁ p₂ ε hε0 hε1 hdist,
+         fun G _ _ _ chi p₁ p₂ N =>
+           constEpsCharProduct_norm_one_at_zero chi p₁ p₂ N,
+         fun G _ _ _ chi p N hN =>
+           cesaroCharAvg_norm_le_one chi p N hN,
+         fun G _ _ _ chi p n =>
+           charProduct_norm_one chi p n⟩
+
+end PhaseTransition

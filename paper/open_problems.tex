@@ -373,56 +373,32 @@ unbiased over the squarefree ensemble).
 The latter is the orbit-specificity barrier
 restated in spectral language.
 
+The formalization makes the gap precise via a \emph{phase transition}
+at~$\varepsilon = 0$
+(\lean{EM/Advanced/VanishingNoise.lean}{phase\_transition\_landscape}).
+For any constant~$\varepsilon \in (0,1)$, the two-point character
+product $\prod_k[(1{-}\varepsilon)\chi(a_k) + \varepsilon\chi(b_k)]$
+decays to~$0$ in norm whenever infinitely many steps have distinct
+$\chi$-values---a uniform spectral gap (finite-group pigeonhole)
+ensures non-summable contraction.  At~$\varepsilon = 0$, each factor
+reduces to~$\chi(a_k)$ with $|\chi(a_k)| = 1$, so the product norm is
+identically~$1$.  MC~(via CCSB) is exactly the assertion that the
+\emph{Cesàro average} of these unit-modulus products cancels.
+The transition is sharp: any~$\varepsilon > 0$ gives decay; $\varepsilon = 0$
+gives perpetual oscillation on the unit circle.
+
 The vanishing noise perspective also motivates the
 $\{\minFac, \operatorname{secondMinFac}\}$ variant MC
 (Section~\ref{sec:minfac-secondminfac}), which proves that
 \emph{some} selection from two-point factor sets reaches every
 residue class---under a single open spectral hypothesis
-(UFDStrong).  The stochastic MC chain and the self-consistent
-$\varepsilon$-walk branching tree are developed in
+(UFDStrong); for $q = 3$, a faithful character escape argument
+closes UFDStrong unconditionally (Section~\ref{sec:variants}).
+The stochastic MC chain, the self-consistent branching tree,
+and the weak Mullin weakenings are developed in
 Section~\ref{sec:variants}; the function field analog
 (Section~\ref{sec:function-field}) confirms that the difficulty is
 orbit-specificity, not analytic number theory.
-
-\paragraph{Pairwise Decorrelation and Weak MC}
-
-Dead End~\#125 proved that pairwise cancellation does not imply $k$-wise
-(XOR counterexample), killing the CCSB+CPD~$\to$~UPE route.  However,
-\emph{variance bounds only use $k=2$}: the identity
-$\mathrm{Var}(\sum_j X_j) = \sum_j \mathrm{Var}(X_j) + 2\sum_{j<k}\mathrm{Cov}(X_j, X_k)$
-means pairwise decorrelation suffices for concentration.  The
-formalization proves this revival chain:
-
-\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{dead\_end\_125\_pairwise\_revival}]
-\label{thm:pairwise-revival}
-PairwiseStepDecorrelation $+$ LinearMeanGrowth $+$
-ChebyshevConcentration $\;\Longrightarrow\;$
-AlmostAllSquarefreeRSD\@.
-\end{theorem}
-
-\noindent The proved intermediate results include:
-$\mathrm{Var}[1/\mathrm{genSeq}(n,k)] \leq 1/4$ (from $\mathrm{genSeq} \geq 2$),
-the variance decomposition identity, and
-PSD$+$IVB~$\Rightarrow$~$\mathrm{Var}[S_K] \leq (V{+}1)K$
-(\code{psd\_ivb\_implies\_variance\_bound\_proved}).
-The Chebyshev bridge is now proved
-(\code{chebyshev\_concentration\_proved}), and PSD$+$IVB~$\Rightarrow$~variance
-bound is proved, leaving exactly two open hypotheses: PSD and LMG\@.
-
-A further simplification drops PSD entirely.  Since
-$S_K(n) \leq K/2$ deterministically (each term $\leq 1/2$), a partition
-argument shows that LMG alone implies a positive density of starting
-points have divergent reciprocal sums:
-
-\begin{theorem}[\lean{EM/Population/ReciprocalSum.lean}{lmg\_implies\_positive\_density\_rsd}]
-\label{thm:positive-density-rsd}
-$\mathrm{LinearMeanGrowth} \;\Longrightarrow\; \mathrm{PositiveDensityRSD}$.
-\end{theorem}
-
-\noindent This is a 1-hypothesis route (vs.\ 2 for density~1),
-and the hypothesis LMG is strictly weaker than CME---it requires
-only that the ensemble mean grows linearly, not conditional
-equidistribution.
 
 \paragraph{Function Field Analog}
 
