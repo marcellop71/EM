@@ -33,15 +33,20 @@ to path-counting for this random walk.
 * `epsWalkProdFrom_two_eq` -- epsWalkProdFrom 2 = epsWalkProd
 * `finDecisionExtend_lt` -- extension agrees with original in range
 * `pathCount_sum_le` -- sum over units of pathCount <= 2^N
+* `chiAt_mul_of_coprime` -- chiAt multiplicative for coprime-to-q naturals
+* `chiAt_multiplicativity_proved` -- ChiAtMultiplicativity PROVED (induction + backward propagation)
+* `not_dvd_epsWalkProdFrom_of_succ` -- backward non-divisibility for walk product
+* `not_dvd_epsWalkFactorFrom_of_succ` -- backward non-divisibility for walk factor
+* `not_dvd_epsWalkProdFrom_of_le` -- backward propagation to any earlier step
+* `pathCharSum_trivial` -- trivial character pathCharSum = 1
 * `fourier_bridge_identity_proved` -- KEY: treeCharSum = pathCharSum (proved by induction)
 * `fairTreeCharSum_eq_pathCharSum` -- specialization to acc = 2 (unconditional)
 * `pathCharSum_vanishing_of_tree_contraction` -- TCA => vanishing pathCharSum (unconditional)
 * `mean_char_zero_at_diverse_step_three` -- q=3 zero-mean property
-* `random_two_point_mc_landscape` -- 5-clause summary
+* `random_two_point_mc_landscape` -- 7-clause summary
 
 ### Open Hypotheses
-* `ChiAtMultiplicativity` -- product of chiAt values = chiAt of walk endpoint
-* `TreeContractionImpliesRandomMC` -- TCA => RandomTwoPointMC (needs ChiAtMultiplicativity)
+* `TreeContractionImpliesRandomMC` -- TCA => RandomTwoPointMC (Fourier inversion gap)
 -/
 
 noncomputable section
@@ -557,28 +562,116 @@ theorem randomMC'_implies_randomMC : RandomTwoPointMC' q → RandomTwoPointMC q 
   refine ⟨N, σ, ?_⟩
   rw [epsWalkProdFrom_two_eq]; exact hσ.2
 
-/-- **ChiAtMultiplicativity**: The product of chiAt values along a path equals
-    chi evaluated at the walk endpoint, provided the walk stays in the unit group.
-    This is the bridge between `pathCharSum` (product of per-step chiAt values)
-    and `reachedMultiset` (walk endpoint mod q).
+/-- chiAt is multiplicative for natural numbers that are coprime to q:
+    chiAt(a * b) = chiAt(a) * chiAt(b) when ¬(q ∣ a) and ¬(q ∣ b).
+    The proof lifts a, b to units via ZMod.natCast_eq_zero_iff, then uses
+    Units.ext to show the product unit equals the product of individual units. -/
+theorem chiAt_mul_of_coprime (chi : (ZMod q)ˣ →* ℂˣ)
+    {a b : ℕ} (ha : ¬(q ∣ a)) (hb : ¬(q ∣ b)) :
+    chiAt q chi (a * b) = chiAt q chi a * chiAt q chi b := by
+  -- a and b are units in ZMod q
+  have ha0 : ((a : ℕ) : ZMod q) ≠ 0 := by
+    rwa [ne_eq, ZMod.natCast_eq_zero_iff]
+  have hb0 : ((b : ℕ) : ZMod q) ≠ 0 := by
+    rwa [ne_eq, ZMod.natCast_eq_zero_iff]
+  have hua : IsUnit ((a : ℕ) : ZMod q) := ha0.isUnit
+  have hub : IsUnit ((b : ℕ) : ZMod q) := hb0.isUnit
+  have huab : IsUnit ((a * b : ℕ) : ZMod q) := by
+    push_cast; exact hua.mul hub
+  simp only [chiAt, hua, hub, huab, dite_true]
+  -- Need: chi (huab.unit) = chi (hua.unit) * chi (hub.unit)
+  have hunit_eq : huab.unit = hua.unit * hub.unit := by
+    apply Units.ext
+    simp only [IsUnit.unit_spec, Units.val_mul]
+    push_cast; rfl
+  rw [hunit_eq, map_mul]
+  simp [Units.val_mul]
 
-    The gap: chiAt returns 1 for non-units, so the product of chiAt values is NOT
-    automatically chi of the product. We need each factor to be coprime to q,
-    which holds when the factors are primes distinct from q.
+omit hq [NeZero q] in
+/-- If q does not divide the walk product at step n+1, then q does not divide
+    the walk product at step n. This follows from the multiplicative structure:
+    epsWalkProdFrom(n+1) = epsWalkProdFrom(n) * factor(n). -/
+theorem not_dvd_epsWalkProdFrom_of_succ
+    {acc : ℕ} {σ : ℕ → Bool} {n : ℕ}
+    (h : ¬(q ∣ epsWalkProdFrom acc σ (n + 1))) :
+    ¬(q ∣ epsWalkProdFrom acc σ n) := by
+  rw [epsWalkProdFrom_succ] at h
+  intro hdvd
+  exact h (dvd_mul_of_dvd_left hdvd _)
 
-    Open Hypothesis. -/
+omit hq [NeZero q] in
+/-- If q does not divide the walk product at step n+1, then q does not divide
+    the factor chosen at step n. -/
+theorem not_dvd_epsWalkFactorFrom_of_succ
+    {acc : ℕ} {σ : ℕ → Bool} {n : ℕ}
+    (h : ¬(q ∣ epsWalkProdFrom acc σ (n + 1))) :
+    ¬(q ∣ epsWalkFactorFrom acc σ n) := by
+  rw [epsWalkProdFrom_succ] at h
+  intro hdvd
+  exact h (dvd_mul_of_dvd_right hdvd _)
+
+omit hq [NeZero q] in
+/-- Backward propagation: if q does not divide the walk product at step N,
+    then q does not divide it at any earlier step k ≤ N. -/
+theorem not_dvd_epsWalkProdFrom_of_le
+    {acc : ℕ} {σ : ℕ → Bool} {N : ℕ}
+    (h : ¬(q ∣ epsWalkProdFrom acc σ N)) {k : ℕ} (hk : k ≤ N) :
+    ¬(q ∣ epsWalkProdFrom acc σ k) := by
+  induction N with
+  | zero =>
+    have : k = 0 := by omega
+    subst this; exact h
+  | succ n ih =>
+    rcases Nat.eq_or_lt_of_le hk with rfl | hlt
+    · exact h
+    · exact ih (not_dvd_epsWalkProdFrom_of_succ h) (by omega)
+
+/-- **ChiAtMultiplicativity** (corrected and PROVED): The initial chiAt value times
+    the product of per-step chiAt values along a path equals chiAt of the walk endpoint,
+    provided q does not divide the endpoint.
+
+    chiAt(acc) * ∏_{k<N} chiAt(factor_k) = chiAt(endpoint)
+
+    The proof uses chiAt_mul_of_coprime and backward non-divisibility propagation.
+    At each step, since q does not divide the product at step N, it does not divide
+    the product or factor at any earlier step. -/
 def ChiAtMultiplicativity (q : ℕ) [Fact (Nat.Prime q)] [NeZero q] : Prop :=
   ∀ (chi : (ZMod q)ˣ →* ℂˣ) (acc : ℕ) (_ : 2 ≤ acc) (σ : ℕ → Bool) (N : ℕ),
     ¬(q ∣ epsWalkProdFrom acc σ N) →
-    ∏ k ∈ Finset.range N,
+    chiAt q chi acc * ∏ k ∈ Finset.range N,
       chiAt q chi (epsWalkFactorFrom acc σ k) =
     chiAt q chi (epsWalkProdFrom acc σ N)
 
+theorem chiAt_multiplicativity_proved :
+    ChiAtMultiplicativity q := by
+  intro chi acc _hacc σ N hndvd
+  induction N with
+  | zero =>
+    -- LHS = chiAt(acc) * (empty product = 1) = chiAt(acc)
+    -- RHS = chiAt(epsWalkProdFrom acc σ 0) = chiAt(acc)
+    simp [epsWalkProdFrom]
+  | succ n ih =>
+    -- epsWalkProdFrom(n+1) = epsWalkProdFrom(n) * factor(n)
+    -- By backward prop, q ∤ epsWalkProdFrom(n) and q ∤ factor(n)
+    have hndvd_n : ¬(q ∣ epsWalkProdFrom acc σ n) :=
+      not_dvd_epsWalkProdFrom_of_succ hndvd
+    have hndvd_f : ¬(q ∣ epsWalkFactorFrom acc σ n) :=
+      not_dvd_epsWalkFactorFrom_of_succ hndvd
+    rw [Finset.prod_range_succ]
+    -- LHS = chiAt(acc) * (∏_{k<n} chiAt(factor_k)) * chiAt(factor_n)
+    rw [← mul_assoc]
+    -- By IH: chiAt(acc) * ∏_{k<n} = chiAt(epsWalkProdFrom(n))
+    rw [ih hndvd_n]
+    -- Now LHS = chiAt(epsWalkProdFrom(n)) * chiAt(factor_n)
+    -- RHS = chiAt(epsWalkProdFrom(n+1)) = chiAt(epsWalkProdFrom(n) * factor(n))
+    rw [epsWalkProdFrom_succ]
+    exact (chiAt_mul_of_coprime chi hndvd_n hndvd_f).symm
+
 /-- **TreeContractionImpliesRandomMC**: TreeContractionAtHalf implies RandomTwoPointMC.
 
-    This requires connecting the self-consistent tree character sums (proved equal to
-    pathCharSum via `tree_eq_pathCharSum`) to character orthogonality counting on the
-    reached multiset. The missing step is ChiAtMultiplicativity.
+    Proof strategy: TCA gives vanishing pathCharSum for all nontrivial chi.
+    By ChiAtMultiplicativity, pathCharSum is related to character sums over
+    reached endpoints. Character orthogonality then gives that all units are reached.
 
     Open Hypothesis. -/
 def TreeContractionImpliesRandomMC (q : ℕ) [Fact (Nat.Prime q)] [NeZero q] : Prop :=
@@ -592,6 +685,80 @@ theorem pathCharSum_vanishing_of_tree_contraction
   refine Filter.Tendsto.congr (fun N => ?_) h
   congr 1
   exact fairTreeCharSum_eq_pathCharSum chi N
+
+/-- For the trivial character, every chiAt value is 1, so pathCharSum = 1. -/
+theorem pathCharSum_trivial (N : ℕ) (acc : ℕ) :
+    pathCharSum q (1 : (ZMod q)ˣ →* ℂˣ) N acc = 1 := by
+  simp only [pathCharSum]
+  have hprod_one : ∀ (σ : Fin N → Bool),
+      ∏ k : Fin N, chiAt q (1 : (ZMod q)ˣ →* ℂˣ)
+        (epsWalkFactorFrom acc (finDecisionExtend σ) k) = 1 := by
+    intro σ
+    apply Finset.prod_eq_one
+    intro k _
+    simp only [chiAt]
+    split
+    · simp
+    · rfl
+  simp_rw [hprod_one]
+  simp
+
+omit [NeZero q] in
+/-- For q ≥ 3, 2 is a unit in ZMod q (since 2 < q for prime q ≥ 3). -/
+theorem two_isUnit_of_gt_two (hq3 : 2 < q) :
+    IsUnit ((2 : ℕ) : ZMod q) := by
+  have : ((2 : ℕ) : ZMod q) ≠ 0 := by
+    rw [ne_eq, ZMod.natCast_eq_zero_iff]
+    intro hdvd
+    -- q | 2 means q ≤ 2, contradicting q > 2
+    exact absurd (Nat.le_of_dvd (by omega) hdvd) (by omega)
+  exact this.isUnit
+
+/-- For q ≥ 3, chiAt q chi 2 ≠ 0 (it's a unit norm element). -/
+theorem chiAt_two_ne_zero (hq3 : 2 < q) (chi : (ZMod q)ˣ →* ℂˣ) :
+    chiAt q chi 2 ≠ 0 := by
+  simp only [chiAt, two_isUnit_of_gt_two hq3, dite_true]
+  exact Units.ne_zero _
+
+omit [NeZero q] in
+/-- The not-divisibility condition propagates: if q ∤ acc (and q is prime),
+    then either q ∤ endpoint or there exists a step where q | factor
+    but q ∤ accumulator (the walk hits the death fiber). -/
+theorem not_dvd_acc_implies_total_path_structure (acc : ℕ)
+    (σ : ℕ → Bool) (N : ℕ) (hndvd_acc : ¬(q ∣ acc)) :
+    (¬(q ∣ epsWalkProdFrom acc σ N)) ∨
+    (∃ k, k < N ∧ q ∣ epsWalkFactorFrom acc σ k ∧ ¬(q ∣ epsWalkProdFrom acc σ k)) := by
+  by_contra h
+  push_neg at h
+  obtain ⟨hbad, hno_death⟩ := h
+  -- q | endpoint, and for every step where q | factor, q already | accumulator
+  -- We find the first step where q | epsWalkProdFrom acc σ k
+  -- Since q ∤ acc = epsWalkProdFrom acc σ 0, there must be a first step
+  have hbase : ¬(q ∣ epsWalkProdFrom acc σ 0) := by
+    simp [epsWalkProdFrom]; exact hndvd_acc
+  -- Find first k where q | epsWalkProdFrom acc σ (k+1) but q ∤ epsWalkProdFrom acc σ k
+  have : ∃ k, k < N ∧ ¬(q ∣ epsWalkProdFrom acc σ k) ∧ q ∣ epsWalkProdFrom acc σ (k + 1) := by
+    -- By well-ordering: find the minimal step where q divides the accumulator
+    by_contra hall
+    push_neg at hall
+    -- hall : ∀ k, k < N → ¬(q ∣ ...(k)) → ¬(q ∣ ...(k+1))
+    -- Then by induction, q ∤ epsWalkProdFrom acc σ k for all k ≤ N
+    have hstep : ∀ k, k ≤ N → ¬(q ∣ epsWalkProdFrom acc σ k) := by
+      intro k hk
+      induction k with
+      | zero => exact hbase
+      | succ m ihm =>
+        exact hall m (by omega) (ihm (by omega))
+    exact absurd hbad (hstep N le_rfl)
+  obtain ⟨k, hkN, hndvd_k, hdvd_k1⟩ := this
+  -- epsWalkProdFrom(k+1) = epsWalkProdFrom(k) * factor(k)
+  rw [epsWalkProdFrom_succ] at hdvd_k1
+  -- q | prod * factor and q ∤ prod, so q | factor (since q is prime)
+  have hq_prime := (Fact.out : Nat.Prime q)
+  have : q ∣ epsWalkFactorFrom acc σ k :=
+    (hq_prime.dvd_mul.mp hdvd_k1).resolve_left hndvd_k
+  -- But hno_death says: q | factor(k) → q | epsWalkProdFrom(k)
+  exact absurd (hno_death k hkN this) hndvd_k
 
 end RandomMC
 
@@ -687,32 +854,42 @@ section Landscape
 
 variable (q : ℕ) [hq : Fact (Nat.Prime q)] [NeZero q]
 
-/-- Random Two-Point MC landscape theorem.
+/-- Random Two-Point MC landscape theorem (extended).
 
-    1. Fourier bridge base case: at depth 0, tree = pathCharSum
-    2. pathCount sum bound: sum over units <= 2^N
-    3. q = 3 zero-mean property for diverse steps
-    4. epsWalkProdFrom generalizes epsWalkProd (bridge to existing infrastructure)
-    5. reachedMultiset has exact cardinality 2^N -/
+    1. Fourier bridge identity: tree = pathCharSum (PROVED, full induction)
+    2. ChiAtMultiplicativity: chiAt(acc) * prod chiAt(factors) = chiAt(endpoint) (PROVED)
+    3. pathCharSum for trivial character = 1 (PROVED)
+    4. pathCount sum bound: sum over units <= 2^N (PROVED)
+    5. q = 3 zero-mean property for diverse steps (PROVED)
+    6. epsWalkProdFrom generalizes epsWalkProd (PROVED)
+    7. reachedMultiset has exact cardinality 2^N (PROVED) -/
 theorem random_two_point_mc_landscape :
-    -- 1. Fourier bridge base case (PROVED)
-    (∀ (chi : (ZMod q)ˣ →* ℂˣ) (acc : ℕ),
-      treeCharSum q chi 0 acc fairCoin = pathCharSum q chi 0 acc)
+    -- 1. Fourier bridge identity (PROVED)
+    (FourierBridgeIdentity q)
     ∧
-    -- 2. pathCount sum bound (PROVED)
+    -- 2. ChiAtMultiplicativity (PROVED)
+    (ChiAtMultiplicativity q)
+    ∧
+    -- 3. Trivial character pathCharSum = 1 (PROVED)
+    (∀ (N : ℕ) (acc : ℕ),
+      pathCharSum q (1 : (ZMod q)ˣ →* ℂˣ) N acc = 1)
+    ∧
+    -- 4. pathCount sum bound (PROVED)
     (∀ N, ∑ a : (ZMod q)ˣ, pathCount q N a ≤ 2 ^ N)
     ∧
-    -- 3. q = 3 zero-mean (PROVED)
+    -- 5. q = 3 zero-mean (PROVED)
     (∀ (chi3 : (ZMod 3)ˣ →* ℂˣ) (a3 b3 : (ZMod 3)ˣ),
       chi3 ≠ 1 → (chi3 a3 : ℂ) ≠ (chi3 b3 : ℂ) →
       (1/2 : ℂ) * (chi3 a3 : ℂ) + (1/2 : ℂ) * (chi3 b3 : ℂ) = 0)
     ∧
-    -- 4. Generalized walk bridge (PROVED)
+    -- 6. Generalized walk bridge (PROVED)
     (∀ (σ : ℕ → Bool) (n : ℕ), epsWalkProdFrom 2 σ n = epsWalkProd σ n)
     ∧
-    -- 5. Reached multiset cardinality (PROVED)
+    -- 7. Reached multiset cardinality (PROVED)
     (∀ N, Multiset.card (reachedMultiset q N) = 2 ^ N) := by
-  exact ⟨fun chi acc => fourier_bridge_base chi acc,
+  exact ⟨fourier_bridge_identity_proved,
+         chiAt_multiplicativity_proved,
+         fun N acc => pathCharSum_trivial N acc,
          fun N => pathCount_sum_le N,
          fun chi3 a3 b3 h1 h2 => mean_char_zero_at_diverse_step_three chi3 h1 a3 b3 h2,
          fun σ n => epsWalkProdFrom_two_eq σ n,
