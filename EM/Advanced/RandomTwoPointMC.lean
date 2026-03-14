@@ -33,14 +33,15 @@ to path-counting for this random walk.
 * `epsWalkProdFrom_two_eq` -- epsWalkProdFrom 2 = epsWalkProd
 * `finDecisionExtend_lt` -- extension agrees with original in range
 * `pathCount_sum_le` -- sum over units of pathCount <= 2^N
-* `tree_eq_pathCharSum` -- KEY IDENTITY: treeCharSum = pathCharSum (proved by induction)
-* `fairTreeCharSum_eq_pathCharSum_of_bridge` -- specialization to acc = 2 (conditional)
-* `tree_contraction_implies_random_mc` -- TreeContractionAtHalf => RandomTwoPointMC
+* `fourier_bridge_identity_proved` -- KEY: treeCharSum = pathCharSum (proved by induction)
+* `fairTreeCharSum_eq_pathCharSum` -- specialization to acc = 2 (unconditional)
+* `pathCharSum_vanishing_of_tree_contraction` -- TCA => vanishing pathCharSum (unconditional)
 * `mean_char_zero_at_diverse_step_three` -- q=3 zero-mean property
 * `random_two_point_mc_landscape` -- 5-clause summary
 
 ### Open Hypotheses
-* None (all reductions proved or conditional on TreeContractionAtHalf)
+* `ChiAtMultiplicativity` -- product of chiAt values = chiAt of walk endpoint
+* `TreeContractionImpliesRandomMC` -- TCA => RandomTwoPointMC (needs ChiAtMultiplicativity)
 -/
 
 noncomputable section
@@ -373,7 +374,7 @@ private theorem epsWalkFactorFrom_shift (b : Bool) {N : ℕ}
     The key helper lemmas are epsWalkProdFrom_shift and epsWalkFactorFrom_shift
     which connect the concatenated decision walk to the shifted walk.
 
-    Open Hypothesis. -/
+    PROVED (Session 228). -/
 def FourierBridgeIdentity (q : ℕ) [Fact (Nat.Prime q)] [NeZero q] : Prop :=
   ∀ (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) (acc : ℕ), 2 ≤ acc →
     treeCharSum q chi N acc fairCoin = pathCharSum q chi N acc
@@ -383,7 +384,127 @@ theorem fourier_bridge_base (chi : (ZMod q)ˣ →* ℂˣ) (acc : ℕ) :
     treeCharSum q chi 0 acc fairCoin = pathCharSum q chi 0 acc := by
   simp [treeCharSum, pathCharSum_zero]
 
-/-- Specialization: assuming the bridge, fairTreeCharSum = pathCharSum at acc = 2. -/
+/-- The product over Fin (N+1) splits as the step-0 term times the product over Fin N
+    shifted by 1. This is specialized to our chiAt/epsWalkFactorFrom setting. -/
+private theorem prod_fin_succ_split (f : Fin (N + 1) → ℂ) :
+    ∏ k : Fin (N + 1), f k =
+    f ⟨0, by omega⟩ * ∏ k : Fin N, f ⟨k.val + 1, by omega⟩ :=
+  Fin.prod_univ_succ f
+
+/-- For acc ≥ 2, the product acc * (if b then minFac(acc+1) else secondMinFac(acc+1)) ≥ 2. -/
+private theorem acc_mul_factor_ge_two (acc : ℕ) (hacc : 2 ≤ acc) (b : Bool) :
+    2 ≤ acc * (if b then (acc + 1).minFac else secondMinFac (acc + 1)) := by
+  have hacc1 : 2 ≤ acc + 1 := by omega
+  have hfac : 2 ≤ (if b then (acc + 1).minFac else secondMinFac (acc + 1)) := by
+    cases b with
+    | true => exact (Nat.minFac_prime (by omega)).two_le
+    | false => exact (secondMinFac_prime hacc1).two_le
+  calc 2 = 1 * 2 := by omega
+    _ ≤ acc * (if b then (acc + 1).minFac else secondMinFac (acc + 1)) :=
+      Nat.mul_le_mul (by omega) hfac
+
+/-- The step-0 factor in the concatenated walk depends only on b and acc. -/
+private theorem epsWalkFactorFrom_consDecision_zero_eq (acc : ℕ) (b : Bool) {N : ℕ}
+    (τ : Fin N → Bool) :
+    epsWalkFactorFrom acc (finDecisionExtend (consDecision b τ)) 0 =
+    (if b then (acc + 1).minFac else secondMinFac (acc + 1)) := by
+  simp only [epsWalkFactorFrom, epsWalkProdFrom]
+  rw [finDecisionExtend_consDecision_zero]
+
+/-- The tail product in the concatenated walk equals the full product of the shifted walk.
+    For k < N, the factor at step k+1 in the concatenated walk equals the factor at step k
+    in the shifted walk starting from acc * (chosen factor). -/
+private theorem tail_prod_eq_shifted_prod (chi : (ZMod q)ˣ →* ℂˣ)
+    (acc : ℕ) (b : Bool) {N : ℕ} (τ : Fin N → Bool) :
+    ∏ k : Fin N, chiAt q chi
+      (epsWalkFactorFrom acc (finDecisionExtend (consDecision b τ)) (k.val + 1)) =
+    ∏ k : Fin N, chiAt q chi
+      (epsWalkFactorFrom
+        (acc * (if b then (acc + 1).minFac else secondMinFac (acc + 1)))
+        (finDecisionExtend τ) k.val) := by
+  apply Finset.prod_congr rfl
+  intro k _
+  exact congr_arg (chiAt q chi) (epsWalkFactorFrom_shift b τ acc k.val (by omega))
+
+/-- **FourierBridgeIdentity PROVED**: The fair tree character sum starting from
+    accumulator `acc ≥ 2` equals the averaged character product over all 2^N
+    binary decision paths.
+
+    Proof by induction on N:
+    - Base (N=0): both sides equal 1.
+    - Step (N → N+1): unfold treeCharSum; use fairCoin ∘ succ = fairCoin;
+      split pathCharSum sum by first bit via consDecision bijection;
+      the step-0 factor gives chiAt(p₁) or chiAt(p₂);
+      the tail product matches pathCharSum at the new accumulator by shift lemmas;
+      apply IH; collect 1/2 factors. -/
+theorem fourier_bridge_identity_proved :
+    FourierBridgeIdentity q := by
+  intro chi N
+  induction N with
+  | zero =>
+    intro acc _
+    exact fourier_bridge_base chi acc
+  | succ N ih =>
+    intro acc hacc
+    -- Unfold treeCharSum at N+1
+    simp only [treeCharSum]
+    -- fairCoin ∘ Nat.succ = fairCoin (both are constant 1/2)
+    have hfc_shift : fairCoin ∘ Nat.succ = fairCoin := rfl
+    set p₁ := (acc + 1).minFac with hp₁_def
+    set p₂ := secondMinFac (acc + 1) with hp₂_def
+    -- Apply IH to both subtrees
+    have hacc1 : 2 ≤ acc * p₁ := acc_mul_factor_ge_two acc hacc true
+    have hacc2 : 2 ≤ acc * p₂ := acc_mul_factor_ge_two acc hacc false
+    rw [hfc_shift]
+    rw [ih (acc * p₁) hacc1, ih (acc * p₂) hacc2]
+    -- Now LHS uses fairCoin 0 = 1/2. Unfold pathCharSum.
+    simp only [pathCharSum, fairCoin]
+    -- Step 1: Reindex RHS sum using consDecision bijection
+    -- ∑ σ : Fin (N+1) → Bool, f(σ) = ∑ b : Bool, ∑ τ : Fin N → Bool, f(consDecision b τ)
+    let e := Equiv.ofBijective (fun (p : Bool × (Fin N → Bool)) =>
+      consDecision p.1 p.2) (consDecision_bijective N)
+    have hsum_reindex :
+        ∑ σ : Fin (N + 1) → Bool,
+          ∏ k : Fin (N + 1), chiAt q chi (epsWalkFactorFrom acc (finDecisionExtend σ) ↑k) =
+        ∑ b : Bool, ∑ τ : Fin N → Bool,
+          ∏ k : Fin (N + 1), chiAt q chi
+            (epsWalkFactorFrom acc (finDecisionExtend (consDecision b τ)) ↑k) := by
+      rw [← Equiv.sum_comp e, Fintype.sum_prod_type]
+      simp only [e, Equiv.ofBijective_apply]
+    rw [hsum_reindex]
+    -- Step 2: Split the product over Fin (N+1) as step 0 * tail product
+    -- Then rewrite step-0 factor and tail product
+    have hbranch_eq : ∀ (b : Bool) (τ : Fin N → Bool),
+        ∏ k : Fin (N + 1), chiAt q chi
+          (epsWalkFactorFrom acc (finDecisionExtend (consDecision b τ)) ↑k) =
+        chiAt q chi (if b then (acc + 1).minFac else secondMinFac (acc + 1)) *
+        ∏ k : Fin N, chiAt q chi
+          (epsWalkFactorFrom
+            (acc * (if b then (acc + 1).minFac else secondMinFac (acc + 1)))
+            (finDecisionExtend τ) ↑k) := by
+      intro b τ
+      rw [prod_fin_succ_split]
+      rw [epsWalkFactorFrom_consDecision_zero_eq acc b τ]
+      rw [tail_prod_eq_shifted_prod chi acc b τ]
+    simp_rw [hbranch_eq]
+    -- Step 3: Factor out the constant chiAt from the inner sum
+    simp_rw [← Finset.mul_sum]
+    -- Step 4: Evaluate the Bool sum
+    rw [Fintype.sum_bool]
+    simp (config := { decide := true }) only [↓reduceIte]
+    -- Step 5: Fold back p₁ and p₂
+    rw [← hp₁_def, ← hp₂_def]
+    -- Step 6: Algebra — normalize casts and solve
+    push_cast
+    ring
+
+/-- Specialization: fairTreeCharSum = pathCharSum at acc = 2 (unconditional). -/
+theorem fairTreeCharSum_eq_pathCharSum
+    (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
+    fairTreeCharSum q chi N = pathCharSum q chi N 2 :=
+  fourier_bridge_identity_proved chi N 2 le_rfl
+
+/-- Backward-compatible version (takes bridge as hypothesis, now trivially true). -/
 theorem fairTreeCharSum_eq_pathCharSum_of_bridge
     (hbi : FourierBridgeIdentity q)
     (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
@@ -463,19 +584,14 @@ def ChiAtMultiplicativity (q : ℕ) [Fact (Nat.Prime q)] [NeZero q] : Prop :=
 def TreeContractionImpliesRandomMC (q : ℕ) [Fact (Nat.Prime q)] [NeZero q] : Prop :=
   TreeContractionAtHalf q → RandomTwoPointMC q
 
-/-- Assuming the Fourier bridge, vanishing tree char sum implies vanishing pathCharSum. -/
+/-- Vanishing tree char sum implies vanishing pathCharSum (unconditional via proved FBI). -/
 theorem pathCharSum_vanishing_of_tree_contraction
-    (hbi : FourierBridgeIdentity q)
     (htc : TreeContractionAtHalf q) (chi : (ZMod q)ˣ →* ℂˣ) (hchi : chi ≠ 1) :
     Filter.Tendsto (fun N => ‖pathCharSum q chi N 2‖) Filter.atTop (nhds 0) := by
   have h := htc chi hchi
-  -- fairTreeCharSum q chi N = treeCharSum q chi N 2 fairCoin by definition
-  -- FourierBridgeIdentity says treeCharSum q chi N 2 fairCoin = pathCharSum q chi N 2
-  -- So h : Tendsto (fun N => ‖treeCharSum q chi N 2 fairCoin‖) atTop (nhds 0)
-  -- and we need: Tendsto (fun N => ‖pathCharSum q chi N 2‖) atTop (nhds 0)
   refine Filter.Tendsto.congr (fun N => ?_) h
   congr 1
-  exact fairTreeCharSum_eq_pathCharSum_of_bridge hbi chi N
+  exact fairTreeCharSum_eq_pathCharSum chi N
 
 end RandomMC
 
