@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 107~files
-totaling ${\sim}61{,}200$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 108~files
+totaling ${\sim}61{,}800$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -101,6 +101,7 @@ three leaf modules:
 \code{Ensemble/CRTFreedom.lean} & SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap & 631 \\
 \code{Ensemble/BaseCase.lean} & JSE base case, tower rule, uniform witness bounds & 377 \\
 \code{Ensemble/FiberAutonomy.lean} & CRT fiber determines multiplier dynamics, walk readout & 255 \\
+\code{Ensemble/TwoPointEnsemble.lean} & Ensemble two-point: ratio escape counting, first moment, partition argument, PRED $\Rightarrow$ positive density & 566 \\
 \midrule
 \multicolumn{3}{l}{\emph{DSL and master reduction (new)}} \\
 \code{Reduction/DSLInfra.lean} & Energy evolution, fiber analysis, FEB $\Rightarrow$ CME & 627 \\
@@ -784,6 +785,17 @@ Mathlib version & v4.29.0-rc1 \\
 \quad TKC $+$ separation $\Rightarrow$ ratio $= 1$ eventually & Proved & \code{total\_confinement\_implies\_ratio\_one} \\
 \quad Per-character: nonsummable or confined & Proved & \code{per\_char\_nonsummable\_or\_confined} \\
 \quad Intersection kernel landscape (3-clause) & Proved & \code{intersection\_kernel\_landscape} \\
+\multicolumn{3}{l}{\emph{Ensemble two-point MC}} \\
+\quad Generalized padded unit set card $\geq 2$ & Proved & \code{genPaddedUnitSet\_card\_ge\_two} \\
+\quad Escape count $\leq$ sqfreeCount & Proved & \code{ratioEscapeCount\_le\_sqfreeCount} \\
+\quad Escape density $\in [0, 1]$ & Proved & \code{ratioEscapeDensity\_nonneg} \\
+\quad Cumulative escape $\leq K$ & Proved & \code{cumulRatioEscapeCount\_le} \\
+\quad Fubini: ensemble avg $=$ sum of densities & Proved & \code{ensembleAvgEscapeCount\_eq\_sum\_densities} \\
+\quad First moment linear growth & Proved & \code{escape\_first\_moment\_linear} \\
+\quad Positive density of high-escape starting points & Proved & \code{positive\_density\_high\_escape} \\
+\quad PRED $\Rightarrow$ AlmostAllInfiniteRatioEscapes & Proved & \code{pred\_implies\_almost\_all\_infinite} \\
+\quad PopulationRatioEscapeDensity (from MFRE) & \textbf{Open} & \code{PopulationRatioEscapeDensity} \\
+\quad Ensemble two-point landscape (6-clause) & Proved & \code{ensemble\_two\_point\_landscape} \\
 \midrule
 \multicolumn{3}{l}{\emph{Gaussian EM over $\ZZ[i]$}} \\
 \quad $1{+}i$ irreducible in $\ZZ[i]$ & Proved & \code{one\_plus\_i\_irreducible} \\

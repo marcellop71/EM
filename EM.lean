@@ -25,6 +25,7 @@ import EM.Ensemble.FiberAutonomy
 import EM.Ensemble.FirstMoment
 import EM.Ensemble.PT
 import EM.Ensemble.Structure
+import EM.Ensemble.TwoPointEnsemble
 import EM.Ensemble.WeylChain
 import EM.Equidist.Bootstrap
 import EM.Equidist.CharPRE

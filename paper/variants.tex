@@ -500,6 +500,37 @@ But both are instances of the same meta-question: does the deterministic
 EM construction produce enough diversity in its factorizations to
 prevent persistent alignment with any fixed character?
 
+\paragraph{Ensemble two-point: population-level reduction.}
+The ensemble framework of Section~\ref{sec:ensemble} can also be
+applied to the two-point variant.  For generalized EM starting from
+squarefree~$n$, the \defname{genFactorRatio} at step~$k$ is the ratio
+$\minFac / \operatorname{secondMinFac} \bmod q$ in
+$(\ZZ/q\ZZ)^\times$.  For a nontrivial character~$\chi$, a step
+``escapes'' if this ratio lies outside~$\ker(\chi)$---producing a
+spectral gap.  The formalization
+(\code{Ensemble/TwoPointEnsemble.lean}, 566~lines, zero \code{sorry})
+develops the full first-moment chain:
+\[
+  \text{PRED}
+  \;\xrightarrow[\text{Fubini}]{\checkmark}\;
+  \text{linear first moment}
+  \;\xrightarrow[\text{partition}]{\checkmark}\;
+  \text{positive density of high escapers.}
+\]
+Here \textbf{PopulationRatioEscapeDensity}~(PRED) asserts that for
+each nontrivial~$\chi$ and each step $k \geq 1$, a positive
+density~$\delta > 0$ of squarefree starting points have factor ratio
+outside~$\ker(\chi)$.  Under PRED, the ensemble average of cumulative
+escape counts grows linearly
+(\lean{EM/Ensemble/TwoPointEnsemble.lean}{escape\_first\_moment\_linear}
+{\color{leanink}$\checkmark$}), and the partition argument gives
+\lean{EM/Ensemble/TwoPointEnsemble.lean}{positive\_density\_high\_escape}
+{\color{leanink}$\checkmark$}: for each threshold~$M$, a positive
+density of starting points achieve $\geq M$ cumulative escapes
+within~$K$ steps.  PRED itself is open; it should follow from
+MFRE (MinFacResidueEquidist) via CRT independence of the two
+smallest factors.
+
 \subsection{Ensemble MC: Almost Every Starting Point}
 \label{sec:ensemble-variant}
 
