@@ -1648,3 +1648,319 @@ theorem faithful_escape_landscape :
    fun _q _ hq3 hnfce => nfce_implies_ufdStrong hq3 hnfce⟩
 
 end FaithfulCharacterEscape
+
+/-! ## Part 25: Non-Faithful Character Escape Infrastructure
+
+Infrastructure and reductions for `NonFaithfulCharacterEscape(q)` -- the sole
+remaining open hypothesis for `UFDStrong(q)` at primes q >= 5.
+
+Part 24 proved: for faithful (injective) characters, spectral gaps are
+non-summable unconditionally. This closes UFDStrong(3) since every nontrivial
+character of a prime-order group is faithful. For q >= 5, the unit group
+(ZMod q)^x has composite order q-1, so non-faithful nontrivial characters exist.
+
+This part develops:
+1. Kernel characterizations for non-faithful nontrivial characters
+2. Factor ratio definition and gap-kernel equivalence
+3. NFCE <-> ratio kernel escape reduction
+4. Kernel index bound
+5. Connection to existing UFDStrong routes (MinFacRatioEscapeQual -> NFCE)
+6. Landscape theorem summarizing Part 25
+-/
+
+section NonFaithfulCharacterEscapeInfra
+
+variable {q : ℕ} [hqp : Fact (Nat.Prime q)]
+
+/-! ### Task 1: Kernel characterizations -/
+
+/-- A non-faithful nontrivial character has a nontrivial proper kernel:
+    ker(chi) != bot (not injective) AND ker(chi) != top (nontrivial). -/
+theorem nonfaithful_nontrivial_ker_proper (chi : (ZMod q)ˣ →* ℂˣ)
+    (hchi : chi ≠ 1) (hnf : ¬IsFaithfulChar q chi) :
+    chi.ker ≠ ⊥ ∧ chi.ker ≠ ⊤ := by
+  constructor
+  · rwa [Ne, MonoidHom.ker_eq_bot_iff]
+  · rwa [Ne, MonoidHom.ker_eq_top_iff]
+
+/-- ker(chi) != bot iff there exists a nontrivial kernel element. -/
+theorem ker_ne_bot_iff_exists_nontrivial (chi : (ZMod q)ˣ →* ℂˣ) :
+    chi.ker ≠ ⊥ ↔ ∃ u : (ZMod q)ˣ, u ≠ 1 ∧ chi u = 1 := by
+  rw [Ne, Subgroup.eq_bot_iff_forall]
+  push_neg
+  constructor
+  · intro ⟨u, hu_mem, hu_ne⟩
+    exact ⟨u, hu_ne, by rwa [MonoidHom.mem_ker] at hu_mem⟩
+  · intro ⟨u, hu_ne, hu_ker⟩
+    exact ⟨u, by rwa [MonoidHom.mem_ker], hu_ne⟩
+
+/-! ### Task 2: Factor ratio and gap-kernel equivalence -/
+
+/-- The ratio of the two lifted units (minFac and secondMinFac) at step n.
+    When both are genuine units, this captures whether their chi-values coincide:
+    chi(a) = chi(b) iff a * b^{-1} is in ker(chi). -/
+noncomputable def factorRatio (n : ℕ) : (ZMod q)ˣ :=
+  liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q) *
+  (liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q))⁻¹
+
+/-- chi(a) = chi(b) (as units) iff a * b^{-1} in ker(chi), for any CommGroup hom. -/
+theorem chi_eq_iff_ratio_in_ker {G : Type*} [CommGroup G]
+    (chi : G →* ℂˣ) (a b : G) :
+    chi a = chi b ↔ a * b⁻¹ ∈ chi.ker := by
+  rw [MonoidHom.mem_ker, map_mul, map_inv]
+  constructor
+  · intro h; rw [h, mul_inv_cancel]
+  · intro h
+    have := mul_inv_eq_one.mp h
+    exact this
+
+/-- chi(a) = chi(b) as complex numbers iff a * b^{-1} in ker(chi). -/
+theorem chi_coe_eq_iff_ratio_in_ker {G : Type*} [CommGroup G]
+    (chi : G →* ℂˣ) (a b : G) :
+    (chi a : ℂ) = (chi b : ℂ) ↔ a * b⁻¹ ∈ chi.ker := by
+  rw [← chi_eq_iff_ratio_in_ker]
+  exact Units.val_injective.eq_iff
+
+/-- At a non-fallback step (raw card >= 2), the spectral gap is zero iff
+    the character values at the two lifted units coincide (as complex numbers). -/
+theorem gap_zero_iff_chi_eq (n : ℕ) (chi : (ZMod q)ˣ →* ℂˣ)
+    (hcard : 2 ≤ (rawTwoPointUnitSet (q := q) n).card) :
+    1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ = 0 ↔
+    (chi (liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q)) : ℂ) =
+    (chi (liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q)) : ℂ) := by
+  set a := liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q)
+  set b := liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q)
+  have hne : a ≠ b := raw_card_two_implies_ne n hcard
+  constructor
+  · -- gap = 0 means norm = 1; contrapositive of meanCharValue_norm_lt_one_of_distinct
+    intro hgap
+    have hnorm : ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ = 1 := by linarith
+    by_contra hdiff
+    rw [paddedUnitSet_eq_raw_of_card n hcard] at hnorm
+    have hlt := meanCharValue_norm_lt_one_of_distinct chi (rawTwoPointUnitSet (q := q) n) hcard
+      ⟨a, liftToUnit_minFac_mem_raw n, b, liftToUnit_secondMinFac_mem_raw n, hdiff⟩
+    linarith
+  · -- chi(a) = chi(b) means mean = (chi(a) + chi(b))/2 = chi(a), which has norm 1
+    intro heq
+    rw [paddedUnitSet_eq_raw_of_card n hcard]
+    simp only [meanCharValue, rawTwoPointUnitSet]
+    rw [Finset.sum_pair hne, Finset.card_pair hne]
+    rw [heq]
+    have h1 : ‖((chi b : ℂ) + (chi b : ℂ)) / (2 : ℂ)‖ = 1 := by
+      rw [show (chi b : ℂ) + (chi b : ℂ) = 2 * (chi b : ℂ) from by ring]
+      rw [mul_div_cancel_left₀ _ (by norm_num : (2 : ℂ) ≠ 0)]
+      exact char_norm_one_of_hom chi b
+    linarith
+
+/-- Gap = 0 iff the factor ratio lies in the kernel of chi (at non-fallback steps). -/
+theorem gap_zero_iff_ratio_in_ker (n : ℕ) (chi : (ZMod q)ˣ →* ℂˣ)
+    (hcard : 2 ≤ (rawTwoPointUnitSet (q := q) n).card) :
+    1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ = 0 ↔
+    factorRatio (q := q) n ∈ chi.ker := by
+  rw [gap_zero_iff_chi_eq n chi hcard]
+  rw [show factorRatio (q := q) n =
+    liftToUnit (q := q) (Nat.minFac (prod n + 1) : ZMod q) *
+    (liftToUnit (q := q) (secondMinFac (prod n + 1) : ZMod q))⁻¹ from rfl]
+  exact chi_coe_eq_iff_ratio_in_ker chi _ _
+
+/-! ### Task 3: Kernel confinement and ratio escape -/
+
+/-- The factor ratio is eventually always in ker(chi). -/
+def KernelConfinement (q : ℕ) [Fact (Nat.Prime q)]
+    (chi : (ZMod q)ˣ →* ℂˣ) : Prop :=
+  ∃ N₀, ∀ n, N₀ ≤ n → factorRatio (q := q) n ∈ chi.ker
+
+/-- The factor ratio escapes ker(chi) infinitely often. -/
+def RatioKernelEscape (q : ℕ) [Fact (Nat.Prime q)]
+    (chi : (ZMod q)ˣ →* ℂˣ) : Prop :=
+  ∀ N, ∃ n, N ≤ n ∧ factorRatio (q := q) n ∉ chi.ker
+
+/-- Ratio escape is the negation of kernel confinement. -/
+theorem kernel_escape_iff_not_confinement (chi : (ZMod q)ˣ →* ℂˣ) :
+    RatioKernelEscape q chi ↔ ¬KernelConfinement q chi := by
+  simp only [RatioKernelEscape, KernelConfinement]
+  push_neg
+  rfl
+
+/-- If the factor ratio escapes ker(chi) infinitely often AND cofinitely many steps
+    are non-fallback, then spectral gaps are non-summable.
+    Proof: ratio not in ker -> gap != 0 -> gap > 0 (nonneg). Infinitely many positive
+    gaps from a function with finite range gives non-summability. -/
+theorem ratio_escape_implies_gap_nonsummable (_hq3 : 2 < q)
+    (chi : (ZMod q)ˣ →* ℂˣ) (_hchi : chi ≠ 1)
+    (hcofinite : ∃ N₀, ∀ n, N₀ ≤ n → 2 ≤ (rawTwoPointUnitSet (q := q) n).card)
+    (hescape : RatioKernelEscape q chi) :
+    ¬Summable (fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖) := by
+  obtain ⟨N₀, hN₀⟩ := hcofinite
+  apply not_summable_of_frequently_pos_finite_range
+  · exact fun n => paddedUnitSet_gap_nonneg chi n
+  · exact gap_function_finite_range chi
+  · intro N
+    obtain ⟨n, hn, hratio⟩ := hescape (max N N₀)
+    have hn_N : N ≤ n := le_of_max_le_left hn
+    have hn_N₀ : N₀ ≤ n := le_of_max_le_right hn
+    have hcard := hN₀ n hn_N₀
+    have hgap_ne : 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ ≠ 0 := by
+      intro heq
+      exact hratio ((gap_zero_iff_ratio_in_ker n chi hcard).mp heq)
+    exact ⟨n, hn_N, lt_of_le_of_ne (paddedUnitSet_gap_nonneg chi n) (Ne.symm hgap_ne)⟩
+
+/-- RatioKernelEscape for all non-faithful nontrivial chi (+ cofinitely many non-fallback)
+    implies NonFaithfulCharacterEscape.
+    Proof: case split on infinitely many fallback vs cofinitely many non-fallback. -/
+theorem nfce_of_ratio_escape_cofinite (hq3 : 2 < q)
+    (hcofinite : ∃ N₀, ∀ n, N₀ ≤ n → 2 ≤ (rawTwoPointUnitSet (q := q) n).card)
+    (h : ∀ (chi : (ZMod q)ˣ →* ℂˣ), chi ≠ 1 → ¬IsFaithfulChar q chi →
+      RatioKernelEscape q chi) :
+    NonFaithfulCharacterEscape q := by
+  intro chi hchi hnfaith
+  exact ratio_escape_implies_gap_nonsummable hq3 chi hchi hcofinite (h chi hchi hnfaith)
+
+/-- Summable gap + cofinitely many non-fallback steps implies kernel confinement.
+    Proof: summable -> tendsto 0 -> eventually < min positive value of finite range
+    -> eventually gap = 0 -> eventually ratio in ker. -/
+theorem summable_implies_ratio_confined (chi : (ZMod q)ˣ →* ℂˣ)
+    (hsum : Summable (fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖))
+    (hcofinite : ∃ N₀, ∀ n, N₀ ≤ n → 2 ≤ (rawTwoPointUnitSet (q := q) n).card) :
+    KernelConfinement q chi := by
+  obtain ⟨N₀, hN₀⟩ := hcofinite
+  -- summable nonneg => tendsto 0
+  have htends := hsum.tendsto_atTop_zero
+  rw [Metric.tendsto_atTop] at htends
+  -- The gap function has finite range
+  have hfin := gap_function_finite_range (q := q) chi
+  -- Extract positive values in the range
+  set gapFn := fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖
+  -- Case: are there any positive gap values at non-fallback steps beyond N₀?
+  by_cases hexists_pos : ∃ n, N₀ ≤ n ∧ 0 < gapFn n
+  · -- There exist positive values; use finite range to get a uniform positive lower bound
+    set posRange := {x ∈ hfin.toFinset | (0 : ℝ) < x}
+    have hne : posRange.Nonempty := by
+      obtain ⟨n, _, hfn⟩ := hexists_pos
+      exact ⟨gapFn n, by rw [Finset.mem_filter]; exact
+        ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hfn⟩⟩
+    set δ := posRange.min' hne
+    have hδ_pos : 0 < δ := by
+      have hmem := Finset.min'_mem posRange hne
+      exact (Finset.mem_filter.mp hmem).2
+    -- Eventually gap < δ
+    obtain ⟨N₁, hN₁⟩ := htends δ hδ_pos
+    -- Beyond max(N₀, N₁), gaps must be 0 (can't be positive and < δ at same time)
+    refine ⟨max N₀ N₁, fun n hn => ?_⟩
+    have hn_N₀ := le_of_max_le_left hn
+    have hn_N₁ := le_of_max_le_right hn
+    have hcard := hN₀ n hn_N₀
+    rw [← gap_zero_iff_ratio_in_ker n chi hcard]
+    -- Show gap = 0 by contradiction: if > 0, it's >= δ but also < δ
+    by_contra hne_zero
+    have hpos : 0 < gapFn n := lt_of_le_of_ne (paddedUnitSet_gap_nonneg chi n) (Ne.symm hne_zero)
+    have hge_delta : δ ≤ gapFn n := by
+      apply Finset.min'_le
+      rw [Finset.mem_filter]
+      exact ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hpos⟩
+    have hlt_delta : gapFn n < δ := by
+      have h := hN₁ n hn_N₁
+      rw [Real.dist_eq, sub_zero, abs_of_nonneg (paddedUnitSet_gap_nonneg chi n)] at h
+      exact h
+    linarith
+  · -- No positive gap values beyond N₀: all gaps are 0
+    push_neg at hexists_pos
+    refine ⟨N₀, fun n hn => ?_⟩
+    have hcard := hN₀ n hn
+    rw [← gap_zero_iff_ratio_in_ker n chi hcard]
+    exact le_antisymm (hexists_pos n hn) (paddedUnitSet_gap_nonneg chi n)
+
+/-- NFCE failure implies some non-faithful nontrivial chi has summable gaps. -/
+theorem nfce_failure_implies_summable (hfail : ¬NonFaithfulCharacterEscape q) :
+    ∃ (chi : (ZMod q)ˣ →* ℂˣ), chi ≠ 1 ∧ ¬IsFaithfulChar q chi ∧
+      Summable (fun n => 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖) := by
+  simp only [NonFaithfulCharacterEscape, not_forall, Classical.not_not] at hfail
+  obtain ⟨chi, hchi, hnf, hsum⟩ := hfail
+  exact ⟨chi, hchi, hnf, hsum⟩
+
+/-! ### Task 4: Kernel index bound -/
+
+/-- For a nontrivial character, the kernel has index >= 2 in the unit group.
+    Proof: chi != 1 means ker != top, and for finite groups index 1 <-> subgroup = top. -/
+theorem ker_index_ge_two (chi : (ZMod q)ˣ →* ℂˣ) (hchi : chi ≠ 1) :
+    2 ≤ chi.ker.index := by
+  have h_ne_top : chi.ker ≠ ⊤ := by rwa [Ne, MonoidHom.ker_eq_top_iff]
+  exact chi.ker.one_lt_index_of_ne_top h_ne_top
+
+/-! ### Task 5: Connections to existing routes -/
+
+/-- MinFacRatioEscapeQual implies NonFaithfulCharacterEscape.
+    Proof: MinFacRatioEscapeQual gives non-summability for ALL nontrivial chi
+    (including non-faithful ones), by composing through UFDStrong. -/
+theorem qual_escape_implies_nfce (_hq3 : 2 < q)
+    (hq : MinFacRatioEscapeQual q) :
+    NonFaithfulCharacterEscape q := by
+  intro chi hchi _hnfaith
+  exact ratio_escape_implies_ufdStrong (qual_implies_quant hq) chi hchi
+
+/-- The full chain: NFCE -> UFDStrong -> StochasticTwoPointMC. -/
+theorem nfce_implies_variant_mc (hq3 : 2 < q)
+    (hnfce : NonFaithfulCharacterEscape q) (a : (ZMod q)ˣ) :
+    ∃ N, 0 < Multiset.count a (productMultiset (paddedUnitSet (q := q)) N) :=
+  stochastic_two_point_mc_proved hq3 (nfce_implies_ufdStrong hq3 hnfce) a
+
+/-! ### Task 6: Structural consequence: non-fallback gap = 0 iff ratio in ker -/
+
+/-- At non-fallback steps, the gap is positive iff the ratio is NOT in ker(chi). -/
+theorem gap_pos_iff_ratio_not_in_ker (n : ℕ) (chi : (ZMod q)ˣ →* ℂˣ)
+    (hcard : 2 ≤ (rawTwoPointUnitSet (q := q) n).card) :
+    0 < 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ ↔
+    factorRatio (q := q) n ∉ chi.ker := by
+  constructor
+  · intro hpos hmem
+    have heq := (gap_zero_iff_ratio_in_ker n chi hcard).mpr hmem
+    linarith
+  · intro hnotin
+    have hne : 1 - ‖meanCharValue chi (paddedUnitSet (q := q) n)‖ ≠ 0 := by
+      intro heq
+      exact hnotin ((gap_zero_iff_ratio_in_ker n chi hcard).mp heq)
+    exact lt_of_le_of_ne (paddedUnitSet_gap_nonneg chi n) (Ne.symm hne)
+
+/-! ### Task 7: Landscape theorem -/
+
+/-- **Non-Faithful Character Escape Infrastructure Landscape**: summary of Part 25.
+
+    PROVED:
+    1. Kernel characterization: non-faithful nontrivial -> ker proper nontrivial
+    2. Gap = 0 <-> factor ratio in kernel (at non-fallback steps)
+    3. Kernel index >= 2 for nontrivial characters
+    4. MinFacRatioEscapeQual -> NFCE
+    5. NFCE -> UFDStrong -> StochasticTwoPointMC (full chain)
+    6. Ratio escape + cofinitely non-fallback -> NFCE
+    7. Summable gaps + cofinitely non-fallback -> kernel confinement -/
+theorem nfce_infrastructure_landscape :
+    -- 1. Non-faithful nontrivial => proper nontrivial kernel
+    (∀ (q' : ℕ) [Fact (Nat.Prime q')] (chi : (ZMod q')ˣ →* ℂˣ),
+      chi ≠ 1 → ¬IsFaithfulChar q' chi → chi.ker ≠ ⊥ ∧ chi.ker ≠ ⊤)
+    ∧
+    -- 2. Gap = 0 <-> ratio in kernel (at non-fallback steps)
+    (∀ (q' : ℕ) [Fact (Nat.Prime q')] (chi : (ZMod q')ˣ →* ℂˣ) (n : ℕ),
+      2 ≤ (rawTwoPointUnitSet (q := q') n).card →
+      (1 - ‖meanCharValue chi (paddedUnitSet (q := q') n)‖ = 0 ↔
+       factorRatio (q := q') n ∈ chi.ker))
+    ∧
+    -- 3. Kernel index >= 2 for nontrivial characters
+    (∀ (q' : ℕ) [Fact (Nat.Prime q')] (chi : (ZMod q')ˣ →* ℂˣ),
+      chi ≠ 1 → 2 ≤ chi.ker.index)
+    ∧
+    -- 4. MinFacRatioEscapeQual -> NFCE
+    (∀ (q' : ℕ) [Fact (Nat.Prime q')], 2 < q' →
+      MinFacRatioEscapeQual q' → NonFaithfulCharacterEscape q')
+    ∧
+    -- 5. NFCE -> UFDStrong -> StochasticTwoPointMC (full chain)
+    (∀ (q' : ℕ) [Fact (Nat.Prime q')], 2 < q' →
+      NonFaithfulCharacterEscape q' →
+      ∀ (a : (ZMod q')ˣ), ∃ N,
+        0 < Multiset.count a (productMultiset (paddedUnitSet (q := q')) N)) :=
+  ⟨fun _q' _ chi hchi hnf => nonfaithful_nontrivial_ker_proper chi hchi hnf,
+   fun _q' _ chi n hcard => gap_zero_iff_ratio_in_ker n chi hcard,
+   fun _q' _ chi hchi => ker_index_ge_two chi hchi,
+   fun _q' _ hq3 hq => qual_escape_implies_nfce hq3 hq,
+   fun _q' _ hq3 hnfce a => nfce_implies_variant_mc hq3 hnfce a⟩
+
+end NonFaithfulCharacterEscapeInfra
