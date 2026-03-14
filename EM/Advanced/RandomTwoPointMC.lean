@@ -1131,13 +1131,26 @@ noncomputable def unitEndpointCharSumInd
     then (chi h.unit : ℂ)
     else 0
 
-end TCAPathSurvivalProof
+/-- IsUnit at ZMod q implies q does not divide the natural number. -/
+private theorem survive_not_dvd {n : ℕ}
+    (h : IsUnit (n : ZMod q)) : ¬(q ∣ n) := by
+  intro hdvd
+  have h0 : (n : ZMod q) = 0 := by
+    rwa [ZMod.natCast_eq_zero_iff]
+  exact not_isUnit_zero (h0 ▸ h)
 
--- Remaining Part 9 helper theorems removed: formalization in progress
--- (survive_not_dvd, chiAt_mult_fin, path_sum_decomp, fourier_counting, etc.)
--- See the Part 9 section header above for the proof strategy.
--- The mathematical argument is verified; Lean formalization requires careful
--- handling of ℕ→ZMod→ℂ coercions and Finset.norm_prod_le for Fin products.
+/-- unitEndpointCharSumInd for the trivial character equals survivalCount. -/
+private theorem uecsi_trivial (N : ℕ) :
+    unitEndpointCharSumInd (1 : (ZMod q)ˣ →* ℂˣ) N = ↑(survivalCount q N) := by
+  simp only [unitEndpointCharSumInd, survivalCount]
+  -- Simplify: trivial character maps everything to 1
+  have h1 : ∀ σ : Fin N → Bool,
+      (if h : IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
+       then ((1 : (ZMod q)ˣ →* ℂˣ) h.unit : ℂ) else 0) =
+      if IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
+      then (1 : ℂ) else 0 := by
+    intro σ; split_ifs with h <;> simp
+  simp_rw [h1, Finset.sum_boole]
 private theorem chiAt_mult_fin (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) (σ : ℕ → Bool)
     (hndvd : ¬(q ∣ epsWalkProdFrom 2 σ N)) :
     chiAt q chi 2 * ∏ k : Fin N, chiAt q chi (epsWalkFactorFrom 2 σ k) =
@@ -1151,10 +1164,7 @@ private theorem chiAt_of_unit' {n : ℕ} (chi : (ZMod q)ˣ →* ℂˣ)
     (h : IsUnit (n : ZMod q)) :
     chiAt q chi n = (chi h.unit : ℂ) := by
   unfold chiAt
-  have hne : ¬((n : ZMod q) = 0) := fun h0 => not_isUnit_zero (h0 ▸ h)
-  rw [dif_pos (by exact h)]
-  congr 1
-  exact Units.ext (IsUnit.unit_spec h).symm
+  rw [dif_pos h]
 
 /-- For q ≥ 3, chiAt(2) has norm 1. -/
 private theorem chiAt_two_norm_one' (hq3 : 2 < q) (chi : (ZMod q)ˣ →* ℂˣ) :
@@ -1168,7 +1178,8 @@ private theorem chiAt_two_ne_zero' (hq3 : 2 < q) (chi : (ZMod q)ˣ →* ℂˣ) :
     chiAt q chi 2 ≠ 0 := by
   intro h0
   have h1 := chiAt_two_norm_one' hq3 chi
-  rw [h0] at h1; simp at h1
+  have h2 : ‖chiAt q chi 2‖ = 0 := by rw [h0]; exact norm_zero
+  linarith [h1, h2]
 
 set_option maxHeartbeats 400000 in
 /-- Key decomposition: the unscaled path sum splits into surviving and death terms.
@@ -1204,11 +1215,16 @@ private theorem path_sum_decomp (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) (hq3 : 2
       -- Factor product = chiAt(2)⁻¹ * chiAt(endpoint) = chiAt(2)⁻¹ * chi(unit)
       have : ∏ k : Fin N, chiAt q chi (epsWalkFactorFrom 2 (finDecisionExtend σ) ↑k) =
           (chiAt q chi 2)⁻¹ * chiAt q chi (epsWalkProdFrom 2 (finDecisionExtend σ) N) := by
-        rw [eq_comm, inv_mul_eq_div, eq_div_iff hne, mul_comm]
-        exact hmult
+        rw [inv_mul_eq_div, eq_comm, div_eq_iff hne]
+        rw [mul_comm]; exact hmult.symm
       rw [this, chiAt_of_unit' chi h]
     · rfl
-  simp_rw [hsplit_term]
+  have : ∀ σ ∈ Finset.univ, (∏ k : Fin N, chiAt q chi (epsWalkFactorFrom 2 (finDecisionExtend σ) k) : ℂ) =
+      (if h : IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
+       then (chiAt q chi 2)⁻¹ * (chi h.unit : ℂ)
+       else ∏ k : Fin N, chiAt q chi (epsWalkFactorFrom 2 (finDecisionExtend σ) k)) :=
+    fun σ _ => hsplit_term σ
+  rw [Finset.sum_congr rfl this]
   -- Split into surviving + death parts
   rw [show (∑ σ : Fin N → Bool,
         if h : IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
@@ -1229,14 +1245,15 @@ private theorem path_sum_decomp (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) (hq3 : 2
       · simp]
   congr 1
   -- Surviving part: factor out chiAt(2)⁻¹
-  rw [← Finset.mul_sum]
-  congr 1
-  simp only [unitEndpointCharSumInd]
-  apply Finset.sum_congr rfl
-  intro σ _
-  split_ifs with h
-  · rfl
-  · rfl
+  have hfactor : ∀ σ ∈ (Finset.univ : Finset (Fin N → Bool)),
+      (if h : IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
+       then (chiAt q chi 2)⁻¹ * (chi h.unit : ℂ) else 0) =
+      (chiAt q chi 2)⁻¹ *
+      (if h : IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
+       then (chi h.unit : ℂ) else 0) := by
+    intro σ _; split_ifs <;> simp
+  rw [Finset.sum_congr rfl hfactor, ← Finset.mul_sum]
+  rfl
 
 /-- Norm bound on the death error term: |∑_{death} ∏ chiAt| ≤ deathCount. -/
 private theorem death_error_norm_le (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
@@ -1257,20 +1274,20 @@ private theorem death_error_norm_le (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
         · simp
         · calc ‖∏ k : Fin N, chiAt q chi (epsWalkFactorFrom 2 (finDecisionExtend σ) k)‖
               ≤ ∏ k : Fin N, ‖chiAt q chi (epsWalkFactorFrom 2 (finDecisionExtend σ) k)‖ :=
-                Finset.prod_nonneg_of_norm_le _ (fun k _ => chiAt_norm_le_one q chi _)
+                Finset.norm_prod_le _ _
             _ ≤ ∏ _k : Fin N, (1 : ℝ) := by
                 apply Finset.prod_le_prod (fun k _ => norm_nonneg _)
                   (fun k _ => chiAt_norm_le_one q chi _)
             _ = 1 := by simp
     _ = ↑(deathCount q N) := by
         -- Convert indicator sum to card of filter
-        have : ∀ σ : Fin N → Bool,
+        have hconv : ∀ σ ∈ (Finset.univ : Finset (Fin N → Bool)),
             (if IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
               then (0 : ℝ) else 1) =
             (if ¬IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
               then (1 : ℝ) else 0) := by
-          intro σ; split_ifs <;> simp_all
-        simp_rw [this, ← Finset.sum_boole]
+          intro σ _; split_ifs <;> simp_all
+        rw [Finset.sum_congr rfl hconv, Finset.sum_boole]
         simp [deathCount]
 
 /-- Norm bound on the unit endpoint character sum:
@@ -1289,27 +1306,25 @@ private theorem uecsi_norm_le (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) (hq3 : 2 <
   have huecsi_eq : unitEndpointCharSumInd chi N =
       chiAt q chi 2 * ((2 : ℂ) ^ N * pathCharSum q chi N 2 - E) := by
     have h1 : (chiAt q chi 2)⁻¹ * unitEndpointCharSumInd chi N + E =
-        (2 : ℂ) ^ N * pathCharSum q chi N 2 := hdecomp
+        (2 : ℂ) ^ N * pathCharSum q chi N 2 := hdecomp.symm
     have h2 : (chiAt q chi 2)⁻¹ * unitEndpointCharSumInd chi N =
-        (2 : ℂ) ^ N * pathCharSum q chi N 2 - E := by linarith
+        (2 : ℂ) ^ N * pathCharSum q chi N 2 - E := by
+      linear_combination h1
     rw [← h2, ← mul_assoc, mul_inv_cancel₀ hchiAt2_ne, one_mul]
   rw [huecsi_eq]
   calc ‖chiAt q chi 2 * ((2 : ℂ) ^ N * pathCharSum q chi N 2 - E)‖
       = ‖chiAt q chi 2‖ * ‖(2 : ℂ) ^ N * pathCharSum q chi N 2 - E‖ := norm_mul _ _
     _ = 1 * ‖(2 : ℂ) ^ N * pathCharSum q chi N 2 - E‖ := by rw [hchiAt2_norm]
     _ = ‖(2 : ℂ) ^ N * pathCharSum q chi N 2 - E‖ := one_mul _
-    _ ≤ ‖(2 : ℂ) ^ N * pathCharSum q chi N 2‖ + ‖E‖ := by
-        calc ‖(2 : ℂ) ^ N * pathCharSum q chi N 2 - E‖
-            ≤ ‖(2 : ℂ) ^ N * pathCharSum q chi N 2‖ + ‖-E‖ := norm_add_le _ _
-          _ = ‖(2 : ℂ) ^ N * pathCharSum q chi N 2‖ + ‖E‖ := by rw [norm_neg]
+    _ ≤ ‖(2 : ℂ) ^ N * pathCharSum q chi N 2‖ + ‖E‖ := norm_sub_le _ _
     _ ≤ (2 : ℝ) ^ N * ‖pathCharSum q chi N 2‖ + ↑(deathCount q N) := by
         gcongr
         · rw [norm_mul, Complex.norm_pow, Complex.norm_ofNat]
         · exact death_error_norm_le chi N
 
+set_option maxHeartbeats 400000 in
 /-- Fourier counting identity for unitEndpointCharSumInd:
     ∑_χ conj(χ(a)) * unitEndpointCharSumInd(χ, N) = (q-1) * pathCount(a, N). -/
-set_option maxHeartbeats 400000 in
 private theorem fourier_counting_identity (N : ℕ) (a : (ZMod q)ˣ) :
     ∑ chi : (ZMod q)ˣ →* ℂˣ, starRingEnd ℂ (chi a : ℂ) *
       unitEndpointCharSumInd chi N =
@@ -1327,11 +1342,12 @@ private theorem fourier_counting_identity (N : ℕ) (a : (ZMod q)ˣ) :
       then (if h.unit = a then ↑(Fintype.card (ZMod q)ˣ) else 0)
       else 0 := by
     intro σ
-    split_ifs with h
-    · -- Surviving: apply hom_indicator_units
+    by_cases h : IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q)
+    · -- Surviving
+      simp_rw [dif_pos h]
       exact hom_indicator_units a h.unit
     · -- Death: sum of conj(chi(a)) * 0 = 0
-      simp
+      simp_rw [dif_neg h, mul_zero, Finset.sum_const_zero]
   simp_rw [hper_sigma]
   -- Collapse to pathCount
   -- Need to show: ∑_σ [dite IsUnit (if unit=a then |G| else 0) 0] = |G| * pathCount
@@ -1364,7 +1380,7 @@ private theorem fourier_counting_identity (N : ℕ) (a : (ZMod q)ˣ) :
   -- Now it's ∑_σ (if endpoint = a then card else 0) = card * pathCount
   rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
   -- card of filter = pathCount
-  simp [pathCount]
+  rw [mul_comm]; simp [pathCount]
 
 /-- Fourier lower bound on pathCount:
     (q-1) * pathCount(a) ≥ survivalCount - (q-2) * B
@@ -1405,15 +1421,16 @@ private theorem fourier_lower_bound (N : ℕ) (a : (ZMod q)ˣ) (B : ℝ) (hB : 0
                 norm_mul _ _
             _ ≤ 1 * B := by
                 gcongr
-                · rw [map_star, Complex.norm_conj]; exact (char_norm_one_of_hom chi a).le
+                · rw [RCLike.norm_conj]; exact (char_norm_one_of_hom chi a).le
                 · exact hbound chi (Finset.ne_of_mem_erase hmem)
             _ = B := one_mul _
       _ = ↑((Finset.univ : Finset ((ZMod q)ˣ →* ℂˣ)).erase 1).card * B := by
           rw [Finset.sum_const, nsmul_eq_mul]
       _ = (↑(Fintype.card (ZMod q)ˣ) - 1) * B := by
-          congr 1
-          rw [Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ, hom_card_eq_units]
-          push_cast; omega
+          have hcard_pos : 0 < Fintype.card (ZMod q)ˣ := Fintype.card_pos
+          rw [Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ, hom_card_eq_units,
+            Nat.cast_sub (by omega : 1 ≤ Fintype.card (ZMod q)ˣ)]
+          simp
   -- Combine: re(survivalCount + S) ≥ survivalCount - ‖S‖
   have hre_ge : (↑↑(survivalCount q N) + S).re ≥
       ↑(survivalCount q N : ℕ) - (↑(Fintype.card (ZMod q)ˣ) - 1) * B := by
@@ -1421,7 +1438,10 @@ private theorem fourier_lower_bound (N : ℕ) (a : (ZMod q)ˣ) (B : ℝ) (hB : 0
         = (↑↑(survivalCount q N) : ℂ).re + S.re := Complex.add_re _ _
       _ ≥ ↑(survivalCount q N : ℕ) - ‖S‖ := by
           simp only [Complex.natCast_re]
-          linarith [Complex.re_le_abs S, neg_abs_le S.re]
+          have hre_lb : -‖S‖ ≤ S.re := by
+            calc -‖S‖ ≤ -|S.re| := by linarith [Complex.abs_re_le_norm S]
+              _ ≤ S.re := neg_abs_le S.re
+          linarith
       _ ≥ ↑(survivalCount q N : ℕ) - (↑(Fintype.card (ZMod q)ˣ) - 1) * B := by
           linarith [hnt_bound]
   exact hre_ge
@@ -1475,17 +1495,21 @@ theorem tca_path_survival_implies_random_mc_proved :
     rw [hcard]
     have h2N_eq : (2 : ℝ) ^ N = ↑Sv + ↑D := by
       have := hSD
-      push_cast [Sv, D]
-      linarith
-    have hq1 : (↑(q - 1) : ℝ) = ↑q - 1 := by push_cast; omega
+      exact_mod_cast this.symm
+    have hq1 : (↑(q - 1) : ℝ) = ↑q - 1 := by
+      push_cast [Nat.cast_sub (by omega : 1 ≤ q)]; ring
     rw [hq1]
+    -- B = 2^N / (2*q) + D, and 2^N = Sv + D
+    have hB_eq : B = (↑Sv + ↑D) / (2 * ↑q) + ↑D := by
+      simp only [B, D, h2N_eq]
+    rw [hB_eq]
     show (↑Sv : ℝ) - (↑q - 1 - 1) * ((↑Sv + ↑D) / (2 * ↑q) + ↑D) > 0
     rw [show (↑q : ℝ) - 1 - 1 = ↑q - 2 from by ring]
     by_cases hD : D = 0
     · -- D = 0: S = 2^N, goal simplifies
       have hS_pos : (0 : ℝ) < ↑Sv := by
-        have := hSD; rw [show D = 0 from hD] at this
-        have : 0 < Sv := by omega
+        have h := hSD; rw [show D = 0 from hD, add_zero] at h
+        have : 0 < Sv := h ▸ pow_pos (by norm_num : 0 < 2) N
         exact_mod_cast this
       simp only [show (D : ℝ) = 0 from by simp [show D = 0 from hD]]
       rw [add_zero, add_zero]
@@ -1524,11 +1548,8 @@ theorem tca_path_survival_implies_random_mc_proved :
   have hpc0 : pathCount q N a = 0 := by
     simp only [pathCount, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
     intro σ _
-    by_contra heq
-    push_neg at heq
+    intro heq
     exact h_zero N σ (by rw [epsWalkProdFrom_two_eq]; exact heq)
-  rw [hcard, hpc0] at hfl
-  simp at hfl
-  linarith
+  rw [hcard] at hkey; rw [hpc0] at hfl; simp at hfl; linarith
 
 end TCAPathSurvivalProof

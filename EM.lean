@@ -7,6 +7,7 @@ import EM.Advanced.LFunction
 import EM.Advanced.MarkovSieve
 import EM.Advanced.VanishingNoise
 import EM.Advanced.RandomTwoPointMC
+import EM.Advanced.EpsilonWalk
 import EM.Advanced.VanishingNoiseVariant
 import EM.CME.Decomposition
 import EM.CME.Reduction

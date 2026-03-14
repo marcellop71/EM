@@ -636,6 +636,70 @@ $\chi$ maps to $\{1, -1\}$).  Although this property is proved,
 the immediate death at $q = 3$ means the zero-mean steps are
 never reached from the standard starting point.
 
+\paragraph{TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC.}
+The conditional implication is now \textbf{proved}
+(\lean{EM/Advanced/RandomTwoPointMC.lean}{tca\_path\_survival\_implies\_random\_mc\_proved}
+{\color{leanink}$\checkmark$}).
+The proof~(${\sim}400$~lines) builds the full Fourier counting
+infrastructure on $(\ZZ/q\ZZ)^\times$:
+\begin{enumerate}[nosep]
+\item \textbf{Path sum decomposition}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{path\_sum\_decomp}
+  {\color{leanink}$\checkmark$}):
+  the unscaled path sum
+  $2^N \cdot \mathrm{pathCharSum}$ splits as
+  $\mathrm{chiAt}(2)^{-1}\cdot U(\chi,N) + E(\chi,N)$,
+  where $U$ sums over surviving paths via ChiAtMultiplicativity and
+  $E$ sums over death paths.
+
+\item \textbf{Death error bound}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{death\_error\_norm\_le}
+  {\color{leanink}$\checkmark$}):
+  $\|E(\chi,N)\| \leq \mathrm{deathCount}(N)$
+  (each death term has norm $\leq 1$).
+
+\item \textbf{Unit endpoint bound}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{uecsi\_norm\_le}
+  {\color{leanink}$\checkmark$}):
+  $\|U(\chi,N)\| \leq 2^N\|\mathrm{pathCharSum}\| + \mathrm{deathCount}$.
+
+\item \textbf{Fourier counting identity}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{fourier\_counting\_identity}
+  {\color{leanink}$\checkmark$}):
+  $\sum_\chi \overline{\chi(a)} \cdot U(\chi,N)
+  = |G| \cdot \mathrm{pathCount}(a,N)$.
+
+\item \textbf{Fourier lower bound}
+  (\lean{EM/Advanced/RandomTwoPointMC.lean}{fourier\_lower\_bound}
+  {\color{leanink}$\checkmark$}):
+  $(q{-}1)\cdot\mathrm{pathCount}(a) \geq
+  \mathrm{survivalCount} - (q{-}2)\cdot B$
+  where $B$ is the uniform bound on nontrivial $\|U(\chi)\|$.
+\end{enumerate}
+Combining: TCA gives $\|\mathrm{pathCharSum}\| < 1/(2q)$ for
+$N \geq N_0$; PathSurvival gives
+$\mathrm{survivalCount} > 2q^2 \cdot \mathrm{deathCount}$ for
+$N \geq N_1$.  At $N = \max(N_0,N_1)$, the Fourier lower bound yields
+$\mathrm{pathCount}(a) > 0$ for every unit~$a$, via the algebraic
+identity $2q^3 + 2q^2 + 3q + 2 > 0$ (true for all $q \geq 5$).
+For $q = 3$, TCA is vacuously false, so the implication holds trivially.
+The self-consistent RandomTwoPointMC thus reduces to exactly two open
+hypotheses: TreeContractionAtHalf and PathSurvival.
+
+\paragraph{Ensemble $\varepsilon$-walk.}
+The formalization
+(\code{Advanced/EpsilonWalk.lean}, 458~lines, zero \code{sorry})
+develops an ensemble version: instead of fixing $\mathrm{acc} = 2$,
+parametrize the $\varepsilon$-walk by squarefree starting point~$n$.
+The \defname{SigmaCRTPropagationStep} hypothesis (open) asserts that
+CRT equidistribution propagates across steps for $\sigma$-walks,
+mirroring CRTPropagationStep for deterministic walks.
+Under SRE $+$ SigmaCRTPropagationStep, the death density (fraction of
+squarefree~$n$ with $q \mid \mathrm{epsWalkProdFrom}(n,\sigma,k)+1$)
+converges to~$1/(q{-}1)$ for every fixed~$k$ and~$\sigma$
+(\lean{EM/Advanced/EpsilonWalk.lean}{sigma\_death\_density\_tendsto}
+{\color{leanink}$\checkmark$}).
+
 \subsection{Ensemble MC: Almost Every Starting Point}
 \label{sec:ensemble-variant}
 
