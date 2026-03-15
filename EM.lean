@@ -3,6 +3,7 @@ import EM.Adelic.Profinite
 import EM.Adelic.UniformConductor
 import EM.Advanced.Diamonds
 import EM.Advanced.Dobrushin
+import EM.Advanced.IteratedProductCoverage
 import EM.Advanced.LFunction
 import EM.Advanced.MarkovSieve
 import EM.Advanced.VanishingNoise
