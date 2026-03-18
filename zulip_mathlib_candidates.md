@@ -1,6 +1,6 @@
 # Mathlib Contribution Candidates from the Euclid-Mullin Formalization
 
-The repository [EM](https://github.com/marcellop71/EM) (~68,500 lines, 125 files, zero sorry)
+The repository [EM](https://github.com/marcellop71/EM) (~78,000 lines, 148 files, zero sorry)
 formalizes reductions of the Mullin Conjecture in Lean 4 / Mathlib v4.29.0-rc1.
 Along the way it developed general-purpose mathematics that fills genuine gaps in Mathlib.
 Below are the strongest candidates, filtered for non-trivial proofs of well-established
@@ -372,3 +372,121 @@ probability (variance decomposition), and signal processing.
 | Identifier | Kind | Description |
 |---|---|---|
 | `norm_sq_partial_sum_telescoping` | thm | ‖∑ z_k‖² = diagonal + 2·cross terms |
+
+---
+
+## 20. Finiteness of Monic Polynomials per Degree over Finite Rings
+
+**File:** `FunctionField/Finiteness.lean:50` (~25 lines)
+
+Over any finite commutative ring `R`, for each degree `d`,
+the set `{Q : R[X] | Q.Monic ∧ Q.natDegree = d}` is finite.
+Proof: inject via the coefficient map into `Fin (d+1) → R`, which is `Fintype`.
+
+This is completely general (not tied to `ZMod p` or function fields) and fills
+a gap: Mathlib has `Polynomial.degreeLTEquiv` and `Polynomial.monicEquivDegreeLT`
+but never states the resulting finiteness as a standalone lemma.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `monic_natDegree_finite` | thm | `{Q : R[X] \| Q.Monic ∧ Q.natDegree = d}` is `Set.Finite` for `[Fintype R]` |
+| `coeff_injection` | thm | Coefficient map injective on monic degree-d polys |
+
+---
+
+## 21. Counting Monic Polynomials over Finite Fields
+
+**File:** `FunctionField/NecklaceFormula.lean:52` (~15 lines)
+
+There are exactly `p^n` monic polynomials of degree `n` over `𝔽_p`.
+Proof composes `monicEquivDegreeLT`, `degreeLTEquiv`, `Fintype.card_fun`, `ZMod.card`.
+
+Mathlib has all the ingredients but not the composed count.
+Immediate corollary of `monic_natDegree_finite` + cardinality calculation.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `card_monic_of_degree` | thm | `Fintype.card {f : (ZMod p)[X] // f.Monic ∧ f.natDegree = n} = p ^ n` |
+
+---
+
+## 22. Necklace Identity for Irreducible Polynomials over Finite Fields
+
+**File:** `FunctionField/NecklaceFormula.lean:150` (~130 lines)
+
+The classical necklace identity from combinatorics / Galois theory:
+for every prime `p` and `n ≥ 1`,
+
+```
+∑_{d | n} d · π_p(d) = p^n
+```
+
+where `π_p(d)` is the number of monic irreducible polynomials of degree `d`
+over `𝔽_p`. The proof uses the Galois-theoretic fact that every element of
+`GF(p^n)` has a minimal polynomial of degree dividing `n`, each irreducible
+of degree `d` contributing `d` roots.
+
+This is a well-known identity (Gauss, Moreau, 1872) that is completely
+missing from Mathlib. Self-contained proof.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `ffIrredCount` | def | Count of monic irreducible polys of degree d over 𝔽_p |
+| `ffIrredCount_pos` | thm | `π_p(d) ≥ 1` for all `d ≥ 1` |
+| `necklace_identity_proved` | thm | `∑_{d\|n} d · π_p(d) = p^n` |
+| `necklace_implies_irred_lower_bound` | thm | `d · π_p(d) ≤ p^d` (single-term extraction) |
+
+---
+
+## 23. `Nat.minFac` of a Product is the Minimum
+
+**File:** `Advanced/MarkovSieve.lean:335` (~20 lines)
+
+For natural numbers `n, m > 1`:
+
+```
+Nat.minFac (n * m) = min (Nat.minFac n) (Nat.minFac m)
+```
+
+No coprimality hypothesis needed. The proof is by antisymmetry:
+(≤) via `Nat.minFac_le_of_dvd` + divisibility; (≥) via `Prime.dvd_mul`.
+Mathlib has extensive `Nat.minFac` API but not this identity.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `minFac_mul_eq_min` | thm | `Nat.minFac (n * m) = min (Nat.minFac n) (Nat.minFac m)` |
+| `minFac_not_multiplicative` | thm | Counterexample: `minFac` is not multiplicative (6 × 35) |
+
+---
+
+## 24. Squarefree Integers are Determined by their Prime Factor Set
+
+**File:** `Advanced/InterpolationMC.lean:877` (~8 lines)
+
+If `P` and `Q` are squarefree and `P.primeFactors = Q.primeFactors`, then `P = Q`.
+Proof via `Nat.prod_primeFactors_of_squarefree`.
+
+This is a textbook fact about the fundamental theorem of arithmetic that
+Mathlib does not state directly.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `eq_of_same_primeFactors_squarefree` | thm | Squarefree + same prime factors ⟹ equal |
+
+---
+
+## 25. Sieve Density Function and Algebraic Properties
+
+**File:** `Reduction/ShiftedDensity.lean:54` (~120 lines)
+
+The sieve density function `g(r) = r/(r² − 1)` and its properties:
+partial fraction decomposition, strict monotonicity, and tight bounds.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `sieveDensity` | def | `g(r) = r/(r² − 1)` |
+| `sieveDensity_partial_frac` | thm | `g(r) = (1/2)(1/(r−1) + 1/(r+1))` |
+| `sieveDensity_gt_inv` | thm | `g(r) > 1/r` for r ≥ 2 |
+| `sieveDensity_lt_inv_pred` | thm | `g(r) < 1/(r−1)` |
+| `sieveDensity_strict_anti` | thm | `g` strictly decreasing on [2, ∞) |
+| `sieveDensity_sub_inv` | thm | `g(r) − 1/r = 1/(r(r² − 1))` (exact correction) |
