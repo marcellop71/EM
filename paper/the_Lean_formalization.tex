@@ -440,144 +440,144 @@ stable identifier independent of human naming.
 \quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting) & \proved & \code{dynamical\_hitting\_implies\_mullin}  & b069682d \\
 \quad \textbf{CCSB $\Rightarrow$ MC} (char sums) & \proved & \code{complex\_csb\_mc'}  & 2fb09cde \\
 \quad MMCSB $\Rightarrow$ MC (multi-modular) & \proved & \code{mmcsb\_implies\_mc}  & a4e5b5f2 \\
-\quad VCB $+$ PED $\Rightarrow$ MC & \proved & \code{vcb\_ped\_implies\_mc}  & \\
+\quad VCB $+$ PED $\Rightarrow$ MC & \proved & \code{vcb\_ped\_implies\_mc}  & d24ad157 \\
 \midrule
 %%% ---- Bootstrap + walk ----
 \multicolumn{4}{l}{\emph{Inductive bootstrap and walk dynamics}} \\
 \quad PrimeResidueEscape (elementary, no Burgess) & \proved & \code{prime\_residue\_escape}  & 5f0da0ec \\
 \quad Single Hit Theorem (SHH $\Rightarrow$ MC) & \proved & \code{single\_hit\_implies\_mc}  & ed2a8b99 \\
 \quad Walk--divisibility bridge ($w=-1 \Leftrightarrow q \mid P{+}1$) & \proved & \code{walkZ\_eq\_neg\_one\_iff}  & 19e01a7e \\
-\quad Confinement Theorem & \proved & \code{confinement\_forward}  & \\
-\quad Fourier bridge (char sums $\to$ hit count) & \proved & \code{walk\_hit\_count\_fourier\_step}  & \\
-\quad Telescoping identity \& norm $\leq 2$ & \proved & \code{walk\_telescope\_identity}  & \\
-\quad Shift-one autocorrelation $=$ conjugate mult sum & \proved & \code{walk\_shift\_one\_correlation}  & \\
+\quad Confinement Theorem & \proved & \code{confinement\_forward}  & e1f5ff43 \\
+\quad Fourier bridge (char sums $\to$ hit count) & \proved & \code{walk\_hit\_count\_fourier\_step}  & 695a2823 \\
+\quad Telescoping identity \& norm $\leq 2$ & \proved & \code{walk\_telescope\_identity}  & b716b929 \\
+\quad Shift-one autocorrelation $=$ conjugate mult sum & \proved & \code{walk\_shift\_one\_correlation}  & 1c240c93 \\
 \quad $\Prod{2}(n)$ squarefree & \proved & \code{prod\_squarefree}  & 06e3904a \\
 \midrule
 %%% ---- Character chain ----
 \multicolumn{4}{l}{\emph{Character sum chain}} \\
 \quad CME $\Rightarrow$ CCSB (all character orders) & \proved & \code{cme\_implies\_ccsb}  & c761d4e9 \\
-\quad CME $=$ VCB $+$ Dec (decomposition) & \proved & \code{cme\_implies\_vcb}  & \\
-\quad Dec $\Rightarrow$ PED; NoLongRuns$(L) \Rightarrow$ PED & \proved & \code{decorrelation\_implies\_ped}  & \\
-\quad FEB $\Rightarrow$ CME (fiber energy) & \proved & \code{feb\_implies\_cme}  & \\
-\quad $E_\chi(N) = N + 2\sum\text{cross}$ (energy identity) & \proved & \code{char\_sum\_energy\_eq\_N\_plus\_cross}  & \\
-\quad Cofactor identity: $w+1 = m \cdot \mathrm{cof}$ & \proved & \code{shifted\_walk\_eq\_mult\_mul\_cof}  & \\
+\quad CME $=$ VCB $+$ Dec (decomposition) & \proved & \code{cme\_implies\_vcb}  & 0112fe00 \\
+\quad Dec $\Rightarrow$ PED; NoLongRuns$(L) \Rightarrow$ PED & \proved & \code{decorrelation\_implies\_ped}  & dbc9644c \\
+\quad FEB $\Rightarrow$ CME (fiber energy) & \proved & \code{feb\_implies\_cme}  & 4299967b \\
+\quad $E_\chi(N) = N + 2\sum\text{cross}$ (energy identity) & \proved & \code{char\_sum\_energy\_eq\_N\_plus\_cross}  & 6abba0fb \\
+\quad Cofactor identity: $w+1 = m \cdot \mathrm{cof}$ & \proved & \code{shifted\_walk\_eq\_mult\_mul\_cof}  & 79af39f7 \\
 \midrule
 %%% ---- Ensemble / DSL ----
 \multicolumn{4}{l}{\emph{Ensemble and DSL framework}} \\
-\quad SD $\Rightarrow$ CSVB($C{=}2$) $\Rightarrow$ concentration $\Rightarrow$ cancellation & \proved & \code{sd\_implies\_cancellation}  & \\
-\quad WeylHittingBridge (char cancel $\Rightarrow$ hitting) & \proved & \code{weyl\_hitting\_bridge\_proved}  & \\
-\quad LMG $\Rightarrow$ PositiveDensityRSD (1 hypothesis) & \proved & \code{lmg\_implies\_positive\_density\_rsd}  & \\
-\quad genSeq$(n,k) \geq 3$ for $k \geq 1$ (parity) & \proved & \code{genSeq\_ge\_three}  & \\
-\quad $\mathbb{E}[1/\text{genSeq}(\cdot,0)] \geq 1/4$ (unconditional) & \proved & \code{ensembleAvg\_k0\_ge\_quarter}  & \\
-\quad Death density bridge ($q \geq 3$) & \proved & \code{ensembleAvg\_ge\_death\_density}  & \\
-\quad Absorption: death $\Rightarrow$ permanent $0 \!\bmod q$ & \proved & \code{death\_then\_never\_death\_again}  & \\
-\quad ETA $+$ SRE $\Rightarrow$ PositiveDensityRSD & \proved & \code{eta\_sre\_implies\_prsd}  & \\
+\quad SD $\Rightarrow$ CSVB($C{=}2$) $\Rightarrow$ concentration $\Rightarrow$ cancellation & \proved & \code{sd\_implies\_cancellation}  & 4e941a85 \\
+\quad WeylHittingBridge (char cancel $\Rightarrow$ hitting) & \proved & \code{weyl\_hitting\_bridge\_proved}  & 07796c68 \\
+\quad LMG $\Rightarrow$ PositiveDensityRSD (1 hypothesis) & \proved & \code{lmg\_implies\_positive\_density\_rsd}  & dc23143a \\
+\quad genSeq$(n,k) \geq 3$ for $k \geq 1$ (parity) & \proved & \code{genSeq\_ge\_three}  & a453ba31 \\
+\quad $\mathbb{E}[1/\text{genSeq}(\cdot,0)] \geq 1/4$ (unconditional) & \proved & \code{ensembleAvg\_k0\_ge\_quarter}  & 9733c692 \\
+\quad Death density bridge ($q \geq 3$) & \proved & \code{ensembleAvg\_ge\_death\_density}  & 2f5da145 \\
+\quad Absorption: death $\Rightarrow$ permanent $0 \!\bmod q$ & \proved & \code{death\_then\_never\_death\_again}  & e37a2056 \\
+\quad ETA $+$ SRE $\Rightarrow$ PositiveDensityRSD & \proved & \code{eta\_sre\_implies\_prsd}  & af923ac4 \\
 \midrule
 %%% ---- Spectral / large sieve ----
 \multicolumn{4}{l}{\emph{Spectral and large sieve routes}} \\
 \quad SVE $\Leftrightarrow$ VE $\Leftrightarrow$ CCSB (Parseval) & \proved & \code{sve\_iff\_ve}  & \\
-\quad Van der Corput bound & \proved & \code{van\_der\_corput\_bound}  & \\
-\quad HOD $\Rightarrow$ CCSB & \proved & \code{hod\_implies\_ccsb}  & \\
-\quad Weak ALS (with $N(\delta^{-1}{+}1)$ constant) & \proved & \code{weak\_als\_from\_card\_bound}  & \\
-\quad ALS $\Rightarrow$ PrimeArithLS (Gauss inversion, 8 lemmas) & \proved & \code{als\_implies\_prime\_arith\_ls}  & \\
+\quad Van der Corput bound & \proved & \code{van\_der\_corput\_bound}  & 3c0a4bd8 \\
+\quad HOD $\Rightarrow$ CCSB & \proved & \code{hod\_implies\_ccsb}  & 82e08ba3 \\
+\quad Weak ALS (with $N(\delta^{-1}{+}1)$ constant) & \proved & \code{weak\_als\_from\_card\_bound}  & f7a8cd3a \\
+\quad ALS $\Rightarrow$ PrimeArithLS (Gauss inversion, 8 lemmas) & \proved & \code{als\_implies\_prime\_arith\_ls}  & 803082cc \\
 \quad MittagLefflerCsc (Mittag-Leffler for $\csc$) & \proved & \code{mittag\_leffler\_csc\_proved}  & 3bfddc38 \\
 \quad WPNT $\Rightarrow$ PrimesEquidistInAP (Abel chain) & \proved & \code{wpnt\_implies\_primes\_equidist\_proved}  & ae92835c \\
 \midrule
 %%% ---- Adelic / profinite / CRT ----
 \multicolumn{4}{l}{\emph{Adelic and CRT framework}} \\
-\quad CME $\Leftrightarrow$ MWI $+$ MME (adelic decomposition) & \proved & \code{cme\_iff\_adelic}  & \\
-\quad CRTFiber $+$ MME $\Rightarrow$ CME & \proved & \code{crt\_fiber\_mme\_implies\_cme}  & \\
-\quad UPE $\Rightarrow$ MC (profinite) & \proved & \code{uniform\_profinite\_implies\_mc}  & \\
-\quad Primes $< N$ generate $(\ZZ/N\ZZ)^\times$ & \proved & \code{primeUnitsBelow\_generate}  & \\
-\quad MC $\Rightarrow$ EM multipliers generate $(\ZZ/N\ZZ)^\times$ & \proved & \code{mc\_implies\_full\_generation}  & \\
+\quad CME $\Leftrightarrow$ MWI $+$ MME (adelic decomposition) & \proved & \code{cme\_iff\_adelic}  & e3d49fb8 \\
+\quad CRTFiber $+$ MME $\Rightarrow$ CME & \proved & \code{crt\_fiber\_mme\_implies\_cme}  & 2fc3bae2 \\
+\quad UPE $\Rightarrow$ MC (profinite) & \proved & \code{uniform\_profinite\_implies\_mc}  & 474313ac \\
+\quad Primes $< N$ generate $(\ZZ/N\ZZ)^\times$ & \proved & \code{primeUnitsBelow\_generate}  & 85c155d7 \\
+\quad MC $\Rightarrow$ EM multipliers generate $(\ZZ/N\ZZ)^\times$ & \proved & \code{mc\_implies\_full\_generation}  & 7b29549c \\
 \midrule
 %%% ---- Variants ----
 \multicolumn{4}{l}{\emph{Variant frameworks}} \\
-\quad UFDStrong $\Rightarrow$ VariantMC (two-point) & \proved & \code{variant\_mc\_from\_ufd\_strong\_proved}  & \\
-\quad FaithfulCharacterEscape (unconditional, all $q \geq 3$) & \proved & \code{faithful\_character\_escape}  & \\
-\quad UFDStrong(3) / StochasticTwoPointMC(3) & \proved & \code{variant\_mc\_three\_unconditional}  & \\
-\quad NFCS for $|G|$ with $\geq 2$ prime factors & \proved & \code{nonFaithfulCharSeparation\_of\_two\_prime\_factors}  & \\
-\quad Quotient char lift: $\bar\chi$ faithful on $G/\ker\chi$ & \proved & \code{quotientChar\_faithful}  & \\
-\quad TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC & \proved & \code{tca\_path\_survival\_implies\_random\_mc\_proved}  & \\
-\quad MixedDiversityWeak $+$ MixedDiversity $\Rightarrow$ MixedMC & \proved & \code{mixed\_diversity\_weak\_implies\_mixed\_mc}  & \\
-\quad Mixed capture of $q=3$ (unconditional) & \proved & \code{mixed\_capture\_three}  & \\
-\quad MixedHitting $+$ MixedDiversity $\Rightarrow$ MixedMC & \proved & \code{mixed\_hitting\_diversity\_implies\_mc}  & \\
-\quad Two-point $\hookrightarrow$ Mixed (embedding) & \proved & \code{embed\_walk\_agreement}  & \\
-\quad Hit $\Rightarrow$ Capture (walk surgery) & \proved & \code{hit\_implies\_capture'}  & \\
-\quad Hitting $\Leftrightarrow$ $-1$ reachable (BFS) & \proved & \code{mixed\_hitting\_iff\_neg\_one\_reachable}  & \\
-\quad Perpetual primality $\Rightarrow$ walk $\not\equiv 1 \pmod{3}$ & \proved & \code{perpetual\_prime\_excludes\_mod3\_one}  & \\
-\quad Factor branching grows $R_{n+1}$ & \proved & \code{reachableAt\_from\_factor}  & \\
-\quad Composite $P{+}1 \Rightarrow$ two positions in $R_{n+1}$ & \proved & \code{reachable\_composite\_branch}  & \\
-\quad $R_\infty$ not in any proper coset (PRE) & \proved & \code{reachableEver\_not\_in\_coset}  & \\
-\quad Factor confinement from incomplete $R_\infty$ & \proved & \code{factor\_confinement}  & \\
-\quad FactorEscape $\Rightarrow$ $R_\infty$ full $\Rightarrow$ Mixed MC & \proved & \code{factor\_escape\_implies\_mixed\_mc\_at}  & \\
-\quad PureRandomMC $\Leftrightarrow$ MixedMC (purification) & \proved & \code{pure\_random\_mc\_iff\_mixed\_mc}  & \\
-\quad MC $\Rightarrow$ PureRandomMC & \proved & \code{standard\_mc\_implies\_pure\_random}  & \\
-\quad PSCD $\Rightarrow$ almost-all mixed hitting & \proved & \code{pscd\_implies\_almost\_all\_mixed\_hitting}  & \\
-\quad Trapped $\leq$ $\sum$ confined (pigeonhole) & \proved & \code{trapped\_le\_sum\_confined}  & \\
-\quad $0 \notin R_\infty$ for trapped coprime $m$ & \proved & \code{zero\_not\_reachable\_of\_coprime\_trapped}  & \\
-\quad PEAP $+$ 3 bridges $\Rightarrow$ almost-all hitting & \proved & \code{peap\_chain\_implies\_almost\_all\_mixed\_hitting}  & \\
-\quad $(\forall q{\geq}5,\,\mathrm{TSD}(q)) \Rightarrow$ MixedMC & \proved & \code{tsd\_all\_implies\_mixed\_mc}  & \\
-\quad Coset ambiguity: $q{=}3$ free, $q{=}5$ blocked & \proved & \code{coset\_ambiguity\_landscape}  & \\
-\quad Geometric capture: $(1{-}\delta)^K \to 0$ & \proved & \code{product\_failure\_tendsto\_zero}  & \\
-\quad TSD $\Rightarrow$ PositiveProbCapture & \proved & \code{tsd\_positive\_capture}  & \\
-\quad Perpetual primality $\Rightarrow$ eventually periodic mod~$q$ & \proved & \code{perpetual\_prime\_eventually\_periodic}  & \\
-\quad Mod-5 orbit $\{1,2\}$ avoids $-1$ under perp.\ primality & \proved & \code{perpetual\_prime\_mod5\_orbit}  & \\
-\quad Reachable set monotone along walk prefixes & \proved & \code{reachableEver\_mono\_along\_walk}  & \\
+\quad UFDStrong $\Rightarrow$ VariantMC (two-point) & \proved & \code{variant\_mc\_from\_ufd\_strong\_proved}  & 4b2fb306 \\
+\quad FaithfulCharacterEscape (unconditional, all $q \geq 3$) & \proved & \code{faithful\_character\_escape}  & 4bfec51b \\
+\quad UFDStrong(3) / StochasticTwoPointMC(3) & \proved & \code{variant\_mc\_three\_unconditional}  & 79493410 \\
+\quad NFCS for $|G|$ with $\geq 2$ prime factors & \proved & \code{nonFaithfulCharSeparation\_of\_two\_prime\_factors}  & ab2af646 \\
+\quad Quotient char lift: $\bar\chi$ faithful on $G/\ker\chi$ & \proved & \code{quotientChar\_faithful}  & f9f9cadf \\
+\quad TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC & \proved & \code{tca\_path\_survival\_implies\_random\_mc\_proved}  & 3f4515d9 \\
+\quad MixedDiversityWeak $+$ MixedDiversity $\Rightarrow$ MixedMC & \proved & \code{mixed\_diversity\_weak\_implies\_mixed\_mc}  & b4e99dea \\
+\quad Mixed capture of $q=3$ (unconditional) & \proved & \code{mixed\_capture\_three}  & e3b7121f \\
+\quad MixedHitting $+$ MixedDiversity $\Rightarrow$ MixedMC & \proved & \code{mixed\_hitting\_diversity\_implies\_mc}  & e71086df \\
+\quad Two-point $\hookrightarrow$ Mixed (embedding) & \proved & \code{embed\_walk\_agreement}  & dec2cc13 \\
+\quad Hit $\Rightarrow$ Capture (walk surgery) & \proved & \code{hit\_implies\_capture'}  & 68895c87 \\
+\quad Hitting $\Leftrightarrow$ $-1$ reachable (BFS) & \proved & \code{mixed\_hitting\_iff\_neg\_one\_reachable}  & f6c253c7 \\
+\quad Perpetual primality $\Rightarrow$ walk $\not\equiv 1 \pmod{3}$ & \proved & \code{perpetual\_prime\_excludes\_mod3\_one}  & 16b451bc \\
+\quad Factor branching grows $R_{n+1}$ & \proved & \code{reachableAt\_from\_factor}  & b8330c76 \\
+\quad Composite $P{+}1 \Rightarrow$ two positions in $R_{n+1}$ & \proved & \code{reachable\_composite\_branch}  & 12909295 \\
+\quad $R_\infty$ not in any proper coset (PRE) & \proved & \code{reachableEver\_not\_in\_coset}  & 403b9151 \\
+\quad Factor confinement from incomplete $R_\infty$ & \proved & \code{factor\_confinement}  & 6bc4a711 \\
+\quad FactorEscape $\Rightarrow$ $R_\infty$ full $\Rightarrow$ Mixed MC & \proved & \code{factor\_escape\_implies\_mixed\_mc\_at}  & f0e544c3 \\
+\quad PureRandomMC $\Leftrightarrow$ MixedMC (purification) & \proved & \code{pure\_random\_mc\_iff\_mixed\_mc}  & 9234ef21 \\
+\quad MC $\Rightarrow$ PureRandomMC & \proved & \code{standard\_mc\_implies\_pure\_random}  & a1249f53 \\
+\quad PSCD $\Rightarrow$ almost-all mixed hitting & \proved & \code{pscd\_implies\_almost\_all\_mixed\_hitting}  & 08f5e9ea \\
+\quad Trapped $\leq$ $\sum$ confined (pigeonhole) & \proved & \code{trapped\_le\_sum\_confined}  & b412fa7b \\
+\quad $0 \notin R_\infty$ for trapped coprime $m$ & \proved & \code{zero\_not\_reachable\_of\_coprime\_trapped}  & d59dfd35 \\
+\quad PEAP $+$ 3 bridges $\Rightarrow$ almost-all hitting & \proved & \code{peap\_chain\_implies\_almost\_all\_mixed\_hitting}  & c3eda394 \\
+\quad $(\forall q{\geq}5,\,\mathrm{TSD}(q)) \Rightarrow$ MixedMC & \proved & \code{tsd\_all\_implies\_mixed\_mc}  & d97b4938 \\
+\quad Coset ambiguity: $q{=}3$ free, $q{=}5$ blocked & \proved & \code{coset\_ambiguity\_landscape}  & 4cdffe34 \\
+\quad Geometric capture: $(1{-}\delta)^K \to 0$ & \proved & \code{product\_failure\_tendsto\_zero}  & 40ceab63 \\
+\quad TSD $\Rightarrow$ PositiveProbCapture & \proved & \code{tsd\_positive\_capture}  & 5266fc90 \\
+\quad Perpetual primality $\Rightarrow$ eventually periodic mod~$q$ & \proved & \code{perpetual\_prime\_eventually\_periodic}  & 9c1903bf \\
+\quad Mod-5 orbit $\{1,2\}$ avoids $-1$ under perp.\ primality & \proved & \code{perpetual\_prime\_mod5\_orbit}  & e3e54697 \\
+\quad Reachable set monotone along walk prefixes & \proved & \code{reachableEver\_mono\_along\_walk}  & aed1f58e \\
 \midrule
 %%% ---- Function field ----
 \multicolumn{4}{l}{\emph{Function field analog}} \\
-\quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & \proved & \code{ff\_dh\_implies\_ffmc}  & \\
-\quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ & \proved & \code{weil\_implies\_ff\_se}  & \\
-\quad $\ZZ/4\ZZ$: generation $\neq$ coverage (Dead End~\#130) & \proved & \code{alternating\_walk\_misses\_two}  & \\
-\quad FFLM structurally false (cyclotomic, Dead End~\#129) & \proved & \code{ff\_cyclotomic\_dead\_end}  & \\
-\quad FF mixed selection injective (no irred twice) & \proved & \code{ffMixedSel\_injective}  & \\
-\quad FF coprimality cascade (mixed walks) & \proved & \code{ffMixedWalkProd\_coprime\_succ}  & \\
-\quad FF start not capturable & \proved & \code{start\_not\_capturable}  & \\
-\quad FF factor pool degree $\to \infty$ & \proved & \code{ff\_factor\_pool\_degree\_grows}  & \\
-\quad FFFiniteIrreduciblesPerDegree (unconditional) & \proved & \code{ffFiniteIrreduciblesPerDegree\_proved}  & \\
-\quad FFDH alone $\Rightarrow$ FF-MC (finiteness eliminated) & \proved & \code{ff\_dh\_implies\_ffmc\_unconditional}  & \\
-\quad FFStochasticMC ($\varepsilon > 0 \Rightarrow$ capture) & \proved & \code{stochastic\_mc\_unconditional}  & \\
-\quad FF phase transition (sharp at $\varepsilon = 0$) & \proved & \code{ff\_phase\_transition\_unconditional}  & \\
-\quad Factor diversity $\Rightarrow$ spectral contraction & \proved & \code{factor\_diversity\_spectral\_contraction}  & \\
-\quad Diverse steps $\Rightarrow$ char product vanishes & \proved & \code{diverse\_steps\_imply\_vanishing}  & \\
-\quad TSD $\Rightarrow$ StochasticMC (integer side) & \proved & \code{stochastic\_mc\_of\_tsd}  & \\
-\quad Phase transition summary ($\varepsilon = 0$ critical) & \proved & \code{phase\_transition\_summary}  & \\
-\quad Perpetual primality multi-exclusion ($q = 5, 11, 17, 23$) & \proved & \code{perpetual\_primality\_multi\_exclusion}  & \\
-\quad FF $\Phi_3$ exclusion ($-1$ unreachable, $p \equiv 2 \!\bmod 3$) & \proved & \code{ff\_neg\_one\_unreachable}  & \\
-\quad Necklace identity ($\sum_{d|n} d\pi_p(d) = p^n$) & \proved & \code{necklace\_identity\_proved}  & \\
-\quad FF almost-all GenMixedMC (zero hypotheses) & \proved & \code{ff\_almost\_all\_unconditional}  & \\
-\quad Tube collapse ($\neg\mathrm{WM} \Rightarrow$ tube ratio $\to 0$) & \proved & \code{tube\_collapse}  & \\
-\quad Shielding lemma ($\seq{2}(n{+}1) \notin M$) & \proved & \code{shielding\_lemma}  & \\
-\quad Rogue character exists (avoidance $\Rightarrow$ linear char growth) & \proved & \code{rogue\_character\_exists}  & \\
-\quad SVE contradicts avoidance & \proved & \code{sve\_contradicts\_avoidance}  & \\
-\quad $\neg$WM $\Rightarrow$ missing primes infinite & \proved & \code{not\_wm\_implies\_missing\_infinite}  & \\
-\quad Spectral conspiracy landscape (7-clause conjunction) & \proved & \code{spectral\_conspiracy\_landscape}  & \\
+\quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & \proved & \code{ff\_dh\_implies\_ffmc}  & 29679e3a \\
+\quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ & \proved & \code{weil\_implies\_ff\_se}  & 90bbd755 \\
+\quad $\ZZ/4\ZZ$: generation $\neq$ coverage (Dead End~\#130) & \proved & \code{alternating\_walk\_misses\_two}  & 4ddc83b6 \\
+\quad FFLM structurally false (cyclotomic, Dead End~\#129) & \proved & \code{ff\_cyclotomic\_dead\_end}  & 8337b7dc \\
+\quad FF mixed selection injective (no irred twice) & \proved & \code{ffMixedSel\_injective}  & 20c8914b \\
+\quad FF coprimality cascade (mixed walks) & \proved & \code{ffMixedWalkProd\_coprime\_succ}  & b14cdca2 \\
+\quad FF start not capturable & \proved & \code{start\_not\_capturable}  & b91e4671 \\
+\quad FF factor pool degree $\to \infty$ & \proved & \code{ff\_factor\_pool\_degree\_grows}  & 45cdf92d \\
+\quad FFFiniteIrreduciblesPerDegree (unconditional) & \proved & \code{ffFiniteIrreduciblesPerDegree\_proved}  & 17c25a13 \\
+\quad FFDH alone $\Rightarrow$ FF-MC (finiteness eliminated) & \proved & \code{ff\_dh\_implies\_ffmc\_unconditional}  & ca639028 \\
+\quad FFStochasticMC ($\varepsilon > 0 \Rightarrow$ capture) & \proved & \code{stochastic\_mc\_unconditional}  & 677bbd33 \\
+\quad FF phase transition (sharp at $\varepsilon = 0$) & \proved & \code{ff\_phase\_transition\_unconditional}  & 354d8033 \\
+\quad Factor diversity $\Rightarrow$ spectral contraction & \proved & \code{factor\_diversity\_spectral\_contraction}  & 024381d7 \\
+\quad Diverse steps $\Rightarrow$ char product vanishes & \proved & \code{diverse\_steps\_imply\_vanishing}  & 5ba9dece \\
+\quad TSD $\Rightarrow$ StochasticMC (integer side) & \proved & \code{stochastic\_mc\_of\_tsd}  & 89f5d828 \\
+\quad Phase transition summary ($\varepsilon = 0$ critical) & \proved & \code{phase\_transition\_summary}  & 028f0a20 \\
+\quad Perpetual primality multi-exclusion ($q = 5, 11, 17, 23$) & \proved & \code{perpetual\_primality\_multi\_exclusion}  & 64d0302c \\
+\quad FF $\Phi_3$ exclusion ($-1$ unreachable, $p \equiv 2 \!\bmod 3$) & \proved & \code{ff\_neg\_one\_unreachable}  & 1efdbf06 \\
+\quad Necklace identity ($\sum_{d|n} d\pi_p(d) = p^n$) & \proved & \code{necklace\_identity\_proved}  & 2d6542a5 \\
+\quad FF almost-all GenMixedMC (zero hypotheses) & \proved & \code{ff\_almost\_all\_unconditional}  & 3b954837 \\
+\quad Tube collapse ($\neg\mathrm{WM} \Rightarrow$ tube ratio $\to 0$) & \proved & \code{tube\_collapse}  & 6230ae9a \\
+\quad Shielding lemma ($\seq{2}(n{+}1) \notin M$) & \proved & \code{shielding\_lemma}  & 90208737 \\
+\quad Rogue character exists (avoidance $\Rightarrow$ linear char growth) & \proved & \code{rogue\_character\_exists}  & 37229a82 \\
+\quad SVE contradicts avoidance & \proved & \code{sve\_contradicts\_avoidance}  & 6043a2ab \\
+\quad $\neg$WM $\Rightarrow$ missing primes infinite & \proved & \code{not\_wm\_implies\_missing\_infinite}  & 43a0b692 \\
+\quad Spectral conspiracy landscape (7-clause conjunction) & \proved & \code{spectral\_conspiracy\_landscape}  & 2bdee217 \\
 \midrule
 %%% ---- Open hypotheses ----
 \multicolumn{4}{l}{\emph{Open hypotheses --- live targets}} \\
 \quad \textbf{DeterministicStabilityLemma} (PE $\Rightarrow$ CME) & \openhyp & \code{DeterministicStabilityLemma}  & d5e0c044 \\
 \quad \textbf{DynamicalHitting} (SE $\Rightarrow$ cofinal $-1$) & \openhyp & \code{DynamicalHitting}  & e004d177 \\
 \quad \textbf{ComplexCharSumBound} ($S_\chi(N) = o(N)$) & \openhyp & \code{ComplexCharSumBound}  & d3bb3ee3 \\
-\quad \textbf{BVImpliesMMCSB} (BV $\to$ orbit) & \openhyp & \code{BVImpliesMMCSB}  & \\
-\quad \textbf{SieveTransfer} (population $\to$ orbit) & \openhyp & \code{SieveTransfer}  & \\
+\quad \textbf{BVImpliesMMCSB} (BV $\to$ orbit) & \openhyp & \code{BVImpliesMMCSB}  & ca998ffc \\
+\quad \textbf{SieveTransfer} (population $\to$ orbit) & \openhyp & \code{SieveTransfer}  & c8dd7777 \\
 \quad StepDecorrelation (ensemble cross-terms) & \openhyp & \code{StepDecorrelation}  & d1df5f92 \\
-\quad LinearMeanGrowth ($\mathbb{E}[S_K] \geq \kappa K$) & \openhyp & \code{LinearMeanGrowth}  & \\
-\quad EnsembleTransitionApprox (CRT blindness) & \openhyp & \code{EnsembleTransitionApprox}  & \\
+\quad LinearMeanGrowth ($\mathbb{E}[S_K] \geq \kappa K$) & \openhyp & \code{LinearMeanGrowth}  & 52e9cd90 \\
+\quad EnsembleTransitionApprox (CRT blindness) & \openhyp & \code{EnsembleTransitionApprox}  & 9540d74e \\
 \quad NonFaithfulCharacterEscape ($q \geq 5$, two-point) & \openhyp & \code{NonFaithfulCharacterEscape}  & \\
-\quad MixedDiversity (composite $P{+}1$ cofinally) & \openhyp & \code{MixedDiversity}  & \\
-\quad MixedDiversityWeak (steering from diversity) & \openhyp & \code{MixedDiversityWeak}  & \\
-\quad MixedHitting ($-1$ reachable under diversity) & \openhyp & \code{MixedHitting}  & \\
-\quad UFDStrongImpliesMixedMC (self-consistency bridge) & \openhyp & \code{UFDStrongImpliesMixedMC}  & \\
+\quad MixedDiversity (composite $P{+}1$ cofinally) & \openhyp & \code{MixedDiversity}  & c9f2c638 \\
+\quad MixedDiversityWeak (steering from diversity) & \openhyp & \code{MixedDiversityWeak}  & a6f323bb \\
+\quad MixedHitting ($-1$ reachable under diversity) & \openhyp & \code{MixedHitting}  & 15b0a649 \\
+\quad UFDStrongImpliesMixedMC (self-consistency bridge) & \openhyp & \code{UFDStrongImpliesMixedMC}  & 4708535a \\
 \quad FactorEscapeHypothesis (Euclid numbers escape confinement) & \openhyp & \code{FactorEscapeHypothesis}  & \\
-\quad PSCD (population sieve confinement decay; follows from PEAP via WeakFMCD chain) & \proved & \code{weak\_fmcd\_chain\_implies\_pscd}  & \\
-\quad PEAPImpliesFCD (PEAP $\Rightarrow$ class divergence) & \proved & \code{peap\_implies\_fcd\_proved}  & \\
+\quad PSCD (population sieve confinement decay; follows from PEAP via WeakFMCD chain) & \proved & \code{weak\_fmcd\_chain\_implies\_pscd}  & fe852147 \\
+\quad PEAPImpliesFCD (PEAP $\Rightarrow$ class divergence) & \proved & \code{peap\_implies\_fcd\_proved}  & 0de93587 \\
 \quad SieveUpperBound (fundamental lemma of sieve; superseded by WeakFMCD) & \superseded & \code{SieveUpperBound}  & \\
-\quad SieveProductVanishing ($\sum 1/p$ div.\ $\Rightarrow$ $\prod(1{-}1/p) \to 0$) & \proved & \code{sieve\_product\_vanishing\_proved}  & \\
-\quad sqfreeCount $\geq X/4$ (unconditional) & \proved & \code{sqfreeCount\_ge\_quarter\_real}  & \\
+\quad SieveProductVanishing ($\sum 1/p$ div.\ $\Rightarrow$ $\prod(1{-}1/p) \to 0$) & \proved & \code{sieve\_product\_vanishing\_proved}  & cd6248d5 \\
+\quad sqfreeCount $\geq X/4$ (unconditional) & \proved & \code{sqfreeCount\_ge\_quarter\_real}  & 0e4aaf02 \\
 \quad WeakFMCD (unconditional CRT bound, constant 4) & \proved & \code{weak\_fmcd\_proved}  & \\
 \quad WeakFMCD + FCD $\Rightarrow$ PSCD (no open hypothesis) & \proved & \code{weak\_fmcd\_fcd\_implies\_pscd}  & \\
-\quad PEAP alone $\Rightarrow$ PSCD (FMCD eliminated) & \proved & \code{weak\_fmcd\_chain\_implies\_pscd}  & \\
+\quad PEAP alone $\Rightarrow$ PSCD (FMCD eliminated) & \proved & \code{weak\_fmcd\_chain\_implies\_pscd}  & fe852147 \\
 \quad PEAP alone $\Rightarrow$ a.a.\ mixed hitting & \proved & \code{weak\_fmcd\_chain\_implies\_almost\_all}  & \\
 \quad Reachable $\Rightarrow$ positive prob.\ capture ($\forall\varepsilon > 0$) & \proved & \code{reachable\_implies\_positive\_prob\_capture}  & \\
 \quad PEAP $\Rightarrow$ a.a.\ positive prob.\ capture & \proved & \code{almost\_all\_positive\_prob\_capture}  & \\
@@ -597,7 +597,7 @@ stable identifier independent of human naming.
 \quad $L$-function factorization circular (\#132) & \textbf{Dead} & \code{dead\_end\_132\_witness}  & \\
 \quad No Tauberian lever for $L_{\mathrm{EM}}$ (\#134) & \textbf{Dead} & \code{tauberian\_lever\_absent\_witness}  & \\
 \quad Cauchy--Davenport vacuous: $\mathrm{minOrder} = 2$ (\#137) & \textbf{Dead} & \code{minOrder\_units\_zmod\_eq\_two}  & \\
-\quad AEP false: absorption drains nonzero classes (\#138) & \textbf{Dead} & \code{death\_then\_never\_death\_again}  & \\
+\quad AEP false: absorption drains nonzero classes (\#138) & \textbf{Dead} & \code{death\_then\_never\_death\_again}  & e37a2056 \\
 \quad 138~total dead ends, 15 formally witnessed, 8 revivable & \proved & \code{dead\_end\_registry}  & \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
