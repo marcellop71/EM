@@ -70,6 +70,9 @@ import EM.FunctionField.CyclicWalkCoverage
 import EM.FunctionField.Finiteness
 import EM.FunctionField.FactorTree
 import EM.FunctionField.IrreducibilityDensity
+import EM.FunctionField.NecklaceFormula
+import EM.FunctionField.FFCharacterSums
+import EM.FunctionField.FFSieve
 import EM.FunctionField.MultiplierCCSB
 import EM.FunctionField.PopulationEquidist
 import EM.FunctionField.SubgroupEscape
@@ -114,6 +117,8 @@ import EM.Meta.DeadEnds
 import EM.Meta.Registry
 import EM.Population.AbelChain
 import EM.Population.AlladiDensity
+import EM.Population.AvoidanceTube
+import EM.Population.InfiniteM
 import EM.Population.Proof
 import EM.Population.ReciprocalSum
 import EM.Population.Tauberian
