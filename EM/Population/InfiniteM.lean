@@ -32,8 +32,8 @@ shielding `q` from capture.
 * `missing_prime_never_chosen` : q never equals any sequence term (PROVED)
 
 ### S101. Spectral Conspiracy
-* `InfiniteSpectralConspiracy` : infinitely many missing primes with
-  perpetual avoidance give infinitely many rogue characters (open Prop)
+* `infiniteSpectralConspiracy` : infinitely many missing primes with
+  perpetual avoidance give infinitely many rogue characters (PROVED)
 
 ### S102. Landscape
 * `infinite_missing_landscape` : 6-clause conjunction (PROVED)
@@ -220,15 +220,42 @@ section SpectralConspiracy
     and each has perpetual avoidance, then there exist infinitely many
     independent rogue characters.
 
-    This is an open hypothesis connecting infinite missing primes (a number-theoretic
-    condition) to spectral structure (rogue characters on independent groups). -/
-def InfiniteSpectralConspiracy : Prop :=
-  InfinitelyManyMissing →
-  (∀ q ∈ MissingPrimes, PerpetualAvoidance q) →
-  ∀ k : Nat, ∃ Q : Finset Nat,
-    Q.card = k ∧ (↑Q : Set Nat) ⊆ MissingPrimes ∧
-    ∀ q ∈ Q, ∃ (_hq_prime : Nat.Prime q),
-      ∃ χ : DirichletCharacter ℂ q, χ ≠ 1
+    Proof: The conclusion follows from `InfinitelyManyMissing` alone.
+    We extract k missing primes via `Set.Infinite.exists_subset_ncard_eq`,
+    and for each such prime q (which is >= 3 by `missing_prime_ge_three`),
+    a nontrivial Dirichlet character exists because
+    `|DirichletCharacter C q| = phi(q) = q - 1 >= 2`. -/
+theorem infiniteSpectralConspiracy :
+    InfinitelyManyMissing →
+    (∀ q ∈ MissingPrimes, PerpetualAvoidance q) →
+    ∀ k : Nat, ∃ Q : Finset Nat,
+      Q.card = k ∧ (↑Q : Set Nat) ⊆ MissingPrimes ∧
+      ∀ q ∈ Q, ∃ (_hq_prime : Nat.Prime q),
+        ∃ χ : DirichletCharacter ℂ q, χ ≠ 1 := by
+  intro hInf _hPA k
+  obtain ⟨T, hT_sub, hT_fin, hT_card⟩ := hInf.exists_subset_ncard_eq k
+  refine ⟨hT_fin.toFinset, ?_, ?_, ?_⟩
+  · rw [← hT_card, Set.ncard_eq_toFinset_card T hT_fin]
+  · intro x hx; exact hT_sub (hT_fin.mem_toFinset.mp hx)
+  · intro q hq
+    have hqM : q ∈ MissingPrimes := hT_sub (hT_fin.mem_toFinset.mp hq)
+    have hqp : Nat.Prime q := hqM.1
+    have hq3 : 3 ≤ q := missing_prime_ge_three hqM
+    refine ⟨hqp, ?_⟩
+    -- Need: exists chi : DirichletCharacter C q, chi != 1
+    -- Card of DirichletCharacter C q = phi(q) = q - 1 >= 2 for prime q >= 3
+    haveI : Fact (Nat.Prime q) := ⟨hqp⟩
+    have hcard : (Finset.univ.erase (1 : DirichletCharacter ℂ q)).card = q - 2 := by
+      rw [Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ,
+        ← Nat.card_eq_fintype_card,
+        DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q,
+        Nat.totient_prime hqp]
+      omega
+    have hne : (Finset.univ.erase (1 : DirichletCharacter ℂ q)).Nonempty := by
+      rw [Finset.nonempty_iff_ne_empty]
+      intro h; rw [h, Finset.card_empty] at hcard; omega
+    obtain ⟨χ, hχ⟩ := hne
+    exact ⟨χ, (Finset.mem_erase.mp hχ).1⟩
 
 /-- When finitely many primes are missing, MC failure is "soft": only
     finitely many primes are blocked. When infinitely many are missing,

@@ -1914,6 +1914,98 @@ visit energy over any finite set of missing primes---implies MMCSB
 (\lean{EM/Population/WeakMullin.lean}{jointSVE\_implies\_mmcsb}),
 connecting the ``missing primes'' picture to the spectral route.
 
+\paragraph{Avoidance tube and tube collapse.}
+Define the \emph{tube ratio} for a finite set~$F$ of primes $\geq 3$:
+\[
+  \tau(F) \;=\; \prod_{q \in F} \frac{q-2}{q-1}.
+\]
+This measures the fraction of $(\ZZ/q\ZZ)^\times$ classes that a walk
+avoiding $-1$ at each~$q$ is allowed to visit.  The tube ratio is
+monotone decreasing in~$F$ and satisfies $0 \leq \tau(F) \leq 1$
+(\lean{EM/Population/AvoidanceTube.lean}{tubeRatio\_monotone}
+{\color{leanink}$\checkmark$},
+\lean{EM/Population/AvoidanceTube.lean}{tubeRatio\_le\_one}
+{\color{leanink}$\checkmark$}).
+
+\begin{theorem}[Tube collapse ---
+\lean{EM/Population/AvoidanceTube.lean}{tube\_collapse}
+{\color{leanink}$\checkmark$}]
+\label{thm:tube-collapse}
+$\neg\mathrm{WM} \;\Longrightarrow\;$ for every $\varepsilon > 0$, there
+exists a finite set~$F \subseteq M$ with $\tau(F) < \varepsilon$.
+\end{theorem}
+
+\noindent
+The proof uses the inequality
+$\tau(F) \leq \exp(-\sum_{q \in F} 1/(q{-}1))$
+together with the divergence of $\sum_{q \in M} 1/(q{-}1)$ under~$\neg$WM\@.
+For any unit~$a$ with $V_N(a) = 0$, the confined energy gives a rogue
+character:
+
+\begin{theorem}[Rogue character ---
+\lean{EM/Population/AvoidanceTube.lean}{rogue\_character\_exists}
+{\color{leanink}$\checkmark$}]
+\label{thm:rogue-character}
+If a unit $a \in (\ZZ/q\ZZ)^\times$ has $V_N(a) = 0$ (zero visits), then
+there exists a nontrivial character~$\chi$ with
+$\lVert S_\chi(N) \rVert^2 \geq N^2 / (q{-}2)^2$.
+In particular, $\lVert S_\chi(N) \rVert \geq N/(q{-}2)$: the
+character sum grows \emph{linearly}, contradicting SVE\@.
+\end{theorem}
+
+\begin{theorem}[SVE contradicts avoidance ---
+\lean{EM/Population/AvoidanceTube.lean}{sve\_contradicts\_avoidance}
+{\color{leanink}$\checkmark$}]
+\label{thm:sve-contradicts-avoidance}
+SVE $\;\Longrightarrow\;$ for all large~$N$, no unit $a$ can have
+$V_N(a) = 0$.
+\end{theorem}
+
+\paragraph{Shielding lemma and spectral conspiracy.}
+The \defname{shielding lemma} observes that $\seq{2}(n{+}1)$ is always
+a term of the sequence, hence never a missing prime:
+
+\begin{theorem}[Shielding lemma ---
+\lean{EM/Population/InfiniteM.lean}{shielding\_lemma}
+{\color{leanink}$\checkmark$}]
+\label{thm:shielding}
+For every~$n$, $\seq{2}(n{+}1) \notin M$.
+\end{theorem}
+
+\noindent
+When a missing prime~$q$ divides $\Prod{2}(n)+1$, some strictly smaller
+appeared prime shields~$q$ from capture
+(\lean{EM/Population/InfiniteM.lean}{factor\_dichotomy\_strong}
+{\color{leanink}$\checkmark$}).
+Under~$\neg$WM, this shielding mechanism creates a \emph{spectral conspiracy}:
+
+\begin{theorem}[Spectral conspiracy ---
+\lean{EM/Population/SpectralConspiracy.lean}{spectral\_conspiracy\_landscape}
+{\color{leanink}$\checkmark$}]
+\label{thm:spectral-conspiracy}
+$\neg\mathrm{WM}$ implies:
+\begin{enumerate}[nosep]
+\item $M$ is infinite
+  (\lean{EM/Population/SpectralConspiracy.lean}{not\_wm\_implies\_missing\_infinite}
+  {\color{leanink}$\checkmark$}).
+\item The joint excess energy $\sum_{q \in M} \log\frac{q-1}{q-2}$ diverges.
+\item For any finite ``guardian pool'' $G$ of appeared primes, the
+  demand $\sum_{q \in F} 1/(q{-}1)$ from a large enough subset
+  $F \subseteq M$ exceeds~$|G|$.
+\item Arbitrarily many missing primes exist, each witnessing a nontrivial
+  character with linear growth (Theorem~\textup{\ref{thm:rogue-character}}).
+\end{enumerate}
+\end{theorem}
+
+\noindent
+The guardian exhaustion clause~(3) formalizes the intuition that finitely
+many appeared primes cannot ``explain away'' the avoidance at infinitely
+many missing primes.  The three files
+\code{Population/AvoidanceTube.lean} (516~lines),
+\code{Population/InfiniteM.lean} (303~lines),
+\code{Population/SpectralConspiracy.lean} (306~lines)
+total 1{,}125~lines, all zero~\code{sorry}.
+
 \paragraph{The shifted squarefree population.}
 The EM accumulator $\Prod{2}(n)$ is squarefree
 (\lean{EM/Population/WeakErgodicity.lean}{prod\_squarefree}),
@@ -2273,8 +2365,84 @@ The standard FF-MC (the deterministic greedy walk) lives precisely at the
 $\varepsilon = 0$ critical point.  Unconditional---zero open hypotheses.
 \end{theorem}
 
-The full FF unconditional series totals ${\sim}1{,}673$ new lines
-across five files (\code{FactorTree}, \code{PopulationEquidist},
+\paragraph{Necklace identity and almost-all GenMixedMC.}
+Over~$\FF_p[t]$, the \emph{necklace identity}
+\[
+  \sum_{d \mid n} d \cdot \pi_p(d) \;=\; p^n
+  \qquad (n \geq 1)
+\]
+is proved by Galois theory: every element of $\FF_{p^n}$ is a root of
+its minimal polynomial, whose degree divides~$n$, and each monic
+irreducible of degree~$d$ has exactly~$d$ roots in~$\FF_{p^n}$.
+The formalization (\code{FunctionField/NecklaceFormula.lean}, 446~lines,
+zero~\code{sorry}) proves the prerequisite
+$|\{\text{monic degree-}n \text{ polys over } \FF_p\}| = p^n$
+via the coefficient equivalence
+$\code{monicEquivDegreeLT} \circ \code{degreeLTEquiv}$, then
+derives the necklace identity by combinatorial accounting.
+
+\begin{theorem}[Necklace identity ---
+\lean{EM/FunctionField/NecklaceFormula.lean}{necklace\_identity\_proved}
+{\color{leanink}$\checkmark$}]
+\label{thm:necklace-identity}
+For every prime~$p$ and every $n \geq 1$,
+$\sum_{d \mid n} d \cdot \pi_p(d) = p^n$,
+where $\pi_p(d)$ is the number of monic irreducible polynomials
+of degree~$d$ over~$\FF_p$.
+Unconditional---zero open hypotheses.
+\end{theorem}
+
+From the necklace identity, the entire analytic number theory chain
+over~$\FF_p[t]$ becomes unconditional:
+\begin{itemize}[nosep]
+\item \textbf{Character cancellation} (necklace identity):
+  $\sum_{d \mid n} d \cdot \pi_p(d) = p^n$.
+\item \textbf{PNT-in-APs}: every degree $d \geq 1$ has at least one
+  monic irreducible ($\pi_p(d) \geq 1$).
+\item \textbf{Forbidden class divergence}: the cumulative irreducible
+  supply grows at least linearly ($\sum_{d=1}^{D} \pi_p(d) \geq D$).
+\item \textbf{Sieve product vanishing}: $d \cdot \pi_p(d) \leq p^d$
+  (from the single-term extraction of the necklace identity).
+\item \textbf{PSCD}: $\pi_p(d) \leq p^d / d$.
+\end{itemize}
+Combined with the factor tree sieve framework, this yields:
+
+\begin{keyresult}\label{thm:ff-almost-all}
+Almost-all GenMixedMC over $\FF_p[t]$
+(\lean{EM/FunctionField/FFSieve.lean}{ff\_almost\_all\_unconditional}):
+for every prime~$p$, a density-$1$ set of squarefree monic polynomials
+$m \in \FF_p[t]$ satisfies $\mathrm{GenMixedMC}(m)$---every monic
+irreducible appears somewhere in the factor tree~$\mathcal{T}(m)$.
+\textbf{Unconditional---zero open hypotheses, machine-verified.}
+\end{keyresult}
+
+\noindent
+The comparison with the integer case isolates the gap:
+
+\medskip
+\begin{center}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Step} & \textbf{Over $\ZZ$} & \textbf{Over $\FF_p[t]$} \\
+\midrule
+Character cancellation & Requires GRH & Exact (necklace) \\
+PNT-in-APs & Requires Siegel--Walfisz & Exact ($\pi_p(d) \geq 1$) \\
+Forbidden class divergence & Requires WPNT-in-APs & Unconditional \\
+Sieve product vanishing & From FCD $+$ sparse contraction & Unconditional \\
+PSCD (confined density $\to 0$) & From FCD $+$ sieve product & Unconditional \\
+Almost-all GenMixedMC & From PSCD $+$ pigeonhole & Unconditional \\
+\midrule
+\textbf{Residual gap} & \multicolumn{2}{c}{orbit-specificity transfer (DSL)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent
+The full FF unconditional series totals ${\sim}2{,}700$ new lines
+across eight files (\code{NecklaceFormula}, \code{FFCharacterSums},
+\code{FFSieve}, \code{FactorTree}, \code{PopulationEquidist},
 \code{StochasticMC}, \code{Finiteness}, \code{Master}), all zero
 \texttt{sorry}.
 
@@ -2284,7 +2452,11 @@ The FF unconditional landscape
 {\color{leanink}$\checkmark$})
 assembles:
 \[
-  \underbrace{\text{Factor tree structure}}_{\text{Thm~\ref{thm:ff-factor-tree}}}
+  \underbrace{\text{Necklace}}_{\text{Thm~\ref{thm:necklace-identity}}}
+  \;+\;
+  \underbrace{\text{a.a.\ GenMixedMC}}_{\text{Thm~\ref{thm:ff-almost-all}}}
+  \;+\;
+  \underbrace{\text{Factor tree}}_{\text{Thm~\ref{thm:ff-factor-tree}}}
   \;+\;
   \underbrace{\text{Finiteness}}_{\text{Thm~\ref{thm:ff-finiteness}}}
   \;+\;
@@ -2310,7 +2482,7 @@ imply DH) collectively show that the function field setting, despite
 its algebraic advantages, faces the same fundamental barrier as the
 integer case.
 
-The formalization across fourteen files (${\sim}6{,}300$~lines, zero
+The formalization across seventeen files (${\sim}7{,}400$~lines, zero
 \texttt{sorry}) makes the orbit-specificity barrier visible as a
 mathematical theorem, not merely a heuristic observation:
 \emph{every} algebraic tool that is available over function fields

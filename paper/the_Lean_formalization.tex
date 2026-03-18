@@ -9,8 +9,8 @@ certifies these results.
 
 \paragraph{Codebase Structure}
 
-The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 141~files
-totaling ${\sim}76{,}000$~lines.  The dependency chain is linear, with
+The formalization uses Lean~4 with Mathlib~v4.29.0-rc1 across 148~files
+totaling ${\sim}78{,}000$~lines.  The dependency chain is linear, with
 three leaf modules:
 
 \footnotesize
@@ -81,6 +81,9 @@ three leaf modules:
 \midrule
 \multicolumn{3}{l}{\emph{Population and weak variants}} \\
 \code{Population/WeakMullin.lean} & Missing primes, WM $\Rightarrow$ RD, EMBV $\Rightarrow$ MC & 362 \\
+\code{Population/AvoidanceTube.lean} & Tube ratio, confined energy, rogue characters, SVE$\Rightarrow$coverage & 516 \\
+\code{Population/InfiniteM.lean} & Shielding lemma, factor dichotomy, spectral conspiracy & 303 \\
+\code{Population/SpectralConspiracy.lean} & $\lnot$WM $\Rightarrow$ infinite missing, guardian exhaustion, tube squeeze & 306 \\
 \code{Population/WeakErgodicity.lean} & Squarefree accumulator, PE+PT+EMDImpliesCME & 160 \\
 \code{Population/Proof.lean} & MinFacResidueEquidist $\Rightarrow$ PE (analytic) & 187 \\
 \code{Population/ReciprocalSum.lean} & Reciprocal sum divergence, PSD chain, positive density route & 1260 \\
@@ -153,9 +156,12 @@ three leaf modules:
 \code{FunctionField/WeakMC.lean} & Degree escape, pool partition, capture exhaustion (Dead End~\#129 revival) & 471 \\
 \code{FunctionField/FactorTree.lean} & FF factor tree: mixed selection, coprimality cascade, injectivity, start not capturable & 455 \\
 \code{FunctionField/PopulationEquidist.lean} & Weil $\Rightarrow$ population diversity, degree growth $\to \infty$, weak first moment & 370 \\
-\code{FunctionField/StochasticMC.lean} & FF stochastic MC, phase transition ($\varepsilon = 0$ critical), pigeonhole capture & 420 \\
+\code{FunctionField/StochasticMC.lean} & FF stochastic MC, phase transition ($\varepsilon = 0$ critical), pigeonhole capture & 431 \\
 \code{FunctionField/Finiteness.lean} & FFFiniteIrreduciblesPerDegree PROVED (unconditional), coefficient injection & 188 \\
-\code{FunctionField/Master.lean} & Theorems A/B/C assembly: factor tree + stochastic MC + phase transition & 240 \\
+\code{FunctionField/NecklaceFormula.lean} & Necklace identity $\sum_{d \mid n} d\,\pi_p(d) = p^n$ PROVED (Galois theory) & 446 \\
+\code{FunctionField/FFCharacterSums.lean} & Character cancellation, PNT-in-APs, FCD (all unconditional) & 235 \\
+\code{FunctionField/FFSieve.lean} & Sieve chain: SPV $\to$ PSCD $\to$ almost-all GenMixedMC (zero hypotheses) & 327 \\
+\code{FunctionField/Master.lean} & Theorems A/B/C/D assembly: factor tree + stochastic MC + sieve chain & 306 \\
 \code{FunctionField/AutonomousMap.lean} & $\Phi_3$ criterion: $-1$ unreachable for $p \equiv 2 \pmod{3}$, orbit dynamics & 225 \\
 \code{GaussEM/GaussEMDefs.lean} & Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality & 290 \\
 \code{GaussEM/GaussWalkStructure.lean} & Gaussian walk: split/inert classification, norm kernel, orbit barrier & 331 \\
@@ -400,7 +406,7 @@ Mathlib version & v4.29.0-rc1 \\
 \subsubsection{Summary of Formally Verified Results}
 \label{sec:verified-results}
 
-The formalization contains ${\sim}76{,}000$~lines across 141~files with
+The formalization contains ${\sim}78{,}000$~lines across 148~files with
 zero \code{sorry}.  The table below is a \textbf{curated selection} of
 the most important results; the full inventory is in the repository.
 Status markers: \proved\ = machine-checked in Lean~4;
@@ -539,6 +545,14 @@ stable identifier independent of human naming.
 \quad Phase transition summary ($\varepsilon = 0$ critical) & \proved & \code{phase\_transition\_summary}  & \\
 \quad Perpetual primality multi-exclusion ($q = 5, 11, 17, 23$) & \proved & \code{perpetual\_primality\_multi\_exclusion}  & \\
 \quad FF $\Phi_3$ exclusion ($-1$ unreachable, $p \equiv 2 \!\bmod 3$) & \proved & \code{ff\_neg\_one\_unreachable}  & \\
+\quad Necklace identity ($\sum_{d|n} d\pi_p(d) = p^n$) & \proved & \code{necklace\_identity\_proved}  & \\
+\quad FF almost-all GenMixedMC (zero hypotheses) & \proved & \code{ff\_almost\_all\_unconditional}  & \\
+\quad Tube collapse ($\neg\mathrm{WM} \Rightarrow$ tube ratio $\to 0$) & \proved & \code{tube\_collapse}  & \\
+\quad Shielding lemma ($\seq{2}(n{+}1) \notin M$) & \proved & \code{shielding\_lemma}  & \\
+\quad Rogue character exists (avoidance $\Rightarrow$ linear char growth) & \proved & \code{rogue\_character\_exists}  & \\
+\quad SVE contradicts avoidance & \proved & \code{sve\_contradicts\_avoidance}  & \\
+\quad $\neg$WM $\Rightarrow$ missing primes infinite & \proved & \code{not\_wm\_implies\_missing\_infinite}  & \\
+\quad Spectral conspiracy landscape (7-clause conjunction) & \proved & \code{spectral\_conspiracy\_landscape}  & \\
 \midrule
 %%% ---- Open hypotheses ----
 \multicolumn{4}{l}{\emph{Open hypotheses --- live targets}} \\

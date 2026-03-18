@@ -118,9 +118,12 @@ import EM.Meta.Registry
 import EM.Population.AbelChain
 import EM.Population.AlladiDensity
 import EM.Population.AvoidanceTube
+import EM.Population.HittingSetStructure
 import EM.Population.InfiniteM
 import EM.Population.Proof
 import EM.Population.ReciprocalSum
+import EM.Population.RigidityMaster
+import EM.Population.SpectralConspiracy
 import EM.Population.Tauberian
 import EM.Population.TransferStrategy
 import EM.Population.WeakErgodicity
