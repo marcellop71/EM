@@ -80,7 +80,7 @@ theorem monic_irreducible_dvd_X_pow_sub_X {d : ℕ} (_hd : d ≠ 0)
 /-! ## Part 2: Irreducible count bound -/
 
 /-- Distinct monic irreducible polynomials over a field are coprime. -/
-private theorem monic_irreducible_isCoprime
+theorem monic_irreducible_isCoprime
     {Q₁ Q₂ : Polynomial (ZMod p)} (hm₁ : Q₁.Monic) (hm₂ : Q₂.Monic)
     (hirr₁ : Irreducible Q₁) (hirr₂ : Irreducible Q₂) (hne : Q₁ ≠ Q₂) :
     IsCoprime Q₁ Q₂ := by
