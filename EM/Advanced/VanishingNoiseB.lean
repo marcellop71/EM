@@ -375,7 +375,7 @@ private theorem hom_indicator_sum (a g : G) :
     exact (Complex.inv_eq_conj (char_norm_one_of_hom f a)).symm
   simp_rw [conj_eq, ← Units.val_mul, ← map_mul, show a⁻¹ * g = g * a⁻¹ from mul_comm _ _]
   rw [hom_sum_eq (g * a⁻¹)]
-  simp only [mul_inv_eq_one, eq_comm (a := a)]
+  simp only [mul_inv_eq_one]
 
 /-- **Fourier counting identity**: for a in G and a multiset M,
     |G| * count(a, M) = sum_f conj(f(a)) * (sum_{g in M} f(g)). -/
@@ -396,7 +396,7 @@ private theorem char_count_formula (a : G) (M : Multiset G) :
     · subst hax; simp [hom_indicator_sum]; ring
     · have hxa : ¬(x = a) := fun h => hax h.symm
       simp only [hom_indicator_sum, if_neg hxa, if_neg hax]
-      ring
+      ring_nf
 
 set_option linter.unusedSectionVars false in
 /-- The character sum over the product multiset equals |M_N| * avgCharProduct. -/
@@ -495,7 +495,7 @@ theorem pathExistenceFromVanishing_proved :
       exact Finset.prod_pos (fun k _ => Finset.card_pos.mpr (hne k))
     -- Use the Fourier identity
     by_contra hcount
-    push_neg at hcount
+    push Not at hcount
     have hcount0 : Multiset.count a (productMultiset S N₀) = 0 := by omega
     -- From char_count_formula: |G| * 0 = sum, so sum = 0
     have hident := char_count_formula (G := G) a (productMultiset S N₀)
@@ -562,7 +562,7 @@ theorem pathExistenceFromVanishing_proved :
                 -- Need at least 2 homs, hence at least 1 nontrivial
                 have hcG_ge2 : 2 ≤ Fintype.card G := by
                   have := Fintype.card_pos (α := G)
-                  by_contra h; push_neg at h
+                  by_contra h; push Not at h
                   exact hG1 (show Fintype.card G = 1 by linarith)
                 have h2 : 2 ≤ Fintype.card (G →* ℂˣ) := by
                   rw [card_hom_eq_card]; exact hcG_ge2
@@ -599,7 +599,7 @@ theorem pathExistenceFromVanishing_proved :
               Nat.cast_pos.mpr hM_pos
             have hcG2 : 2 ≤ Fintype.card G := by
               have := Fintype.card_pos (α := G)
-              by_contra h; push_neg at h
+              by_contra h; push Not at h
               exact hG1 (show Fintype.card G = 1 by linarith)
             have hcG : (1 : ℝ) < ↑(Fintype.card G) := by exact_mod_cast hcG2
             have hfrac : (↑(Fintype.card G) - 1) / (2 * ↑(Fintype.card G)) < (1 : ℝ) := by

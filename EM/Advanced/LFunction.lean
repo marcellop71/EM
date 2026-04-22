@@ -227,7 +227,7 @@ theorem log_ratio_irrational {p q : Nat} (hp : Nat.Prime p) (hq : Nat.Prime q) (
   · -- b > 0
     have ha_pos : (0 : ℤ) < a := by
       by_contra h
-      push_neg at h
+      push Not at h
       have : (b : ℝ) * Real.log p > 0 := mul_pos (by exact_mod_cast hb_pos) hlogp
       have : (a : ℝ) * Real.log q ≤ 0 :=
         mul_nonpos_of_nonpos_of_nonneg (by exact_mod_cast h) hlogq.le
@@ -255,11 +255,11 @@ theorem log_ratio_irrational {p q : Nat} (hp : Nat.Prime p) (hq : Nat.Prime q) (
     have heq_nat : p ^ B = q ^ A := by exact_mod_cast heq
     exact prime_pow_ne_prime_pow hp hq hne (by omega) (by omega) heq_nat
   · -- b < 0 (since b ≠ 0)
-    push_neg at hb_pos
+    push Not at hb_pos
     have hb_neg : b < 0 := by omega
     have ha_neg : a < 0 := by
       by_contra h
-      push_neg at h
+      push Not at h
       have : (b : ℝ) * Real.log p < 0 :=
         mul_neg_of_neg_of_pos (by exact_mod_cast hb_neg) hlogp
       have : 0 ≤ (a : ℝ) * Real.log q :=

@@ -39,7 +39,7 @@ theorem me_implies_se (hme : MultEquidistribution) : SubgroupEscape := by
   haveI : Fact (Nat.Prime q) := inst
   -- H ≠ ⊤ implies some element lies outside H
   obtain ⟨u, hu⟩ : ∃ u : (ZMod q)ˣ, u ∉ H := by
-    by_contra h; push_neg at h
+    by_contra h; push Not at h
     exact hH (eq_top_iff.mpr fun x _ => h x)
   -- By equidistribution, some multiplier equals u
   obtain ⟨n, _, hmult⟩ := hme q hq hne u 0
@@ -154,7 +154,7 @@ theorem cofinal_pigeonhole {α : Type*} [Fintype α]
     (hinf : ∀ N, ∃ n, N ≤ n ∧ P n) :
     ∃ a : α, ∀ N, ∃ n, N ≤ n ∧ P n ∧ f n = a := by
   by_contra h
-  push_neg at h
+  push Not at h
   -- h : ∀ a, ∃ Na, ∀ n, Na ≤ n → P n → f n ≠ a
   choose Na hNa using h
   obtain ⟨n, hn, hPn⟩ := hinf (Finset.univ.sup Na)

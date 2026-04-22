@@ -154,7 +154,7 @@ theorem mcBelow_implies_seq_ge {q : Nat} (hmc : MCBelow q) :
   refine ⟨N, fun n hn => ?_⟩
   rw [seq_succ]
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   have hge2 : 2 ≤ prod n + 1 := by have := prod_ge_two n; omega
   have hp := minFac_isPrime (prod n + 1) hge2
   obtain ⟨m, hm, hseqm⟩ := hN (minFac (prod n + 1)) hlt hp

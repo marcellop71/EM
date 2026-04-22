@@ -83,7 +83,7 @@ private theorem linnik_filter_subset_small (x : ℕ) (hx : 4 ≤ x) :
   obtain ⟨hrange, hprime, hle, hall⟩ := hp
   refine ⟨hrange, hprime, ?_⟩
   by_contra h
-  push_neg at h
+  push Not at h
   -- p ≥ 5, so 4 < p and 4 ≤ x, and 1 < 4
   have hp5 : 5 ≤ p := h
   have h4lt : (4 : ℕ) < p := by omega
@@ -130,7 +130,7 @@ theorem largeSieveAsSieve_implies_linnik_proved : LargeSieveAsSieveImpliesLinnik
       _ ≤ 2 := by exact_mod_cast card_primes_lt_five x
       _ ≤ 3 := by norm_num
   · -- x < 4, so x ∈ {2, 3} (since 2 ≤ x), primes ≤ x are ⊆ {2, 3}
-    push_neg at hx4
+    push Not at hx4
     -- The filter is ⊆ {primes ≤ 3} ⊆ {primes < 5}
     have hx_le : x ≤ 3 := by omega
     have hsub : (Finset.filter (fun p =>

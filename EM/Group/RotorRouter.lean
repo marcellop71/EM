@@ -77,7 +77,7 @@ theorem exists_lt_map_eq [Finite α] (f : ℕ → α) :
     ∃ m n, m < n ∧ f m = f n := by
   have h := not_injective_infinite_finite f
   simp only [Injective] at h
-  push_neg at h
+  push Not at h
   obtain ⟨a, b, hab, hne⟩ := h
   rcases lt_or_gt_of_ne hne with hlt | hgt
   · exact ⟨a, b, hlt, hab⟩
@@ -418,7 +418,7 @@ omit [Group G] [DecidableEq G] in
 theorem exists_visits_inf_often (w : ℕ → G) : ∃ x, VisitsInfOften w x := by
   by_contra hall
   have h : ∀ x : G, ∃ N : ℕ, ∀ n, N ≤ n → w n ≠ x := by
-    intro x; by_contra hx; push_neg at hx
+    intro x; by_contra hx; push Not at hx
     exact hall ⟨x, hx⟩
   choose N hN using h
   exact hN (w _) _ (Finset.le_sup (f := N) (Finset.mem_univ _)) rfl

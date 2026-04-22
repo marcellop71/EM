@@ -730,7 +730,7 @@ theorem not_dvd_acc_implies_total_path_structure (acc : ℕ)
     (¬(q ∣ epsWalkProdFrom acc σ N)) ∨
     (∃ k, k < N ∧ q ∣ epsWalkFactorFrom acc σ k ∧ ¬(q ∣ epsWalkProdFrom acc σ k)) := by
   by_contra h
-  push_neg at h
+  push Not at h
   obtain ⟨hbad, hno_death⟩ := h
   -- q | endpoint, and for every step where q | factor, q already | accumulator
   -- We find the first step where q | epsWalkProdFrom acc σ k
@@ -741,7 +741,7 @@ theorem not_dvd_acc_implies_total_path_structure (acc : ℕ)
   have : ∃ k, k < N ∧ ¬(q ∣ epsWalkProdFrom acc σ k) ∧ q ∣ epsWalkProdFrom acc σ (k + 1) := by
     -- By well-ordering: find the minimal step where q divides the accumulator
     by_contra hall
-    push_neg at hall
+    push Not at hall
     -- hall : ∀ k, k < N → ¬(q ∣ ...(k)) → ¬(q ∣ ...(k+1))
     -- Then by induction, q ∤ epsWalkProdFrom acc σ k for all k ≤ N
     have hstep : ∀ k, k ≤ N → ¬(q ∣ epsWalkProdFrom acc σ k) := by

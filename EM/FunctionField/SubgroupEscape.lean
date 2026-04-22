@@ -441,7 +441,7 @@ theorem weil_contrapositive (d_val p_val : ℕ) (hp_pos : 0 < p_val)
     (h : p_val * p_val ≤ (d_val - 1) ^ 2 * p_val) :
     p_val ≤ (d_val - 1) ^ 2 := by
   by_contra h_neg
-  push_neg at h_neg
+  push Not at h_neg
   have := weil_arithmetic_contradiction d_val p_val h_neg hp_pos
   omega
 

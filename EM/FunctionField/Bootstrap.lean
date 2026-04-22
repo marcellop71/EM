@@ -175,7 +175,7 @@ theorem ff_degree_lower_bound (d : FFEMData p) {n d0 : ℕ}
     (hf_dvd : f ∣ d.ffProd n + 1) :
     d0 ≤ f.natDegree := by
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   obtain ⟨j, hjn, hj⟩ := hsieve f hfm hfi hlt
   exact ff_sieve_exclusion d f hfi hjn hj hf_dvd
 
@@ -291,7 +291,7 @@ theorem ff_element_capture
         P.natDegree < Q.natDegree → ∃ j, j ≤ n ∧ d_data.ffSeq j = P) :
     ∃ n, d_data.ffSeq n = Q := by
   by_contra hQ_not_appear
-  push_neg at hQ_not_appear
+  push Not at hQ_not_appear
   obtain ⟨N0, hN0⟩ := hsieve_gap
   -- Define the competitor set: monic irreducibles of degree = deg(Q), excluding Q
   set S' := {R : Polynomial (ZMod p) | R.Monic ∧ Irreducible R ∧

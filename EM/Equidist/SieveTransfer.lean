@@ -196,7 +196,7 @@ theorem strongSieveEquidist_noLongRunsAt (hsse : StrongSieveEquidist)
   -- Pick a unit a with χ(a) ≠ 1.
   have ⟨a, ha⟩ : ∃ a : (ZMod q)ˣ, χ a ≠ 1 := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     exact hχ (MonoidHom.ext (fun a => by
       have := hall a
       simp only [MonoidHom.one_apply] at this ⊢
@@ -215,7 +215,7 @@ theorem strongSieveEquidist_noLongRunsAt (hsse : StrongSieveEquidist)
   set S := (Finset.range (φ + 1)).filter (fun k => emMultUnit q hq hne (n + k) = a)
   have hcount_pos : 0 < S.card := by
     by_contra hle
-    push_neg at hle
+    push Not at hle
     have hzero : S.card = 0 := Nat.le_zero.mp hle
     rw [hzero] at hcount
     simp only [Nat.cast_zero] at hcount
@@ -411,7 +411,7 @@ theorem dped_implies_ped : DistributionalPED → PositiveEscapeDensity := by
   -- Since χ ≠ 1, pick a unit u with χ u ≠ 1, set ζ = χ u
   obtain ⟨u, hu⟩ : ∃ u : (ZMod q)ˣ, χ u ≠ 1 := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     exact hχ (MonoidHom.ext fun u => Units.ext (by simpa using hall u))
   set ζ := χ u with hζ_def
   have hζ_ne : ζ ≠ 1 := hu

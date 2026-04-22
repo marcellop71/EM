@@ -418,7 +418,7 @@ theorem faithful_uniform_gap (chi : (ZMod q)ˣ →* ℂˣ)
       rw [Finset.mem_filter]
       exact ⟨by rw [Set.Finite.mem_toFinset]; exact ⟨n, rfl⟩, hfn⟩
     exact ⟨δ, hδ_pos, fun n hcard => hδ_le n (hpos n hcard)⟩
-  · push_neg at hexists
+  · push Not at hexists
     exact ⟨1, one_pos, fun n hcard => absurd hcard (not_le.mpr (hexists n))⟩
 
 /-! ### Faithful Character Escape: unconditional non-summability -/
@@ -442,7 +442,7 @@ theorem faithful_character_escape (hq3 : 2 < q)
   · -- Case A: infinitely many fallback steps
     exact ufd_fallback_not_summable hq3 chi hchi h
   · -- Case B: cofinitely many non-fallback steps
-    push_neg at h
+    push Not at h
     obtain ⟨N₀, hN₀⟩ := h
     -- Get uniform gap bound from faithfulness
     obtain ⟨δ, hδ_pos, hδ_le⟩ := faithful_uniform_gap chi hfaithful

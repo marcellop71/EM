@@ -256,7 +256,7 @@ theorem isCircularSpaced_implies_isSpaced {R : ℕ} (α : Fin R → ℝ) (δ : �
   by_cases hf : 1 / 2 < |Int.fract (α r) - Int.fract (α s)|
   · linarith
   · -- |fract diff| ≤ 1/2
-    push_neg at hf
+    push Not at hf
     -- In this case, |fract diff| = circular distance of (α r - α s)
     -- because round(fract diff + floor diff) = floor diff when |fract diff| ≤ 1/2
     -- So δ ≤ |α r - α s - round(α r - α s)| ≤ |fract diff| (via round_le with floor diff)

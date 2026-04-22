@@ -153,7 +153,7 @@ private theorem seq_fiber_finite (v : ℕ) : (Set.Finite {n : ℕ | seq n = v}) 
     simp only [Set.mem_setOf_eq] at hm
     simp only [Set.mem_singleton_iff]
     exact seq_injective m n (by rw [hm, hn])
-  · push_neg at h
+  · push Not at h
     convert Set.finite_empty (α := ℕ)
     ext n
     simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
@@ -177,14 +177,14 @@ private theorem seq_eventually_gt (M : ℕ) :
   by_cases hne : hfin.toFinset.Nonempty
   · refine ⟨hfin.toFinset.max' hne, fun n hn => ?_⟩
     by_contra h
-    push_neg at h
+    push Not at h
     have hn_mem : n ∈ hfin.toFinset := by
       rw [Set.Finite.mem_toFinset]; exact h
     exact absurd (hfin.toFinset.le_max' n hn_mem) (by omega)
   · rw [Finset.not_nonempty_iff_eq_empty] at hne
     refine ⟨0, fun n _ => ?_⟩
     by_contra h
-    push_neg at h
+    push Not at h
     have : n ∈ hfin.toFinset := by
       rw [Set.Finite.mem_toFinset]; exact h
     rw [hne] at this
@@ -258,7 +258,7 @@ theorem em_super_exponential_growth : SuperExponentialGrowth Mullin.prod := by
           have : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg' m
           linarith
         linarith
-      · push_neg at hm0
+      · push Not at hm0
         exact Real.log_le_log hm0 (by linarith)
     linarith
   -- Get n₀ such that seq(k) > M for all k > n₀

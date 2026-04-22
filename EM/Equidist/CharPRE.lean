@@ -187,7 +187,7 @@ theorem se_failure_factor_dichotomy {q : Nat} [Fact (Nat.Prime q)]
     (hp_ne_zero : (↑p : ZMod q) ≠ 0) :
     Units.mk0 (↑p : ZMod q) hp_ne_zero ∈ H ∨ seq (n + 1) < p := by
   by_contra h
-  push_neg at h
+  push Not at h
   obtain ⟨hout, hle⟩ := h
   exact hfail (se_of_outside_factor hq hne hp hdvd hp_ne_zero hout (by omega))
 
@@ -370,7 +370,7 @@ theorem walk_variation_char_nontrivial {G : Type*} [CommMonoid G]
     {n : Nat} (hvar : χ (emWalkUnit q hq hne n) ≠ χ (emWalkUnit q hq hne 0)) :
     ∃ k, χ (emMultUnit q hq hne k) ≠ 1 := by
   by_contra h
-  push_neg at h
+  push Not at h
   exact hvar (char_annihilation_walk_const hq hne χ h n)
 
 /-- **Character displacement formula**: the cumulative product of character
@@ -678,7 +678,7 @@ theorem se_failure_requires_small_obstruction {q : Nat} [inst : Fact (Nat.Prime 
       ∀ n, (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ∈ H) :
     ∃ ℓ ∈ (q - 1).primeFactors, (q - 1) / ℓ > 7 ∧ ¬ PRE_at q hq hne ℓ := by
   by_contra hall
-  push_neg at hall
+  push Not at hall
   obtain ⟨H, hH, hmem⟩ := hfail
   obtain ⟨n, hn⟩ := se_of_small_pre hq hne hq59 hall H hH
   exact hn (hmem n)

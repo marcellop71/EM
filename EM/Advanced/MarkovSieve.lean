@@ -355,7 +355,7 @@ theorem minFac_mul_eq_min {n m : ℕ} (hn : 1 < n) (hm : 1 < m) :
 theorem minFac_not_multiplicative :
     ¬ ∀ (a b : ℕ), 1 < a → 1 < b → Nat.Coprime a b →
       Nat.minFac (a * b) = Nat.minFac a * Nat.minFac b := by
-  push_neg
+  push Not
   exact ⟨6, 35, by omega, by omega, by native_decide, by native_decide⟩
 
 end SieveOrbitControl

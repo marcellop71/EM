@@ -455,7 +455,7 @@ theorem positive_density_high_escape
   -- Handle sqfreeCount = 0 case
   have hcard_pos : 0 < sqfreeCount X := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hcard_zero : sqfreeCount X = 0 := by omega
     have hea_zero : ensembleAvgEscapeCount q chi K X = 0 := by
       unfold ensembleAvgEscapeCount

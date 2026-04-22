@@ -438,7 +438,7 @@ private theorem genProd_not_dvd_of_not_appeared {n : Nat} {q : Nat} (hq : Nat.Pr
     rcases hq.dvd_mul.mp hdvd with h1 | h2
     · exact ih h1
     · have hn_pos : 1 ≤ n := by
-        by_contra h; push_neg at h; interval_cases n; exact hndvd (dvd_zero q)
+        by_contra h; push Not at h; interval_cases n; exact hndvd (dvd_zero q)
       rcases (genSeq_prime hn_pos k).eq_one_or_self_of_dvd q h2 with h | h
       · exact absurd h (by have := hq.one_lt; omega)
       · exact absurd h.symm (hnot k)
@@ -451,7 +451,7 @@ private theorem hit_filter_bounded {n q N₀ : Nat}
     ((Finset.range N₀).filter (fun k => genProd n k % q = q - 1)).card := by
   apply Finset.card_le_card; intro k hk
   simp only [Finset.mem_filter, Finset.mem_range] at hk ⊢
-  exact ⟨by_contra fun h => hno k (by push_neg at h; exact h) hk.2, hk.2⟩
+  exact ⟨by_contra fun h => hno k (by push Not at h; exact h) hk.2, hk.2⟩
 
 /-- The Weyl test function: centered indicator of -1 among units mod q. -/
 private noncomputable def weylTestFn (q : Nat) : Nat → ℂ := fun x =>
@@ -538,11 +538,11 @@ theorem weyl_hitting_bridge_proved : WeylHittingBridge := by
   intro n hn hn_pos q hq hndvd hcancel
   by_cases happeared : ∃ j, genSeq n j = q
   · exact Or.inl happeared
-  · push_neg at happeared; right
+  · push Not at happeared; right
     have hndvd_prod := fun k => genProd_not_dvd_of_not_appeared hq hndvd happeared k
     have hwalk_nz : ∀ k, genProd n k % q ≠ 0 :=
       fun k h => hndvd_prod k (Nat.dvd_of_mod_eq_zero h)
-    by_contra hf; push_neg at hf
+    by_contra hf; push Not at hf
     obtain ⟨N₀, hN₀⟩ := hf
     have hno : ∀ k, N₀ ≤ k → genProd n k % q ≠ q - 1 := by
       intro k hk h; apply hN₀ k hk; rw [genWalkZ_eq_neg_one_iff]
@@ -766,7 +766,7 @@ theorem cancel_weyl_implies_mc
             obtain ⟨m, hm⟩ := ih p hp.toIsPrime (by omega)
             -- seq m = p, and seq 0 = 2 ≠ p (since p ≥ 3), so m ≥ 1
             have hm_pos : 0 < m := by
-              by_contra h_zero; push_neg at h_zero
+              by_contra h_zero; push Not at h_zero
               have : m = 0 := by omega
               subst this; change seq 0 = p at hm; rw [seq_zero] at hm; omega
             -- genSeq 2 (m-1) = seq m = p
@@ -792,7 +792,7 @@ theorem cancel_weyl_implies_mc
             rw [genSeq_def]; exact Nat.minFac_le_of_dvd hqp.two_le hhit_k
           -- Key: genSeq 2 k ≥ q (all odd primes < q already taken at steps < k)
           have hge_q : q ≤ genSeq 2 k := by
-            by_contra hlt; push_neg at hlt
+            by_contra hlt; push Not at hlt
             have hprime_s := genSeq_prime (by norm_num : 1 ≤ 2) k
             have hge3_k := hgen_ge3 k
             obtain ⟨j, hjk, hseqj⟩ := hN (genSeq 2 k) hprime_s hge3_k hlt

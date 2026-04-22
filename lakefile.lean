@@ -13,12 +13,14 @@ package em where
   ]
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "v4.29.0-rc1"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.29.0"
 
 require LeanArchitect from git
-  "https://github.com/hanwenzhu/LeanArchitect.git" @ "v4.29.0-rc1"
+  "https://github.com/hanwenzhu/LeanArchitect.git" @ "v4.29.0"
 
 require ca from "../CA"
+
+require declbuildMeta from "../../proofinity/declbuild-meta"
 
 @[default_target]
 lean_lib EM where

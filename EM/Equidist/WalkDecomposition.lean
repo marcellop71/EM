@@ -576,7 +576,7 @@ theorem escape_min_dist_pos {q : Nat} [Fact (Nat.Prime q)]
   -- Since χ ≠ 1, there exists some unit u₀ with χ(u₀) ≠ 1
   have hne_exists : ∃ u₀ : (ZMod q)ˣ, (χ u₀ : ℂ) ≠ 1 := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     apply hχ
     ext u
     specialize hall u

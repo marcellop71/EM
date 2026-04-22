@@ -552,7 +552,7 @@ private theorem vcb_mu_away_from_one {μ : ℂ} {c₀ C η : ℝ} {N : ℕ}
     (hMN_muN : ‖M_N - μ * ↑N‖ ≤ C * η * N)
     (hCη_le : C * η ≤ c₀ / 4) : c₀ / 2 ≤ ‖1 - μ‖ := by
   by_contra h_not
-  push_neg at h_not
+  push Not at h_not
   have hmuN_N : ‖μ * ↑N - ↑N‖ < c₀ / 2 * N := by
     rw [show μ * (↑N : ℂ) - ↑N = (μ - 1) * ↑N from by ring, norm_mul]
     simp only [Complex.norm_natCast]

@@ -278,7 +278,7 @@ private theorem sum_inv_mul_pred_le (m : ℕ) :
   by_cases hm : m ≤ 2
   · have : Ico 2 m = ∅ := by ext k; simp [Finset.mem_Ico]; omega
     simp [this]
-  · push_neg at hm
+  · push Not at hm
     rw [sum_telescope_inv m (by omega)]
     have hm_pos : (0 : ℝ) < (m : ℝ) - 1 := by
       have : (3 : ℝ) ≤ m := by exact_mod_cast hm

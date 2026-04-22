@@ -944,7 +944,7 @@ private theorem sqfree_nonsqfree_partition (X : ℕ) :
 private theorem exists_prime_sq_dvd_of_not_squarefree {m : ℕ} (hm : ¬Squarefree m) :
     ∃ p, p.Prime ∧ p ^ 2 ∣ m := by
   rw [Nat.squarefree_iff_prime_squarefree] at hm
-  push_neg at hm
+  push Not at hm
   obtain ⟨p, hp, hdvd⟩ := hm
   exact ⟨p, hp, by rwa [sq]⟩
 
@@ -1042,7 +1042,7 @@ private theorem inv_sq_sum_lt_three_quarter (D : ℕ) (hD : 2 ≤ D) :
     have : Finset.Icc 2 D = {2} := by
       ext d; simp only [Finset.mem_Icc, Finset.mem_singleton]; omega
     rw [this, Finset.sum_singleton]; norm_num
-  · push_neg at hD3
+  · push Not at hD3
     -- Split off d=2
     rw [show Finset.Icc 2 D = {2} ∪ Finset.Icc 3 D from by
       ext d; simp only [Finset.mem_union, Finset.mem_singleton, Finset.mem_Icc]; omega]
@@ -1122,7 +1122,7 @@ theorem sqfreeCount_ge_quarter_real (X : ℕ) (hX : 4 ≤ X) :
 /-- Nat version: 4 * sqfreeCount X + 3 >= X for X >= 4. -/
 theorem sqfreeCount_ge_quarter_nat (X : ℕ) (hX : 4 ≤ X) :
     X ≤ 4 * sqfreeCount X + 3 := by
-  by_contra h; push_neg at h
+  by_contra h; push Not at h
   have h1 : (X : ℝ) / 4 ≤ (sqfreeCount X : ℝ) := sqfreeCount_ge_quarter_real X hX
   have h2 : (4 * sqfreeCount X + 3 : ℕ) < X := h
   have h3 : (4 * (sqfreeCount X : ℝ) + 3 : ℝ) < (X : ℝ) := by exact_mod_cast h2
@@ -1357,7 +1357,7 @@ theorem fmcd_fcd_implies_pscd {q : ℕ} (hq : q.Prime)
     intro X; apply Finset.card_eq_zero.mpr
     apply Finset.filter_eq_empty_iff.mpr
     intro m hmIcc
-    push_neg; intro hsf hm0 hconf
+    push Not; intro hsf hm0 hconf
     have hempty : allowedFactors q (0 : ZMod q) (↑R : Set (ZMod q)) = ∅ := by
       ext b; simp only [allowedFactors, Set.mem_setOf_eq, zero_mul,
         Set.mem_empty_iff_false, iff_false]; exact h0R
@@ -1569,7 +1569,7 @@ def coprimeShiftCount (S : Finset ℕ) (X : ℕ) : ℕ :=
 theorem sqfreeSievedCount_le_coprimeShiftCount (S : Finset ℕ) (X : ℕ) :
     sqfreeSievedCount S X ≤ coprimeShiftCount S X := by
   apply Finset.card_le_card; intro m hm
-  simp only [sqfreeSievedCount, coprimeShiftCount, Finset.mem_filter] at hm ⊢
+  simp only [Finset.mem_filter] at hm ⊢
   exact ⟨hm.1, hm.2.2⟩
 
 /-- Coprimality to all primes in S implies coprimality to their product. -/
@@ -1586,8 +1586,8 @@ private theorem residue_class_count_le' (N : ℕ) (hN : 0 < N) (r : ℕ) (X : �
   set f := fun (m : ℕ) => (m + 1) / N
   have hinj : Set.InjOn f ↑T := by
     intro a ha b hb hab
-    simp only [T, Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe,
-      Finset.mem_filter, Finset.mem_Icc] at ha hb
+    simp only [T, Finset.coe_filter, Set.mem_setOf_eq,
+      Finset.mem_Icc] at ha hb
     simp only [f] at hab
     have ha_eq := Nat.div_add_mod (a + 1) N
     have hb_eq := Nat.div_add_mod (b + 1) N
@@ -1597,7 +1597,7 @@ private theorem residue_class_count_le' (N : ℕ) (hN : 0 < N) (r : ℕ) (X : �
   have hmaps : Set.MapsTo f ↑T ↑(Finset.range (X / N + 2)) := by
     intro m hm
     simp only [T, Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe,
-      Finset.mem_filter, Finset.mem_Icc, Finset.mem_range, f] at hm ⊢
+      Finset.mem_Icc, Finset.mem_range, f] at hm ⊢
     have hle : (m + 1) / N ≤ (X + 1) / N :=
       Nat.div_le_div_right (Nat.succ_le_succ hm.1.2)
     have hsucc_div : (X + 1) / N ≤ X / N + 1 := by
@@ -1785,7 +1785,7 @@ theorem weak_fmcd_fcd_implies_pscd {q : ℕ} (hq : q.Prime)
     intro X; apply Finset.card_eq_zero.mpr
     apply Finset.filter_eq_empty_iff.mpr
     intro m hmIcc
-    push_neg; intro hsf hm0 hconf
+    push Not; intro hsf hm0 hconf
     have hempty : allowedFactors q (0 : ZMod q) (↑R : Set (ZMod q)) = ∅ := by
       ext b; simp only [allowedFactors, Set.mem_setOf_eq, zero_mul,
         Set.mem_empty_iff_false, iff_false]; exact h0R

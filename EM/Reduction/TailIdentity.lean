@@ -422,7 +422,7 @@ theorem standard_tail_not_bad (M K q : Nat) (χ : Nat → ℂ) (threshold : ℝ)
     (hX : X₀ ≤ prod M) :
     genSeqCharEnergySquared (prod M) K q χ ≤ threshold := by
   by_contra h
-  push_neg at h
+  push Not at h
   have hmem := standard_tail_in_population M K (prod M) q χ (le_refl _) threshold h
   have h0 := hbad_empty (prod M) hX
   rw [Finset.card_eq_zero] at h0

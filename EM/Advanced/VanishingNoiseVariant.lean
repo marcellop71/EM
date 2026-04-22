@@ -78,7 +78,7 @@ theorem secondMinFac_dvd {n : ℕ} (_hn : 2 ≤ n) : secondMinFac n ∣ n := by
   split
   · exact Nat.minFac_dvd n
   · next hq =>
-    push_neg at hq
+    push Not at hq
     have hmf_dvd := Nat.minFac_dvd n
     have hq_dvd : n / n.minFac ∣ n := Nat.div_dvd_of_dvd hmf_dvd
     exact dvd_trans (Nat.minFac_dvd (n / n.minFac)) hq_dvd
@@ -89,7 +89,7 @@ theorem secondMinFac_prime {n : ℕ} (hn : 2 ≤ n) : (secondMinFac n).Prime := 
   split
   · exact Nat.minFac_prime (by omega)
   · next hq =>
-    push_neg at hq
+    push Not at hq
     exact Nat.minFac_prime (by omega)
 
 /-- minFac n ≤ secondMinFac n for n ≥ 2. -/
@@ -99,7 +99,7 @@ theorem minFac_le_secondMinFac {n : ℕ} (_hn : 2 ≤ n) :
   split
   · exact le_rfl
   · next hq =>
-    push_neg at hq
+    push Not at hq
     -- In the else branch, secondMinFac n = (n / n.minFac).minFac
     -- Since (n/minFac).minFac divides (n/minFac) which divides n,
     -- by minimality of n.minFac, n.minFac ≤ (n/minFac).minFac.

@@ -563,7 +563,7 @@ theorem quotient_dh_of_index_two_escape {q : Nat} [Fact (Nat.Prime q)]
   have h_two : ∀ x : (ZMod q)ˣ ⧸ H, x = a ∨ x = b := by
     intro x
     by_contra hc
-    push_neg at hc
+    push Not at hc
     have : Fintype.card ((ZMod q)ˣ ⧸ H) ≥ 3 := by
       have hinj : Function.Injective (fun i : Fin 3 =>
           match i with | 0 => x | 1 => a | 2 => b) := by
@@ -649,7 +649,7 @@ theorem orbit_chain_repeats {q : Nat} [Fact (Nat.Prime q)]
   have hinj := not_injective_infinite_finite
     (fun n => (orbitChain hq hne start n).val)
   rw [Function.Injective] at hinj
-  push_neg at hinj
+  push Not at hinj
   obtain ⟨a, b, hab, hne'⟩ := hinj
   exact ⟨a, b, hne', hab⟩
 

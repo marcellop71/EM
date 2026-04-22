@@ -155,7 +155,7 @@ theorem decorrelation_implies_ped :
     rw [Finset.card_range] at h; omega
   -- Goal: 1/4 * N ≤ escSet.card. Prove by contradiction.
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   -- So escSet.card < 1/4 * N (as reals)
   have hE_lt : (escSet.card : ℝ) < 1/4 * N := hlt
   -- Total sum splits into kernel and escape parts
@@ -1080,7 +1080,7 @@ theorem ccsb_at_implies_escape_cofinal {q : Nat} [Fact (Nat.Prime q)]
       ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ ε * N)
     (N₀ : ℕ) : ∃ n, N₀ ≤ n ∧ (χ (emMultUnit q hq hne n) : ℂ) ≠ 1 := by
   by_contra h
-  push_neg at h
+  push Not at h
   -- h : ∀ n, N₀ ≤ n → (χ (emMultUnit q hq hne n) : ℂ) = 1
   obtain ⟨N₁, hN₁⟩ := hccsb
   -- We need N large enough that (1-ε)·N > 2·N₀. Use Archimedean property.

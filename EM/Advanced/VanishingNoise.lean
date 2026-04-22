@@ -69,7 +69,7 @@ theorem exists_ne_one_of_nontrivial (chi : G →* ℂˣ) (S : Finset G)
     (hnt : chi ≠ 1) :
     ∃ s ∈ S, chi s ≠ 1 := by
   by_contra h
-  push_neg at h
+  push Not at h
   -- All elements of S map to 1 under chi, so S is in ker(chi)
   -- Since S generates G and S is in ker(chi), ker(chi) = top
   have hle : Subgroup.closure (S : Set G) ≤ MonoidHom.ker chi := by

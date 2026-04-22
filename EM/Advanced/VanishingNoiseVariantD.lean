@@ -58,7 +58,7 @@ theorem nonfaithful_nontrivial_ker_proper (chi : (ZMod q)ˣ →* ℂˣ)
 theorem ker_ne_bot_iff_exists_nontrivial (chi : (ZMod q)ˣ →* ℂˣ) :
     chi.ker ≠ ⊥ ↔ ∃ u : (ZMod q)ˣ, u ≠ 1 ∧ chi u = 1 := by
   rw [Ne, Subgroup.eq_bot_iff_forall]
-  push_neg
+  push Not
   constructor
   · intro ⟨u, hu_mem, hu_ne⟩
     exact ⟨u, hu_ne, by rwa [MonoidHom.mem_ker] at hu_mem⟩
@@ -145,7 +145,7 @@ def RatioKernelEscape (q : ℕ) [Fact (Nat.Prime q)]
 theorem kernel_escape_iff_not_confinement (chi : (ZMod q)ˣ →* ℂˣ) :
     RatioKernelEscape q chi ↔ ¬KernelConfinement q chi := by
   simp only [RatioKernelEscape, KernelConfinement]
-  push_neg
+  push Not
   rfl
 
 /-- If the factor ratio escapes ker(chi) infinitely often AND cofinitely many steps
@@ -230,7 +230,7 @@ theorem summable_implies_ratio_confined (chi : (ZMod q)ˣ →* ℂˣ)
       exact h
     linarith
   · -- No positive gap values beyond N₀: all gaps are 0
-    push_neg at hexists_pos
+    push Not at hexists_pos
     refine ⟨N₀, fun n hn => ?_⟩
     have hcard := hN₀ n hn
     rw [← gap_zero_iff_ratio_in_ker n chi hcard]
@@ -420,7 +420,7 @@ theorem ratio_escape_implies_nfce_five
   intro chi hchi hnf
   by_cases hfallback : ∀ N, ∃ n, N ≤ n ∧ ¬(2 ≤ (rawTwoPointUnitSet (q := 5) n).card)
   · exact ufd_fallback_not_summable (by norm_num : (2 : ℕ) < 5) chi hchi hfallback
-  · push_neg at hfallback
+  · push Not at hfallback
     obtain ⟨N₀, hN₀⟩ := hfallback
     exact ratio_escape_implies_gap_nonsummable (by norm_num : (2 : ℕ) < 5) chi hchi
       ⟨N₀, hN₀⟩ (h chi hchi hnf)
@@ -753,7 +753,7 @@ theorem nonFaithfulCharSeparation_of_two_prime_factors
   have hbot := coprime_order_zpowers_inf_bot hcop
   have : g ∉ Subgroup.zpowers x₁ ∨ g ∉ Subgroup.zpowers x₂ := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hmem : g ∈ Subgroup.zpowers x₁ ⊓ Subgroup.zpowers x₂ :=
       Subgroup.mem_inf.mpr ⟨h.1, h.2⟩
     rw [hbot, Subgroup.mem_bot] at hmem

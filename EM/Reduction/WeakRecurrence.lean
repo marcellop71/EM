@@ -177,7 +177,7 @@ theorem sublinearLyapunov_implies_weakVE : SublinearLyapunov → WeakVisitEquidi
   refine ⟨thr, fun N hN a => ?_⟩
   -- Proof by contradiction: assume V(a,N) < c * N
   by_contra h_neg
-  push_neg at h_neg
+  push Not at h_neg
   -- h_neg : (emVisitCount ... a N : ℝ) < c * (N : ℝ)
   have hN_nn : (0 : ℝ) ≤ (N : ℝ) := Nat.cast_nonneg' N
   -- V(a,N) < c * N = N / (2(q-1))
@@ -258,14 +258,14 @@ private theorem exists_visit_past_bound {q : Nat} [Fact (Nat.Prime q)]
     (hcount : N₀ < emVisitCount q hq hne a N) :
     ∃ n, N₀ ≤ n ∧ n < N ∧ emWalkUnit q hq hne n = a := by
   by_contra h_none
-  push_neg at h_none
+  push Not at h_none
   -- All visits must be at indices < N₀
   have hsub : (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)
       ⊆ Finset.range N₀ := by
     intro n hn
     simp only [Finset.mem_filter, Finset.mem_range] at hn ⊢
     by_contra hge
-    push_neg at hge
+    push Not at hge
     exact h_none n hge hn.1 hn.2
   have hcard_le := Finset.card_le_card hsub
   simp only [Finset.card_range] at hcard_le

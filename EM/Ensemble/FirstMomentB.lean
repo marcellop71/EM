@@ -476,7 +476,7 @@ private theorem count_one_mod_six_ge (X : Nat) :
 private theorem exists_sq_factor_of_nonsf_coprime6 {n : Nat} (_hn : 1 ≤ n)
     (hnsf : ¬ Squarefree n) (hodd : ¬ Even n) (hmod3 : n % 3 = 1) :
     ∃ d : Nat, 5 ≤ d ∧ d * d ∣ n := by
-  rw [Nat.squarefree_iff_prime_squarefree] at hnsf; push_neg at hnsf
+  rw [Nat.squarefree_iff_prime_squarefree] at hnsf; push Not at hnsf
   obtain ⟨p, hp, hpdvd⟩ := hnsf
   refine ⟨p, ?_, hpdvd⟩
   have hp2 : p ≠ 2 := by
@@ -585,7 +585,7 @@ private theorem sum_inv_sq_le_telescoping (K M : Nat) (hK : 2 ≤ K) (hKM : K �
                 simp [Finset.disjoint_singleton_right, Finset.mem_Icc])]
               rw [Finset.sum_singleton, ih hle]
               push_cast; ring
-            · push_neg at hle
+            · push Not at hle
               have : K = n + 1 := by omega
               subst this; simp [Finset.Icc_self]
         linarith [htel, div_nonneg (by norm_num : (0:ℝ) ≤ 1) (by positivity : (0:ℝ) ≤ (M:ℝ))]
@@ -673,7 +673,7 @@ private theorem nonsf_mod6_count_bound (X : Nat) :
                       · exact mul_le_mul_of_nonneg_left
                           (sum_inv_sq_le_telescoping 5 sqrtX (by omega) h5)
                           (div_nonneg (Nat.cast_nonneg' X) (by norm_num))
-                      · push_neg at h5
+                      · push Not at h5
                         simp only [show Finset.Icc 5 sqrtX = ∅ from by
                           ext x; simp [Finset.mem_Icc]; omega]
                         simp; positivity

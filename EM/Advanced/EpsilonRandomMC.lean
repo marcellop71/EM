@@ -555,7 +555,7 @@ private theorem not_dvd_two_of_ge_five {q : ℕ} (h5 : 5 ≤ q) :
 private theorem prime_ge_five_of_ne {q : ℕ} (hq : q.Prime) (hne2 : q ≠ 2) (hne3 : q ≠ 3) :
     5 ≤ q := by
   by_contra h
-  push_neg at h
+  push Not at h
   have h2 := hq.two_le
   -- q ∈ {2, 3, 4}; only 2 and 3 are prime
   interval_cases q <;> first | omega | exact absurd hq (by decide)
@@ -1175,7 +1175,7 @@ theorem not_prime_quotient_ge_two {P : ℕ} (hP : 1 ≤ P)
   have hmf_ge2 : 2 ≤ (P + 1).minFac :=
     (Nat.minFac_prime (by omega : P + 1 ≠ 1)).two_le
   have hc_ge2 : 2 ≤ c := by
-    by_contra h; push_neg at h
+    by_contra h; push Not at h
     interval_cases c <;> omega
   have hdiv_eq : (P + 1) / (P + 1).minFac = c := by
     have : (P + 1).minFac * c / (P + 1).minFac = c :=

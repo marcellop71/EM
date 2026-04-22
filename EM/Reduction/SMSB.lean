@@ -173,7 +173,7 @@ theorem exists_class_small_bad_set
       (badVisitsInClass hq hne c K N threshold χ).card * (q - 1) ≤
       (totalBadSet' q K N threshold χ).card := by
   by_contra h
-  push_neg at h
+  push Not at h
   have hcard : Fintype.card (ZMod q)ˣ = q - 1 := by
     rw [ZMod.card_units_eq_totient]
     exact Nat.totient_prime (Fact.out : Nat.Prime q)

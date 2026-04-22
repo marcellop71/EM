@@ -269,7 +269,7 @@ private theorem pigeonhole_sum {α : Type*} {S : Finset α} {f : α → ℝ}
     {B : ℝ}
     (hS : S.Nonempty) (_hf : ∀ x ∈ S, 0 ≤ f x) (hsum : B ≤ ∑ x ∈ S, f x) :
     ∃ x ∈ S, B / S.card ≤ f x := by
-  by_contra h; push_neg at h
+  by_contra h; push Not at h
   have hcard_pos : (0 : ℝ) < S.card := by exact_mod_cast hS.card_pos
   obtain ⟨x₀, hx₀⟩ := hS
   have hlt : ∑ x ∈ S, f x < ∑ x ∈ S, (fun _ => B / S.card) x :=
@@ -389,7 +389,7 @@ theorem sve_contradicts_avoidance (hp3 : 3 ≤ p)
   use max N₀ 1
   intro N hN
   -- Suppose V(a) = 0 for contradiction
-  by_contra h; push_neg at h
+  by_contra h; push Not at h
   have hV0 : walkVisitCount (fun n : Fin N => emWalkUnit p hq hne n.val) a = 0 := by
     omega
   -- Confined excess energy: excessEnergy ≥ N²/(p-2)

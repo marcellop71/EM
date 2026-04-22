@@ -282,7 +282,7 @@ theorem self_avoidance_dichotomy
       ¬∀ N, ∃ n, N ≤ n ∧ walkZ q n = x ∧ multZ q n = s) := by
   by_cases h : ∀ (s : ZMod q), s ≠ 0 → ∀ N, ∃ n, N ≤ n ∧ walkZ q n = x ∧ multZ q n = s
   · exact Or.inl h
-  · right; push_neg at h
+  · right; push Not at h
     obtain ⟨s, hs_ne, N, hN⟩ := h
     exact ⟨s, hs_ne, fun hcof_s => by
       obtain ⟨n, hn, _, _⟩ := hcof_s N; exact hN n hn ‹_› ‹_›⟩

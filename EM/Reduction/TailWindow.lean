@@ -262,7 +262,7 @@ theorem norm_sq_sum_eq_diag_plus_cross (J : Nat) (z : Nat → ℂ) :
       · subst h1; simp only [lt_irrefl, ite_true, ite_false, add_zero]
       · by_cases h2 : j < l
         · simp only [h1, h2, not_lt.mpr (le_of_lt h2), ite_true, ite_false, zero_add, add_zero]
-        · push_neg at h2
+        · push Not at h2
           have h3 : l < j := lt_of_le_of_ne h2 (Ne.symm h1)
           simp only [h1, show ¬(j < l) from not_lt.mpr (le_of_lt h3), h3, ite_true, ite_false,
             zero_add]

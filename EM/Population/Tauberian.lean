@@ -377,7 +377,7 @@ private theorem exponent_ge_two_of_nonprime_pp {n : ℕ} (hn_pp : IsPrimePow n)
   rw [isPrimePow_nat_iff] at hn_pp
   obtain ⟨p, k, hp, hk, rfl⟩ := hn_pp
   refine ⟨p, k, hp, ?_, rfl⟩
-  by_contra h; push_neg at h
+  by_contra h; push Not at h
   have : k = 1 := by omega
   subst this; exact hn_np (by simpa using hp)
 

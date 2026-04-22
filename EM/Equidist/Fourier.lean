@@ -425,7 +425,7 @@ theorem product_escape_finset {G : Type*} [CommGroup G]
     {H : Subgroup G} {ι : Type*} {s : Finset ι} {f : ι → G}
     (hprod : ∏ i ∈ s, f i ∉ H) :
     ∃ i ∈ s, f i ∉ H := by
-  by_contra hall; push_neg at hall
+  by_contra hall; push Not at hall
   exact hprod (H.prod_mem fun i hi => hall i hi)
 
 /-! ### §27b. Multiplier Equidistribution
@@ -474,7 +474,7 @@ theorem mult_equidist_implies_global_tail_se
     (hme : MultiplierEquidistribution) : GlobalTailSE := by
   intro q _ hq hne H hH N
   obtain ⟨u, hu⟩ : ∃ u : (ZMod q)ˣ, u ∉ H := by
-    by_contra hall; push_neg at hall
+    by_contra hall; push Not at hall
     exact hH (eq_top_iff.mpr fun x _ => hall x)
   obtain ⟨n, hn, heq⟩ := hme q hq hne u N
   exact ⟨n, hn, heq ▸ hu⟩

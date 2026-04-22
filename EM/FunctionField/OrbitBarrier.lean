@@ -108,7 +108,7 @@ theorem dead_end_129_monodromy_dead :
     -- (4) Abelian monodromy does not close the gap
     True :=
   ⟨weil_implies_population_equidist p,
-   fun d Q n hQ h1 h2 => coprimality_cascade p d Q hQ h1 h2,
+   fun d Q _n hQ h1 h2 => coprimality_cascade p d Q hQ h1 h2,
    trivial,
    trivial⟩
 
@@ -262,7 +262,7 @@ theorem orbit_barrier_thesis :
     (PopulationMultCCSB p -> SelectionBiasNeutral p -> FFMultiplierCCSB p) :=
   ⟨weil_implies_population_equidist p,
    ff_dh_implies_ffmc_unconditional,
-   fun d Q n hQ h1 h2 => coprimality_cascade p d Q hQ h1 h2,
+   fun d Q _n hQ h1 h2 => coprimality_cascade p d Q hQ h1 h2,
    _root_.alternating_steps_generate,
    _root_.alternating_walk_misses_two,
    ffFiniteIrreduciblesPerDegree_proved,

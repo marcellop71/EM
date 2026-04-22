@@ -78,7 +78,7 @@ private theorem nat_sq_sub_one (p : ℕ) (h : 1 ≤ p) : p ^ 2 - 1 = (p - 1) * (
 theorem prime_mod4_three_ge_three (p : ℕ) (hp : Nat.Prime p) (h3 : p % 4 = 3) :
     3 ≤ p := by
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   interval_cases p <;> simp_all [Nat.Prime]
 
 /-- A prime p > 2 is odd. -/

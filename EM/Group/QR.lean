@@ -49,21 +49,21 @@ theorem neg_one_pow_half_eq_one {q : ℕ} (hq : q % 4 = 1) :
     (-1 : ℤ) ^ (q / 2) = 1 := by
   obtain ⟨k, rfl⟩ : ∃ k, q = 4 * k + 1 := ⟨q / 4, by omega⟩
   have : (4 * k + 1) / 2 = 2 * k := by omega
-  rw [this, pow_mul]; norm_num; exact one_pow _
+  rw [this, pow_mul]; norm_num
 
 /-- When q ≡ 3 mod 4, (-1)^(q/2) = -1. -/
 theorem neg_one_pow_half_eq_neg_one' {q : ℕ} (hq : q % 4 = 3) :
     (-1 : ℤ) ^ (q / 2) = -1 := by
   obtain ⟨k, rfl⟩ : ∃ k, q = 4 * k + 3 := ⟨q / 4, by omega⟩
   have : (4 * k + 3) / 2 = 2 * k + 1 := by omega
-  rw [this, pow_add, pow_mul, pow_one]; norm_num; exact one_pow _
+  rw [this, pow_add, pow_mul, pow_one]; norm_num
 
 /-- For odd multiplier m, (-1)^(m*n) = (-1)^n. -/
 theorem neg_one_pow_odd_mul {m n : ℕ} (hm : m % 2 = 1) :
     (-1 : ℤ) ^ (m * n) = (-1 : ℤ) ^ n := by
   obtain ⟨k, rfl⟩ : ∃ k, m = 2 * k + 1 := ⟨m / 2, by omega⟩
   rw [show (2 * k + 1) * n = 2 * (k * n) + n from by ring]
-  rw [pow_add, pow_mul]; norm_num; exact one_pow _
+  rw [pow_add, pow_mul]; norm_num
 
 /-- Reduce legendreSym p (↑q) to legendreSym p r when q ≡ r mod p. -/
 theorem legendreSym_nat_eq_mod (p : ℕ) [Fact (Nat.Prime p)] (q : ℕ) (r : ℤ)
@@ -486,31 +486,31 @@ theorem se_qr_obstruction {q : ℕ} [Fact (Nat.Prime q)] (hq : q > 53)
      q % 53 = 43 ∨ q % 53 = 44 ∨ q % 53 = 46 ∨ q % 53 = 47 ∨
      q % 53 = 49 ∨ q % 53 = 52) := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
-  · by_contra hc; push_neg at hc
+  · by_contra hc; push Not at hc
     exact absurd h3 (mult_three_escapes_qr (by omega) hc.1 hc.2)
-  · by_contra hc; push_neg at hc
+  · by_contra hc; push Not at hc
     exact absurd h5 (mult_five_escapes_qr (by omega) hc.1 hc.2)
-  · by_contra hc; push_neg at hc
+  · by_contra hc; push Not at hc
     exact absurd h7 (mult_seven_escapes_qr (by omega)
       hc.1 hc.2.1 hc.2.2.1 hc.2.2.2.1 hc.2.2.2.2.1 hc.2.2.2.2.2)
-  · by_contra hc; push_neg at hc
+  · by_contra hc; push Not at hc
     exact absurd h13 (mult_thirteen_escapes_qr (by omega)
       hc.1 hc.2.1 hc.2.2.1 hc.2.2.2.1 hc.2.2.2.2.1 hc.2.2.2.2.2)
   · -- p=43: split by q%4
     constructor
-    · intro hmod4; by_contra hc; push_neg at hc
+    · intro hmod4; by_contra hc; push Not at hc
       obtain ⟨ne1, ne4, ne6, ne9, ne10, ne11, ne13, ne14, ne15, ne16, ne17,
               ne21, ne23, ne24, ne25, ne31, ne35, ne36, ne38, ne40, ne41⟩ := hc
       exact absurd h43 (mult_fortythree_escapes_qr_case1 (by omega) hmod4
         ne1 ne4 ne6 ne9 ne10 ne11 ne13 ne14 ne15 ne16 ne17
         ne21 ne23 ne24 ne25 ne31 ne35 ne36 ne38 ne40 ne41)
-    · intro hmod4; by_contra hc; push_neg at hc
+    · intro hmod4; by_contra hc; push Not at hc
       obtain ⟨ne2, ne3, ne5, ne7, ne8, ne12, ne18, ne19, ne20, ne22, ne26, ne27,
               ne28, ne29, ne30, ne32, ne33, ne34, ne37, ne39, ne42⟩ := hc
       exact absurd h43 (mult_fortythree_escapes_qr_case3 (by omega) hmod4
         ne2 ne3 ne5 ne7 ne8 ne12 ne18 ne19 ne20 ne22 ne26 ne27
         ne28 ne29 ne30 ne32 ne33 ne34 ne37 ne39 ne42)
-  · by_contra hc; push_neg at hc
+  · by_contra hc; push Not at hc
     obtain ⟨ne1, ne4, ne6, ne7, ne9, ne10, ne11, ne13, ne15, ne16, ne17, ne24,
             ne25, ne28, ne29, ne36, ne37, ne38, ne40, ne42, ne43, ne44, ne46, ne47,
             ne49, ne52⟩ := hc
@@ -597,7 +597,7 @@ theorem se_of_prime_index_escape {q : Nat} [inst : Fact (Nat.Prime q)]
     show (q - 1) / d > 1
     rw [hc, Nat.mul_div_cancel_left _ hd_pos]
     -- c = (q-1)/d and d < q-1, so d*c = q-1 > d*1, hence c > 1
-    by_contra h; push_neg at h
+    by_contra h; push Not at h
     interval_cases c <;> omega
   have hk_ne_one : k ≠ 1 := by omega
   -- Get a prime factor ℓ of k

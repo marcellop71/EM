@@ -295,7 +295,7 @@ theorem six_mults_escape_card_le_five {q : Nat} [Fact (Nat.Prime q)]
     (H : Subgroup (ZMod q)ˣ) (hcard : Fintype.card H ≤ 5) :
     ∃ n, n < 6 ∧ (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ∉ H := by
   by_contra hall
-  push_neg at hall
+  push Not at hall
   -- Build an injective function Fin 6 → H
   have h6le : 6 ≤ Fintype.card H := by
     let f : Fin 6 → H := fun i =>
@@ -442,9 +442,9 @@ theorem eight_elts_escape_order_le_seven {q : Nat} [Fact (Nat.Prime q)]
   by_cases h5 : Fintype.card H ≤ 5
   · exact six_mults_escape_card_le_five hq hne hq59 H h5
   -- |H| ∈ {6, 7}. Assume for contradiction all 6 mults ∈ H.
-  push_neg at h5
+  push Not at h5
   by_contra hall
-  push_neg at hall
+  push Not at hall
   have hm : ∀ i, i < 6 → Units.mk0 (multZ q i) (multZ_ne_zero hq hne i) ∈ H := hall
   -- Abbreviation for multiplier units
   let mk := fun i => Units.mk0 (multZ q i) (multZ_ne_zero hq hne i)
@@ -495,7 +495,7 @@ theorem eight_elts_escape_order_le_seven {q : Nat} [Fact (Nat.Prime q)]
   -- Insert product (not in S ∪ {1}) → 8 elements
   have hpS : (⟨mk 0 * mk 1, hp_mem⟩ : H) ∉ S.cons ⟨1, H.one_mem⟩ h1S := by
     rw [Finset.mem_cons]
-    push_neg
+    push Not
     exact ⟨fun h => hp_ne_one (congrArg Subtype.val h),
       by simp only [S, Finset.mem_image, Finset.mem_univ, true_and]; exact hp_not_range⟩
   have hS2_card : ((S.cons ⟨1, H.one_mem⟩ h1S).cons ⟨mk 0 * mk 1, hp_mem⟩ hpS).card = 8 := by

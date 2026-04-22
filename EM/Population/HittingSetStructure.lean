@@ -130,7 +130,7 @@ theorem guardian_active_or_inactive (n : Nat) :
   by_cases h : ∃ q ∈ MissingPrimes, q ∣ prod n + 1
   · left; exact h
   · right
-    push_neg at h
+    push Not at h
     exact h
 
 /-- Active/inactive are exclusive. -/

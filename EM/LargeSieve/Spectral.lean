@@ -774,7 +774,7 @@ private theorem vdc_cross_bound {N H : ℕ} {f : ℕ → ℂ} {δ : ℝ}
         · have : g (j - ↑h₁) = 0 := by
             simp only [hg_def]; exact if_neg hsupp1
           simp [this]
-      · push_neg at hsupp2
+      · push Not at hsupp2
         have : g (j - ↑h₂) = 0 := by
           simp only [hg_def]; split_ifs with hcond
           · exact absurd hcond.2 (not_lt.mpr (hsupp2 hcond.1))

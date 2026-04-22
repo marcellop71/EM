@@ -48,7 +48,7 @@ open Classical in
 theorem mc_implies_missing_empty (hmc : MullinConjecture) : MissingPrimes = ∅ := by
   ext p
   simp only [MissingPrimes, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and]
-  intro hp; push_neg
+  intro hp; push Not
   exact hmc p ((isPrime_iff_natPrime p).mpr hp)
 
 /-- MC implies MissingFinite. -/
@@ -84,7 +84,7 @@ private theorem primes_eq_appeared_union_missing :
   · intro hp
     by_cases h : ∃ k, seq k = p
     · left; exact h
-    · right; push_neg at h; exact ⟨hp, h⟩
+    · right; push Not at h; exact ⟨hp, h⟩
   · rintro (⟨k, hk⟩ | ⟨hp, _⟩)
     · rw [← hk]; exact (isPrime_iff_natPrime _).mp (seq_isPrime k)
     · exact hp
@@ -199,7 +199,7 @@ theorem not_wm_product_diverges (hnwm : ¬ WeakMullin) :
   -- Not summable + nonneg ⇒ can find finsets with arbitrarily large sums
   have hns : ¬ Summable g := hnwm
   have ⟨u, hu⟩ : ∃ u : Finset ℕ, 2 * max C 0 < ∑ x ∈ u, g x := by
-    by_contra h; push_neg at h
+    by_contra h; push Not at h
     exact hns (summable_of_sum_le hg_nn h)
   -- Filter to MissingPrimes elements
   classical

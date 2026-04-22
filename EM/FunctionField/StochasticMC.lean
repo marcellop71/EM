@@ -312,19 +312,19 @@ theorem ff_capture_degree_grows_of_finiteness
     use 0
     intro n _
     by_contra hlt
-    push_neg at hlt
+    push Not at hlt
     have : n ∈ ({n : ℕ | (σ.sel n).natDegree ≤ D} : Set ℕ) := by
       simp only [Set.mem_setOf_eq]; omega
     rw [hempty] at this
     exact this
   · -- The finite nonempty set has a maximum
-    push_neg at hempty
+    push Not at hempty
     obtain ⟨m, hm⟩ := hempty
     have hfin_fs := hfin_idx.toFinset
     use hfin_idx.toFinset.sup id + 1
     intro n hn
     by_contra hlt
-    push_neg at hlt
+    push Not at hlt
     have hmem : n ∈ {n : ℕ | (σ.sel n).natDegree ≤ D} := by
       simp only [Set.mem_setOf_eq]; omega
     have hmem_fs : n ∈ hfin_idx.toFinset := hfin_idx.mem_toFinset.mpr hmem

@@ -123,7 +123,7 @@ theorem hom_indicator_units (a g : (ZMod q)ˣ) :
   simp_rw [conj_eq, ← Units.val_mul, ← map_mul,
     show a⁻¹ * g = g * a⁻¹ from mul_comm _ _]
   rw [hom_sum_units (g * a⁻¹)]
-  simp only [mul_inv_eq_one, eq_comm (a := a)]
+  simp only [mul_inv_eq_one]
 
 /-- Fourier counting formula for multisets over (ZMod q)^*:
     |G| * count(a, M) = sum_f conj(f(a)) * sum_{g in M} f(g). -/
@@ -141,7 +141,7 @@ theorem char_count_formula_units (a : (ZMod q)ˣ) (M : Multiset (ZMod q)ˣ) :
     · subst hax; simp [hom_indicator_units]; ring
     · have hxa : ¬(x = a) := fun h => hax h.symm
       simp only [hom_indicator_units, if_neg hxa, if_neg hax]
-      ring
+      ring_nf
 
 /-- Uniform bound extraction: for finitely many tendsto-zero sequences,
     find N_0 such that all are below epsilon for N >= N_0. -/
@@ -177,6 +177,7 @@ def survivalCount (q : ℕ) [Fact (Nat.Prime q)] (N : ℕ) : ℕ :=
   ((Finset.univ : Finset (Fin N → Bool)).filter
     (fun σ => IsUnit (epsWalkProdFrom 2 (finDecisionExtend σ) N : ZMod q))).card
 
+omit [NeZero q] in
 /-- Survival + death = 2^N (partition). -/
 theorem survival_plus_death (N : ℕ) :
     survivalCount q N + deathCount q N = 2 ^ N := by
@@ -257,6 +258,7 @@ noncomputable def unitEndpointCharSumInd
     then (chi h.unit : ℂ)
     else 0
 
+omit [NeZero q] in
 /-- IsUnit at ZMod q implies q does not divide the natural number. -/
 private theorem survive_not_dvd {n : ℕ}
     (h : IsUnit (n : ZMod q)) : ¬(q ∣ n) := by
@@ -511,7 +513,7 @@ private theorem fourier_counting_identity (N : ℕ) (a : (ZMod q)ˣ) :
 /-- Fourier lower bound on pathCount:
     (q-1) * pathCount(a) ≥ survivalCount - (q-2) * B
     when |unitEndpointCharSumInd(χ)| ≤ B for all nontrivial χ. -/
-private theorem fourier_lower_bound (N : ℕ) (a : (ZMod q)ˣ) (B : ℝ) (hB : 0 ≤ B)
+private theorem fourier_lower_bound (N : ℕ) (a : (ZMod q)ˣ) (B : ℝ) (_hB : 0 ≤ B)
     (hbound : ∀ chi : (ZMod q)ˣ →* ℂˣ, chi ≠ 1 →
       ‖unitEndpointCharSumInd chi N‖ ≤ B) :
     (↑(Fintype.card (ZMod q)ˣ) : ℝ) * ↑(pathCount q N a) ≥
@@ -575,8 +577,7 @@ private theorem fourier_lower_bound (N : ℕ) (a : (ZMod q)ˣ) (B : ℝ) (hB : 0
 /-- **TCA + PathSurvival → RandomTwoPointMC: PROVED.** -/
 theorem tca_path_survival_implies_random_mc_proved :
     TCAPathSurvivalImpliesRandomMC q := by
-  intro htca hps hq3
-  intro a
+  intro htca hps hq3 a
   -- Step 1: Extract uniform bound on pathCharSum from TCA
   have hε_pos : (0 : ℝ) < 1 / (2 * ↑q) := by positivity
   have htends : ∀ chi : (ZMod q)ˣ →* ℂˣ, chi ≠ 1 →
@@ -667,13 +668,12 @@ theorem tca_path_survival_implies_random_mc_proved :
   rw [hcard] at hfl
   have hfl' := hfl
   by_contra h_zero
-  push_neg at h_zero
+  push Not at h_zero
   -- h_zero : ¬∃ N σ, ... i.e. ∀ N σ, endpoint ≠ a
   -- This means pathCount q N a = 0 for our specific N
   have hpc0 : pathCount q N a = 0 := by
     simp only [pathCount, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-    intro σ _
-    intro heq
+    intro σ _ heq
     exact h_zero N σ (by rw [epsWalkProdFrom_two_eq]; exact heq)
   rw [hcard] at hkey; rw [hpc0] at hfl; simp at hfl; linarith
 

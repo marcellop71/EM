@@ -547,7 +547,7 @@ private theorem unit_char_sum_eq_zero {q : ℕ} [Fact (Nat.Prime q)]
     ∑ a : (ZMod q)ˣ, (χ a : ℂ) = 0 := by
   -- Since χ ≠ 1, there exists b with χ(b) ≠ 1
   have ⟨b, hb⟩ : ∃ b : (ZMod q)ˣ, χ b ≠ 1 := by
-    by_contra h; push_neg at h; apply hχ
+    by_contra h; push Not at h; apply hχ
     ext a; simp [h a]
   -- The sum S satisfies χ(b) · S = S (by reindexing a ↦ b·a)
   set S := ∑ a : (ZMod q)ˣ, (χ a : ℂ)

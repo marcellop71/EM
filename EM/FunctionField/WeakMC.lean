@@ -134,12 +134,12 @@ theorem ffSeq_degree_eventually_large
   by_cases hS_empty : S = ∅
   · -- No indices with degree ≤ D: N₀ = 0
     refine ⟨0, fun n _ => ?_⟩
-    by_contra hle; push_neg at hle
+    by_contra hle; push Not at hle
     have : n ∈ S := hfin_low.mem_toFinset.mpr hle
     rw [hS_empty] at this; simp at this
   · have hS_ne : S.Nonempty := Finset.nonempty_of_ne_empty hS_empty
     refine ⟨S.max' hS_ne + 1, fun n hn => ?_⟩
-    by_contra hle; push_neg at hle
+    by_contra hle; push Not at hle
     have hn_S : n ∈ S := hfin_low.mem_toFinset.mpr hle
     have := Finset.le_max' S n hn_S
     omega
@@ -180,7 +180,7 @@ theorem captureCount_eventually_constant
   constructor
   · intro ⟨hkN, hkd⟩
     refine ⟨?_, hkd⟩
-    by_contra hk_ge; push_neg at hk_ge
+    by_contra hk_ge; push Not at hk_ge
     exact absurd hkd (Nat.ne_of_gt (hN₀ k hk_ge))
   · intro ⟨hkN₀, hkd⟩
     exact ⟨by omega, hkd⟩
@@ -371,7 +371,7 @@ theorem total_low_degree_bound
     (d_data : FFEMData p) (D : ℕ) (N : ℕ)
     (hN : (monicIrredSet_le_finite p hfin D).toFinset.card < N) :
     ∃ n, n < N ∧ D < (d_data.ffSeq n).natDegree := by
-  by_contra hall; push_neg at hall
+  by_contra hall; push Not at hall
   set target := (monicIrredSet_le_finite p hfin D).toFinset
   have hmaps : Set.MapsTo d_data.ffSeq ↑(Finset.range N) ↑target := by
     intro n hn

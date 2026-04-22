@@ -134,7 +134,7 @@ theorem genProd_succ_not_dvd_two {s : ℕ} (hs : 1 ≤ s) {k : ℕ} (hk : 1 ≤ 
 theorem two_not_mem_primeFactors_of_pos {s : ℕ} (hs : 1 ≤ s) {k : ℕ} (hk : 1 ≤ k) :
     2 ∉ (genProd s k + 1).primeFactors := by
   rw [Nat.mem_primeFactors]
-  push_neg
+  push Not
   intro _ h2
   exact absurd h2 (genProd_succ_not_dvd_two hs hk)
 

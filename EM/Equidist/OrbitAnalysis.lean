@@ -46,7 +46,7 @@ theorem walk_eventually_cofinal {q : Nat} [Fact (Nat.Prime q)]
     intro x
     by_cases hcof : ∀ M, ∃ m, M ≤ m ∧ walkZ q m = x
     · exact ⟨0, fun h => absurd hcof h⟩
-    · push_neg at hcof
+    · push Not at hcof
       obtain ⟨M, hM⟩ := hcof
       exact ⟨M, fun _ m hm => hM m hm⟩
   choose bound hbound using h
@@ -87,7 +87,7 @@ theorem cofinal_escape_or_eventual_confinement {q : Nat} [Fact (Nat.Prime q)]
     exact ⟨x, s, hcof', hesc⟩
   · -- Finitely many escapes: push negation
     right
-    push_neg at hinf
+    push Not at hinf
     obtain ⟨N, hN⟩ := hinf
     exact ⟨N, fun n hn => by_contra (fun h => h (hN n hn))⟩
 

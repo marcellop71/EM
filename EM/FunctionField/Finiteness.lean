@@ -40,7 +40,7 @@ private theorem coeff_injection (R : Type*) [CommRing R] (d : ℕ) :
   intro n
   by_cases hn : n < d + 1
   · exact congr_fun heq ⟨n, hn⟩
-  · push_neg at hn
+  · push Not at hn
     -- n ≥ d + 1, so n > natDegree for both P and Q
     rw [Polynomial.coeff_eq_zero_of_natDegree_lt (by omega : P.natDegree < n)]
     rw [Polynomial.coeff_eq_zero_of_natDegree_lt (by omega : Q.natDegree < n)]

@@ -209,7 +209,7 @@ theorem walk_escapes_coset {q : Nat} [Fact (Nat.Prime q)]
     ∃ n, ∀ u : (ZMod q)ˣ, u ∈ H →
       walkZ q n ≠ walkZ q 0 * (u : ZMod q) := by
   by_contra hall
-  push_neg at hall
+  push Not at hall
   exact se_breaks_confinement hq hne hse H hH (confinement_reverse hq hne H hall)
 
 /-! ## Subgroup Growth and Walk Orbit Expansion

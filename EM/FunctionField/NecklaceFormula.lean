@@ -188,7 +188,7 @@ private theorem irred_degree_dvd_of_dvd_X_pow_sub_X {n : ℕ} (hn : 0 < n)
   -- The finrank of the adjunction divides the finrank of the full extension
   have hfinrank_dvd : Module.finrank (ZMod p) (IntermediateField.adjoin (ZMod p) {α}) ∣
       Module.finrank (ZMod p) (GaloisField p n) := by
-    rw [← IntermediateField.finrank_top']
+    conv_rhs => rw [← IntermediateField.finrank_top' (F := ZMod p) (E := GaloisField p n)]
     exact IntermediateField.finrank_dvd_of_le_right le_top
   -- Combine: deg(Q) = deg(minpoly) | finrank = n
   rw [← hmin_eq]

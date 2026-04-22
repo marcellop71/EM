@@ -329,7 +329,7 @@ theorem cme_implies_mub : ConditionalMultiplierEquidist → MultiplierUniformity
             exact_mod_cast Finset.card_filter_le _ _
         _ = N := by simp [Finset.card_range]
     · -- N >= N_0: use CME bound
-      push_neg at h
+      push Not at h
       exact hN₀ N h
 
 end CMEImpliesMUB

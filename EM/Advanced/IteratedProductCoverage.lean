@@ -128,7 +128,7 @@ theorem iteratedMulFinset_card_growth (hmo : minOrder G = Fintype.card G)
           (iteratedMulFinset S n).card + (S n).card - 1 := by omega
       exact le_trans (min_le_min_left _ hle) hcd
     · -- Case 2: |G| < 1 + ∑
-      push_neg at h
+      push Not at h
       have hG_le : Fintype.card G ≤
           1 + (∑ k ∈ Finset.range n, ((S k).card - 1) + ((S n).card - 1)) := by omega
       rw [min_eq_left hG_le]

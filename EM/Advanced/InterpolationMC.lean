@@ -776,7 +776,7 @@ theorem tsd_implies_neg_one_reachable (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)
     rw [reachableEver, Set.mem_iUnion]
     exact ⟨k, minFacMixed, minFacMixed_valid m, hk⟩
   · -- Case B: walk never hits -1 => GoodAccumulator m by TSD
-    push_neg at hdeath
+    push Not at hdeath
     exact good_accumulator_neg_one_reachable q hq hq2 m (hP₀ m hP₀m hsf hcop)
 
 /-- TreeSieveDecay implies TreeSieveDecayHitting for primes q >= 3. -/
@@ -1048,7 +1048,7 @@ private theorem exists_prime_factor_mod3_eq_two :
       have hplt : p < N :=
         lt_of_le_of_ne (Nat.minFac_le (by omega)) (Ne.symm hN_ne_p)
       have hN_div_ge : 2 ≤ N / p := by
-        by_contra h; push_neg at h
+        by_contra h; push Not at h
         have hpos := Nat.div_pos (Nat.le_of_dvd (by omega) hpdvd) hp.pos
         have heq1 : N / p = 1 := by omega
         exact hN_ne_p (by rw [← Nat.div_mul_cancel hpdvd, heq1, one_mul])
@@ -1200,7 +1200,7 @@ theorem tsd_implies_reachable_from_any (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q
     rw [reachableEver, Set.mem_iUnion]
     exact ⟨k, minFacMixed, minFacMixed_valid m, hk⟩
   · -- Case B: walk never hits -1
-    push_neg at hdeath
+    push Not at hdeath
     -- All accumulators stay coprime to q
     have hcop_all : ∀ n, Nat.Coprime (mixedWalkProd m minFacMixed n) q :=
       mixedWalkProd_coprime_of_no_death q hq m hm hcop minFacMixed
@@ -1273,7 +1273,7 @@ theorem tsd_all_implies_mixed_mc
   by_cases hq3 : q = 3
   · subst hq3; exact mixed_mc_three
   · have hq5 : 5 ≤ q := by
-      by_contra h; push_neg at h
+      by_contra h; push Not at h
       interval_cases q <;> first | omega | exact absurd hq (by decide)
     exact tsd_implies_mixed_mc_single q hq hq5 (hTSD q hq hq5)
 

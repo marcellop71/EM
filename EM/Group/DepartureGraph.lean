@@ -82,7 +82,7 @@ theorem generation_escapes_subgroup (w m : ℕ → G)
     (H : Subgroup G) (hH : H ≠ ⊤) :
     ∃ k, w k ∉ (H : Set G) := by
   by_contra hall
-  push_neg at hall
+  push Not at hall
   -- hall : ∀ k, w k ∈ H
   have hsub : globalMultiplierSet m ⊆ (H : Set G) :=
     multiplier_set_confined w m hwalk H hall
@@ -387,7 +387,7 @@ theorem generating_escapes_proper {G : Type*} [Group G]
     (H : Subgroup G) (hH : H ≠ ⊤) :
     ∃ k, m k ∉ (H : Set G) := by
   by_contra hall
-  push_neg at hall
+  push Not at hall
   exact multiplier_closure_ne_top_of_confined m H hH hall hgen
 
 end SafePrimeLattice
@@ -412,7 +412,7 @@ theorem closure_compl_singleton_eq_top {G : Type*} [Group G] [Fintype G]
   -- Step 1: find a ∈ G with a ≠ g and a ≠ 1
   have hexists : ∃ a : G, a ≠ g ∧ a ≠ 1 := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     -- hall : ∀ a, a ≠ g → a = 1, so every element is g or 1
     -- Claim |G| ≤ 2 by bounding via `card_le_one_iff` or explicit injection
     have h2 : Fintype.card G ≤ 2 := by

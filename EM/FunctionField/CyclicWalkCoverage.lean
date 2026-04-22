@@ -180,7 +180,7 @@ omit [DecidableEq G] in
 theorem char_sum_eq_zero (χ : G →* ℂˣ) (hχ : χ ≠ 1) :
     ∑ g : G, (χ g : ℂ) = 0 := by
   have ⟨b, hb⟩ : ∃ b : G, χ b ≠ 1 := by
-    by_contra h; push_neg at h; apply hχ; ext a; simp [h a]
+    by_contra h; push Not at h; apply hχ; ext a; simp [h a]
   set S := ∑ g : G, (χ g : ℂ)
   have hmul : (χ b : ℂ) * S = S := by
     simp only [S, Finset.mul_sum]
@@ -499,7 +499,7 @@ theorem walk_cancel_of_small_char_sums_from_expansion
     ∀ g : G, 0 < WalkVisitCount steps M g := by
   intro g
   by_contra h_neg
-  push_neg at h_neg
+  push Not at h_neg
   have h0 : WalkVisitCount steps M g = 0 := by omega
   have hexp_g := hexp steps χs hχs_complete hχs_card M g
   rw [h0, Nat.cast_zero] at hexp_g

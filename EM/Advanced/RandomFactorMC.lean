@@ -293,7 +293,7 @@ theorem pure_random_mc_iff_reachable {q : ℕ} (hq : q.Prime) (hq3 : 3 ≤ q) :
         | some p =>
           simp [hσk] at hvk ⊢
           exact ⟨hvk.1, by rw [hwalk_eq]; exact hvk.2⟩
-      · push_neg at hkn
+      · push Not at hkn
         by_cases hkeq : k = n
         · -- k = n: choosing q
           subst hkeq

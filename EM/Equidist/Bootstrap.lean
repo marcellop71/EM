@@ -122,7 +122,7 @@ private theorem odd_unit_mem_of_odd_primes_mem {p : Nat} [Fact (Nat.Prime p)]
     · subst hm_one; convert H.one_mem using 1; exact Units.ext (by simp)
     · by_cases hprime : Nat.Prime m
       · have hm3 : 3 ≤ m := by
-          by_contra h; push_neg at h; exact hm_odd ⟨1, by omega⟩
+          by_contra h; push Not at h; exact hm_odd ⟨1, by omega⟩
         exact hp m hprime hmp hm3 hm0
       · have hfp : (Nat.minFac m).Prime := Nat.minFac_prime hm_one
         have hfd : Nat.minFac m ∣ m := Nat.minFac_dvd m
@@ -142,7 +142,7 @@ private theorem odd_unit_mem_of_odd_primes_mem {p : Nat} [Fact (Nat.Prime p)]
           natCast_pos_ne_zero (Nat.one_le_of_lt hfp.one_lt) hap
         have hb0 : ((b : Nat) : ZMod p) ≠ 0 := natCast_pos_ne_zero hb1 hbp
         have ha3 : 3 ≤ a := by
-          by_contra h; push_neg at h
+          by_contra h; push Not at h
           exact ha_odd ⟨1, by have := hfp.two_le; omega⟩
         have ha_mem : Units.mk0 ((a : Nat) : ZMod p) ha0 ∈ H :=
           hp a hfp hap ha3 ha0
@@ -193,7 +193,7 @@ theorem prime_residue_escape : PrimeResidueEscape := by
   intro p inst hp5 H hH
   -- Proof by contradiction: assume every odd prime r ∈ [3,p) is in H
   by_contra h_all_in
-  push_neg at h_all_in
+  push Not at h_all_in
   -- h_all_in : ∀ r, Nat.Prime r → r < p → 3 ≤ r → Units.mk0 ... ∈ H
   apply hH
   -- Adapt h_all_in to use generic nonzero proof
@@ -257,7 +257,7 @@ theorem mcBelow_pre_implies_se (hpre : PrimeResidueEscape)
   -- p ≥ 5 since p is prime, p ≠ 2 (= seq 0), p ≠ 3 (= seq 1)
   have hp5 : 5 ≤ p := by
     have hp2 := (Fact.out : Nat.Prime p).two_le
-    by_contra h; push_neg at h
+    by_contra h; push Not at h
     interval_cases p
     · exact absurd seq_zero (hne 0)
     · exact absurd seq_one (hne 1)
@@ -436,7 +436,7 @@ theorem dynamical_hitting_implies_mixing (hdh : DynamicalHitting) :
       ∃ n, (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ∉ H := by
     intro H hH
     by_contra hall
-    push_neg at hall
+    push Not at hall
     -- All generators are in H, so closure ≤ H
     have hle : Subgroup.closure
         (Set.range (fun n => Units.mk0 (multZ q n) (multZ_ne_zero hq hne n))) ≤ H := by

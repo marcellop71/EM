@@ -134,11 +134,11 @@ theorem cofinal_of_hitCount_unbounded (q : Nat) [Fact (Nat.Prime q)]
   intro N₀
   obtain ⟨N, hN⟩ := hunbd (WalkHitCount q hq hne t N₀ + 1)
   have hlt : N₀ < N := by
-    by_contra h; push_neg at h
+    by_contra h; push Not at h
     exact absurd (walkHitCount_mono q hq hne t h) (by omega)
   suffices ∃ n ∈ Finset.range N, N₀ ≤ n ∧ emWalkUnit q hq hne n = t by
     obtain ⟨n, _, hn₀, heq⟩ := this; exact ⟨n, hn₀, heq⟩
-  by_contra hall; push_neg at hall
+  by_contra hall; push Not at hall
   have : WalkHitCount q hq hne t N ≤ WalkHitCount q hq hne t N₀ := by
     apply Finset.card_le_card; intro n hn
     simp only [Finset.mem_filter, Finset.mem_range] at hn ⊢

@@ -463,7 +463,7 @@ theorem scrti_bootstrap_all_primes
       intro X hX
       unfold sqfreeAccumDensity at hX
       by_contra h
-      push_neg at h
+      push Not at h
       have : sqfreeAccumCount X k r b = 0 := Nat.le_zero.mp h
       simp [this] at hX
     apply (Filter.Tendsto.mul hscrti_ab heq_rb).congr'
