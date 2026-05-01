@@ -22,7 +22,6 @@ The main definitions:
 - `epsCaptured q acc sigma` -- q appears as a factor in the epsilon-walk
 - `epsVisitCount q acc sigma K` -- number of lethal visits (q | P_k + 1) in K steps
 - `sigmaAccumCount/Density` -- ensemble counting for sigma-walks
-- `SigmaCRTPropagationStep` -- CRT equidist propagation for sigma-walks (open Prop)
 - `EnsembleEpsilonMC` -- every unit class reachable for positive density of starts
 
 ## Main Results
@@ -34,11 +33,15 @@ The main definitions:
 * `visit_implies_minFac_le` -- minFac bound at lethal visit
 * `epsVisitCount_le` -- visit count bounded by K
 * `sigma_accum_base_case` -- base case k=0 for sigma-walk equidist
+
+### Archived (RED #3 analog -- see EM/Archive/Advanced/EpsilonWalkArchive.lean)
+* `SigmaCRTPropagationStep` -- CRT equidist propagation for sigma-walks
 * `sigma_sre_crt_implies_accum_equidist` -- SRE + SigmaCRT => equidist for all k
-* `eps_walk_landscape` -- 8-clause landscape summary
+* `sigma_death_density_tendsto` -- death density convergence
+* `sigma_death_positive_of_crt` -- eventually positive death density
+* `eps_walk_ensemble_landscape` -- 8-clause landscape summary
 
 ### Open Hypotheses
-* `SigmaCRTPropagationStep` -- CRT equidist propagation for sigma-walks
 * `EnsembleEpsilonMC` -- main conjecture
 -/
 
@@ -196,43 +199,8 @@ end BaseCase
 
 section SigmaCRT
 
-/-- **SigmaCRTPropagationStep**: CRT equidistribution propagation for sigma-walks.
-
-    If the sigma-walk accumulator equidistributes mod r at step k (over squarefree
-    starting points), then it equidistributes at step k+1. This is the sigma-walk
-    analog of `CRTPropagationStep`.
-
-    The key structural difference from the deterministic case: at step k, the factor
-    chosen (minFac or secondMinFac) depends on sigma(k), but by the CRT argument,
-    the residue class of the factor mod r is determined by the accumulator's residues
-    mod primes other than r. When the accumulator equidistributes mod r and
-    independently in other coordinates, the product equidistributes mod r regardless
-    of which factor is chosen.
-
-    **Status**: open hypothesis (analog of CRTPropagationStep for sigma-walks). -/
-def SigmaCRTPropagationStep : Prop :=
-  ∀ (r : ℕ), Nat.Prime r → ∀ (k : ℕ) (σ : ℕ → Bool),
-    (∀ (a : ZMod r), a ≠ 0 →
-      Filter.Tendsto (fun X => sigmaAccumDensity X k r a σ)
-        Filter.atTop (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1)))) →
-    (∀ (a : ZMod r), a ≠ 0 →
-      Filter.Tendsto (fun X => sigmaAccumDensity X (k + 1) r a σ)
-        Filter.atTop (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1))))
-
-/-- SRE + SigmaCRTPropagationStep => sigma-walk accumulator equidistributes for all k.
-    PROVED by induction on k using the base case and propagation step. -/
-theorem sigma_sre_crt_implies_accum_equidist
-    (hsre : SquarefreeResidueEquidist) (hcrt : SigmaCRTPropagationStep)
-    (r : ℕ) (hr : Nat.Prime r) (k : ℕ) (σ : ℕ → Bool)
-    (a : ZMod r) (ha : a ≠ 0) :
-    Filter.Tendsto
-      (fun X : ℕ => sigmaAccumDensity X k r a σ)
-      Filter.atTop
-      (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1))) := by
-  induction k generalizing a with
-  | zero => exact sigma_accum_base_case hsre r hr a ha σ
-  | succ k ih =>
-    exact hcrt r hr k σ (fun aU haU => ih aU haU) a ha
+-- SigmaCRTPropagationStep archived to EM/Archive/Advanced/EpsilonWalkArchive.lean (RED #3 analog)
+-- sigma_sre_crt_implies_accum_equidist archived to EM/Archive/Advanced/EpsilonWalkArchive.lean (RED #3 analog)
 
 end SigmaCRT
 
@@ -275,52 +243,7 @@ theorem sigmaDeathDensity_le_one (X k : ℕ) (σ : ℕ → Bool) :
   · exact (div_le_one (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h))).mpr
       (Nat.cast_le.mpr (sigmaDeathCount_le q X k σ))
 
-/-- Under SRE + SigmaCRT, the death density converges to q/(q^2-1).
-    The death fiber {n : epsWalkProdFrom n sigma k ≡ -1 mod q} corresponds to
-    the residue class (q-1) mod q (since -1 = q-1 in ZMod q), which is nonzero
-    when q >= 2. -/
-theorem sigma_death_density_tendsto
-    (hsre : SquarefreeResidueEquidist) (hcrt : SigmaCRTPropagationStep)
-    (hq2 : 2 ≤ q) (k : ℕ) (σ : ℕ → Bool) :
-    Filter.Tendsto
-      (fun X : ℕ => sigmaDeathDensity q X k σ)
-      Filter.atTop
-      (nhds ((q : ℝ) / ((q : ℝ) ^ 2 - 1))) := by
-  -- Death fiber corresponds to accumulator ≡ -1 mod q
-  -- Since epsWalkProdFrom n sigma k + 1 ≡ 0 mod q iff epsWalkProdFrom n sigma k ≡ -1 mod q
-  -- The density of {acc ≡ -1 mod q} tends to 1/(q-1) by sigma-walk equidistribution
-  -- We need: -1 ≠ 0 in ZMod q (true for q >= 2)
-  have hq_ne : (q : ℕ) ≠ 0 := by omega
-  have hq_prime := hqp.out
-  -- The death condition "epsWalkProdFrom n sigma k + 1 ≡ 0 mod q" is equivalent to
-  -- "epsWalkProdFrom n sigma k ≡ -1 mod q"
-  -- The class -1 in ZMod q is nonzero when q >= 2
-  have hminus_one_ne : (-1 : ZMod q) ≠ 0 := by
-    intro h
-    have h1 : (1 : ZMod q) = 0 := by rw [show (1 : ZMod q) = -(-1 : ZMod q) from by ring, h, neg_zero]
-    have : (q : ℕ) ∣ 1 := by
-      rw [← ZMod.natCast_eq_zero_iff]
-      exact_mod_cast h1
-    exact absurd (Nat.le_of_dvd (by omega) this) (by omega)
-  -- sigmaDeathCount counts n with (epsWalkProdFrom n σ k + 1 : ZMod q) = 0
-  -- which is equivalent to (epsWalkProdFrom n σ k : ZMod q) = -1
-  -- so sigmaDeathDensity = sigmaAccumDensity X k q (-1 : ZMod q) sigma
-  suffices h : ∀ X, sigmaDeathDensity q X k σ = sigmaAccumDensity X k q (-1 : ZMod q) σ by
-    simp_rw [h]
-    exact sigma_sre_crt_implies_accum_equidist hsre hcrt q hq_prime k σ (-1) hminus_one_ne
-  intro X
-  unfold sigmaDeathDensity sigmaAccumDensity sigmaDeathCount sigmaAccumCount
-  have hfe : ∀ n ∈ Finset.Icc 1 X,
-      (Squarefree n ∧ (epsWalkProdFrom n σ k : ZMod q) + 1 = 0) ↔
-      (Squarefree n ∧ (epsWalkProdFrom n σ k : ZMod q) = -1) := by
-    intro n _
-    constructor
-    · intro ⟨hsf, heq⟩
-      exact ⟨hsf, eq_neg_of_add_eq_zero_left heq⟩
-    · intro ⟨hsf, heq⟩
-      exact ⟨hsf, by rw [heq]; ring⟩
-  congr 1
-  rw [Finset.filter_congr hfe]
+-- sigma_death_density_tendsto archived to EM/Archive/Advanced/EpsilonWalkArchive.lean (RED #3 analog)
 
 end DeathFiberDensity
 
@@ -347,23 +270,7 @@ def EnsembleEpsilonMC (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
           Squarefree n ∧ ∃ k, q ∣ (epsWalkProdFrom n σ k + 1)).card /
           (sqfreeCount X : ℝ)
 
-/-- CRT equidist gives lethal visit density bounded below for each fixed step k.
-    Under SRE + SigmaCRT, death density at step k tends to q/(q^2-1) > 0. -/
-theorem sigma_death_positive_of_crt
-    (q : ℕ) [hqp : Fact (Nat.Prime q)]
-    (hsre : SquarefreeResidueEquidist) (hcrt : SigmaCRTPropagationStep)
-    (hq2 : 2 ≤ q) (k : ℕ) (σ : ℕ → Bool) :
-    ∀ᶠ X in Filter.atTop,
-      (0 : ℝ) < sigmaDeathDensity q X k σ := by
-  have htend := sigma_death_density_tendsto q hsre hcrt hq2 k σ
-  have hpos : (0 : ℝ) < (q : ℝ) / ((q : ℝ) ^ 2 - 1) := by
-    apply div_pos (Nat.cast_pos.mpr (by omega))
-    have hq_cast : (2 : ℝ) ≤ (q : ℝ) := Nat.ofNat_le_cast.mpr hq2
-    nlinarith [sq_nonneg ((q : ℝ) - 1)]
-  -- Use that tendsto to a positive limit implies eventually positive
-  have hset : Set.Ioi (0 : ℝ) ∈ nhds ((q : ℝ) / ((q : ℝ) ^ 2 - 1)) :=
-    Ioi_mem_nhds hpos
-  exact htend hset
+-- sigma_death_positive_of_crt archived to EM/Archive/Advanced/EpsilonWalkArchive.lean (RED #3 analog)
 
 end EnsembleEpsMC
 
@@ -371,65 +278,6 @@ end EnsembleEpsMC
 
 section Landscape
 
-/-- **Epsilon-walk landscape**: summary of all results in this file.
-
-    PROVED results:
-    1. epsCaptured_of_factor_eq (capture from factor equality)
-    2. epsVisitCount_zero (no visits in zero steps)
-    3. epsVisitCount_mono (monotonicity)
-    4. epsVisitCount_le (bounded by K)
-    5. sigmaAccumCount_le_sqfreeCount (counting bound)
-    6. sigmaAccumDensity_nonneg / le_one (density bounds)
-    7. sigma_accum_base_case (k=0 from SRE, unconditional in sigma)
-    8. sigma_sre_crt_implies_accum_equidist (SRE + SigmaCRT => equidist all k)
-
-    Open Hypotheses:
-    A. SigmaCRTPropagationStep (CRT propagation for sigma-walks)
-    B. EnsembleEpsilonMC (main conjecture) -/
-theorem eps_walk_ensemble_landscape (q : ℕ) [Fact (Nat.Prime q)] :
-    -- 1. Capture from factor equality
-    (∀ (acc : ℕ) (σ : ℕ → Bool) (k : ℕ),
-      epsWalkFactorFrom acc σ k = q → epsCaptured q acc σ)
-    ∧
-    -- 2. No visits in zero steps
-    (∀ (acc : ℕ) (σ : ℕ → Bool), epsVisitCount q acc σ 0 = 0)
-    ∧
-    -- 3. Visit count monotone
-    (∀ (acc : ℕ) (σ : ℕ → Bool) {K₁ K₂ : ℕ}, K₁ ≤ K₂ →
-      epsVisitCount q acc σ K₁ ≤ epsVisitCount q acc σ K₂)
-    ∧
-    -- 4. Visit count bounded by K
-    (∀ (acc : ℕ) (σ : ℕ → Bool) (K : ℕ),
-      epsVisitCount q acc σ K ≤ K)
-    ∧
-    -- 5. Sigma accumulator count bounded
-    (∀ (X k r : ℕ) (a : ZMod r) (σ : ℕ → Bool),
-      sigmaAccumCount X k r a σ ≤ sqfreeCount X)
-    ∧
-    -- 6. Sigma density in [0,1]
-    (∀ (X k r : ℕ) (a : ZMod r) (σ : ℕ → Bool),
-      0 ≤ sigmaAccumDensity X k r a σ ∧ sigmaAccumDensity X k r a σ ≤ 1)
-    ∧
-    -- 7. Base case: k=0 agrees with standard accumulator count
-    (∀ (X r : ℕ) (a : ZMod r) (σ : ℕ → Bool),
-      sigmaAccumCount X 0 r a σ = sqfreeAccumCount X 0 r a)
-    ∧
-    -- 8. SRE + SigmaCRT => equidistribution for all k
-    (SquarefreeResidueEquidist → SigmaCRTPropagationStep →
-      ∀ (r : ℕ), Nat.Prime r → ∀ (k : ℕ) (σ : ℕ → Bool)
-        (a : ZMod r), a ≠ 0 →
-        Filter.Tendsto
-          (fun X => sigmaAccumDensity X k r a σ)
-          Filter.atTop (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1)))) :=
-  ⟨fun acc σ k hf => epsCaptured_of_factor_eq q acc σ k hf,
-   fun acc σ => epsVisitCount_zero q acc σ,
-   fun acc σ => epsVisitCount_mono q acc σ,
-   fun acc σ K => epsVisitCount_le q acc σ K,
-   fun X k r a σ => sigmaAccumCount_le_sqfreeCount X k r a σ,
-   fun X k r a σ => ⟨sigmaAccumDensity_nonneg X k r a σ,
-                      sigmaAccumDensity_le_one X k r a σ⟩,
-   fun X r a σ => sigmaAccumCount_zero_eq X r a σ,
-   fun hsre hcrt r hr k σ a ha =>
-     sigma_sre_crt_implies_accum_equidist hsre hcrt r hr k σ a ha⟩
+-- eps_walk_ensemble_landscape archived to EM/Archive/Advanced/EpsilonWalkArchive.lean (RED #3 analog, clause 8)
 
 end Landscape

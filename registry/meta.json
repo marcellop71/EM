@@ -1,7 +1,7 @@
-{"published": 133,
+{"published": 131,
  "proved": 96,
  "project": "registry",
- "open_points": 34,
- "conditional": 37,
+ "open_points": 32,
+ "conditional": 35,
  "ca_hash_mode": "name-based",
  "ca_hash_level": "L0"}

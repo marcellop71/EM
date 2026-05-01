@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: amsalpha.bst
+Database file #1: bibliography.bib
+Warning--missing pages in Weil48
+You've used 5 entries,
+            2624 wiz_defined-function locations,
+            599 strings with 5098 characters,
+and the built_in function-call counts, 1754 in all, are:
+= -- 162
+> -- 62
+< -- 3
++ -- 19
+- -- 18
+* -- 151
+:= -- 290
+add.period$ -- 5
+call.type$ -- 5
+change.case$ -- 27
+chr.to.int$ -- 5
+cite$ -- 6
+duplicate$ -- 73
+empty$ -- 142
+format.name$ -- 26
+if$ -- 344
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 10
+newline$ -- 25
+num.names$ -- 15
+pop$ -- 29
+preamble$ -- 1
+purify$ -- 32
+quote$ -- 0
+skip$ -- 49
+stack$ -- 0
+substring$ -- 114
+swap$ -- 6
+text.length$ -- 3
+text.prefix$ -- 3
+top$ -- 0
+type$ -- 40
+warning$ -- 1
+while$ -- 19
+width$ -- 8
+write$ -- 60
+(There was 1 warning)

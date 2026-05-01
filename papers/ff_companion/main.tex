@@ -1,0 +1,120 @@
+\documentclass[11pt,a4paper]{article}
+
+%% === Packages ================================================================
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage[a4paper,margin=1.2in]{geometry}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{tikz-cd}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage[
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=green!40!black,
+  urlcolor=teal!70!black,
+]{hyperref}
+\usepackage{parskip}
+\setlength{\parskip}{0.4\baselineskip plus 0.1\baselineskip minus 0.05\baselineskip}
+
+%% === Theorem environments ====================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{openproblem}{Open Problem}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+%% === Custom commands =========================================================
+\newcommand{\leancheck}[1]{\textsf{[Lean: \texttt{#1}]}}
+\newcommand{\Fp}{\mathbb{F}_p}
+\newcommand{\Fpt}{\mathbb{F}_p[t]}
+\newcommand{\Fpalg}{\overline{\mathbb{F}_p}}
+\newcommand{\GF}[2]{\mathbb{F}_{#1^{#2}}}
+\newcommand{\ffseq}{\mathrm{ffSeq}}
+\newcommand{\ffprod}{\mathrm{ffProd}}
+\newcommand{\irredcount}{\pi_p}
+\newcommand{\MC}{\mathrm{MC}}
+\newcommand{\FFMC}{\mathrm{FF\text{-}MC}}
+\newcommand{\FFDH}{\mathrm{FF\text{-}DH}}
+\newcommand{\DSL}{\mathrm{DSL}}
+\newcommand{\CME}{\mathrm{CME}}
+\newcommand{\CCSB}{\mathrm{CCSB}}
+\newcommand{\PE}{\mathrm{PE}}
+\newcommand{\SE}{\mathrm{SE}}
+\newcommand{\PSCD}{\mathrm{PSCD}}
+\newcommand{\FCD}{\mathrm{FCD}}
+\newcommand{\SPV}{\mathrm{SPV}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\minFac}{\mathrm{minFac}}
+
+%% === Title ===================================================================
+\title{A Function Field Euclid--Mullin Sequence: \\
+  Unconditional Sieve Results and Orbit Barriers \\[6pt]
+  \large With Formal Verification in Lean~4}
+\author{Marcello Paris}
+\date{May 2026}
+
+%% === Document ================================================================
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We study the function field analog of the Euclid--Mullin sequence over
+$\Fpt$, where monic irreducible polynomials play the role of primes.
+Our main result is an unconditional almost-all theorem: for density-one
+monic squarefree starting polynomials, the greedy factorization walk
+reaches every monic irreducible target.
+The proof proceeds via a six-step analytic number theory chain---character
+sum cancellation, a prime polynomial theorem in arithmetic progressions,
+forbidden class divergence, sieve product vanishing, confined density decay,
+and pigeonhole capture---each step of which is \emph{unconditional} over
+$\Fpt$, in contrast to the integer setting where the chain requires the
+Weighted Prime Number Theorem in arithmetic progressions.
+
+We prove that the orbit-specificity barrier---the gap between population-level
+equidistribution and orbit-level equidistribution---is the sole remaining
+obstacle to the full function field Mullin Conjecture, and that this barrier
+is structurally identical to the integer case. Three formally verified dead
+ends confirm that the Weil bound, large monodromy, and subgroup escape are
+each insufficient to close this gap.
+
+We also prove an unconditional exclusion criterion: for primes $p \equiv 2
+\pmod{3}$ with $p \geq 5$, the autonomous map $f(w) = w(w+1)$ on $\Fp$ has
+no preimage of $-1$, giving a structural obstruction to degree-one capture
+in the function field setting with no integer analog.
+
+The entire development comprises 17 files and 7{,}372 lines of Lean~4 code,
+with zero \texttt{sorry} axioms, verified against Mathlib.
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+
+\input{introduction}
+\input{background}
+\input{sieve_chain}
+\input{phi3_exclusion}
+\input{orbit_boundary}
+\input{formalization}
+\input{open_problems}
+
+%% === Bibliography ============================================================
+\bibliographystyle{amsalpha}
+\bibliography{bibliography}
+
+\end{document}

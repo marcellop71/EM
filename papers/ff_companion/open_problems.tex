@@ -1,0 +1,99 @@
+\section{Open Problems}\label{sec:open}
+
+We collect the main open problems arising from this work, roughly ordered
+by specificity.
+
+\begin{openproblem}[Deterministic FF-MC]
+Does every monic irreducible polynomial over $\Fpt$ eventually appear in
+the greedy FF-EM sequence? Equivalently, does the FF Dynamical Hitting
+hypothesis ($\FFDH$) hold?
+\end{openproblem}
+
+This is the function field Mullin Conjecture itself. Our work shows that
+$\FFDH$ is the sole remaining hypothesis: it implies $\FFMC$
+(Theorem~\ref{thm:bootstrap}), and all other structural prerequisites are
+proved unconditionally. The stochastic version ($\varepsilon > 0$) is
+proved; the open content is exactly the $\varepsilon = 0$ boundary.
+
+\begin{openproblem}[Controlling the $\varepsilon \to 0$ limit]
+The stochastic FF-MC is proved for all $\varepsilon > 0$
+(Theorem~\ref{thm:stochastic}). Can the $\varepsilon \to 0$ limit be
+controlled to deduce deterministic FF-MC? Specifically, does the capture
+time $T_Q(\varepsilon)$ for a target $Q$ remain bounded as
+$\varepsilon \to 0$?
+\end{openproblem}
+
+A positive answer would resolve FF-MC. The difficulty is that the phase
+transition (Theorem~\ref{thm:phase-transition}) is \emph{sharp}: the
+structure of the proof for $\varepsilon > 0$ relies on the non-greedy
+exploration of branches, which is absent at $\varepsilon = 0$.
+
+\begin{openproblem}[Large monodromy for non-cyclotomic starting points]
+Dead End \#129 shows that the greedy FF-EM sequence produces cyclotomic
+products (with abelian Galois groups). Does the obstruction persist for
+non-greedy starting points? That is, if we start from an arbitrary monic
+squarefree polynomial $m$ (not of the form
+$\prod_{\deg Q \mid d} Q$), can $m + 1$ have non-abelian Galois group?
+\end{openproblem}
+
+Cohen's theorem~\cite{Cohen70} shows that a random monic polynomial of
+degree $d$ over $\Fp$ has Galois group $S_d$ with probability tending to
+$1$ as $d \to \infty$. The question is whether the specific recursive
+structure of the FF-EM walk forces cyclotomic (hence abelian) products,
+or whether this is an artifact of the greedy selection among
+smallest-degree irreducibles.
+
+\begin{openproblem}[Integer analog of the $\Phi_3$ criterion]
+The $\Phi_3$ exclusion (Theorem~\ref{thm:unreachable}) uses the fact that
+$\Phi_3(w) = w^2 + w + 1$ has no roots in $\Fp$ for $p \equiv 2 \pmod{3}$.
+Is there an integer analog? Specifically, for a prime $q$ and a residue
+class $a \bmod q$, under what conditions is the walk $P(n) \bmod q$
+provably unable to reach $a$?
+\end{openproblem}
+
+Over $\ZZ$, the walk $P(n) \bmod q$ does not follow an autonomous map
+(the multiplier $a_{n+1} \bmod q$ depends on the global factorization of
+$P(n)+1$, not just on $P(n) \bmod q$). However, elementary congruence
+arguments can exclude specific residue classes for specific primes. The
+question is whether systematic exclusion criteria exist.
+
+\begin{openproblem}[Unconditional FF-MC for specific primes $p$]
+Is $\FFMC$ provable for specific small primes (e.g., $p = 2, 3, 5$)?
+The formalization proves unconditional results for all primes simultaneously,
+but it may be possible to exploit special structure of small fields.
+\end{openproblem}
+
+Over $\mathbb{F}_2$, the FF-EM sequence begins $t, t+1, t^2+t+1, \ldots$
+and can be computed explicitly. The question is whether the small size
+of $\mathbb{F}_2$ provides enough combinatorial control to prove FF-MC
+by direct enumeration or finite case analysis.
+
+\begin{openproblem}[The selection bias question]
+\leancheck{SelectionBiasNeutral}
+Does the greedy selection (choosing the minimum-degree irreducible factor)
+preserve character sum cancellation? Formally, if the \emph{population}
+of irreducible factors of a polynomial $f$ has cancelling character sums,
+does the \emph{selected} factor (the one of minimal degree) also have
+this property on average?
+\end{openproblem}
+
+This is the key open hypothesis (\texttt{SelectionBiasNeutral}) that
+separates population equidistribution from orbit equidistribution. A
+positive answer would close the orbit-specificity gap for both FF-MC and
+MC simultaneously, since the question is about the selection mechanism,
+not about the ambient ring.
+
+\begin{openproblem}[Relationship to Cox--van der Poorten]
+Cox and van der Poorten~\cite{CoxVdP} raised the question of whether $41$
+appears in the integer Euclid--Mullin sequence. Their analysis suggested
+structural reasons for the difficulty. Does the function field analog
+provide insight into their question? Specifically, is there a function
+field analog of the ``$41$ problem'' --- a specific monic irreducible
+that resists capture for structural (not just computational) reasons?
+\end{openproblem}
+
+The $\Phi_3$ exclusion criterion provides a partial answer: for $p \equiv 2
+\pmod{3}$ with $p \geq 5$, degree-one targets with initial residue
+$\neq -1$ are unreachable under the autonomous map model. Whether this
+model captures the actual behavior of the FF-EM walk is part of the
+orbit-specificity question.

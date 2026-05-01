@@ -1,0 +1,205 @@
+\section{The \texorpdfstring{$\Phi_3$}{Phi3} Exclusion Criterion}\label{sec:phi3}
+
+In this section we develop a structural obstruction to degree-one capture
+in the FF-EM sequence that has no analog over $\ZZ$. The result is
+unconditional and gives a concrete family of primes $p$ for which the
+autonomous map $f(w) = w(w+1)$ \emph{cannot} reach the death residue $-1$.
+
+\subsection{The autonomous map and degree-one targets}
+
+Recall from Definition~\ref{def:autonomous} that the autonomous map
+$f \colon \Fp \to \Fp$ is given by $f(w) = w(w+1)$. For a degree-one
+target $Q = (t - a)$, the walk $\ffprod(n) \bmod Q$ in $\Fp$ follows
+the recursion $w_{n+1} = f(w_n)$ whenever the walk multiplier
+$\ffseq(n+1) \bmod Q$ equals $w_n + 1$ (the self-consistent case).
+
+The target $Q$ divides $\ffprod(n) + 1$ if and only if
+$\ffprod(n) \equiv -1 \pmod{Q}$, i.e., the walk position $w_n = -1$
+in $\Fp$. Hence the question of degree-one capture reduces to:
+\emph{does the orbit of $f$ reach $-1$?}
+
+\subsection{Fixed points and absorption}
+
+\begin{lemma}[Absorption at zero]\label{lem:absorption}
+\leancheck{ffAutonomousMap\_neg\_one}
+\leancheck{ffAutonomousMap\_zero}
+The map $f$ satisfies $f(-1) = 0$ and $f(0) = 0$. In particular, $0$ is
+an absorbing fixed point: once the orbit reaches $0$, it remains there
+forever.
+\end{lemma}
+
+\begin{proof}
+$f(-1) = (-1)(0) = 0$ and $f(0) = 0 \cdot 1 = 0$. If $w_n = 0$ for
+some $n$, then $w_m = 0$ for all $m \geq n$ by induction.
+\end{proof}
+
+\leancheck{ffAutonomousOrbit\_absorbed}
+
+\subsection{The preimage of \texorpdfstring{$-1$}{-1}}
+
+\begin{lemma}[$\Phi_3$ criterion]\label{lem:phi3-criterion}
+\leancheck{ffAutonomousMap\_eq\_neg\_one\_iff}
+For $w \in \Fp$,
+\[
+  f(w) = -1 \quad \Longleftrightarrow \quad w^2 + w + 1 = 0.
+\]
+That is, the preimage of $-1$ under $f$ is exactly the root set of the
+third cyclotomic polynomial $\Phi_3(w) = w^2 + w + 1$.
+\end{lemma}
+
+\begin{proof}
+$f(w) = w(w+1) = w^2 + w$. Hence $f(w) = -1$ iff $w^2 + w = -1$ iff
+$w^2 + w + 1 = 0$.
+\end{proof}
+
+\subsection{Absence of cube roots of unity}
+
+The roots of $\Phi_3$ are the primitive cube roots of unity. Whether
+$\Phi_3$ has roots in $\Fp$ depends on $p \bmod 3$.
+
+\begin{lemma}\label{lem:cube-root}
+\leancheck{pow\_three\_eq\_one\_of\_phi3}
+If $w^2 + w + 1 = 0$ in $\Fp$, then $w^3 = 1$.
+\end{lemma}
+
+\begin{proof}
+$(w-1)(w^2+w+1) = w^3 - 1$, so $w^2 + w + 1 = 0$ gives $w^3 = 1$.
+\end{proof}
+
+\begin{theorem}[No roots of $\Phi_3$ for $p \equiv 2 \pmod{3}$]\label{thm:phi3-no-roots}
+\leancheck{phi3\_no\_roots}
+If $p \equiv 2 \pmod{3}$ and $p \geq 5$, then $w^2 + w + 1 \neq 0$ for
+all $w \in \Fp$.
+\end{theorem}
+
+\begin{proof}
+Suppose $w^2 + w + 1 = 0$ for some $w \in \Fp$.
+
+\emph{Step 1}: $w^3 = 1$ (Lemma~\ref{lem:cube-root}).
+
+\emph{Step 2}: $w \neq 0$ (substituting $w = 0$ gives $1 = 0$, a
+contradiction since $p \geq 2$).
+
+\emph{Step 3}: $w \neq 1$ (substituting $w = 1$ gives $3 = 0$ in $\Fp$;
+since $p \geq 5$, we have $p \nmid 3$, a contradiction).
+
+\emph{Step 4}: $w$ is a unit in $\Fp^\times$ (since $w \neq 0$ in a field).
+Since $w^3 = 1$ and $w \neq 1$, the order of $w$ in $\Fp^\times$ is
+exactly $3$.
+
+\emph{Step 5}: By Lagrange's theorem, $3 \mid |\Fp^\times| = p - 1$.
+
+\emph{Step 6}: But $p \equiv 2 \pmod{3}$ gives $p - 1 \equiv 1 \pmod{3}$,
+so $3 \nmid (p-1)$. Contradiction.
+\end{proof}
+
+\begin{remark}
+The condition $p \geq 5$ excludes $p = 2$ (where $\Phi_3$ is irreducible:
+$1 + 1 + 1 = 1 \neq 0$ in $\mathbb{F}_2$, and $0 + 0 + 1 = 1 \neq 0$)
+and $p = 3$ (where $w^2 + w + 1 = (w-1)^2$ in $\mathbb{F}_3$, so $w = 1$
+is a double root---but $p = 3$ has $3 \bmod 3 = 0$, not $2$).
+The primes satisfying $p \equiv 2 \pmod{3}$ include
+$5, 11, 17, 23, 29, 41, 47, \ldots$
+\end{remark}
+
+\subsection{The main exclusion theorem}
+
+\begin{theorem}[Unreachability of $-1$]\label{thm:unreachable}
+\leancheck{ff\_neg\_one\_unreachable}
+For $p \equiv 2 \pmod{3}$ with $p \geq 5$: the orbit of $f$ from any
+starting value $a \neq -1$ never hits $-1$. That is,
+\[
+  a \neq -1 \implies f^n(a) \neq -1 \quad \text{for all } n \geq 0.
+\]
+\end{theorem}
+
+\begin{proof}
+By induction on $n$. The base case $n = 0$ is the hypothesis $a \neq -1$.
+For $n + 1$: $f^{n+1}(a) = f(f^n(a))$, and by
+Theorem~\ref{thm:phi3-no-roots}, $f(w) \neq -1$ for \emph{all} $w \in \Fp$
+(since $\Phi_3$ has no roots). Hence $f^{n+1}(a) \neq -1$.
+\end{proof}
+
+\begin{corollary}\label{cor:visited-once}
+\leancheck{ff\_neg\_one\_visited\_at\_most\_once}
+For $p \equiv 2 \pmod{3}$ with $p \geq 5$: the value $-1$ is visited by
+the orbit at most at step $0$ (i.e., only if $a = -1$). At every step
+$n \geq 1$, the orbit value is never $-1$, regardless of the starting value.
+\end{corollary}
+
+\begin{proof}
+For $n \geq 1$, the orbit value $f^n(a)$ is in the range of $f$. But
+$-1 \notin \mathrm{range}(f)$ by Theorem~\ref{thm:phi3-no-roots}.
+\end{proof}
+
+\subsection{Interpretation: a structural obstruction}
+
+Theorem~\ref{thm:unreachable} provides a \emph{structural obstruction} to
+degree-one capture in the FF-EM sequence under the autonomous map model.
+For primes $p \equiv 2 \pmod{3}$ with $p \geq 5$:
+
+\begin{itemize}
+  \item If the walk position $\ffprod(0) \bmod Q$ is $-1$, then $Q$ divides
+    $\ffprod(0) + 1 = t + 1$, and $Q$ may be captured at step~$1$.
+  \item If $\ffprod(0) \bmod Q \neq -1$, the walk \emph{never} reaches $-1$
+    under the autonomous map, so $Q$ is never captured via the degree-one
+    route.
+\end{itemize}
+
+This gives a concrete family of targets that are unreachable by the
+autonomous map, constituting a degree-one instance of the orbit-specificity
+barrier.
+
+\subsection{Comparison with the integer case}
+
+Over $\ZZ$, only four primes are known to be excluded by elementary methods
+from certain positions in the Euclid--Mullin sequence. The function field
+$\Phi_3$ criterion is \emph{stronger}: it excludes $p - 2$ out of $p - 1$
+possible starting residues from ever reaching $-1$ (only $a = -1$ itself
+can reach $-1$).
+
+However, the $\Phi_3$ criterion applies only under the ``perpetual
+irreducibility'' assumption (that the walk multiplier is determined by
+the autonomous map). In practice, the walk multiplier $\ffseq(n+1)
+\bmod Q$ need not equal $w_n + 1$; it is determined by the specific
+factorization of $\ffprod(n) + 1$, which can break the autonomous map
+structure.
+
+\begin{remark}
+The $\Phi_3$ criterion is specific to the function field setting because
+the autonomous map $f(w) = w(w+1)$ arises from the polynomial structure
+of $\Fpt$. Over $\ZZ$, the ``walk'' modulo $q$ is $P(n) \bmod q$, but
+the multiplier $a_{n+1} \bmod q$ is not determined by $P(n) \bmod q$
+alone (it depends on the global factorization of $P(n)+1$, not just on
+the residue class).
+\end{remark}
+
+\subsection{The cyclotomic structure: Dead End \#129}
+
+The $\Phi_3$ criterion connects to a deeper structural phenomenon. Over
+$\mathbb{F}_2$, the product of all monic irreducibles of degree dividing $d$
+equals $t^{2^d} - t$, so adding $1$ gives the polynomial $t^{2^d} - t + 1$.
+For $d = 2$:
+\[
+  t(t+1)(t^2+t+1) = t^4 + t, \qquad
+  t^4 + t + 1 = \Phi_5(t),
+\]
+the $5$th cyclotomic polynomial. Its Galois group is
+$\mathrm{Gal}(\mathbb{F}_{2^4}/\mathbb{F}_2) \cong \ZZ/4\ZZ$, which is
+abelian, \emph{not} $S_4$.
+
+More generally, the classical identity
+$\prod_{\deg Q \mid d} Q = t^{p^d} - t$ forces the greedy FF-EM sequence
+to build products dividing $t^{p^d} - t$, so the ``$+1$ shifted'' polynomial
+$\ffprod(n) + 1$ has its splitting field contained in $\GF{p}{N}$ for some
+$N$. The Galois group is therefore \emph{cyclic} (hence abelian), generated
+by the Frobenius automorphism.
+
+This means the ``large monodromy'' hypothesis ($\mathrm{FFLM}$: the Galois
+group eventually contains the alternating group $A_d$) is
+\emph{structurally false} for the greedy FF-EM sequence. The abelian Galois
+group recovers only the Weil bound information (Dirichlet characters
+correspond to abelian representations), which is population equidistribution
+---the same information we already have.
+
+\leancheck{ff\_cyclotomic\_dead\_end}

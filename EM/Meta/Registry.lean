@@ -137,8 +137,8 @@ attribute [open_point] UCEImpliesCME
 
 attribute [open_point] BVImpliesMMCSB
 attribute [open_point] SieveTransfer
-attribute [open_point] LinearMeanGrowth
-attribute [open_point] EnsembleTransitionApprox
+-- LinearMeanGrowth open_point deleted (RED #8)
+-- EnsembleTransitionApprox open_point deleted (RED #10)
 -- NonFaithfulCharacterEscape : (q : ℕ) → [Fact (Nat.Prime q)] → Prop (not bare Prop, skip)
 attribute [open_point] MixedDiversity
 attribute [open_point] MixedDiversityWeak
@@ -259,12 +259,12 @@ attribute [publish] uce_landscape
 
 attribute [publish] sd_implies_cancellation
 attribute [publish] weyl_hitting_bridge_proved
-attribute [publish] lmg_implies_positive_density_rsd
+-- lmg_implies_positive_density_rsd archived to EM/Archive/Meta/RegistryArchive.lean (RED #8)
 attribute [publish] genSeq_ge_three
 attribute [publish] ensembleAvg_k0_ge_quarter
 attribute [publish] ensembleAvg_ge_death_density
 attribute [publish] death_then_never_death_again
-attribute [publish] eta_sre_implies_prsd
+-- eta_sre_implies_prsd archived to EM/Archive/Meta/RegistryArchive.lean (RED #10)
 
 /-! ### Spectral and large sieve routes -/
 

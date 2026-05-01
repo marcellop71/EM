@@ -38,10 +38,12 @@ independence is the structural basis for equidistribution propagation.
 
 ### Open Hypotheses
 * `SquarefreeResidueEquidist`           -- squarefree integers equidistribute mod primes
-* `CRTPropagationStep`                  -- equidist at step k implies equidist at step k+1
-* `AccumulatorEquidistPropagation`      -- genProd n k equidistributes for all k
 * `EnsembleMultiplierEquidist`          -- genSeq n k equidistributes for all k
-* `AccumEquidistImpliesMultEquidist`    -- AEP implies EME (via PE)
+
+### Archived (RED-chain, see EM/Archive/Ensemble/CRTArchive.lean)
+* `AccumulatorEquidistPropagation` (RED #1), `CRTPropagationStep` (RED #3)
+* `AccumEquidistImpliesMultEquidist` (RED #1), `AccumMod3LB` (RED #6)
+* `DeathDensityLB` (RED #5), `MFRECondImpliesSMLB` (RED #7)
 
 ### Proved Theorems
 * `sqfreeAccumCount_le_sqfreeCount`     -- counting bound
@@ -51,8 +53,6 @@ independence is the structural basis for equidistribution propagation.
 * `sqfreeSeqDensity_nonneg`             -- density is non-negative
 * `sqfreeSeqDensity_le_one`             -- density is at most 1
 * `sqfreeResidueEquidist_implies_accumEquidist_zero` -- SRE implies base case k=0
-* `sre_crt_implies_accum_equidist`      -- SRE + CRTPropStep => AEP (by induction)
-* `sre_crt_bridge_implies_mult_equidist`-- SRE + CRTPropStep + bridge => EME
 * `ensembleCharMean_eq_density_sum`     -- density decomposition identity
 * `ensemble_mult_equidist_implies_char_mean_zero` -- EME => vanishing char means (PROVED)
 -/
@@ -161,38 +161,10 @@ end SquarefreeEquidist
 
 section CRTPropagation
 
-/-- **Accumulator Equidistribution Propagation**: for each prime r, step k, and
-    nonzero residue a mod r, the density of squarefree n with genProd n k ≡ a (mod r)
-    tends to r/(r^2 - 1).
-
-    The base case (k=0) is `SquarefreeResidueEquidist`: genProd n 0 = n equidistributes.
-
-    The inductive step uses `crt_multiplier_invariance`: genProd n (k+1) = genProd n k *
-    genSeq n k, where genSeq n k = minFac(genProd n k + 1). The multiplier genSeq n k
-    depends only on the residues of genProd n k mod primes other than r (by CRT
-    invariance). As n varies over squarefree integers, the mod-r and non-mod-r
-    coordinates of genProd n k are approximately independent (by CRT for squarefree
-    numbers). So multiplying by the "r-independent" factor genSeq n k preserves
-    equidistribution mod r.
-
-    **WARNING**: AEP is HEURISTICALLY FALSE at q=3 for k >= 1 (Dead End #138).
-    The absorption mechanism (proved in `genProd_mod_zero_absorbing`,
-    `death_implies_absorption`, `absorbed_not_in_death_class`) drains nonzero classes
-    exponentially to 0 as k grows. At q=3, death at step k deterministically produces
-    genSeq=3 (`genSeq_eq_three_of_genProd_mod3`), sending all death-class mass to
-    absorption (genProd ≡ 0 mod 3). So F_k(0) → 1 and F_k(1), F_k(2) → 0.
-    AEP is likely false at all fixed q for large k.
-
-    **Status**: open hypothesis (heuristically false, kept for backward compatibility). -/
-def AccumulatorEquidistPropagation : Prop :=
-  ∀ (r : Nat), Nat.Prime r → ∀ (k : Nat), ∀ (a : ZMod r), a ≠ 0 →
-    Filter.Tendsto
-      (fun X : Nat => sqfreeAccumDensity X k r a)
-      Filter.atTop
-      (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1)))
+-- AccumulatorEquidistPropagation archived to EM/Archive/Ensemble/CRTArchive.lean (RED #1)
 
 /-- **SRE implies the base case**: SquarefreeResidueEquidist gives
-    AccumulatorEquidistPropagation at k = 0.
+    accumulator equidistribution at k = 0.
 
     At k=0, genProd n 0 = n, so the accumulator counting function coincides
     with the squarefree residue counting function, and the result is immediate. -/
@@ -205,39 +177,9 @@ theorem sqfreeResidueEquidist_implies_accumEquidist_zero
       (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1))) :=
   hsre r hr a ha
 
-/-- **CRT Propagation Step**: the inductive hypothesis that equidistribution at
-    step k implies equidistribution at step k+1. This captures the key CRT argument:
+-- CRTPropagationStep archived to EM/Archive/Ensemble/CRTArchive.lean (RED #3)
 
-    genProd n (k+1) = genProd n k * genSeq n k, where the multiplier genSeq n k
-    depends on genProd n k only through its non-mod-r coordinates (by
-    `crt_multiplier_invariance`). When genProd n k equidistributes mod r and
-    independently in the other coordinates, the product equidistributes mod r.
-
-    **Status**: open hypothesis (the main content of the CRT propagation).
-    Note: heuristically false due to absorption (Dead End #138). -/
-def CRTPropagationStep : Prop :=
-  ∀ (r : Nat), Nat.Prime r → ∀ (k : Nat),
-    (∀ (a : ZMod r), a ≠ 0 →
-      Filter.Tendsto
-        (fun X : Nat => sqfreeAccumDensity X k r a)
-        Filter.atTop
-        (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1)))) →
-    (∀ (a : ZMod r), a ≠ 0 →
-      Filter.Tendsto
-        (fun X : Nat => sqfreeAccumDensity X (k + 1) r a)
-        Filter.atTop
-        (nhds ((r : ℝ) / ((r : ℝ) ^ 2 - 1))))
-
-/-- **SRE + CRTPropagationStep → AccumulatorEquidistPropagation.**
-    The base case is SRE (k=0), and the inductive step is CRTPropagationStep.
-    Together they give equidistribution for all k by induction. -/
-theorem sre_crt_implies_accum_equidist
-    (hsre : SquarefreeResidueEquidist) (hcrt : CRTPropagationStep) :
-    AccumulatorEquidistPropagation := by
-  intro r hr k
-  induction k with
-  | zero => exact hsre r hr
-  | succ k ih => exact hcrt r hr k ih
+-- sre_crt_implies_accum_equidist deleted (RED #3 → RED #1)
 
 end CRTPropagation
 
@@ -265,28 +207,8 @@ def EnsembleMultiplierEquidist : Prop :=
       Filter.atTop
       (nhds (1 / ((q : ℝ) - 1)))
 
-/-- **AccumulatorEquidistPropagation → EnsembleMultiplierEquidist** (modulo PE).
-
-    The multiplier genSeq n k = minFac(genProd n k + 1). If genProd n k
-    equidistributes mod all primes (from AEP), then genProd n k + 1 is a
-    random-looking shifted squarefree number, and PE gives equidistribution
-    of its minFac in coprime residue classes.
-
-    We state this as an open hypothesis since the PE bridge requires the
-    population equidistribution framework (from WeakErgodicity.lean).
-
-    **Status**: open hypothesis. -/
-def AccumEquidistImpliesMultEquidist : Prop :=
-  AccumulatorEquidistPropagation → EnsembleMultiplierEquidist
-
-/-- **Full chain**: SRE + CRTPropagationStep + AccumEquidistImpliesMultEquidist
-    → EnsembleMultiplierEquidist. -/
-theorem sre_crt_bridge_implies_mult_equidist
-    (hsre : SquarefreeResidueEquidist)
-    (hcrt : CRTPropagationStep)
-    (hbridge : AccumEquidistImpliesMultEquidist) :
-    EnsembleMultiplierEquidist :=
-  hbridge (sre_crt_implies_accum_equidist hsre hcrt)
+-- AccumEquidistImpliesMultEquidist archived to EM/Archive/Ensemble/CRTArchive.lean (RED #1)
+-- sre_crt_bridge_implies_mult_equidist archived to EM/Archive/Ensemble/CRTArchive.lean (RED #3)
 
 end MultiplierEquidist
 
@@ -520,39 +442,10 @@ theorem ensembleAvg_ge_mod3_density (X k : Nat) (hk : 1 ≤ k) :
     _ ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card :=
         div_le_div_of_nonneg_right hnum hS_pos.le
 
-/-- Positive lower bound on mod-3 accumulator density for all k. -/
-def AccumMod3LB (c : ℝ) : Prop :=
-  ∀ k : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
-    c ≤ sqfreeAccumDensity X k 3 2
-
-/-- AccumMod3LB(c) implies StepMeanLowerBound(min(1/4, c/3)) for all k. -/
-theorem accum_mod3_implies_smlb {c : ℝ} (_hc : 0 < c) (hmod3 : AccumMod3LB c) :
-    StepMeanLowerBound (min (1/4) (c/3)) := by
-  intro k
-  rcases k with _ | k'
-  · obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
-    exact ⟨X₀, fun X hX => le_trans (min_le_left _ _) (hX₀ X hX)⟩
-  · obtain ⟨X₀, hX₀⟩ := hmod3 (k' + 1)
-    exact ⟨X₀, fun X hX => by
-      calc min (1 / 4) (c / 3) ≤ c / 3 := min_le_right _ _
-        _ ≤ sqfreeAccumDensity X (k' + 1) 3 2 / 3 :=
-            div_le_div_of_nonneg_right (hX₀ X hX) (by positivity)
-        _ ≤ ensembleAvg X (fun n => 1 / (genSeq n (k' + 1) : ℝ)) :=
-            ensembleAvg_ge_mod3_density X (k' + 1) (by omega)⟩
-
-/-- AccumMod3LB(c) implies PositiveDensityRSD, via SMLB and LMG. -/
-theorem accum_mod3_implies_positive_density_rsd {c : ℝ} (hc : 0 < c)
-    (hmod3 : AccumMod3LB c) : PositiveDensityRSD :=
-  smlb_implies_positive_density_rsd (by positivity) (accum_mod3_implies_smlb hc hmod3)
-
-/-- **EWE Landscape**: all routes from equidistribution hypotheses to PRSD. -/
-theorem ewe_landscape :
-    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → PositiveDensityRSD) ∧
-    (∀ c : ℝ, 0 < c → StepMeanLowerBound c → PositiveDensityRSD) ∧
-    (∀ c : ℝ, 0 < c → AccumMod3LB c → PositiveDensityRSD) :=
-  ⟨fun _ hκ => first_moment_step_implies_positive_density_rsd hκ,
-   fun _ hc => smlb_implies_positive_density_rsd hc,
-   fun _ hc => accum_mod3_implies_positive_density_rsd hc⟩
+-- AccumMod3LB archived to EM/Archive/Ensemble/CRTArchive.lean (RED #6)
+-- accum_mod3_implies_smlb deleted (RED #6 → RED #7)
+-- accum_mod3_implies_positive_density_rsd archived to EM/Archive/Ensemble/CRTArchive.lean (RED #6)
+-- ewe_landscape archived to EM/Archive/Ensemble/CRTArchive.lean (RED #6, #7, #9)
 
 end Mod3Bridge
 
@@ -628,12 +521,7 @@ def EnsembleSelectionLemma : Prop :=
             (sqfreeAccumCount X k q c : ℝ))
           Filter.atTop (nhds L)
 
-/-- **MFRECondImpliesSMLB**: MFRE_conditional + EnsembleSelection implies SMLB.
-    This captures the route from conditional equidistribution to a step mean lower bound.
-
-    **Status**: open hypothesis (requires assembling conditional density → average bound). -/
-def MFRECondImpliesSMLB : Prop :=
-  MFREConditional → EnsembleSelectionLemma → StepMeanLowerBound (1/6)
+-- MFRECondImpliesSMLB archived to EM/Archive/Ensemble/CRTArchive.lean (RED #7)
 
 end MFREConditional
 
@@ -723,70 +611,14 @@ theorem ensembleAvg_ge_death_density (X k q : Nat) (hk : 1 ≤ k)
     _ ≤ (∑ n ∈ S, 1 / (genSeq n k : ℝ)) / ↑S.card :=
         div_le_div_of_nonneg_right hnum hS_pos.le
 
-/-- Lower bound on the "death density" at prime q for all steps k.
-    This says the density of squarefree n with genProd n k ≡ -1 mod q is
-    eventually at least c for every step k.
-
-    **Status**: open hypothesis (follows from AccumulatorEquidistPropagation). -/
-def DeathDensityLB (q : Nat) (c : ℝ) : Prop :=
-  ∀ k : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
-    c ≤ sqfreeAccumDensity X k q (-1)
-
-/-- DeathDensityLB at any prime q ≥ 3 implies StepMeanLowerBound.
-    At k=0 we use the unconditional smlb_k0_unconditional (c=1/4).
-    At k≥1 we use ensembleAvg_ge_death_density to get c/q as a lower bound. -/
-theorem death_density_implies_smlb {q : Nat} {c : ℝ} (hq : Nat.Prime q)
-    (hq3 : 3 ≤ q) (_hc : 0 < c) (hdd : DeathDensityLB q c) :
-    StepMeanLowerBound (min (1/4) (c/q)) := by
-  intro k
-  rcases k with _ | k'
-  · obtain ⟨X₀, hX₀⟩ := smlb_k0_unconditional
-    exact ⟨X₀, fun X hX => le_trans (min_le_left _ _) (hX₀ X hX)⟩
-  · obtain ⟨X₀, hX₀⟩ := hdd (k' + 1)
-    exact ⟨X₀, fun X hX => by
-      calc min (1 / 4) (c / ↑q) ≤ c / ↑q := min_le_right _ _
-        _ ≤ sqfreeAccumDensity X (k' + 1) q (-1) / ↑q :=
-            div_le_div_of_nonneg_right (hX₀ X hX) (Nat.cast_nonneg q)
-        _ ≤ ensembleAvg X (fun n => 1 / (genSeq n (k' + 1) : ℝ)) :=
-            ensembleAvg_ge_death_density X (k' + 1) q (by omega) hq hq3⟩
-
-/-- DeathDensityLB at any prime q ≥ 3 implies PositiveDensityRSD, via SMLB and LMG. -/
-theorem death_density_implies_prsd {q : Nat} {c : ℝ} (hq : Nat.Prime q)
-    (hq3 : 3 ≤ q) (hc : 0 < c) (hdd : DeathDensityLB q c) :
-    PositiveDensityRSD :=
-  smlb_implies_positive_density_rsd (by positivity) (death_density_implies_smlb hq hq3 hc hdd)
-
-/-- AccumMod3LB(c) is equivalent to DeathDensityLB(3, c), since -1 ≡ 2 mod 3.
-    This shows the mod-3 bridge is a special case of the general death density bridge. -/
-theorem accumMod3LB_iff_deathDensity3 {c : ℝ} :
-    AccumMod3LB c ↔ DeathDensityLB 3 c := by
-  simp only [AccumMod3LB, DeathDensityLB, show (-1 : ZMod 3) = (2 : ZMod 3) from by decide]
+-- DeathDensityLB archived to EM/Archive/Ensemble/CRTArchive.lean (RED #5)
+-- death_density_implies_smlb deleted (RED #5 → RED #7)
+-- death_density_implies_prsd archived to EM/Archive/Ensemble/CRTArchive.lean (RED #5)
+-- accumMod3LB_iff_deathDensity3 deleted (RED #6 ↔ RED #5)
 
 end DeathDensity
 
-/-! ## Extended EWE Landscape -/
-
-section ExtendedLandscape
-
-/-- **Extended EWE Landscape**: all routes from equidistribution hypotheses to
-    PositiveDensityRSD, including the generalized death density bridge.
-
-    Route 1: FirstMomentStep(kappa) → PRSD (via LMG).
-    Route 2: SMLB(c) → PRSD (via LMG).
-    Route 3: AccumMod3LB(c) → PRSD (special case of Route 4 at q=3).
-    Route 4: DeathDensityLB at any prime q ≥ 3 → PRSD (generalized death density). -/
-theorem ewe_landscape_extended :
-    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → PositiveDensityRSD) ∧
-    (∀ c : ℝ, 0 < c → StepMeanLowerBound c → PositiveDensityRSD) ∧
-    (∀ c : ℝ, 0 < c → AccumMod3LB c → PositiveDensityRSD) ∧
-    (∀ q : Nat, Nat.Prime q → 3 ≤ q → ∀ c : ℝ, 0 < c →
-      DeathDensityLB q c → PositiveDensityRSD) :=
-  ⟨fun _ hκ => first_moment_step_implies_positive_density_rsd hκ,
-   fun _ hc => smlb_implies_positive_density_rsd hc,
-   fun _ hc => accum_mod3_implies_positive_density_rsd hc,
-   fun _ hq hq3 _ hc => death_density_implies_prsd hq hq3 hc⟩
-
-end ExtendedLandscape
+-- ewe_landscape_extended archived to EM/Archive/Ensemble/CRTArchive.lean (RED #5, #6, #7, #9)
 
 /-! ## MinFac Selection Independence
 
@@ -882,59 +714,11 @@ theorem ensembleAvg_ge_max_death_channel (X k : Nat) (hk : 1 ≤ k)
       ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) :=
   fun q hq => ensembleAvg_ge_death_density X k q hk (hprimes q hq).1 (hprimes q hq).2
 
-/-- Multi-prime DeathDensityLB: if DeathDensityLB holds at SOME prime q >= 3 with
-    positive constant, then PositiveDensityRSD holds. This is already proved
-    per-prime; this theorem simply records that ANY single prime suffices. -/
-theorem exists_death_density_implies_prsd
-    (h : ∃ q : Nat, ∃ c : ℝ, Nat.Prime q ∧ 3 ≤ q ∧ 0 < c ∧ DeathDensityLB q c) :
-    PositiveDensityRSD :=
-  let ⟨_, _, hq, hq3, hc, hdd⟩ := h; death_density_implies_prsd hq hq3 hc hdd
+-- exists_death_density_implies_prsd archived to EM/Archive/Ensemble/CRTArchive.lean (RED #5)
 
 end MultiPrimeDeath
 
-/-! ## CRT Blindness Landscape
-
-Summary of the three levels of CRT independence and their status.
--/
-
-section CRTBlindness
-
-/-- **CRT Blindness Landscape**: documents the three levels of CRT independence
-    and the proved/open status of each.
-
-    Level 1 (PROVED): `crt_multiplier_invariance` — pointwise, deterministic.
-      If P ≡ P' at all primes r != q, then minFac(P+1) = minFac(P'+1).
-
-    Level 2 (OPEN): `MinFacSelectionIndependence` — population, statistical.
-      Conditional density of minFac(m+1) mod q given m mod q is asymptotically
-      independent of the mod-q class (for non-death classes).
-
-    Level 3 (OPEN = CME/DSL): fiber/orbit-level equidistribution.
-      Along a specific EM orbit, the multiplier equidistributes.
-      This is the sole remaining gap for Mullin's Conjecture.
-
-    Proved implications:
-    - Level 2 (MSI) → MFREConditional (open bridge: MSIImpliesMFREConditional)
-    - DeathDensityLB(q,c) → SMLB → LMG → PositiveDensityRSD (PROVED)
-    - AccumulatorEquidistPropagation → DeathDensityLB (immediate from AEP)
-
-    The landscape records:
-    (a) DeathDensityLB at any q >= 3 with positive c gives PRSD (PROVED).
-    (b) MinFacSelectionIndependence is a population-level statement (OPEN).
-    (c) The fiber-level gap (CME/DSL) remains the core open problem. -/
-theorem crt_blindness_landscape :
-    -- (a) Any single death density lower bound gives PRSD
-    (∀ q : Nat, Nat.Prime q → 3 ≤ q → ∀ c : ℝ, 0 < c →
-      DeathDensityLB q c → PositiveDensityRSD) ∧
-    -- (b) MinFacSelectionIndependence is a well-defined Prop
-    (MinFacSelectionIndependence → MinFacSelectionIndependence) ∧
-    -- (c) AccumMod3LB is the q=3 special case of DeathDensityLB
-    (∀ c : ℝ, AccumMod3LB c ↔ DeathDensityLB 3 c) :=
-  ⟨fun _ hq hq3 _ hc => death_density_implies_prsd hq hq3 hc,
-   id,
-   fun _ => accumMod3LB_iff_deathDensity3⟩
-
-end CRTBlindness
+-- crt_blindness_landscape archived to EM/Archive/Ensemble/CRTArchive.lean (RED #5, #6)
 
 /-! ## Absorption Mechanism: Why AccumMod3LB and DeathDensityLB Are Heuristically False
 

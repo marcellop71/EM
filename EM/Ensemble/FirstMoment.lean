@@ -254,16 +254,7 @@ def FMVBImpliesConcentration : Prop :=
   ∀ (C : ℝ), 0 < C →
     FirstMomentStep κ → VarianceBound C → RecipSumConcentration
 
-/-- **FM + VB → RSD.** The full chain:
-    FirstMomentStep + VarianceBound → RecipSumConcentration → AlmostAllSquarefreeRSD.
-
-    This chains `FMVBImpliesConcentration` with `concentration_implies_rsd`. -/
-theorem first_moment_variance_implies_rsd
-    (κ : ℝ) (hκ : 0 < κ) (C : ℝ) (hC : 0 < C)
-    (hfm : FirstMomentStep κ) (hvb : VarianceBound C)
-    (h_fmvb : FMVBImpliesConcentration) :
-    AlmostAllSquarefreeRSD :=
-  concentration_implies_rsd (h_fmvb κ hκ C hC hfm hvb)
+-- first_moment_variance_implies_rsd archived to EM/Archive/Ensemble/FirstMomentArchive.lean (RED #9)
 
 end FMVBConcentration
 
@@ -310,51 +301,9 @@ theorem ensembleAvg_sum_range (X K : Nat) (f : Nat → Nat → ℝ) :
   simp only [ensembleAvg, sqfreeCount, ← Finset.sum_div]
   congr 1; exact Finset.sum_comm
 
-/-- **FirstMomentStep implies LinearMeanGrowth**: if the ensemble average of
-    1/genSeq(n,k) converges to κ > 0 for each k, then the ensemble mean of
-    the partial reciprocal sum S_K grows at least linearly in K. -/
-theorem first_moment_step_implies_lmg {κ : ℝ} (hκ : 0 < κ) :
-    FirstMomentStep κ → LinearMeanGrowth := by
-  intro hfms
-  refine ⟨κ / 2, by linarith, ?_⟩
-  intro K
-  have hthresh : ∀ k : Nat, ∃ Xk : Nat, ∀ X ≥ Xk,
-      κ / 2 ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
-    intro k
-    obtain ⟨N, hN⟩ := Filter.eventually_atTop.mp
-      ((hfms k).eventually (Ioi_mem_nhds (by linarith : κ / 2 < κ)))
-    exact ⟨N, fun X hX => (hN X hX).le⟩
-  let threshold : Nat → Nat := fun k => (hthresh k).choose
-  let X₀ := (Finset.range K).sup threshold
-  refine ⟨X₀, fun X hX => ?_⟩
-  suffices h : κ / 2 * ↑K ≤ ensembleAvg X (fun n => recipPartialSum n K) by
-    simp only [ensembleAvg, sqfreeCount] at h; exact h
-  simp_rw [show ∀ n, recipPartialSum n K =
-    ∑ k ∈ Finset.range K, 1 / (genSeq n k : ℝ) from fun _ => rfl]
-  rw [ensembleAvg_sum_range]
-  calc κ / 2 * ↑K = ∑ _ ∈ Finset.range K, κ / 2 := by
-        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; ring
-    _ ≤ ∑ k ∈ Finset.range K, ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
-        apply Finset.sum_le_sum
-        intro k hk
-        exact (hthresh k).choose_spec X
-          (le_trans (Finset.le_sup (f := threshold) hk) hX)
-
-/-- **FirstMomentStep implies PositiveDensityRSD**: composing
-    first_moment_step_implies_lmg with lmg_implies_positive_density_rsd. -/
-theorem first_moment_step_implies_positive_density_rsd {κ : ℝ} (hκ : 0 < κ) :
-    FirstMomentStep κ → PositiveDensityRSD :=
-  fun hfms => lmg_implies_positive_density_rsd (first_moment_step_implies_lmg hκ hfms)
-
-/-- **Landscape theorem**: witnesses all three links in the chain
-    FirstMomentStep → LinearMeanGrowth → PositiveDensityRSD. -/
-theorem weak_mc_landscape :
-    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → PositiveDensityRSD) ∧
-    (∀ κ : ℝ, 0 < κ → FirstMomentStep κ → LinearMeanGrowth) ∧
-    (LinearMeanGrowth → PositiveDensityRSD) :=
-  ⟨fun _ hκ => first_moment_step_implies_positive_density_rsd hκ,
-   fun _ hκ => first_moment_step_implies_lmg hκ,
-   lmg_implies_positive_density_rsd⟩
+-- first_moment_step_implies_lmg deleted (RED #9 → RED #8)
+-- first_moment_step_implies_positive_density_rsd archived (RED #9)
+-- weak_mc_landscape archived (RED #8, #9)
 
 end FMSToLMG
 
@@ -532,32 +481,8 @@ def StepMeanLowerBound (c : ℝ) : Prop :=
   ∀ k : Nat, ∃ X₀ : Nat, ∀ X ≥ X₀,
     c ≤ ensembleAvg X (fun n => 1 / (genSeq n k : ℝ))
 
-/-- StepMeanLowerBound implies LinearMeanGrowth. -/
-theorem smlb_implies_lmg {c : ℝ} (hc : 0 < c) :
-    StepMeanLowerBound c → LinearMeanGrowth := by
-  intro hsmlb
-  refine ⟨c, hc, ?_⟩
-  intro K
-  let threshold : Nat → Nat := fun k => (hsmlb k).choose
-  let X₀ := (Finset.range K).sup threshold
-  refine ⟨X₀, fun X hX => ?_⟩
-  suffices h : c * ↑K ≤ ensembleAvg X (fun n => recipPartialSum n K) by
-    simp only [ensembleAvg, sqfreeCount] at h; exact h
-  simp_rw [show ∀ n, recipPartialSum n K =
-    ∑ k ∈ Finset.range K, 1 / (genSeq n k : ℝ) from fun _ => rfl]
-  rw [ensembleAvg_sum_range]
-  calc c * ↑K = ∑ _ ∈ Finset.range K, c := by
-        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; ring
-    _ ≤ ∑ k ∈ Finset.range K, ensembleAvg X (fun n => 1 / (genSeq n k : ℝ)) := by
-        apply Finset.sum_le_sum
-        intro k hk
-        exact (hsmlb k).choose_spec X
-          (le_trans (Finset.le_sup (f := threshold) hk) hX)
-
-/-- SMLB implies PositiveDensityRSD via LinearMeanGrowth. -/
-theorem smlb_implies_positive_density_rsd {c : ℝ} (hc : 0 < c) :
-    StepMeanLowerBound c → PositiveDensityRSD :=
-  fun h => lmg_implies_positive_density_rsd (smlb_implies_lmg hc h)
+-- smlb_implies_lmg deleted (RED #7 → RED #8)
+-- smlb_implies_positive_density_rsd archived (RED #7)
 
 /-- sqfreeCount X >= 1 for X >= 1 (since 1 is squarefree). -/
 theorem sqfreeCount_pos_of_pos {X : Nat} (hX : 1 ≤ X) : 0 < sqfreeCount X :=
@@ -604,24 +529,9 @@ def FirstMomentDivergence : Prop :=
   ∀ M : ℝ, ∃ K₀ : ℕ, ∀ K ≥ K₀, ∃ X₀ : ℕ, ∀ X ≥ X₀,
     M ≤ ensembleAvg X (fun n => recipPartialSum n K)
 
-/-- LinearMeanGrowth implies FirstMomentDivergence: linear growth trivially
-    gives divergence. -/
-theorem lmg_implies_fmd : LinearMeanGrowth → FirstMomentDivergence := by
-  intro hlmg M
-  obtain ⟨K₀, hK₀⟩ := linear_mean_growth_implies_emd hlmg M
-  exact ⟨K₀, fun K hK => by
-    obtain ⟨X₀, hX₀⟩ := hK₀ K hK
-    exact ⟨X₀, fun X hX => by simp only [ensembleAvg, sqfreeCount] at *; exact hX₀ X hX⟩⟩
-
-/-- FirstMomentStep implies FirstMomentDivergence via LinearMeanGrowth. -/
-theorem fms_implies_fmd {κ : ℝ} (hκ : 0 < κ) :
-    FirstMomentStep κ → FirstMomentDivergence :=
-  fun h => lmg_implies_fmd (first_moment_step_implies_lmg hκ h)
-
-/-- StepMeanLowerBound implies FirstMomentDivergence via LinearMeanGrowth. -/
-theorem smlb_implies_fmd {c : ℝ} (hc : 0 < c) :
-    StepMeanLowerBound c → FirstMomentDivergence :=
-  fun h => lmg_implies_fmd (smlb_implies_lmg hc h)
+-- lmg_implies_fmd archived (RED #8 → FMD)
+-- fms_implies_fmd archived (RED #9 → FMD via RED #8)
+-- smlb_implies_fmd archived (RED #7 → FMD via RED #8)
 
 /-- **Decaying step mean lower bound**: the step means E[1/genSeq(n,k)] are bounded
     below by a sequence f(k) > 0 whose sum diverges. This captures the scenario
@@ -661,33 +571,8 @@ theorem decaying_smlb_implies_fmd {f : ℕ → ℝ} :
         Finset.sum_le_sum fun k hk =>
           (hstep k).choose_spec X (le_trans (Finset.le_sup (f := threshold) hk) hX)
 
-/-- StepMeanLowerBound(c) is a special case of DecayingSMLB with constant f(k) = c. -/
-theorem smlb_implies_decaying_smlb {c : ℝ} (hc : 0 < c) :
-    StepMeanLowerBound c → DecayingSMLB (fun _ => c) := by
-  intro hsmlb
-  refine ⟨fun _ => hc, ?_, hsmlb⟩
-  rw [not_summable_iff_tendsto_nat_atTop_of_nonneg (fun _ => le_of_lt hc),
-    Filter.tendsto_atTop_atTop]
-  intro M; refine ⟨Nat.ceil (M / c) + 1, fun K hK => ?_⟩
-  simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-  have hK_bound : M / c < K := calc
-    M / c ≤ ↑(Nat.ceil (M / c)) := Nat.le_ceil _
-    _ < ↑(Nat.ceil (M / c)) + 1 := by linarith
-    _ ≤ (K : ℝ) := by exact_mod_cast hK
-  calc M = c * (M / c) := by field_simp
-    _ ≤ c * K := mul_le_mul_of_nonneg_left hK_bound.le hc.le
-    _ = (K : ℝ) * c := by ring
-
-/-- Landscape theorem for the divergence hierarchy:
-    SMLB -> DecayingSMLB -> FMD, and LMG -> FMD.
-    FMD does NOT imply PositiveDensityRSD (sublinear growth is insufficient). -/
-theorem divergence_hierarchy :
-    (∀ c : ℝ, 0 < c → StepMeanLowerBound c → DecayingSMLB (fun _ => c)) ∧
-    (∀ f : ℕ → ℝ, DecayingSMLB f → FirstMomentDivergence) ∧
-    (LinearMeanGrowth → FirstMomentDivergence) :=
-  ⟨fun _ hc => smlb_implies_decaying_smlb hc,
-   fun _ => decaying_smlb_implies_fmd,
-   lmg_implies_fmd⟩
+-- smlb_implies_decaying_smlb archived (RED #7)
+-- divergence_hierarchy archived (RED #7, #8)
 
 end FirstMomentDivergence
 
@@ -695,38 +580,10 @@ end FirstMomentDivergence
 
 section FMSKappaLowerBound
 
-/-- If `FirstMomentStep κ` holds, then κ ≥ 1/4.
-    At k=0, `ensembleAvg X (1/genSeq · 0)` converges to κ. Since this average
-    is ≥ 1/4 for all X ≥ 1, the limit κ ≥ 1/4 by `ge_of_tendsto`. -/
-theorem fms_kappa_ge_quarter {κ : ℝ} (hfms : FirstMomentStep κ) :
-    1 / 4 ≤ κ := by
-  apply ge_of_tendsto (hfms 0)
-  rw [Filter.eventually_atTop]
-  exact ⟨1, fun _ hX => ensembleAvg_k0_ge_quarter (sqfreeCount_pos_of_pos hX)⟩
+-- fms_kappa_ge_quarter archived (RED #9)
 
 end FMSKappaLowerBound
 
-/-! ## Parity + SMLB Landscape -/
-
-section ParityLandscape
-
-/-- **Parity + SMLB landscape theorem**: witnesses all unconditional structural
-    results and the SMLB reduction chain.
-    1. genSeq(n,k) ≥ 3 for k ≥ 1 and n ≥ 1 (PROVED)
-    2. E[1/genSeq(·,0)] ≥ 1/4 unconditionally (PROVED)
-    3. SMLB → LMG → PositiveDensityRSD (PROVED)
-    4. FirstMomentStep(κ) ⇒ κ ≥ 1/4 (PROVED) -/
-theorem parity_smlb_landscape :
-    (∀ (n : Nat), 1 ≤ n → ∀ (k : Nat), 1 ≤ k → 3 ≤ genSeq n k) ∧
-    (∀ (X : Nat), 1 ≤ X →
-      (1 : ℝ) / 4 ≤ ensembleAvg X (fun n => 1 / (genSeq n 0 : ℝ))) ∧
-    (∀ (c : ℝ), 0 < c → StepMeanLowerBound c → PositiveDensityRSD) ∧
-    (∀ (κ : ℝ), FirstMomentStep κ → 1 / 4 ≤ κ) :=
-  ⟨fun _ hn _ hk => genSeq_ge_three hn hk,
-   fun _ hX => ensembleAvg_k0_ge_quarter (sqfreeCount_pos_of_pos hX),
-   fun _ hc => smlb_implies_positive_density_rsd hc,
-   fun _ hfms => fms_kappa_ge_quarter hfms⟩
-
-end ParityLandscape
+-- parity_smlb_landscape archived (RED #7, #9)
 
 end

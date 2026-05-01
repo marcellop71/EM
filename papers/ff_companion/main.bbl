@@ -1,0 +1,32 @@
+\providecommand{\bysame}{\leavevmode\hbox to3em{\hrulefill}\thinspace}
+\providecommand{\MR}{\relax\ifhmode\unskip\space\fi MR }
+% \MRhref is called by the amsart/book/proc definition of \MR.
+\providecommand{\MRhref}[2]{%
+  \href{http://www.ams.org/mathscinet-getitem?mr=#1}{#2}
+}
+\providecommand{\href}[2]{#2}
+\begin{thebibliography}{CvdP68}
+
+\bibitem[Coh81]{Cohen70}
+S.~D. Cohen, \emph{The distribution of {G}alois groups and {H}ilbert's
+  irreducibility theorem}, Proc. London Math. Soc. \textbf{43} (1981),
+  227--250, The result on random polynomials over finite fields having $S_d$ as
+  Galois group goes back to earlier work in the 1970s.
+
+\bibitem[CvdP68]{CoxVdP}
+C.~D. Cox and A.~J. van~der Poorten, \emph{On a sequence of prime numbers}, J.
+  Austral. Math. Soc. Ser. A \textbf{8} (1968), 571--574.
+
+\bibitem[GN75]{GuyNow75}
+R.~K. Guy and R.~Nowakowski, \emph{Discovering primes with {E}uclid}, Delta
+  (Waukesha) \textbf{5} (1975), 49--63.
+
+\bibitem[Mul63]{Mullin63}
+A.~A. Mullin, \emph{Recursive function theory (a modern look at a {E}uclidean
+  idea)}, Bull. Amer. Math. Soc. \textbf{69} (1963), 737.
+
+\bibitem[Wei48]{Weil48}
+A.~Weil, \emph{Sur les courbes alg\'ebriques et les vari\'et\'es qui s'en
+  d\'eduisent}, Actualit\'es Sci. Ind. (1948), no.~1041.
+
+\end{thebibliography}

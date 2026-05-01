@@ -17,7 +17,7 @@ and the master reduction chain.
 The ensemble population transfer strategy proceeds in five layers:
 
 1. **CRT Equidistribution** (from EnsembleCRT.lean):
-   SRE + CRTPropagationStep => AccumulatorEquidistPropagation => EnsembleMultiplierEquidist
+   SRE => base case equidist; CRTPropagationStep (RED #3, archived) => full chain
 
 2. **Decorrelation Bridge** (new open hypothesis):
    EnsembleMultiplierEquidist => StepDecorrelation
@@ -41,12 +41,16 @@ The ensemble population transfer strategy proceeds in five layers:
 ### Proved Theorems
 * `equidist_implies_char_mean_vanishing_proved` -- EME => ensemble char means vanish (PROVED)
 * `full_crt_chain_implies_cancellation`  -- SRE+CRT+bridges => char sum cancellation (a.a.)
-* `ensemble_crt_equidist_chain`          -- SRE+CRT+bridge => EME (composition)
 * `ensemble_decorrelation_chain`         -- EME+decorr+var+conc => char cancellation
 * `sd_implies_cancellation`              -- SD alone => char cancellation (PROVED, composes 3 reductions)
-* `ensemble_pt_master`                   -- all 6 hypotheses => char cancellation for a.a.
-* `ensemble_pt_master_simplified`        -- 4 hypotheses => char cancellation (var+conc inlined, PROVED)
 * `ensemble_pt_standard_em`              -- all hypotheses + DSL => MC for standard EM
+
+### Archived (RED chain — see EM/Archive/Ensemble/PTArchive.lean)
+* `JointAccumulatorEquidist_marginal`    -- trivially from AEP (RED #1)
+* `aep_implies_jae_marginal`             -- AEP => JAE_marginal (RED #1)
+* `ensemble_crt_equidist_chain`          -- SRE+CRT+bridge => EME (RED #3)
+* `ensemble_pt_master_simplified`        -- 4 hypotheses => char cancellation (RED #3)
+* `ensemble_pt_master`                   -- all 6 hypotheses => char cancellation (RED #3)
 * (moved to EnsembleWeylChain.lean): gen_hitting_implies_gen_mc_proved, gen_captures_target,
   jse_implies_nontrivial_cancellation, weyl_hitting_bridge_proved,
   per_chi_cancellation_bridge_proved, cancel_weyl_implies_mc, jse_transfer_implies_mc
@@ -431,41 +435,8 @@ theorem sqfreeJointAccumCountSame_sum_eq_first (X j k q : Nat) [NeZero q]
     intro n _ h1 h2
     exact hb (h1.symm.trans h2)
 
-/-- **Joint Accumulator Equidistribution (marginal product version)**: for prime q and
-    steps j < k, the product of marginal densities sqfreeAccumDensity X j q a *
-    sqfreeAccumDensity X k q b tends to (q/(q^2-1))^2 as X → ∞.
-
-    **WARNING**: This is trivially implied by AccumulatorEquidistPropagation (AEP) —
-    it is just the product of two independent marginals, each tending to q/(q^2-1).
-    Use `JointAccumulatorEquidist'` for the genuine joint version that captures
-    the actual joint distribution at the same modulus.
-
-    AEP is heuristically false (Dead End #138), so this is likely vacuous.
-
-    **Status**: trivially implied by AEP (see `aep_implies_jae_marginal`). -/
-def JointAccumulatorEquidist_marginal : Prop :=
-  ∀ (q : Nat), Nat.Prime q →
-  ∀ (j k : Nat), j < k →
-  ∀ (a b : ZMod q), a ≠ 0 → b ≠ 0 →
-    Filter.Tendsto
-      (fun X : Nat => sqfreeAccumDensity X j q a * sqfreeAccumDensity X k q b)
-      Filter.atTop
-      (nhds (((q : ℝ) / ((q : ℝ) ^ 2 - 1)) ^ 2))
-
-/-- AEP trivially implies the marginal product version of JAE.
-    Each marginal density → q/(q^2-1), so the product → (q/(q^2-1))^2. -/
-theorem aep_implies_jae_marginal (haep : AccumulatorEquidistPropagation) :
-    JointAccumulatorEquidist_marginal := by
-  intro q hq j k _ a b ha hb
-  have hj := haep q hq j a ha
-  have hk := haep q hq k b hb
-  have : Filter.Tendsto
-      (fun X : Nat => sqfreeAccumDensity X j q a * sqfreeAccumDensity X k q b)
-      Filter.atTop
-      (nhds ((q : ℝ) / ((q : ℝ) ^ 2 - 1) * ((q : ℝ) / ((q : ℝ) ^ 2 - 1)))) :=
-    Filter.Tendsto.mul hj hk
-  rwa [show (q : ℝ) / ((q : ℝ) ^ 2 - 1) * ((q : ℝ) / ((q : ℝ) ^ 2 - 1)) =
-    ((q : ℝ) / ((q : ℝ) ^ 2 - 1)) ^ 2 from by ring] at this
+-- JointAccumulatorEquidist_marginal archived to EM/Archive/Ensemble/PTArchive.lean (RED #1)
+-- aep_implies_jae_marginal archived to EM/Archive/Ensemble/PTArchive.lean (RED #1)
 
 /-- **Genuine Joint Accumulator Equidistribution**: for prime q and steps j < k,
     the JOINT density of (genProd n j mod q, genProd n k mod q) — counting
@@ -741,15 +712,7 @@ end CharMeanVanishing
 
 section CRTToCancellation
 
-/-- **The full CRT equidistribution chain**: SRE + CRTPropagationStep + bridge
-    gives EnsembleMultiplierEquidist. This is a re-export of
-    `sre_crt_bridge_implies_mult_equidist` for convenient reference. -/
-theorem ensemble_crt_equidist_chain
-    (hsre : SquarefreeResidueEquidist)
-    (hcrt : CRTPropagationStep)
-    (hbridge : AccumEquidistImpliesMultEquidist) :
-    EnsembleMultiplierEquidist :=
-  sre_crt_bridge_implies_mult_equidist hsre hcrt hbridge
+-- ensemble_crt_equidist_chain archived to EM/Archive/Ensemble/PTArchive.lean (RED #3)
 
 /-- **The decorrelation chain**: EME + decorrelation bridge + variance bridge
     + concentration bridge gives character sum cancellation for almost all
@@ -818,35 +781,7 @@ theorem sd_implies_cancellation (hsd : StepDecorrelation) :
   -- Step 3: EnsembleCharSumConcentration → cancellation (PROVED)
   exact char_concentration_implies_cancellation hconc
 
-/-- **Simplified Ensemble PT Master Theorem (4 hypotheses).**
-
-    This is `ensemble_pt_master` with the two proved reductions
-    (`DecorrelationImpliesVariance` and `CharVarianceImpliesConcentration`)
-    inlined. Only 4 open hypotheses remain:
-    1. `SquarefreeResidueEquidist` — standard ANT
-    2. `CRTPropagationStep` — CRT independence
-    3. `AccumEquidistImpliesMultEquidist` — population transfer bridge
-    4. `EnsembleEquidistImpliesDecorrelation` — EME → SD bridge
-
-    The chain: SRE + CRT + AccumBridge → EME → (DecorrBridge) → SD
-    → (PROVED: variance) → (PROVED: concentration) → cancellation. -/
-theorem ensemble_pt_master_simplified
-    (hsre : SquarefreeResidueEquidist)
-    (hcrt : CRTPropagationStep)
-    (hbridge : AccumEquidistImpliesMultEquidist)
-    (hdecorr : EnsembleEquidistImpliesDecorrelation) :
-    ∀ (q : Nat), Nat.Prime q →
-    ∀ (chi : Nat → ℂ), (∀ a, Complex.normSq (chi a) ≤ 1) →
-    ∀ (eps : ℝ), 0 < eps →
-      Filter.Tendsto
-        (fun X : Nat =>
-          (((Finset.Icc 1 X).filter
-            (fun n => Squarefree n ∧
-              ∀ K, genSeqCharEnergy n K q chi > (eps * K) ^ 2)).card : ℝ) /
-          ((Finset.Icc 1 X).filter Squarefree).card)
-        Filter.atTop (nhds 0) :=
-  -- Chain: SRE+CRT+bridge → EME → (decorr) → SD → (proved) → cancellation
-  sd_implies_cancellation (hdecorr (ensemble_crt_equidist_chain hsre hcrt hbridge))
+-- ensemble_pt_master_simplified archived to EM/Archive/Ensemble/PTArchive.lean (RED #3)
 
 end SDToCancellation
 
@@ -866,37 +801,7 @@ have been moved to `EnsembleWeylChain.lean`. Key exports there:
 
 section MasterTheorem
 
-/-- **Ensemble PT Master Theorem (character version).**
-    Under the full chain of CRT equidistribution hypotheses plus the
-    decorrelation and concentration bridges, for almost all squarefree
-    starting points, the generalized EM character sums cancel:
-
-    SRE + CRTPropStep + AccumBridge + DecorrBridge + VarBridge + ConcBridge
-    => for a.a. squarefree n, |sum_{k<K} chi(genSeq n k)| = o(K).
-
-    This is assembled from:
-    1. `ensemble_crt_equidist_chain`: SRE+CRT+bridge => EME
-    2. `ensemble_decorrelation_chain`: EME+decorr+var+conc => cancellation -/
-theorem ensemble_pt_master
-    (hsre : SquarefreeResidueEquidist)
-    (hcrt : CRTPropagationStep)
-    (hbridge : AccumEquidistImpliesMultEquidist)
-    (hdecorr : EnsembleEquidistImpliesDecorrelation)
-    (hvar : DecorrelationImpliesVariance)
-    (hconc : CharVarianceImpliesConcentration) :
-    ∀ (q : Nat), Nat.Prime q →
-    ∀ (chi : Nat → ℂ), (∀ a, Complex.normSq (chi a) ≤ 1) →
-    ∀ (eps : ℝ), 0 < eps →
-      Filter.Tendsto
-        (fun X : Nat =>
-          (((Finset.Icc 1 X).filter
-            (fun n => Squarefree n ∧
-              ∀ K, genSeqCharEnergy n K q chi > (eps * K) ^ 2)).card : ℝ) /
-          ((Finset.Icc 1 X).filter Squarefree).card)
-        Filter.atTop (nhds 0) :=
-  ensemble_decorrelation_chain
-    (ensemble_crt_equidist_chain hsre hcrt hbridge)
-    hdecorr hvar hconc
+-- ensemble_pt_master archived to EM/Archive/Ensemble/PTArchive.lean (RED #3)
 
 /-- **Ensemble PT: standard EM via DSL.**
     Under the ensemble hypotheses plus DSL, MC holds for the standard
@@ -1035,7 +940,6 @@ JSE → MC (Section 4b):
 * `sqfreeJointSeqDensity`            -- joint density: genSeq at two steps
 * `sqfreeJointAccumCountSame`        -- joint count: genProd at two steps (same modulus)
 * `sqfreeJointAccumDensitySame`      -- joint density: genProd at two steps
-* `JointAccumulatorEquidist_marginal`-- product of marginals (trivially from AEP)
 * `JointAccumulatorEquidist'`        -- genuine joint density (open hypothesis)
 * `JointStepEquidist`                -- genuine joint density for genSeq (open hypothesis)
 * `PerChiCancellationBridge`         -- per-chi SD => per-chi cancellation (PROVED)
@@ -1051,7 +955,6 @@ JSE → MC (Section 4b):
                                         (equivalent to CCSB/CME, Dead Ends #58/#117)
 
 ### Proved in This File
-* `aep_implies_jae_marginal`              -- AEP => JAE_marginal (PROVED, trivial by Filter.Tendsto.mul)
 * `sqfreeJointAccumCountSame_le_sqfreeCount`    -- count bound (PROVED)
 * `sqfreeJointAccumDensitySame_nonneg`          -- density >= 0 (PROVED)
 * `sqfreeJointAccumDensitySame_le_one`          -- density <= 1 (PROVED)
@@ -1061,7 +964,6 @@ JSE → MC (Section 4b):
 * `EquidistImpliesCharMeanVanishing` -- EME => vanishing char means (PROVED)
 * `GenHittingImpliesGenMC` -- cofinal walk hitting => gen. MC (PROVED)
 * `sd_implies_cancellation` -- SD alone => char cancellation (PROVED, 3-step composition)
-* `ensemble_pt_master_simplified` -- 4 hypotheses => char cancellation (PROVED)
 * `joint_step_equidist_implies_step_decorrelation` -- JSE => per-chi SD (PROVED)
 * `per_chi_cancellation_bridge_proved` -- PerChiCancellationBridge (PROVED, per-chi chain)
 * `weyl_hitting_bridge_proved` -- WeylHittingBridge (PROVED, test function contradiction)

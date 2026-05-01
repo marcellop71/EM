@@ -532,62 +532,14 @@ theorem scrti_bootstrap_all_primes
   rw [add_zero] at htotal
   exact htotal.congr (fun X => (hfull_decomp X).symm)
 
-/-- **SquarefreeCRTIndependence implies CRTPropagationStep.**
-
-    The conceptual argument:
-    1. By SCRTI, among squarefree n with genProd n k in any fixed nonzero
-       class b mod r (for each prime r different from q), the mod-q coordinate of
-       genProd n k is equidistributed. This means the mod-q coordinate is
-       approximately independent of all non-mod-q coordinates.
-    2. By `crt_multiplier_invariance` (PROVED in MullinCRT.lean), the multiplier
-       genSeq n k = minFac(genProd n k + 1) depends only on genProd n k mod r
-       for primes r different from q — it is "q-blind."
-    3. genProd n (k+1) = genProd n k * genSeq n k. The mod-q residue of the
-       product depends on: (i) genProd n k mod q (equidistributed by inductive
-       hypothesis), and (ii) genSeq n k mod q (which, being q-blind, is
-       approximately constant across the mod-q equidistributed ensemble).
-    4. Multiplying an equidistributed mod-q value by a value approximately
-       independent of it preserves equidistribution (affine image of uniform
-       is uniform). This gives equidistribution of genProd n (k+1) mod q.
-
-    The quantitative density argument connecting SCRTI to the CRTPropagationStep
-    quantifiers involves tracking the error terms through the multiplication
-    step. This requires showing that the q-blind multiplier partitions the
-    ensemble into pieces where the mod-q coordinate remains approximately
-    uniform. The core calculation is:
-
-    density(genProd n (k+1) ≡ c mod q)
-    = sum over (a, m) with a*m ≡ c mod q of
-      density(genProd n k ≡ a mod q AND genSeq n k ≡ m mod q)
-    ≈ sum over (a, m) with a*m ≡ c mod q of
-      [density(genProd n k ≡ a | non-mod-q coords)] * [density(genSeq ≡ m)]
-
-    By SCRTI, the first factor is 1/(q-1). By the convolution structure of
-    multiplication in ZMod q, the sum gives 1/(q-1). Hence equidistribution
-    propagates.
-
-    **Status**: open hypothesis (the gap is the quantitative density tracking
-    through multiplication — conceptually immediate from SCRTI +
-    crt_multiplier_invariance, but the Lean formalization of the density
-    tracking requires careful epsilon management). -/
-def SquarefreeCRTIndepImpliesCRTProp : Prop :=
-  SquarefreeCRTIndependence → CRTPropagationStep
-
-/-- **SCRTI + CRTPropImplication + SRE → AccumulatorEquidistPropagation.**
-    If SCRTI implies CRTPropagationStep, then combined with SRE this gives
-    full accumulator equidistribution by induction. -/
-theorem scrti_sre_implies_aep
-    (hscrti_crt : SquarefreeCRTIndepImpliesCRTProp)
-    (hsre : SquarefreeResidueEquidist)
-    (hscrti : SquarefreeCRTIndependence) :
-    AccumulatorEquidistPropagation :=
-  sre_crt_implies_accum_equidist hsre (hscrti_crt hscrti)
+-- SquarefreeCRTIndepImpliesCRTProp archived to EM/Archive/Ensemble/CRTFreedomArchive.lean (RED #3)
+-- scrti_sre_implies_aep archived to EM/Archive/Ensemble/CRTFreedomArchive.lean (RED #1, #3)
 
 end SquarefreeCRTIndep
 
 /-! ## Summary
 
-### Definitions (8):
+### Definitions (7):
 * `residueClassCount`             -- count of n in [1,X] in residue class a mod m
 * `jointResidueClassCount`        -- count of n in [1,X] in two simultaneous classes
 * `CRTFreedomDensity`             -- density equidistribution (open hypothesis)
@@ -595,9 +547,8 @@ end SquarefreeCRTIndep
 * `sqfreeJointAccumCount`         -- joint count with two moduli for genProd
 * `sqfreeJointAccumDensity`       -- conditional density of mod-q given mod-r
 * `SquarefreeCRTIndependence`     -- CRT independence for squarefree accumulators (open)
-* `SquarefreeCRTIndepImpliesCRTProp` -- SCRTI => CRTPropagationStep (open)
 
-### Proved Theorems (21):
+### Proved Theorems (20):
 * `residue_class_count_le`                -- count <= X
 * `residue_class_count_nonneg`            -- count >= 0 (real)
 * `residue_class_count_sum_eq`            -- sum over classes = X (partition)
@@ -619,13 +570,15 @@ end SquarefreeCRTIndep
 * `sqfreeJointAccumCount_sum_eq_first`    -- partition identity for joint counts
 * `sqfreeJointAccumDensity_nonneg`        -- density >= 0
 * `sqfreeJointAccumDensity_le_one`        -- density <= 1
-* `scrti_sre_implies_aep`                 -- SCRTI + SRE => AEP
 
-### Open Hypotheses (4):
+### Archived (RED chain — see EM/Archive/Ensemble/CRTFreedomArchive.lean):
+* `SquarefreeCRTIndepImpliesCRTProp` -- SCRTI => CRTPropagationStep (RED #3)
+* `scrti_sre_implies_aep`           -- SCRTI + SRE => AEP (RED #1, #3)
+
+### Open Hypotheses (3):
 * `CRTFreedomDensity`
 * `CRTFreedomPrime`
 * `SquarefreeCRTIndependence`
-* `SquarefreeCRTIndepImpliesCRTProp`
 -/
 
 end

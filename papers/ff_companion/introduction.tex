@@ -1,0 +1,165 @@
+\section{Introduction}\label{sec:intro}
+
+\subsection{The Euclid--Mullin sequence}
+
+The \emph{Euclid--Mullin sequence} is defined by $a_0 = 2$ and
+\[
+  a_{n+1} = \text{least prime factor of } P(n) + 1,
+  \qquad P(n) = a_0 \cdot a_1 \cdots a_n.
+\]
+The first several terms are $2, 3, 7, 43, 13, 53, 5, 6221671, \ldots$
+(OEIS~A000945). The construction mimics Euclid's proof of the infinitude of
+primes: each $P(n)+1$ is coprime to all previously seen primes, so
+$a_{n+1}$ is always a \emph{new} prime. Mullin~\cite{Mullin63} asked
+whether every prime eventually appears in this sequence.
+
+\begin{openproblem}[Mullin's Conjecture, 1963]
+For every prime $q$, there exists $n$ such that $a_n = q$.
+\end{openproblem}
+
+Despite substantial computational evidence---Guy and Nowakowski~\cite{GuyNow75}
+computed 51 terms, and subsequent work has extended this further---Mullin's
+Conjecture remains open. The prime $41$ has not appeared in the first several
+hundred computed terms, and Cox and van der Poorten~\cite{CoxVdP} raised the
+possibility that it might never appear.
+
+\subsection{The function field analog}
+
+Over the polynomial ring $\Fpt$ (with $p$ a prime number), monic irreducible
+polynomials play the role of primes. We define the \emph{function field
+Euclid--Mullin sequence} (FF-EM) as follows.
+
+\begin{definition}[FF-EM Sequence]\label{def:ffem}
+\leancheck{FFEMData}
+Fix a prime $p$. The FF-EM data consists of:
+\begin{itemize}
+  \item $\ffseq(0) = t$ (the ``smallest'' monic irreducible),
+  \item $\ffprod(0) = t$ (the running product),
+  \item $\ffseq(n+1)$ is a monic irreducible factor of $\ffprod(n)+1$ of
+    minimal degree,
+  \item $\ffprod(n+1) = \ffprod(n) \cdot \ffseq(n+1)$.
+\end{itemize}
+\end{definition}
+
+\begin{openproblem}[Function Field Mullin Conjecture]
+\leancheck{FFMullinConjecture}
+For every monic irreducible polynomial $Q \in \Fpt$, there exists $n$ such
+that $\ffseq(n) = Q$.
+\end{openproblem}
+
+Two structural differences from the integer setting are immediate.
+First, among irreducible polynomials of the same degree, there is no
+canonical total ordering; the minimality condition in Definition~\ref{def:ffem}
+is on \emph{degree} only, so the successor $\ffseq(n+1)$ may be chosen
+among several competitors. Second, the unit group
+$(\Fpt/(Q))^\times \cong \GF{p}{\deg Q}^\times$ is cyclic of order
+$p^{\deg Q} - 1$, providing a richer group-theoretic structure than the
+integer analog $(\ZZ/q\ZZ)^\times$.
+
+\subsection{Why study the function field case?}
+
+The function field setting enjoys a decisive analytic advantage over
+$\ZZ$: the Weil bound for character sums over $\Fp$-curves is a
+\emph{theorem} (Weil, 1948~\cite{Weil48}), not a conjecture. This
+makes population equidistribution of monic irreducibles across residue
+classes unconditional, in contrast to the integer case where the
+analogous result requires the Weighted Prime Number Theorem in
+arithmetic progressions (a consequence of the Generalized Riemann
+Hypothesis for quantitative error terms, or of Siegel--Walfisz for
+qualitative versions).
+
+By working over $\Fpt$, we can isolate the \emph{orbit-specificity
+barrier}---the gap between knowing that irreducibles are equidistributed
+across residue classes (population statistics) and knowing that the
+\emph{specific} walk $\ffprod(n) \bmod Q$ visits the residue class $-1$
+(orbit dynamics). Our results demonstrate that this barrier is the
+\emph{sole remaining obstacle} to FF-MC, and that it is structurally
+identical to the integer case.
+
+\subsection{Main results}
+
+We prove four main theorems, all unconditional (zero open hypotheses in the
+formal verification).
+
+\begin{theorem}[Almost-All Generalized Mixed MC --- Theorem~D]\label{thm:main-sieve}
+\leancheck{ff\_almost\_all\_unconditional}
+Over $\Fpt$, the full analytic number theory chain
+\[
+  \text{Char.\ Cancel.} \;\Rightarrow\; \text{PNT-in-APs}
+  \;\Rightarrow\; \FCD \;\Rightarrow\; \SPV
+  \;\Rightarrow\; \PSCD \;\Rightarrow\; \text{Almost-All GenMixedMC}
+\]
+is unconditional. For density-one monic squarefree starting polynomials,
+every monic irreducible is reached by some branch of the factor tree.
+\end{theorem}
+
+\begin{theorem}[Factor Tree Structure --- Theorem~A]\label{thm:main-tree}
+\leancheck{theorem\_A\_factor\_tree}
+For any valid starting polynomial and any valid mixed selection:
+the walk explores infinitely many distinct monic irreducibles;
+the factor pool degree grows to infinity;
+the selection is injective (no irreducible appears twice);
+the accumulated product is injective;
+and the coprimality cascade holds.
+\end{theorem}
+
+\begin{theorem}[Stochastic FF-MC --- Theorems~B and~C]\label{thm:main-stochastic}
+\leancheck{theorem\_B\_stochastic\_mc}
+With any positive probability of non-greedy factor selection at each step,
+every monic irreducible is eventually captured. The phase transition is
+sharp at $\varepsilon = 0$: deterministic FF-MC is the sole unresolved
+boundary.
+\end{theorem}
+
+\begin{theorem}[$\Phi_3$ Exclusion Criterion]\label{thm:main-phi3}
+\leancheck{autonomous\_map\_landscape}
+For $p \equiv 2 \pmod{3}$ with $p \geq 5$, the autonomous map
+$f(w) = w(w+1)$ on $\Fp$ has no preimage of~$-1$. The orbit from any
+starting value $a \neq -1$ never hits~$-1$.
+\end{theorem}
+
+\subsection{Orbit barrier thesis}
+
+Three formally verified dead ends establish the structural boundary of
+current techniques:
+
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Dead End \#127} (Weil insufficient):
+    The Weil bound gives population equidistribution but cannot constrain
+    orbit dynamics. \leancheck{dead\_end\_127\_weil\_not\_sufficient}
+  \item \textbf{Dead End \#129} (FFLM false):
+    The large monodromy hypothesis is structurally false---the greedy
+    FF-EM construction produces cyclotomic products with abelian Galois
+    groups, reducing monodromy arguments to the Weil bound (circular).
+    \leancheck{dead\_end\_129\_monodromy\_dead}
+  \item \textbf{Dead End \#130} (Generation $\neq$ coverage):
+    The steps $\{1,3\}$ generate $\ZZ/4\ZZ$ but the alternating walk
+    visits only $\{0,1\}$, missing $\{2,3\}$.
+    \leancheck{dead\_end\_130\_generation\_ne\_coverage}
+\end{enumerate}
+
+Together, these identify the orbit-specificity barrier as not solvable by
+population statistics (Weil, PE, ANT), not solvable by Galois theory
+(large monodromy is false), and not solvable by algebraic generation
+(subgroup escape $\neq$ dynamical hitting). The sole known dissolution
+is stochastic perturbation ($\varepsilon > 0$). The deterministic case
+($\varepsilon = 0$) is the open conjecture.
+
+\subsection{Machine verification}
+
+The entire development is formalized in Lean~4 using the Mathlib library
+and compiles with zero \texttt{sorry} axioms. The function field module
+comprises 17 files totaling 7{,}372 lines of code, with 364 declarations.
+We discuss the formalization in Section~\ref{sec:formalization}.
+
+\subsection{Organization}
+
+Section~\ref{sec:background} introduces the algebraic background:
+$\Fpt$ as a polynomial ring, monic irreducibles, the necklace identity,
+and the autonomous map perspective. Section~\ref{sec:sieve} presents the
+unconditional sieve chain culminating in Theorem~\ref{thm:main-sieve}.
+Section~\ref{sec:phi3} develops the $\Phi_3$ exclusion criterion
+(Theorem~\ref{thm:main-phi3}). Section~\ref{sec:barrier} analyzes the
+orbit-specificity barrier and the three dead ends.
+Section~\ref{sec:formalization} discusses the Lean formalization.
+Section~\ref{sec:open} collects open problems.

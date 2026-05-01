@@ -1,0 +1,189 @@
+\section{Background}\label{sec:background}
+
+\subsection{The polynomial ring \texorpdfstring{$\Fpt$}{Fp[t]}}
+
+Let $p$ be a prime number. The ring $\Fpt = \Fp[t]$ of polynomials over the
+finite field $\Fp = \ZZ/p\ZZ$ is a Euclidean domain, hence a principal ideal
+domain and a unique factorization domain. Monic irreducible polynomials play
+the role of prime numbers; we shall call them simply \emph{primes} when the
+context is clear.
+
+We write $\irredcount(d)$ for the number of monic irreducible polynomials of
+degree $d$ over $\Fp$. The first values for $p = 2$ are $\irredcount(1) = 2$
+($t$ and $t+1$), $\irredcount(2) = 1$ ($t^2 + t + 1$), $\irredcount(3) = 2$,
+$\irredcount(4) = 3$.
+
+\begin{proposition}[Existence of irreducibles]
+\leancheck{ffIrredCount\_pos}
+For every $d \geq 1$ and every prime $p$, there exists at least one monic
+irreducible polynomial of degree $d$ over $\Fp$:
+\[
+  \irredcount(d) \geq 1 \quad \text{for all } d \geq 1.
+\]
+\end{proposition}
+
+The proof in our formalization uses the Galois field construction: for each
+$d \geq 1$, the field $\GF{p}{d}$ is an extension of $\Fp$ of degree $d$,
+and the minimal polynomial of a primitive element is a monic irreducible of
+degree $d$.
+
+\subsection{Counting monic polynomials}
+
+\begin{proposition}[Monic polynomial count]
+\leancheck{card\_monic\_of\_degree}
+There are exactly $p^n$ monic polynomials of degree $n$ over $\Fp$.
+\end{proposition}
+
+\begin{proof}
+A monic polynomial of degree $n$ has the form $t^n + a_{n-1}t^{n-1} + \cdots
++ a_0$, and each coefficient $a_i$ can be chosen independently from $\Fp$.
+In the formal proof, we compose the equivalence between monic
+degree-$n$ polynomials and the submodule $\mathrm{degreeLT}(n)$
+(via \texttt{monicEquivDegreeLT}) with the linear equivalence to
+$\mathrm{Fin}(n) \to \Fp$ (via \texttt{degreeLTEquiv}), then compute
+$|\mathrm{Fin}(n) \to \Fp| = |\Fp|^n = p^n$.
+\end{proof}
+
+\subsection{The necklace identity}
+
+The central combinatorial identity underlying our sieve chain relates the
+count of monic irreducibles to the total count of monic polynomials.
+
+\begin{theorem}[Necklace Identity]\label{thm:necklace}
+\leancheck{necklace\_identity\_proved}
+For every $n \geq 1$,
+\begin{equation}\label{eq:necklace}
+  \sum_{d \mid n} d \cdot \irredcount(d) = p^n.
+\end{equation}
+\end{theorem}
+
+The name ``necklace identity'' comes from the combinatorial interpretation:
+$\irredcount(d)$ counts the number of aperiodic binary necklaces of length
+$d$ (for $p = 2$), and the identity~\eqref{eq:necklace} is equivalent to
+the Gauss--Waring formula counting $\Fp$-rational points on the affine line.
+The identity is classical, attributed to Moreau (1872) and implicit in Gauss's
+work on cyclotomy.
+
+\begin{proof}[Proof sketch]
+The identity~\eqref{eq:necklace} is equivalent to the factorization
+\begin{equation}\label{eq:Xpn-factor}
+  t^{p^n} - t = \prod_{\substack{Q \text{ monic irred} \\ \deg Q \mid n}} Q
+\end{equation}
+over $\Fpt$. Both sides are monic of degree $p^n$, so it suffices to show
+mutual divisibility.
+
+\emph{Forward direction.} Each monic irreducible $Q$ of degree $d \mid n$
+divides $t^{p^d} - t$ (since $Q$ is a minimal polynomial of some element of
+$\GF{p}{d}$), and $t^{p^d} - t$ divides $t^{p^n} - t$ (since $\GF{p}{d}
+\subseteq \GF{p}{n}$). The product of distinct monic irreducibles is coprime
+(by unique factorization), so their product divides $t^{p^n} - t$.
+
+\emph{Reverse direction.} Let $\alpha \in \GF{p}{n}$. Its minimal polynomial
+$Q_\alpha$ over $\Fp$ is monic, irreducible, and has degree $d_\alpha$
+dividing $n$ (by the tower law:
+$d_\alpha = [\Fp(\alpha) : \Fp]$ divides $[\GF{p}{n} : \Fp] = n$).
+Hence $Q_\alpha$ divides the product, so $\alpha$ is a root of the product.
+Since all $p^n$ elements of $\GF{p}{n}$ are roots of the product, and the
+product has degree $\sum_{d \mid n} d \cdot \irredcount(d)$, we conclude
+\[
+  p^n \leq \sum_{d \mid n} d \cdot \irredcount(d).
+\]
+Combined with the forward bound ($\leq p^n$ from divisibility and degree
+comparison), equality follows.
+\end{proof}
+
+The formal proof in Lean runs approximately 380 lines and makes essential
+use of Mathlib's Galois theory infrastructure:
+\texttt{GaloisField}, \texttt{IntermediateField.finrank\_dvd\_of\_le\_right},
+\texttt{minpoly.irreducible}, and \texttt{FiniteField.X\_pow\_card\_pow\_sub\_X\_ne\_zero}.
+
+\begin{corollary}[Upper and lower bounds on $\irredcount(n)$]\label{cor:irred-bounds}
+\leancheck{necklace\_count\_mul\_le}
+For every $n \geq 1$:
+\begin{enumerate}[label=(\roman*)]
+  \item $n \cdot \irredcount(n) \leq p^n$ (the $d = n$ term in~\eqref{eq:necklace}
+    is at most the total sum),
+  \item $\irredcount(n) \leq p^n / n$.
+\end{enumerate}
+\end{corollary}
+
+A more refined analysis using Mobius inversion gives
+$\irredcount(n) = \frac{1}{n}\sum_{d \mid n} \mu(n/d) p^d$, yielding the
+asymptotic $\irredcount(n) \sim p^n/n$ with error $O(p^{n/2}/n)$. For
+our sieve chain, the crude bound $n \cdot \irredcount(n) \leq p^n$ suffices.
+
+\subsection{The FF-EM sequence: basic properties}
+
+\begin{proposition}[Coprimality cascade]\label{prop:coprimality}
+\leancheck{coprimality\_cascade}
+Let $Q \in \Fpt$ be irreducible. Then $Q$ cannot divide both $\ffprod(n)$
+and $\ffprod(n) + 1$.
+\end{proposition}
+
+\begin{proof}
+If $Q \mid \ffprod(n)$ and $Q \mid \ffprod(n) + 1$, then
+$Q \mid ((\ffprod(n)+1) - \ffprod(n)) = 1$, contradicting the
+irreducibility of $Q$ (which has degree $\geq 1$).
+\end{proof}
+
+\begin{proposition}[Injectivity]\label{prop:injectivity}
+\leancheck{ffSeq\_injective\_proved}
+The map $n \mapsto \ffseq(n)$ is injective: no monic irreducible
+polynomial appears twice in the FF-EM sequence.
+\end{proposition}
+
+\begin{proof}
+Suppose $\ffseq(j) = \ffseq(k)$ with $j < k$. Then $\ffseq(j) \mid
+\ffprod(k-1)$ (since $\ffseq(j)$ is a factor of the product at index $j
+\leq k-1$), and $\ffseq(k) \mid \ffprod(k-1) + 1$ (by definition of the
+recurrence). Since $\ffseq(j) = \ffseq(k)$, this polynomial divides both
+$\ffprod(k-1)$ and $\ffprod(k-1)+1$, contradicting
+Proposition~\ref{prop:coprimality}.
+\end{proof}
+
+\begin{proposition}[Degree growth]\label{prop:degree-growth}
+\leancheck{ffProd\_natDegree\_strict\_mono}
+The degree of $\ffprod(n)$ is strictly monotone: $\deg(\ffprod(n+1)) >
+\deg(\ffprod(n))$.
+\end{proposition}
+
+\begin{proof}
+We have $\ffprod(n+1) = \ffprod(n) \cdot \ffseq(n+1)$. Since $\ffprod(n)$
+and $\ffseq(n+1)$ are both monic with $\deg(\ffseq(n+1)) \geq 1$ (as an
+irreducible polynomial), the degree of the product strictly exceeds that
+of $\ffprod(n)$.
+\end{proof}
+
+\subsection{The autonomous map perspective}
+
+When all irreducible factors of $\ffprod(n)+1$ have degree 1 (i.e., when
+$\ffprod(n)+1$ splits completely into linear factors), the walk position
+$\ffprod(n) \bmod Q$ for a degree-1 target $Q = (t - a)$ follows the
+autonomous map
+\[
+  f(w) = w \cdot (w + 1)
+\]
+on $\Fp$. This is because under the assumption of perpetual irreducibility,
+the residue of $\ffprod(n+1) = \ffprod(n) \cdot \ffseq(n+1)$ modulo $Q$
+depends only on the residue of $\ffprod(n)$ modulo $Q$.
+
+\begin{definition}[Autonomous map]\label{def:autonomous}
+\leancheck{ffAutonomousMap}
+For a prime $p$, define $f \colon \Fp \to \Fp$ by $f(w) = w(w+1)$.
+The \emph{orbit} from a starting value $a \in \Fp$ is the sequence
+$a, f(a), f^2(a), \ldots$
+\end{definition}
+
+The map $f$ has the following elementary properties:
+\begin{itemize}
+  \item $f(-1) = (-1)(0) = 0$ and $f(0) = 0$: the value $-1$ maps to the
+    absorbing fixed point $0$.
+    \leancheck{ffAutonomousMap\_neg\_one}
+  \item $f(w) = -1$ if and only if $w^2 + w + 1 = 0$ (since $f(w) = w^2 + w$):
+    the preimage of $-1$ is the root set of the third cyclotomic polynomial
+    $\Phi_3(w) = w^2 + w + 1$.
+    \leancheck{ffAutonomousMap\_eq\_neg\_one\_iff}
+\end{itemize}
+
+The analysis of this autonomous map leads to the $\Phi_3$ exclusion criterion
+developed in Section~\ref{sec:phi3}.

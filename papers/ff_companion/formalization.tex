@@ -1,0 +1,146 @@
+\section{Formalization Notes}\label{sec:formalization}
+
+\subsection{Overview}
+
+The function field module is part of a larger Lean~4 formalization of the
+reduction of Mullin's Conjecture to open hypotheses, totaling approximately
+72{,}000 lines across 130 files. The function field portion comprises 17
+files and 7{,}372 lines with 364 declarations, all verified against
+Mathlib with zero \texttt{sorry} axioms.
+
+\subsection{File inventory}
+
+The 17 files divide into two categories: 10 \textbf{green} files (fully
+unconditional, zero open hypotheses) totaling 4{,}073 lines, and 7
+\textbf{yellow} files (containing or depending on open propositions)
+totaling 3{,}299 lines.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{longtable}{llrl}
+\toprule
+\textbf{File} & \textbf{Status} & \textbf{Lines} & \textbf{Key contribution} \\
+\midrule
+\endhead
+\texttt{Analog.lean} & Yellow & 952 & FFEMData, FFMullinConjecture, coprimality \\
+\texttt{AutonomousMap.lean} & Green & 225 & $\Phi_3$ criterion, unreachability \\
+\texttt{Bootstrap.lean} & Yellow & 438 & FFDH $\Rightarrow$ FFMC, injectivity \\
+\texttt{CyclicWalkCoverage.lean} & Green & 747 & Weyl criterion, $\ZZ/4\ZZ$ counterex. \\
+\texttt{FactorTree.lean} & Yellow & 455 & Mixed selection, walk products \\
+\texttt{FFCharacterSums.lean} & Green & 235 & Char.\ cancellation, PNT-in-APs, FCD \\
+\texttt{FFSieve.lean} & Green & 327 & \textbf{Headline}: almost-all unconditional \\
+\texttt{Finiteness.lean} & Green & 188 & Finite irreds per degree \\
+\texttt{IrreducibilityDensity.lean} & Green & 166 & $Q \mid t^{p^n} - t$, density bound \\
+\texttt{Master.lean} & Green & 306 & Theorems A/B/C/D assembly \\
+\texttt{MultiplierCCSB.lean} & Yellow & 763 & Population CCSB from Weil \\
+\texttt{NecklaceFormula.lean} & Green & 446 & \textbf{Necklace identity} ($\sim$380 lines) \\
+\texttt{OrbitBarrier.lean} & Green & 300 & Dead Ends \#127/\#129/\#130 \\
+\texttt{PopulationEquidist.lean} & Yellow & 370 & Factor pool degree growth \\
+\texttt{StochasticMC.lean} & Green & 431 & Stochastic MC, phase transition \\
+\texttt{SubgroupEscape.lean} & Yellow & 552 & Weil $\Rightarrow$ SE, threshold \\
+\texttt{WeakMC.lean} & Yellow & 471 & Degree escape, pool partition \\
+\midrule
+\textbf{Total} & & \textbf{7{,}372} & \textbf{364 declarations} \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\subsection{The necklace identity proof}
+
+The necklace identity (Theorem~\ref{thm:necklace}) is the foundational
+result of the sieve chain. Its Lean proof runs approximately 380 lines
+and proceeds through six stages:
+
+\begin{enumerate}
+  \item \textbf{Divisibility transitivity} (lines 98--106): if $d \mid n$
+    and $Q$ is monic irreducible of degree $d$, then $Q \mid t^{p^n} - t$.
+    Uses \texttt{monic\_irreducible\_dvd\_X\_pow\_sub\_X} and
+    \texttt{dvd\_pow\_pow\_sub\_self\_of\_dvd}.
+
+  \item \textbf{Product divisibility} (lines 119--132): the product of all
+    monic irreducibles with degree dividing $n$ divides $t^{p^n} - t$.
+    Uses \texttt{Finset.prod\_dvd\_of\_coprime} with the coprimality of
+    distinct monic irreducibles.
+
+  \item \textbf{Degree constraint via Galois theory} (lines 140--196): if
+    a monic irreducible $Q$ divides $t^{p^n} - t$, then $\deg(Q) \mid n$.
+    The proof constructs a root $\alpha$ of $Q$ in $\GF{p}{n}$ (using
+    \texttt{Splits.exists\_eval\_eq\_zero}), identifies $Q$ with the minimal
+    polynomial of $\alpha$ (via \texttt{minpoly.irreducible} and
+    \texttt{Associated} comparison), and applies the tower law:
+    $\deg(Q) = [\Fp(\alpha):\Fp]$ divides $[\GF{p}{n}:\Fp] = n$ by
+    \texttt{IntermediateField.finrank\_dvd\_of\_le\_right}.
+
+  \item \textbf{Membership in the product} (lines 201--208): combining
+    stages 2 and 3 to show that the product accounts for all irreducible
+    factors of $t^{p^n} - t$.
+
+  \item \textbf{Degree computation} (lines 221--239): the degree of the
+    product equals $\sum_{d \mid n} d \cdot \irredcount(d)$, using
+    \texttt{Polynomial.natDegree\_prod} and the disjointness of
+    irreducible sets at different degrees.
+
+  \item \textbf{Reverse inequality via root counting} (lines 251--382): the
+    key step. Every element $\alpha \in \GF{p}{n}$ is a root of the product
+    (since $\alpha$'s minimal polynomial divides the product). Hence the
+    product has at least $p^n$ roots (in $\GF{p}{n}$), so its degree is at
+    least $p^n$. Combined with the forward inequality (degree $\leq p^n$
+    from divisibility), equality follows.
+\end{enumerate}
+
+\subsection{Key Mathlib dependencies}
+
+The formalization makes essential use of the following Mathlib components:
+
+\begin{itemize}
+  \item \textbf{Galois theory}: \texttt{Polynomial.Gal},
+    \texttt{GaloisField.card}, \texttt{GaloisField.finrank},
+    \texttt{IntermediateField.adjoin.finrank}.
+  \item \textbf{Finite field theory}: \texttt{FiniteField.isSplittingField\_of\_card\_eq},
+    \texttt{FiniteField.X\_pow\_card\_pow\_sub\_X\_ne\_zero},
+    \texttt{FiniteField.pow\_card} (Frobenius identity).
+  \item \textbf{Polynomial arithmetic}: \texttt{Polynomial.natDegree\_prod},
+    \texttt{Polynomial.Monic.natDegree\_mul},
+    \texttt{monicEquivDegreeLT}, \texttt{degreeLTEquiv}.
+  \item \textbf{Minimal polynomials}: \texttt{minpoly.monic},
+    \texttt{minpoly.irreducible}, \texttt{minpoly.dvd},
+    \texttt{minpoly.aeval}.
+  \item \textbf{Group theory}: \texttt{orderOf\_dvd\_card} (Lagrange),
+    \texttt{ZMod.card\_units\_eq\_totient},
+    \texttt{Nat.totient\_prime}.
+  \item \textbf{Set theory}: \texttt{Set.infinite\_range\_of\_injective},
+    \texttt{Set.Finite.not\_infinite} (for competitor exhaustion).
+\end{itemize}
+
+\subsection{Open propositions}
+
+The 21 open propositions (across 5 yellow files) represent hypotheses
+that are \emph{not} used by any of the headline unconditional theorems.
+They encode the orbit-specificity barrier:
+
+\begin{itemize}
+  \item \texttt{FFDynamicalHitting}: cofinal $-1$ hits for the FF-EM walk.
+  \item \texttt{SelectionBiasNeutral}: greedy selection preserves character
+    cancellation.
+  \item \texttt{WeilBound}: the Weil character sum bound (a theorem, but
+    formalizing the algebraic geometry is beyond current Mathlib).
+  \item \texttt{FFPopulationEquidist}: population equidistribution from Weil.
+  \item \texttt{FFDSL}: the function field deterministic stability lemma.
+\end{itemize}
+
+Critically, \texttt{ff\_almost\_all\_unconditional} has zero open hypotheses
+in its transitive closure. Despite being defined in a file that imports
+yellow files, the theorem depends only on unconditionally proved declarations.
+
+\subsection{Verification and reproduction}
+
+The complete formalization compiles with
+\begin{center}
+\texttt{lake build}
+\end{center}
+from the project root. Build time is approximately 15--20 minutes on a
+modern machine. The function field module can be checked independently via
+\begin{center}
+\texttt{lake build EM.FunctionField.Master EM.FunctionField.OrbitBarrier}
+\end{center}
+which verifies the full dependency chain.
