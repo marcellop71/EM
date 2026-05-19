@@ -1,4 +1,5 @@
-import EM.Reduction.DSLVariance
+import EM.Ensemble.PT
+import EM.Ensemble.FirstMoment
 import EM.Population.WeakErgodicity
 
 /-!
@@ -35,7 +36,7 @@ all squarefree starting points) to the **standard EM trajectory** (n=2).
 * `FourPointPCV`                    -- four-point pairwise correlation vanishing
 * `SecondMomentSquaredBound`        -- E[E^2] = O(K^2)
 * `ChebyshevDensityBound`          -- O(1/K^2) density bound for bad starting points
-* `FourPointPCVImpliesDSL`         -- master reduction: FourPointPCV => DSL
+* `FourPointPCVImpliesDSL`         -- ARCHIVED (Dead End #160: DSL is vacuous)
 
 ### Bridge (Proved)
 * `second_moment_squared_implies_chebyshev` -- SMSB => CDB (Markov argument)
@@ -329,9 +330,11 @@ theorem second_moment_squared_implies_chebyshev (D : ℝ) :
     · rintro ⟨⟨hmem, hsqf⟩, hgt⟩; exact ⟨hmem, hsqf, hgt⟩
   rw [hfilter_eq]
   -- Prepare the average bound in the form density_markov_bound expects
+  have hcard : S.card = sqfreeCount X := by rw [hS_def, sqfreeCount]
   have hpop' : (1 / (S.card : ℝ)) * ∑ n ∈ S, genSeqCharEnergySquared n K q χ ≤
       D * (K : ℝ) ^ 2 := by
     convert hpop using 2
+    rw [hcard]
   -- Apply Markov: gives bound D * K^2 / (ε * K^2)
   have hmarkov := density_markov_bound hS_ne
     (fun n _ => genSeqCharEnergySquared_nonneg n K q χ)
@@ -350,19 +353,6 @@ end ChebyshevBridge
 
 section MasterReduction
 
-/-- **The master hypothesis for the tail identity attack**:
-    FourPointPCV implies DeterministicStabilityLemma.
-
-    Proof roadmap (all steps except FourPointPCV are either proved or standard):
-    1. FourPointPCV => E[E(n,K)^2] = O(K^2)   (four-point decomposition)
-    2. E[E(n,K)^2] = O(K^2) => Chebyshev O(1/K^2) density bound (PROVED above)
-    3. O(1/K^2) + Borel-Cantelli on prod(M) => cofinally good dyadic windows
-    4. Dyadic summation => |sum chi(seq(k))| = o(N) (CME for n=2)
-    5. CME => DSL via full_chain_dsl
-
-    **Status**: open hypothesis. -/
-def FourPointPCVImpliesDSL : Prop :=
-  FourPointPCV → DeterministicStabilityLemma
 
 /-- **FourPointPCV implies SecondMomentSquaredBound**: the four-point
     decorrelation gives the quartic moment bound E[|S_K|^4] = O(K^2).

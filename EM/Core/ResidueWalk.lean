@@ -564,7 +564,7 @@ end
 -- step n — but mod the WRONG prime. The question is whether q can be
 -- "co-hit" along with seq(n+1) at some step.
 --
--- Three approaches to proving this (see docs/routes_to_conjecture_a.md):
+-- Three approaches to proving this:
 --
 -- (A) SIEVE + EQUIDISTRIBUTION (Route 2): show the multiplier residues
 --     seq(n) mod q equidistribute, forcing the walk to cover (ℤ/qℤ)×.

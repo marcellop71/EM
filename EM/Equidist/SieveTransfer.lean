@@ -1,4 +1,5 @@
 import EM.Equidist.SelfCorrecting
+import EM.Population.HeadDomination
 
 /-!
 # Prime Density, Sieve Transfer, and Walk Utilities
@@ -8,8 +9,9 @@ distributional PED, coprimality refreshing, neg-inv involution, and walk telesco
 
 ## Main Results
 
-* `primeDensity_chain_mc` : PDE + sieve chain ⟹ MC (PROVED)
-* `genericLPF_chain_mc` : GLPFE + SieveTransfer ⟹ MC (PROVED)
+* `not_genericLPFEquidist` : GenericLPFEquidist is FALSE (small-prime domination) (PROVED)
+* `sieveTransfer_vacuous` : hence SieveTransfer holds vacuously (PROVED)
+* (`primeDensity_chain_mc`, `genericLPF_chain_mc` ARCHIVED 2026-08-17: false premise)
 * `dped_implies_ped` : DPED ⟹ PED (PROVED)
 * `coprimality_refreshing_int` : coprimality refreshing identity (PROVED)
 * `neg_inv_involutive` : w ↦ -w⁻¹ is involution (PROVED)
@@ -22,30 +24,31 @@ open Mullin Euclid MullinGroup RotorRouter
 
 This section separates two distinct layers of analytic difficulty:
 
-1. **Generic analytic number theory** (known, not yet in Mathlib):
-   - `PrimeDensityEquipartition`: primes equidistribute in AP (PNT in APs).
-   - `GenericLPFEquidist`: smallest prime factors of generic integers
-     equidistribute (Alladi 1977).
-   - `PrimeDensityImpliesLPFEquidist`: the logical connection (partial summation).
+1. **Generic analytic number theory**:
+   - `PrimeDensityEquipartition`: primes equidistribute in AP (PNT in APs; known,
+     not yet in Mathlib).
+   - `GenericLPFEquidist`: smallest prime factors of generic integers equidistribute
+     mod q.  **FALSE** (2026-08-17, Dead End #160): half of all integers have
+     `minFac = 2`, so the class of `2 mod q` alone carries mass ≥ 1/2, and every
+     class avoiding the residues of 2 and 3 has density ≤ 1/3.  The attribution to
+     Alladi (1977) was a misreading: Alladi's theorem is the *Möbius-weighted*
+     duality `−∑_{n≤x, P⁻(n)≡a} μ(n) ~ x/φ(q)`, not unweighted equidistribution
+     of `P⁻` (which fails by small-prime domination for the same reason as PE).
+     Refuted below by pure argument (`not_genericLPFEquidist`).
+   - `PrimeDensityImpliesLPFEquidist` (PNT-AP ⇒ GLPFE): FALSE; archived.
 
-2. **EM-specific transfer** (genuinely open):
-   - `SieveTransfer`: generic lpf equidistribution transfers to the EM
-     setting (this is the true mathematical frontier).
+2. **EM-specific transfer**:
+   - `SieveTransfer := GenericLPFEquidist → SieveEquidistribution`: VACUOUS
+     (`sieveTransfer_vacuous`).  Retired as an open point.
    - `SieveEquidistImpliesNoLongRuns`: SieveEquidistribution → NoLongRuns(L)
      for L = φ(q)+1.  This is a combinatorial consequence (not yet
      formalized) of the equidistribution definition.
 
-3. **Chain theorems** (trivial compositions through existing infrastructure):
-   The full analytic chain is:
-   ```
-   PrimeDensityEquipartition
-     → (Alladi) GenericLPFEquidist
-     → (SieveTransfer) SieveEquidistribution
-     → (combinatorial) NoLongRuns(L)
-     → (§32) PositiveEscapeDensity
-     → (PEDImpliesComplexCSB) ComplexCharSumBound
-     → (§30) MullinConjecture
-   ```
+3. **Chain theorems**: the former chain PDE → GLPFE → SieveEquidistribution →
+   NoLongRuns → PED → CCSB → MC is archived
+   (`EM/Archive/Equidist/SieveTransferArchive.lean`); its second arrow has a false
+   source.  The live content of the section is `SieveEquidistribution` and what
+   follows from it (`StrongSieveEquidist`, NoLongRuns, DPED).
 -/
 
 section PrimeDensityEquipartition
@@ -69,16 +72,16 @@ def PrimeDensityEquipartition : Prop :=
     let eulerPhi := (Finset.univ (α := (ZMod q)ˣ)).card
     (classCount : ℝ) ≥ (1 / (eulerPhi : ℝ) - ε) * (totalPrimes : ℝ)
 
-/-- **GenericLPFEquidist**: the smallest prime factor of integers equidistributes
-    among residue classes mod q.
+/-- **GenericLPFEquidist** (RETIRED — FALSE, Dead End #160): the smallest prime
+    factor of integers equidistributes among residue classes mod q; more precisely,
+    among integers 2 ≤ n ≤ N the fraction with minFac(n) ≡ a (mod q) is eventually
+    ≥ 1/φ(q) − ε for every unit class a.
 
-    More precisely: among integers 2 ≤ n ≤ N, the fraction for which
-    minFac(n) ≡ a (mod q) converges to 1/φ(q) as N → ∞.
-
-    This is **Alladi's theorem** (K. Alladi, 1977: "On the distribution of
-    the smallest prime factor of integers").  It follows from
-    `PrimeDensityEquipartition` via partial summation / Abel summation.
-    Known but NOT formalized in any proof assistant library. -/
+    False by small-prime domination: for q = 3 and a = 1, every n with
+    minFac n ≡ 1 (mod 3) is coprime to 6, so the class has density ≤ 1/3 < 1/2
+    (`not_genericLPFEquidist`).  The former attribution to Alladi (1977) misread the
+    Möbius-weighted duality theorem as an unweighted statement.  Kept as a definition
+    only as the subject of the refutation. -/
 def GenericLPFEquidist : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (a : (ZMod q)ˣ),
   ∀ (ε : ℝ) (_hε : 0 < ε),
@@ -91,19 +94,12 @@ def GenericLPFEquidist : Prop :=
     let eulerPhi := (Finset.univ (α := (ZMod q)ˣ)).card
     (lpfInClass : ℝ) ≥ (1 / (eulerPhi : ℝ) - ε) * (eligible : ℝ)
 
-/-- **PrimeDensityImpliesLPFEquidist**: PNT in APs implies Alladi's theorem.
+/-- **SieveTransfer** (RETIRED — VACUOUS, Dead End #160): generic smallest-prime-factor
+    equidistribution implies EM-specific multiplier equidistribution.  Its hypothesis
+    `GenericLPFEquidist` is false (`not_genericLPFEquidist`), so it holds for free
+    (`sieveTransfer_vacuous`) and says nothing.  The original rationale follows.
 
-    The logical implication PrimeDensityEquipartition → GenericLPFEquidist
-    follows by partial summation (Abel summation), converting the prime
-    counting estimate into a statement about smallest prime factors.
-    Known but NOT formalized. -/
-def PrimeDensityImpliesLPFEquidist : Prop :=
-  PrimeDensityEquipartition → GenericLPFEquidist
-
-/-- **SieveTransfer**: generic smallest-prime-factor equidistribution implies
-    EM-specific multiplier equidistribution.
-
-    This is the **genuine mathematical frontier** of the project.  The EM
+    This was presented as the **genuine mathematical frontier** of the project.  The EM
     sequence satisfies prod(n) + 1 = ∏_{k<n} seq(k) + 1, and the multiplier
     seq(n+1) = minFac(prod(n) + 1).  To transfer from "random integers have
     equidistributed minFac" to "the specific EM values prod(n)+1 have
@@ -310,34 +306,90 @@ theorem strongSieveEquidist_implies_nlr :
     StrongSieveEquidistImpliesNLR := fun hsse q _ =>
   strongSieveEquidist_noLongRunsAt hsse q
 
-/-- Trivial composition: GenericLPFEquidist + SieveTransfer → SieveEquidistribution. -/
-theorem genericLPF_sieve_transfer (hg : GenericLPFEquidist) (ht : SieveTransfer) :
-    SieveEquidistribution := ht hg
+/-! ### The refutation of `GenericLPFEquidist`, and the vacuity of `SieveTransfer`
 
-/-- GenericLPFEquidist + SieveTransfer + SieveEquidistImpliesNoLongRuns +
-    PEDImpliesComplexCSB → MullinConjecture.
+Pure argument: for `q = 3`, `a = 1`, any `n ≥ 2` with `minFac n ≡ 1 (mod 3)` has
+`minFac n ∉ {2, 3}`, hence `n` is coprime to `6`; at most `⌊N/6⌋ + 1` blocks of `6` contribute
+`φ(6) = 2` such `n` each, so the class has at most `N/3 + 2` members among `N − 1` eligible
+integers, and the required lower bound `(1/2 − ε)(N − 1)` fails for `ε = 1/12` and `N` large. -/
 
-    Full analytic chain from Alladi's theorem and the EM transfer to MC. -/
-theorem genericLPF_chain_mc
-    (hg : GenericLPFEquidist) (ht : SieveTransfer)
-    (hnlr_bridge : SieveEquidistImpliesNoLongRuns)
-    (hped_csb : PEDImpliesComplexCSB) :
-    MullinConjecture := by
-  haveI : Fact (Nat.Prime 2) := ⟨by decide⟩
-  obtain ⟨L, hL, hnlr⟩ := hnlr_bridge 2 (genericLPF_sieve_transfer hg ht)
-  exact noLongRuns_mc' L hL hnlr hped_csb
+/-- If `minFac n ≡ 1 (mod 3)` and `n ≥ 2`, then `n` is coprime to `6`. -/
+theorem coprime_six_of_minFac_one_mod_three {n : ℕ} (hn : 2 ≤ n)
+    (h : (Nat.minFac n : ZMod 3) = 1) : Nat.Coprime 6 n := by
+  have hn1 : n ≠ 1 := by omega
+  rw [Nat.coprime_comm, Nat.Coprime, Nat.gcd_comm]
+  have h2 : ¬ 2 ∣ n := by
+    intro h2
+    have : Nat.minFac n = 2 := by
+      apply le_antisymm (Nat.minFac_le_of_dvd le_rfl h2)
+      exact (Nat.minFac_prime hn1).two_le
+    rw [this] at h; exact absurd h (by decide)
+  have h3 : ¬ 3 ∣ n := by
+    intro h3
+    have : Nat.minFac n = 3 := by
+      apply le_antisymm (Nat.minFac_le_of_dvd (by norm_num) h3)
+      have hp := Nat.minFac_prime hn1
+      have h2' : Nat.minFac n ≠ 2 := by
+        intro h2'; rw [h2'] at h; exact absurd h (by decide)
+      have := hp.two_le
+      omega
+    rw [this] at h; exact absurd h (by decide)
+  -- gcd 6 n = 1
+  have hgcd : Nat.gcd 6 n ∣ 6 := Nat.gcd_dvd_left 6 n
+  have hgcdn : Nat.gcd 6 n ∣ n := Nat.gcd_dvd_right 6 n
+  have hle : Nat.gcd 6 n ≤ 6 := Nat.le_of_dvd (by norm_num) hgcd
+  interval_cases h : Nat.gcd 6 n
+  · exact absurd hgcd (by decide)
+  · rfl
+  · exact absurd hgcdn h2
+  · exact absurd hgcdn h3
+  · exact absurd hgcd (by decide)
+  · exact absurd hgcd (by decide)
+  · exact absurd hgcdn (fun h6 => h2 (dvd_trans (by norm_num) h6))
 
-/-- Full analytic chain from PNT in APs:
-    PrimeDensityEquipartition + Alladi + SieveTransfer +
-    SieveEquidistImpliesNoLongRuns + PEDImpliesComplexCSB → MC. -/
-theorem primeDensity_chain_mc
-    (hpde : PrimeDensityEquipartition)
-    (halladi : PrimeDensityImpliesLPFEquidist)
-    (htransfer : SieveTransfer)
-    (hnlr_bridge : SieveEquidistImpliesNoLongRuns)
-    (hped_csb : PEDImpliesComplexCSB) :
-    MullinConjecture :=
-  genericLPF_chain_mc (halladi hpde) htransfer hnlr_bridge hped_csb
+/-- **`GenericLPFEquidist` is false.**  Small-prime domination at `q = 3`, class `1`. -/
+theorem not_genericLPFEquidist : ¬ GenericLPFEquidist := by
+  intro hG
+  have : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
+  obtain ⟨N₀, hN₀⟩ := hG 3 (1 : (ZMod 3)ˣ) (1 / 12) (by norm_num)
+  set N := max N₀ 100 with hN
+  have hN100 : 100 ≤ N := le_max_right _ _
+  have hspec := hN₀ N (le_max_left _ _)
+  simp only at hspec
+  -- the class count is at most the number of integers ≤ N coprime to 6
+  have hcls : ((Finset.filter (fun n => 2 ≤ n ∧ (Nat.minFac n : ZMod 3) = (1 : (ZMod 3)ˣ).val)
+      (Finset.range (N + 1))).card : ℝ) ≤ ((N / 6 : ℕ) + 1) * 2 := by
+    have hsub : Finset.filter (fun n => 2 ≤ n ∧ (Nat.minFac n : ZMod 3) = (1 : (ZMod 3)ˣ).val)
+        (Finset.range (N + 1)) ⊆
+        (Finset.Icc 0 N).filter (fun k => Nat.Coprime 6 k) := by
+      intro n hn
+      rw [Finset.mem_filter, Finset.mem_range] at hn
+      rw [Finset.mem_filter, Finset.mem_Icc]
+      refine ⟨⟨Nat.zero_le _, by omega⟩, coprime_six_of_minFac_one_mod_three hn.2.1 ?_⟩
+      have := hn.2.2; simpa using this
+    have h1 := Finset.card_le_card hsub
+    have h2 := HeadDomination.card_coprime_le 6 N (by norm_num)
+    have hφ : Nat.totient 6 = 2 := by decide
+    rw [hφ] at h2
+    exact_mod_cast le_trans h1 h2
+  -- eligible = N − 1, φ(3) = 2
+  have helig : ((Finset.filter (fun n => 2 ≤ n) (Finset.range (N + 1))).card : ℝ) = (N : ℝ) - 1 := by
+    have : Finset.filter (fun n => 2 ≤ n) (Finset.range (N + 1)) = Finset.Icc 2 N := by
+      ext n; simp only [Finset.mem_filter, Finset.mem_range, Finset.mem_Icc]; omega
+    rw [this, Nat.card_Icc]
+    have : (N + 1 - 2 : ℕ) = N - 1 := by omega
+    rw [this, Nat.cast_sub (by omega)]; simp
+  have hφ3 : ((Finset.univ (α := (ZMod 3)ˣ)).card : ℝ) = 2 := by
+    rw [Finset.card_univ, ZMod.card_units_eq_totient, Nat.totient_prime Nat.prime_three]; norm_num
+  rw [helig, hφ3] at hspec
+  have hdiv : ((N / 6 : ℕ) : ℝ) ≤ (N : ℝ) / 6 := by
+    rw [le_div_iff₀ (by norm_num)]; exact_mod_cast Nat.div_mul_le_self N 6
+  have hNr : (100 : ℝ) ≤ N := by exact_mod_cast hN100
+  nlinarith [hspec, hcls, hdiv, hNr]
+
+/-- **`SieveTransfer` holds vacuously** — its hypothesis is false. -/
+theorem sieveTransfer_vacuous : SieveTransfer :=
+  fun h => (not_genericLPFEquidist h).elim
 
 /-! ## §40. Distributional Positive Escape Density (DPED)
 
@@ -407,7 +459,7 @@ def DistributionalPED : Prop :=
     at least `δN` by `Finset.card_le_card`. -/
 theorem dped_implies_ped : DistributionalPED → PositiveEscapeDensity := by
   intro hdped q inst hq hne χ hχ
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Since χ ≠ 1, pick a unit u with χ u ≠ 1, set ζ = χ u
   obtain ⟨u, hu⟩ : ∃ u : (ZMod q)ˣ, χ u ≠ 1 := by
     by_contra hall

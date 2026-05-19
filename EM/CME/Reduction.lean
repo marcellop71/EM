@@ -4,7 +4,7 @@ import EM.LargeSieve.Spectral
 # CME Reduction: Conditional Multiplier Equidistribution and Fiber Energy Bounds
 
 Conditional multiplier equidistribution (CME), fiber energy bounds (FEB),
-and hierarchy connectors extracted from LargeSieveSpectral.lean.
+and hierarchy connectors extracted from the flat LargeSieveSpectral.lean (now EM/LargeSieve/Spectral.lean).
 
 ## Main Results
 
@@ -103,7 +103,7 @@ theorem cme_implies_dec (hcme : ConditionalMultiplierEquidist) :
     DecorrelationHypothesis := by
   intro q inst hq hne χ hχ ε hε
   -- Number of walk positions: Fintype.card (ZMod q)ˣ
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   set C := Fintype.card (ZMod q)ˣ with hC_def
   -- C ≥ 1 since the group is nonempty (contains 1)
   have hC_pos : (0 : ℝ) < C := by
@@ -185,7 +185,7 @@ theorem walk_mult_product_fiber_decomp (q : Nat) [Fact (Nat.Prime q)] (hq : IsPr
 theorem cme_implies_ccsb (hcme : ConditionalMultiplierEquidist) :
     ComplexCharSumBound := by
   intro q inst hq hne χ hχ ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Step 1: Set up ε' for CME fiber bounds
   -- We need C * (ε' * N) + 2 ≤ ε * N, so set ε' = ε/(2*C) and require N ≥ 4/ε
   set C := Fintype.card (ZMod q)ˣ with hC_def
@@ -344,7 +344,7 @@ def FiberEnergyBound : Prop :=
     route equivalent to the already-proved CME → CCSB path. -/
 theorem cme_implies_feb (hcme : ConditionalMultiplierEquidist) : FiberEnergyBound := by
   intro q inst hq hne χ hχ ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- C = number of fibers = card (ZMod q)ˣ
   set C := Fintype.card (ZMod q)ˣ with hC_def
   have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos
@@ -392,7 +392,7 @@ theorem cme_implies_feb (hcme : ConditionalMultiplierEquidist) : FiberEnergyBoun
     is equivalent to the already-proved CME → CCSB → MC path. -/
 theorem feb_implies_ccsb (hfeb : FiberEnergyBound) : ComplexCharSumBound := by
   intro q inst hq hne χ hχ ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- C = number of fibers
   set C := Fintype.card (ZMod q)ˣ with hC_def
   have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos
@@ -550,8 +550,8 @@ theorem ccsb_implies_sve (hcsb : ComplexCharSumBound) : SubquadraticVisitEnergy 
   intro q _inst _hge hq hne ε hε
   -- Step 1: Set up the Fin N walk wrapper
   -- We need to bound excessEnergy of the restricted walk
-  haveI : Fact (Nat.Prime q) := _inst
-  haveI : NeZero q := ⟨(Fact.out : Nat.Prime q).ne_zero⟩
+  have : Fact (Nat.Prime q) := _inst
+  have : NeZero q := ⟨(Fact.out : Nat.Prime q).ne_zero⟩
   -- Number of nontrivial characters C = p - 2
   set C := (Finset.univ.erase (1 : DirichletCharacter ℂ q)).card with hC_def
   -- Choose ε' so that C · (ε' · N)² ≤ ε · N²

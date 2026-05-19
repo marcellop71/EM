@@ -2,6 +2,9 @@ import EM.Equidist.Fourier
 import Mathlib.NumberTheory.DirichletCharacter.Orthogonality
 import Mathlib.NumberTheory.DirichletCharacter.Bounds
 import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
+-- `Complex.isAlgClosed` (fundamental theorem of algebra) is no longer pulled in
+-- transitively as of Mathlib v4.31.0; needed for `IsSepClosed.of_isAlgClosed ℂ`.
+import Mathlib.Analysis.Complex.Polynomial.Basic
 
 /-!
 # Character Orthogonality Counting and Fourier Reduction (Part B)
@@ -369,15 +372,15 @@ def WalkHitCountFourierStep : Prop :=
     Fourier expansion of the indicator `[emWalkUnit q n = t]`. -/
 theorem walk_hit_count_fourier_step : WalkHitCountFourierStep := by
   intro q inst hq hne t N
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   have hqprime : Nat.Prime q := Fact.out
   have hq2 : 2 ≤ q := hqprime.two_le
-  haveI : NeZero q := ⟨by omega⟩
-  haveI : NeZero (q : ℂ) := ⟨by exact_mod_cast hqprime.ne_zero⟩
-  haveI : NeZero (Monoid.exponent (ZMod q)ˣ : ℂ) :=
+  have : NeZero q := ⟨by omega⟩
+  have : NeZero (q : ℂ) := ⟨by exact_mod_cast hqprime.ne_zero⟩
+  have : NeZero (Monoid.exponent (ZMod q)ˣ : ℂ) :=
     ⟨by exact_mod_cast (Monoid.ExponentExists.of_finite.exponent_pos).ne'⟩
-  haveI : IsSepClosed ℂ := IsSepClosed.of_isAlgClosed ℂ
-  haveI : HasEnoughRootsOfUnity ℂ (Monoid.exponent (ZMod q)ˣ) := inferInstance
+  have : IsSepClosed ℂ := IsSepClosed.of_isAlgClosed ℂ
+  have : HasEnoughRootsOfUnity ℂ (Monoid.exponent (ZMod q)ˣ) := inferInstance
   have htotient : q.totient = q - 1 := Nat.totient_prime hqprime
   -- RHS = ∑_χ χ(t⁻¹) * ∑_{n<N} χ(emWalkUnit n)
   --     = ∑_χ ∑_{n<N} χ(t⁻¹) * χ(emWalkUnit n)     [mul distributes over sum]
@@ -489,8 +492,8 @@ theorem fourier_step_implies_csb_lb
     (hfstep : WalkHitCountFourierStep) :
     ComplexCSBImpliesHitCountLB := by
   intro hcsb q inst hq hne t
-  haveI : Fact (Nat.Prime q) := inst
-  haveI : DecidableEq (DirichletCharacter ℂ q) := Classical.decEq _
+  have : Fact (Nat.Prime q) := inst
+  have : DecidableEq (DirichletCharacter ℂ q) := Classical.decEq _
   have hqprime : Nat.Prime q := Fact.out
   have hq2 : 1 < q := hqprime.one_lt
   -- The number of Dirichlet characters

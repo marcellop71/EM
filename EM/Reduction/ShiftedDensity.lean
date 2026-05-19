@@ -1,4 +1,5 @@
-import EM.Population.Proof
+import EM.Population.WeakErgodicity
+import EM.IK.Ch2
 
 /-!
 # Shifted Squarefree Density: The Function g(r) = r/(r²-1)
@@ -232,7 +233,7 @@ SieveDensityAxiom (g(r) for individual primes)
   + Buchstab identity (d_S(p) = g(p) · ∏(1−g(r)))
   + Dirichlet's theorem (primes equidistributed in APs)
   → MinFacResidueEquidist (minFac equidist mod q in S_q)
-  → PE (PopulationEquidist, proved in PopulationEquidistProof.lean)
+  → PE (PopulationEquidist, proved in EM/Population/Proof.lean)
   + DSL (Deterministic Stability Lemma)
   → MC (Mullin's Conjecture)
 ```

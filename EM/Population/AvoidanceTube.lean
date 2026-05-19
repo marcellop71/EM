@@ -183,7 +183,6 @@ theorem confined_visit_energy_lb {N : ℕ}
       exact_mod_cast hsum
     have h2 := Finset.add_sum_erase Finset.univ
       (fun a => (walkVisitCount w a : ℝ)) (Finset.mem_univ avoided)
-    simp only at h2
     rw [hmiss, Nat.cast_zero, zero_add] at h2
     linarith
   have cs := Finset.sum_mul_sq_le_sq_mul_sq S
@@ -434,14 +433,26 @@ section AvoidanceObstruction
 
 open Classical
 
-/-- Perpetual avoidance of a unit is an OPEN hypothesis for the EM walk
-    at a missing prime. When the walk never hits -1 (meaning q never divides
-    prod(n)+1), this gives V(-1) = 0 and triggers the confined energy bound.
+/-- Perpetual avoidance of a unit for the EM walk at a missing prime.
+    When the walk never hits -1 (meaning q never divides prod(n)+1), this gives
+    V(-1) = 0 and triggers the confined energy bound.
 
-    NOTE: A missing prime q can still have walkZ q n = -1 (meaning q | prod(n)+1)
-    without entering the sequence (if seq(n+1) = minFac(prod(n)+1) < q).
-    So PerpetualAvoidance is NOT automatic from q being missing.
-    It is an additional structural hypothesis. -/
+    NOTE (updated after Finite Hitting): a missing prime q can still have
+    walkZ q n = -1 (meaning q | prod(n)+1) without entering the sequence, if
+    seq(n+1) = minFac(prod(n)+1) < q. So `PerpetualAvoidance`, which demands
+    avoidance at **every** step n including small ones, is still not automatic.
+
+    What IS now automatic — and this is the substantive change — is the *eventual*
+    and *quantitative* form:
+
+    * `missing_walk_ne_neg_one` (`EM/Equidist/Threshold.lean`): for any missing
+      prime q there is an N₀ past which `walkZ q n ≠ -1` forever;
+    * `missing_visit_count_le` (below): unconditionally `V(-1) ≤ q` on every
+      initial segment.
+
+    So `PerpetualAvoidance` is no longer an open *hypothesis*; it is only a
+    normalisation convenience (V(-1) = 0 exactly, rather than V(-1) = O(1)).
+    See the TODO on `perpetual_avoidance_rogue` for what removing it would cost. -/
 def PerpetualAvoidance (q : Nat) : Prop :=
   Nat.Prime q ∧ (∀ k, seq k ≠ q) ∧ (∀ n, walkZ q n ≠ -1)
 
@@ -451,7 +462,7 @@ theorem perpetual_avoidance_visit_zero {q : Nat} [hp : Fact (Nat.Prime q)]
     (havoid : ∀ n, walkZ q n ≠ -1) (N : Nat) :
     walkVisitCount (fun (n : Fin N) => emWalkUnit q hq hne n.val)
       (Units.mk0 (-1) (neg_ne_zero.mpr (by
-        haveI : NeZero q := ⟨hp.out.ne_zero⟩; exact one_ne_zero))) = 0 := by
+        have : NeZero q := ⟨hp.out.ne_zero⟩; exact one_ne_zero))) = 0 := by
   simp only [walkVisitCount]
   rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
   intro n _

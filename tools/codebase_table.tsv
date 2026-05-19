@@ -1,0 +1,190 @@
+# group<TAB>file (relative to EM/)<TAB>description (LaTeX)
+Core sequence and walk	Core/Euclid.lean	Constructive Euclid's theorem
+Core sequence and walk	Core/Defs.lean	\code{seq}, \code{prod}, \code{aux}, identities
+Core sequence and walk	Core/Conjectures.lean	MC, Conjecture A (FALSE), HH
+Core sequence and walk	Core/ResidueWalk.lean	WalkCoverage, residue walk, concrete MC
+Group theory and algebraic framework	Group/Core.lean	walkZ, multZ, confinement, SE
+Group theory and algebraic framework	Group/Escape.lean	Escape lemmas, 8-element argument
+Group theory and algebraic framework	Group/SEInstances.lean	29 concrete SE instances ($q \leq 157$)
+Group theory and algebraic framework	Group/QR.lean	QR obstruction ($\leq 1.6\%$) (leaf)
+Group theory and algebraic framework	Group/CRT.lean	CRT multiplier invariance, walk recurrence
+Group theory and algebraic framework	Group/DepartureGraph.lean	Departure graph, infinite recurrence, safe prime lattice
+Group theory and algebraic framework	Group/RotorRouter.lean	Scheduled walk coverage (standalone)
+Group theory and algebraic framework	Group/Bridge.lean	EMPR + SE $\Rightarrow$ MC bridge
+Group theory and algebraic framework	Group/CyclicWalkCoverage.lean	Weyl criterion for walks on finite groups, $\ZZ/4\ZZ$ counterexample
+Equidistribution and character sums	Equidist/Preamble.lean	PE $\Rightarrow$ MC, bootstrapping
+Equidistribution and character sums	Equidist/Sieve.lean	Sieve, WHP $\Leftrightarrow$ HH, forbidden multiplier, M\"obius death
+Equidistribution and character sums	Equidist/SelfAvoidance.lean	Self-avoidance, periodicity
+Equidistribution and character sums	Equidist/CharPRE.lean	Character non-vanishing, PRE $\Leftrightarrow$ SE
+Equidistribution and character sums	Equidist/Bootstrap.lean	Inductive bootstrap, DH $\Rightarrow$ MC, first passage
+Equidistribution and character sums	Equidist/Threshold.lean	Sieve gap, one-prime gap, cofinal pair avoidance
+Equidistribution and character sums	Equidist/OneHorizon.lean	One-horizon Fourier criterion (cover within $O(q^2)$); multiplier constraint at the least missing prime
+Equidistribution and character sums	Equidist/WeakHitting.lean	The weakest orbit target: every odd prime divides some Euclid number; the four-rung ladder
+Equidistribution and character sums	Equidist/CofinalOrbit.lean	Cofinal orbit expansion, quotient walk, cofinal escape
+Equidistribution and character sums	Equidist/OrbitAnalysis.lean	TailSE, sieve reduction, oracle barrier, selectability
+Equidistribution and character sums	Equidist/Fourier.lean	Character sums, Fourier bridge
+Equidistribution and character sums	Equidist/FourierB.lean	Character sums, Fourier bridge (cont.)
+Equidistribution and character sums	Equidist/SelfCorrecting.lean	Decorrelation, BRE, telescoping, kernel
+Equidistribution and character sums	Equidist/SieveTransfer.lean	Sieve equidistribution, NoLongRuns, DPED; GenericLPFEquidist refuted (\#160)
+CME decomposition and spectral analysis	LargeSieve/WalkDecomposition.lean	Quadratic/general walk sum decomposition, escape decorrelation
+CME decomposition and spectral analysis	CME/Variants.lean	CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target)
+CME decomposition and spectral analysis	CME/Decomposition.lean	CME $=$ A $+$ B decomposition, EMD $\Rightarrow$ CME
+CME decomposition and spectral analysis	LargeSieve/Basic.lean	BV, ALS, ArithLS, MMCSB, Farey, GCT, EH chains
+CME decomposition and spectral analysis	LargeSieve/Structural.lean	Coprimality, divisibility, BV decomposition, sieve bridge
+CME decomposition and spectral analysis	LargeSieve/Harmonic.lean	Parseval, Gauss sums, DFT, kernel
+CME decomposition and spectral analysis	LargeSieve/Analytic.lean	Gauss inversion, WeakALS, GCT chain
+CME decomposition and spectral analysis	LargeSieve/PrimeArithLS.lean	Prime arithmetic large sieve, walk as partial product, dead ends
+CME decomposition and spectral analysis	LargeSieve/Spectral.lean	Walk energy, SVE, Weyl criterion, HOD, VdC
+CME decomposition and spectral analysis	CME/Reduction.lean	CME definition, CME $\Rightarrow$ CCSB $\Rightarrow$ MC, FEB, hierarchy
+CME decomposition and spectral analysis	CME/Equivalences.lean	The missing-prime hypotheses (HH, DH, SHH, WalkEquidist, CME, CCSB, WFG) are each \emph{equivalent} to MC (MC $\Rightarrow$ each vacuously); the threshold forms are implied by MC
+CME decomposition and spectral analysis	LargeSieve/WalkAnalysis.lean	Walk energy analysis (S75)
+CME decomposition and spectral analysis	CME/FiberAnalysis.lean	VCB, fiber decomposition, transition matrix (S84--S86); VCB $+$ PED $\Rightarrow$ CCSB
+SDDS and independence	SDDS/Dynamics.lean	Abstract SDDS framework, factoring rules
+SDDS and independence	SDDS/Bridge.lean	SDDS $\leftrightarrow$ EM bridge, orbit/walk/mult correspondence
+SDDS and independence	SDDS/Reduction.lean	StrongSME $\Rightarrow$ MC via sieve-map equidist.\
+SDDS and independence	Transfer/Excursion.lean	Walk excursions, char.\ sum independence
+SDDS and independence	Transfer/CRTFiber.lean	SE $\Rightarrow$ NAO, CRT independence, death channel
+Population and weak variants	Population/WeakMullin.lean	Missing primes, WM $\Rightarrow$ RD, EMBV $\Rightarrow$ MC
+Population and weak variants	Population/CompositeFloor.lean	Geometric growth; the growth floor (S) under every smallness statement
+Population and weak variants	Population/DefectTelescope.lean	The defect telescope; $\log \Prod{2}(N)/2^{N} \to C$, and $C = 0$ $\Leftrightarrow$ (C$\infty$)
+Population and weak variants	Population/HeadDomination.lean	Head domination: the class density of $\minFac \bmod q$ is the convergent series $\sum_{p\equiv a} w_p$; RoughLPFEquidist $\Leftrightarrow$ a series identity (Dead End \#160)
+Population and weak variants	Population/SeededGrowth.lean	The seeded growth constant $C(m)$; semiconjugacy $C(Tm)=2C(m)$; $C(m)=0 \Leftrightarrow$ (C$\infty$) from seed $m$; MixedDiversity $\Leftrightarrow$ $\{C>0\}=\emptyset$
+Population and weak variants	Population/BagConditionedLaw.lean	The bag-conditioned multiplier law on $m\equiv 1 \pmod P$: density $(1/p)\prod_{r<p,\,r\nmid P}(1-1/r)$; the least missing prime has weight exactly $1/q$
+Population and weak variants	Population/GrowthDensity.lean	Primes have density zero (elementary); density zero pulls back under $T$; for every threshold $N$ the prime-tower seed set $\{m : T^n m+1 \text{ prime } \forall n\ge N\}$ is null
+Population and weak variants	Population/SizeResidueDecoupling.lean	The joint object (walk position, multiplier size): residue forced ($\equiv w+1$) at prime stages; every $(w\ne -1, a, \text{size}\ge K)$ realized in the ensemble at composite stages
+Population and weak variants	Population/RelativeSize.lean	The relative-size invariant $\rho(m)=\liminf \log\minFac(T^nm+1)/\log T^nm$: exact $T$-invariant, $\rho\in[0,\tfrac12]\cup\{1\}$, $C>0\Leftrightarrow\rho=1$, $(\mathrm{C}\infty)\Leftrightarrow\rho\le\tfrac12$, $\mathrm{RD}\Rightarrow\rho(2)=0$
+Population and weak variants	Population/BackwardOrbit.lean	(C$\infty$) as walk-hitting against the backward orbit of $0$ under $\Phi_6$
+Population and weak variants	Population/BackwardLevels.lean	Levels are take-all steps; the lift $\Delta(z)={-3}{-}16z$, levels two and three past $\Phi_3$
+Population and weak variants	Population/ArborealTower.lean	Every level occupied at infinitely many primes (Euclid, not Chebotarev); (C$\infty$) $=$ a size condition
+Population and weak variants	Population/SylvesterTower.lean	(C$\infty$) $=$ Sylvester-tower primality, (V) $\Rightarrow$ (C$\infty$)
+Population and weak variants	Population/AvoidanceTube.lean	Tube ratio, confined energy, rogue characters, SVE$\Rightarrow$coverage
+Population and weak variants	Population/InfiniteM.lean	Shielding lemma, factor dichotomy, spectral conspiracy
+Population and weak variants	Population/SpectralConspiracy.lean	$\lnot$WM $\Rightarrow$ infinite missing, guardian exhaustion, tube squeeze
+Population and weak variants	Population/WeakErgodicity.lean	Squarefree accumulator, shifted squarefree population
+Population and weak variants	Population/ReciprocalSum.lean	Reciprocal sum divergence, PSD chain, positive density route
+Population and weak variants	Population/TransferStrategy.lean	Ensemble concentration $\Rightarrow$ a.a.\ equidistribution
+Population and weak variants	Population/RigidityMaster.lean	Tiered rigidity master theorems for missing primes
+Ensemble framework (new)	Ensemble/GenEM.lean	Generalized EM sequences \code{genProd}/\code{genSeq}: core definitions (leaf)
+Ensemble framework (new)	Ensemble/Structure.lean	Generalized EM: genProd, genSeq, injectivity
+Ensemble framework (new)	Ensemble/EM.lean	Generalized walk/multiplier, bridge to standard EM
+Ensemble framework (new)	Ensemble/CRT.lean	CRT equidistribution, death density bridge, absorption mechanism, CRT blindness, Dead End~\#137
+Ensemble framework (new)	Ensemble/Decorrelation.lean	CRT-based decorrelation, Markov density bounds
+Ensemble framework (new)	Ensemble/FirstMoment.lean	First moment infrastructure, sqfree count bounds, Part B continuation
+Ensemble framework (new)	Ensemble/MinFacShifted.lean	First multiplier of the correct-parity $\omega{=}2$ ensemble: $\minFac(2p{+}1)=3$ has Dirichlet density $1/2$; non-equidistribution; absorption mod~3
+Ensemble framework (new)	Ensemble/BagArithmetic.lean	Prime factor bag structure: $\omega$, residue diversity, class partition, cofactor, landscape
+Ensemble framework (new)	Ensemble/PT.lean	Variance bounds, joint equidist, CRT chain, SD $\Rightarrow$ cancellation
+Ensemble framework (new)	Ensemble/WeylChain.lean	Generalized MC, Weyl hitting bridge, \code{cancel\_weyl\_implies\_mc}
+Ensemble framework (new)	Ensemble/CRTFreedom.lean	SCRTI $+$ SRE $\Rightarrow$ AEP, CRT bootstrap
+Ensemble framework (new)	Ensemble/BaseCase.lean	JSE base case, tower rule, uniform witness bounds
+Ensemble framework (new)	Ensemble/FiberAutonomy.lean	CRT fiber determines multiplier dynamics, walk readout
+Ensemble framework (new)	Ensemble/TwoPointEnsemble.lean	Ensemble two-point: ratio escape counting, first moment, partition argument, PRED $\Rightarrow$ positive density
+Ensemble framework (new)	Ensemble/MixedEnsemble.lean	Mixed ensemble: proved weak-FMCD chain (PEAP $\Rightarrow$ PSCD)
+Ensemble framework (new)	Ensemble/UnconditionalPSCD.lean	Bridge: Dirichlet density $\Rightarrow$ FCD $\Rightarrow$ PSCD $\Rightarrow$ a.a.\ mixed hitting, all UNCONDITIONAL
+Ensemble framework (new)	Ensemble/UncenteredRefutations.lean	Dead Ends \#156/\#157 witnessed: the uncentered ensemble character layer is false at $\chi\equiv 1$; EnsembleMultiplierEquidist false at step 0
+Master reduction and transfer	Reduction/DSLInfra.lean	Energy evolution, fiber analysis, FEB $\Rightarrow$ CME
+Master reduction and transfer	Reduction/ShiftedDensity.lean	Sieve density $g(r)$, algebraic properties
+Master reduction and transfer	Reduction/VisitEquidist.lean	ExcessEnergy $=$ visit deviation, SVE $\leftrightarrow$ VE
+Master reduction and transfer	Reduction/SelfCorrecting.lean	Lyapunov identity, SCD $\equiv$ SVE, Dead End \#120
+Master reduction and transfer	Reduction/WeakRecurrence.lean	LinearDrift $\Rightarrow$ MC, VisitGrowth $\Rightarrow$ HH $\Rightarrow$ MC (threshold-free)
+Master reduction and transfer	Reduction/SMSB.lean	Per-class bad set analysis, Dead End \#121
+Master reduction and transfer	Reduction/Master.lean	All reduction chains assembled; SVE $\leftrightarrow$ VE
+Master reduction and transfer	Transfer/CRTPointwise.lean	OCE $=$ CME, all routes to MC via CRT
+Master reduction and transfer	Transfer/Substitution.lean	SP $=$ CME, fiber return visits, 4-route witness
+Master reduction and transfer	Reduction/TailIdentity.lean	Tail energy identities, 4th moment, Chebyshev bridge
+Master reduction and transfer	Reduction/TailWindow.lean	Window decomposition, variance identity, TWD $\Rightarrow$ MC
+Master reduction and transfer	Transfer/IntegerDioph.lean	$T$-iteration $T(n){=}(n{-}1)\cdot\minFac(n){+}1$, orbit, cofactor
+Master reduction and transfer	Transfer/SieveConstraint.lean	Prime support $S_n$, sieve exclusion, $P(n){+}1 \equiv 1 \bmod S_n$
+Adelic and profinite framework (new)	Adelic/Equidist.lean	Adelic decomposition: CME $\Leftrightarrow$ MWI $+$ MME, Fourier bridge, CPD
+Adelic and profinite framework (new)	Adelic/Profinite.lean	Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion
+Adelic and profinite framework (new)	Adelic/UniformConductor.lean	UCE hypothesis, conductor counting; UCE at $M{=}1$ is RoughLPFEquidist (false, \#160)
+Adelic and profinite framework (new)	Adelic/ProfiniteGeneration.lean	Primes generate $(\ZZ/N\ZZ)^\times$; MC$\Rightarrow$full generation
+Adelic and profinite framework (new)	FunctionField/Analog.lean	FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129
+Adelic and profinite framework (new)	FunctionField/DegreeTelescope.lean	Exact degree telescope over $\FF_p[t]$; (G$_{\mathrm{FF}}$) $\Leftrightarrow$ (C$\infty$)$_{\mathrm{FF}}$
+Adelic and profinite framework (new)	FunctionField/Bootstrap.lean	FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity
+Adelic and profinite framework (new)	FunctionField/SubgroupEscape.lean	SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$
+Adelic and profinite framework (new)	FunctionField/MultiplierCCSB.lean	4 routes to FF-MC, population/fiber/selection hierarchy
+Adelic and profinite framework (new)	FunctionField/WeakMC.lean	Degree escape, pool partition, capture exhaustion (Dead End~\#129 revival)
+Adelic and profinite framework (new)	FunctionField/FactorTree.lean	FF factor tree: mixed selection, coprimality cascade, injectivity, start not capturable
+Adelic and profinite framework (new)	FunctionField/PopulationEquidist.lean	Weil $\Rightarrow$ population diversity, degree growth $\to \infty$, weak first moment
+Adelic and profinite framework (new)	FunctionField/StochasticMC.lean	FF stochastic MC, phase transition ($\varepsilon = 0$ critical), pigeonhole capture
+Adelic and profinite framework (new)	FunctionField/Finiteness.lean	FFFiniteIrreduciblesPerDegree PROVED (unconditional), coefficient injection
+Adelic and profinite framework (new)	FunctionField/NecklaceFormula.lean	Necklace identity $\sum_{d \mid n} d\,\pi_p(d) = p^n$ PROVED (Galois theory)
+Adelic and profinite framework (new)	FunctionField/FFCharacterSums.lean	Character cancellation, PNT-in-APs, FCD (all unconditional)
+Adelic and profinite framework (new)	FunctionField/FFSieve.lean	Sieve chain: SPV $\to$ PSCD $\to$ almost-all GenMixedMC (zero hypotheses)
+Adelic and profinite framework (new)	FunctionField/DensityMC.lean	Genuine trapped-density statement: exact congruence sieve, pigeonhole, density $\to 0$ from Kornblum divergence (sole hypothesis)
+Adelic and profinite framework (new)	FunctionField/Master.lean	Theorems A/B/C/D assembly: factor tree + stochastic MC + sieve chain
+Adelic and profinite framework (new)	FunctionField/AutonomousMap.lean	$\Phi_3$ criterion: $-1$ unreachable for $p \equiv 2 \pmod{3}$, orbit dynamics
+Adelic and profinite framework (new)	GaussEM/GaussEMDefs.lean	Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality
+Adelic and profinite framework (new)	GaussEM/GaussWalkStructure.lean	Gaussian walk: split/inert classification, norm kernel, orbit barrier
+Adelic and profinite framework (new)	GaussEM/GaussConfinement.lean	Integer walk confined to real axis, norm closure, Dead End~\#135
+Adelic and profinite framework (new)	FunctionField/IrreducibilityDensity.lean	Monic irreducible density over $\mathbb{F}_p$
+Adelic and profinite framework (new)	FunctionField/OrbitBarrier.lean	Orbit-specificity barrier: sole obstacle, identical over $\mathbb{Z}$ and $\mathbb{F}_p[t]$
+Stochastic selection-rule variants (new)	Stochastic/VanishingNoise.lean	Spectral gap, stochastic MC, path existence, sparse contraction, phase transition
+Stochastic selection-rule variants (new)	Stochastic/VanishingNoiseB.lean	Spectral gap, stochastic MC, path existence, sparse contraction, phase transition (cont.)
+Stochastic selection-rule variants (new)	Stochastic/VanishingNoiseC.lean	Spectral gap, stochastic MC, path existence, sparse contraction, phase transition (cont.)
+Stochastic selection-rule variants (new)	Stochastic/VanishingNoiseVariant.lean	$\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure, NFCE(5) reduction, intersection kernel dichotomy, quotient character lift
+Stochastic selection-rule variants (new)	Stochastic/VanishingNoiseVariantB.lean	$\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure, NFCE(5) reduction, intersection kernel dichotomy, quotient character lift (cont.)
+Stochastic selection-rule variants (new)	Stochastic/VanishingNoiseVariantC.lean	$\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure, NFCE(5) reduction, intersection kernel dichotomy, quotient character lift (cont.)
+Stochastic selection-rule variants (new)	Stochastic/NonFaithfulCharacterEscape.lean	$\varepsilon$-walk with \code{secondMinFac}, variant MC under UFDStrong, stochastic two-point MC, routes to UFDStrong, faithful char escape, unconditional $q{=}3$, NFCE infrastructure, NFCE(5) reduction, intersection kernel dichotomy, quotient character lift (cont.)
+Stochastic selection-rule variants (new)	Stochastic/RandomTwoPointMC.lean	Self-consistent random two-point MC: Fourier bridge identity, ChiAtMultiplicativity, death/survival partition, path sum decomposition, Fourier counting identity, TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC (proved)
+Stochastic selection-rule variants (new)	Stochastic/RandomTwoPointMCB.lean	Self-consistent random two-point MC: Fourier bridge identity, ChiAtMultiplicativity, death/survival partition, path sum decomposition, Fourier counting identity, TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC (proved) (cont.)
+Stochastic selection-rule variants (new)	Stochastic/EpsilonDegeneration.lean	$\varepsilon$-family and its deterministic limit, failure weight, MC $\iff$ failWeight bound
+Stochastic selection-rule variants (new)	Stochastic/EpsilonWalk.lean	Ensemble $\varepsilon$-walk: sigma-walk equidist, death fiber density, SigmaCRTPropagationStep (open), 8-clause landscape
+Stochastic selection-rule variants (new)	Stochastic/TransitionKernel.lean	Epsilon-mixed walk step PMF, weight lower bounds
+Stochastic selection-rule variants (new)	Stochastic/PathMeasure.lean	Reachable Finsets, branching distinctness, factor residues
+Stochastic selection-rule variants (new)	Stochastic/GeometricCapture.lean	Block capture weight, geometric decay, TSD$\to$PositiveProbCapture
+Stochastic selection-rule variants (new)	Stochastic/RandomFactorMC.lean	Pure random-factor variant MC, purification lemma, MC$\Rightarrow$PureRandomMC
+Stochastic selection-rule variants (new)	Stochastic/IteratedProductCoverage.lean	Cauchy--Davenport iterated product coverage: card growth, diameter $|G|{-}1$, safe prime instantiation
+Stochastic selection-rule variants (new)	Stochastic/FactorDiversity.lean	Ensemble factor diversity: genFactorSet, spectral contraction from $\geq 2$ distinct residues, vanishing
+Stochastic selection-rule variants (new)	Stochastic/DiverseStepsToCapture.lean	Factor diversity $\to$ reachable set growth, DiversityImpliesReachable, TSD bridge
+Stochastic selection-rule variants (new)	Stochastic/StochasticEM.lean	Stochastic EM process: StochasticMC, phase transition at $\varepsilon = 0$, geometric capture
+Stochastic selection-rule variants (new)	Stochastic/DenseCapture.lean	Topological density of capturing selection sequences: captureSet open (unconditional), Baire category $\Rightarrow$ comeager full capture, DenseCaptureHypothesis (open)
+Stochastic selection-rule variants (new)	Stochastic/MixedWalk.lean	Mixed selection walk: definitions and structure (Parts 1--11)
+Stochastic selection-rule variants (new)	Stochastic/MixedMC.lean	Mixed MC variants and hitting (Parts 12--20b)
+Stochastic selection-rule variants (new)	Stochastic/RandomVariant.lean	Random Euclid--Mullin process as an object: kernels, a.s.\ capture from odd starts
+Stochastic selection-rule variants (new)	Stochastic/ThreeAlmostSure.lean	Failure weight, almost-sure capture of $q=3$ by the $\varepsilon$-process
+Stochastic selection-rule variants (new)	Stochastic/ReachableSets.lean	Reachable sets, factor confinement (Parts 21--26)
+Stochastic selection-rule variants (new)	Stochastic/PerpetualPrimality.lean	Perpetual primality: recurrence, periodic orbits, multi-exclusion
+Stochastic selection-rule variants (new)	Stochastic/PositiveProbCapture.lean	Path weights and positive-probability capture (Parts 1--6)
+Stochastic selection-rule variants (new)	Stochastic/TreeSieveDecay.lean	Tree sieve decay and regeneration (Parts 7--12, 14)
+Stochastic selection-rule variants (new)	Stochastic/MissedPrimes.lean	Missed-prime set: forward invariance along the factor tree, good-child existence, $q{=}3$ cofinal capture opportunities
+Min--max dichotomy and obstruction calculus (new)	Population/HittingSetStructure.lean	Hitting set finiteness, guardian primes, missing $\Rightarrow$ EPA
+Min--max dichotomy and obstruction calculus (new)	Population/AutonomousBranch.lean	Perpetual primality $\Rightarrow$ autonomous walk: a conditional failure mode
+Min--max dichotomy and obstruction calculus (new)	Obstruction/MaxVariant.lean	Second (maxFac) EM sequence; Cox--van der Poorten $5 \notin$ mseq machine-verified
+Min--max dichotomy and obstruction calculus (new)	Obstruction/RuleTransition.lean	Rule-parameterised CvdP class; fragment empty at every modulus; min/max dichotomy
+Min--max dichotomy and obstruction calculus (new)	Obstruction/Anatomy.lean	min selection is congruence-determined, max is not; anatomy-state proofs project away
+Min--max dichotomy and obstruction calculus (new)	Obstruction/NoInvariant.lean	No-Invariant Theorem: no CvdP obstruction for the min sequence
+Min--max dichotomy and obstruction calculus (new)	Obstruction/Calculus.lean	Obstruction calculus: enrichments, certificates, Emptiness Theorem; graded certificates and one-step killability
+Min--max dichotomy and obstruction calculus (new)	Obstruction/Fragment.lean	Proof-theoretic dichotomy: congruence-invariant induction fragment, soundness, unprovability, provability $\Leftrightarrow$ appearance; graded + size-guarded widening
+Min--max dichotomy and obstruction calculus (new)	Reciprocity/SymbolAlgebra.lean	Reciprocity symbol algebra: multiplicativity, $\chi$ non-constancy
+Min--max dichotomy and obstruction calculus (new)	Reciprocity/NoReciprocityInvariant.lean	No reciprocity invariant blocks a prime: the growing-modulus fragment is empty; provability $\Leftrightarrow$ appearance
+Cross-check infrastructure	Meta/Diamonds.lean	$p$-adic geometric perspective, Hecke obstruction, Dead End~\#128
+Cross-check infrastructure	Meta/MarkovSieve.lean	Doeblin/sieve collapse certificates, Artin analogy, Dead Ends confirmed
+Cross-check infrastructure	Meta/Dobrushin.lean	Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131
+Cross-check infrastructure	Meta/LFunction.lean	$L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134
+Cross-check infrastructure	Meta/Blueprint.lean	LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems
+Cross-check infrastructure	Meta/Registry.lean	Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations
+Cross-check infrastructure	Meta/DeadEnds.lean	Dead end registry: 159 documented, 27 witnessed, 10 revivable
+Cross-check infrastructure	Meta/OrbitBarrier.lean	Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis
+Cross-check infrastructure	Meta/BagInformation.lean	What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity
+Cross-check infrastructure	Meta/Strategies.lean	Content-addressed theories and strategies (DeclbuildMeta)
+Iwaniec--Kowalski infrastructure	IK/Tauberian.lean	One-sided Tauberian, L-series bounds, prime power stripping
+Iwaniec--Kowalski infrastructure	IK/AbelChain.lean	Abel summation chain: $(\log p)/p \to 1/p$ infrastructure
+Iwaniec--Kowalski infrastructure	IK/Karamata.lean	Karamata's Tauberian theorem for Dirichlet series; \texttt{WeightedPNTinAPAsymp} proved unconditionally
+Iwaniec--Kowalski infrastructure	IK/Ch1.lean	Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions
+Iwaniec--Kowalski infrastructure	IK/Ch2.lean	Iwaniec--Kowalski Ch.\,2: elementary prime number theory
+Iwaniec--Kowalski infrastructure	IK/Ch3.lean	Iwaniec--Kowalski Ch.\,3: characters (reference tier)
+Iwaniec--Kowalski infrastructure	IK/Ch4.lean	Iwaniec--Kowalski Ch.\,4: summation formulas
+Iwaniec--Kowalski infrastructure	IK/Ch5.lean	Iwaniec--Kowalski Ch.\,5: classical theory of $L$-functions (reference tier)
+Iwaniec--Kowalski infrastructure	IK/Ch7Foundations.lean	Iwaniec--Kowalski Ch.\,7: foundations, norm bounds
+Iwaniec--Kowalski infrastructure	IK/Ch7AdditiveLS.lean	Iwaniec--Kowalski Ch.\,7: additive large sieve
+Iwaniec--Kowalski infrastructure	IK/Ch7MultiplicativeLS.lean	Iwaniec--Kowalski Ch.\,7: multiplicative large sieve
+Iwaniec--Kowalski infrastructure	IK/Ch7SieveApplications.lean	Iwaniec--Kowalski Ch.\,7: sieve applications (prime case)
+Iwaniec--Kowalski infrastructure	IK/Ch7SieveCRT.lean	Iwaniec--Kowalski Ch.\,7: Linnik, CRT general squarefree
+Iwaniec--Kowalski infrastructure	IK/Ch7Hilbert.lean	Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram
+Iwaniec--Kowalski infrastructure	IK/Ch7HilbertB.lean	Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram (cont.)
+Iwaniec--Kowalski infrastructure	IK/Ch7CesaroChain.lean	Iwaniec--Kowalski Ch.\,7: Ces\`aro convergence, circular ALS chain
+Iwaniec--Kowalski infrastructure	IK/DirichletDensity.lean	Unconditional Dirichlet density: $\sum_{p\equiv a\,(q)} 1/p$ diverges (covering-space log of $L(\sigma,\chi)$)
+For Mathlib (extracted, Mathlib-only)	ForMathlib/VanDerCorput.lean	The finite van der Corput inequality $\|\sum_{n<N} f(n)\|^2 \le 2N^2/(H{+}1) + 2\delta N^2$ (Mathlib-only imports)
+For Mathlib (extracted, Mathlib-only)	ForMathlib/ZModDftParseval.lean	Parseval/Plancherel for \code{ZMod.dft}: $\sum_k \|\hat\Phi(k)\|^2 = N\sum_j \|\Phi(j)\|^2$
+For Mathlib (extracted, Mathlib-only)	ForMathlib/CoprimeAffineBlock.lean	$\#\{t\in[k,k{+}N): \gcd(N, at{+}b)=1\} = \varphi(N)$ for $\gcd(a,N)=1$; $B$ blocks give $B\varphi(N)$

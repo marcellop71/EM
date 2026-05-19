@@ -5,7 +5,7 @@ import EM.FunctionField.Analog
 
 This file formalizes the inductive bootstrap reducing the Function Field Mullin
 Conjecture (FF-MC) to a single open hypothesis (FFDynamicalHitting), mirroring
-the integer bootstrap in `EquidistBootstrap.lean`.
+the integer bootstrap in `EM/Equidist/Bootstrap.lean`.
 
 ## Key differences from the integer case
 
@@ -126,7 +126,7 @@ def FFMCBelow (d : FFEMData p) (d0 : ℕ) : Prop :=
 /-- **FF Dynamical Hitting**: for every FFEMData and every monic irreducible Q,
     there exist cofinal indices n at which Q divides ffProd(n)+1.
 
-    This is the function field analog of `DynamicalHitting` in EquidistBootstrap.lean.
+    This is the function field analog of `DynamicalHitting` in EM/Equidist/Bootstrap.lean.
     The cofinal property is essential: a single hit might be "stolen" by a
     competing irreducible of the same degree (unlike the integer case where
     primes are totally ordered). -/
@@ -217,7 +217,7 @@ theorem ff_sieve_gap (d : FFEMData p)
     apply Set.Finite.subset (Set.Finite.biUnion (Set.finite_Iio d0)
       (fun e _ => hfin e))
     intro Q ⟨hm, hi, hd⟩
-    simp only [Set.mem_iUnion, Set.mem_setOf_eq]
+    simp only [Set.mem_iUnion, Set.mem_ofPred_eq]
     exact ⟨Q.natDegree, Set.mem_Iio.mpr hd, hm, hi, rfl⟩
   -- For each Q in S, get its appearance index
   have happ : ∀ Q ∈ S, ∃ k, d.ffSeq k = Q := by
@@ -237,7 +237,7 @@ theorem ff_sieve_gap (d : FFEMData p)
     have hf_spec : ∀ (x : S), d.ffSeq (f x) = (x : Polynomial (ZMod p)) :=
       fun ⟨Q, hQ⟩ => (hchoice Q hQ).choose_spec
     -- S is finite, so f has a finite range; take N0 = sup of range
-    haveI : Fintype S := hS_fin.fintype
+    have : Fintype S := hS_fin.fintype
     set N0 := Finset.sup Finset.univ f with hN0_def
     refine ⟨N0, fun n hn P hPm hPi hPd => ?_⟩
     have hPS : P ∈ S := ⟨hPm, hPi, hPd⟩

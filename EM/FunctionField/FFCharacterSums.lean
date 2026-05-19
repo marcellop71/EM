@@ -47,9 +47,11 @@ variable (p : ℕ) [hp : Fact (Nat.Prime p)]
 
     This is UNCONDITIONAL over F_p[t]: proved in NecklaceFormula.lean via
     Galois theory (every element of GF(p,n) is a root of its minimal polynomial,
-    which is a monic irreducible of degree dividing n). -/
-def FFCharSumCancellation : Prop :=
-  ∀ n : ℕ, 0 < n → ∑ d ∈ n.divisors, d * ffIrredCount p d = p ^ n
+    which is a monic irreducible of degree dividing n).
+
+    Definitionally this IS `NecklaceIdentity` (the same ∀-statement), so it is
+    an abbreviation rather than a second copy of the Prop. -/
+abbrev FFCharSumCancellation : Prop := NecklaceIdentity p
 
 /-- Character sum cancellation is unconditional over F_p[t]. -/
 theorem ff_char_sum_cancellation_proved : FFCharSumCancellation p :=

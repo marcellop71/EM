@@ -1,0 +1,652 @@
+\subsection{The $\{\minFac, \operatorname{secondMinFac}\}$ Variant}
+\label{sec:minfac-secondminfac}
+
+The two-point variant interpolates between the random and deterministic
+extremes.  At each step, instead of a single deterministic choice or a
+fully random one, two specific factors are available:
+$\minFac(\Prod{2}(n)+1)$ and $\operatorname{secondMinFac}(\Prod{2}(n)+1)$.
+A decision sequence $\sigma : \NN \to \mathrm{Bool}$ selects between
+them; the all-true sequence recovers the standard EM walk.
+
+\paragraph{The $\varepsilon$-walk.}
+The formalization defines a
+\textbf{self-consistent $\varepsilon$-walk}
+(\lean{EM/Stochastic/VanishingNoiseVariant.lean}{epsWalkProd})
+in which the chosen factor---either $\minFac(P(n){+}1)$ or
+$\operatorname{secondMinFac}(P(n){+}1)$---becomes the actual multiplier,
+updating the accumulator and producing a new Euclid number at the next
+step.
+The function $\operatorname{secondMinFac}(n)$ (second-smallest prime
+factor) is defined and proved prime, divisor of~$n$, and
+$\geq \minFac(n)$
+(\lean{EM/Stochastic/VanishingNoiseVariant.lean}{secondMinFac\_prime},
+\lean{EM/Stochastic/VanishingNoiseVariant.lean}{secondMinFac\_dvd},
+\lean{EM/Stochastic/VanishingNoiseVariant.lean}{minFac\_le\_secondMinFac}).
+
+This self-consistent walk generates a \emph{binary branching tree}
+of depth~$N$ with $2^N$ leaves, where each internal node has its own
+path-dependent factor set.  The \emph{tree character sum}
+(\lean{EM/Stochastic/VanishingNoiseVariant.lean}{treeCharSum}),
+a weighted sum of $\chi(\text{leaf position})$ over all leaves, is proved
+$\leq 1$ in norm.  Unlike the product multiset of the stochastic MC, this sum
+does \textbf{not} factorize as $\prod_k \bar\chi(S_k)$: the left and
+right subtrees start from different accumulators, so their character sums
+differ.  The open hypothesis
+\defname{TreeContractionHypothesis}
+asserts that the tree character sum tends to zero for all nontrivial~$\chi$;
+it is strictly weaker than CME but strictly stronger than the product approximation.
+
+\paragraph{Non-self-consistent variant MC.}
+An independent route bypasses the tree contraction problem entirely.
+At each EM step~$n$, form the two-element unit set
+$\{\minFac(P(n){+}1),\, \operatorname{secondMinFac}(P(n){+}1)\} \bmod q$
+in $(\ZZ/q\ZZ)^\times$.  When one factor equals~$q$
+(a non-unit), fall back to $\operatorname{Finset.univ}$, whose
+mean character value is~$0$ by orthogonality---giving perfect contraction
+(\lean{EM/Stochastic/VanishingNoiseVariantB.lean}{meanCharValue\_univ\_eq\_zero}).
+Under \defname{UFDStrong}---spectral gaps of the padded unit sets
+are non-summable for every nontrivial~$\chi$---the
+sparse product contraction machinery gives vanishing averaged
+products, and the Fourier counting argument yields
+path existence.  Concretely:
+
+\begin{theorem}[\lean{EM/Stochastic/VanishingNoiseVariantB.lean}{variant\_mc\_from\_ufd\_strong\_proved}]
+\label{thm:variant-mc}
+For every prime $q \geq 3$, if $\mathrm{UFDStrong}(q)$ holds, then
+every element of $(\ZZ/q\ZZ)^\times$ is representable as a product
+of selections from $\{\minFac,\operatorname{secondMinFac}\}$ of
+consecutive Euclid numbers.  In particular, some selection path
+hits~$-1$.
+\end{theorem}
+
+The verified chain is:
+\[
+  \mathrm{UFDStrong}(q)
+  \;\Longrightarrow\;
+  \text{vanishing products}
+  \;\Longrightarrow\;
+  \text{path existence}
+  \;\Longrightarrow\;
+  \text{VariantMC}.
+\]
+Every arrow is machine-checked with zero \code{sorry}.
+
+\paragraph{The gap: UFDStrong.}
+\defname{UFDStrong}$(q)$ asserts: for each nontrivial character
+$\chi$ on $(\ZZ/q\ZZ)^\times$, the spectral gaps
+$1 - \|\bar\chi(\text{paddedUnitSet}_n)\|$ are non-summable.
+The hypothesis splits into two cases:
+\begin{enumerate}[nosep]
+\item \emph{Fallback case}: if infinitely many steps have
+  $\minFac \equiv \operatorname{secondMinFac} \pmod{q}$ (or one
+  equals~$q$), the padded set falls back to the full group, giving
+  perfect contraction (gap~$= 1$) at each such step.
+  Non-summability is immediate.
+  \textbf{Proved}:
+  \lean{EM/Stochastic/VanishingNoiseVariantB.lean}{ufd\_fallback\_not\_summable}.
+\item \emph{Diversity case}: if cofinitely many steps have two
+  distinct units mod~$q$, one needs the character values at those
+  units to differ infinitely often---i.e., the ratio
+  $\minFac/\operatorname{secondMinFac}$ does not persistently lie in
+  $\ker(\chi)$.  This is a genuine number-theoretic question about
+  Euclid number factorizations.  \textbf{Open}:
+  \code{UFDImpliesUFDStrong}.
+\end{enumerate}
+
+\paragraph{Variant MC does not imply standard MC.}
+The selection~$\sigma$ that achieves hitting may differ per
+prime~$q$, and the virtual accumulator
+$\prod_k \text{factor}_{\sigma(k)}$ is not the EM accumulator
+$P(n)$.  The gap is the same orbit-specificity barrier
+(Dead End~\#130,
+\lean{EM/Group/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two}):
+generation does not imply coverage for deterministic walks.
+
+\paragraph{Three routes to UFDStrong.}
+The formalization identifies a hierarchy of progressively weaker
+sufficient conditions for UFDStrong$(q)$:
+
+\begin{enumerate}[nosep]
+\item \textbf{Quantitative escape} (\defname{MinFacRatioEscape}):
+  for each nontrivial~$\chi$, there exists $\delta > 0$ such that
+  infinitely many steps have spectral gap $\geq \delta$.
+  Since a non-summable sequence with a positive lower bound infinitely
+  often is non-summable, this implies UFDStrong directly
+  (\lean{EM/Stochastic/VanishingNoiseVariantB.lean}{ratio\_escape\_implies\_ufdStrong}).
+
+\item \textbf{Qualitative escape} (\defname{MinFacRatioEscapeQual}):
+  for each nontrivial~$\chi$, infinitely many steps have
+  $\operatorname{card}(\text{rawTwoPointUnitSet}) \geq 2$ \emph{and}
+  $\chi(\minFac) \neq \chi(\operatorname{secondMinFac})$.
+  This implies quantitative escape via a finite-group pigeonhole
+  argument: on a finite group, the gap function takes finitely many
+  values, so being positive infinitely often gives a uniform positive
+  lower bound
+  (\lean{EM/Stochastic/VanishingNoiseVariantB.lean}{qual\_implies\_quant}).
+
+\item \textbf{Orbit-level minFac equidistribution} (\defname{OrbitMFRE}):
+  the residues $\minFac(\Prod{2}(n){+}1) \bmod q$ are equidistributed
+  among the units of $(\ZZ/q\ZZ)^\times$ in Cesàro density.
+  This is the weakest condition in the hierarchy: equidistributed
+  residues prevent persistent chi-degeneracy.  The bridge
+  OrbitMFRE $\Rightarrow$ MinFacRatioEscapeQual is \textbf{open}
+  (\code{OrbitMFREImpliesEscapeQual}).
+\end{enumerate}
+
+The assembled chain is:
+\[
+  \underbrace{\mathrm{OrbitMFRE}}_{\text{open}}
+  \;\xRightarrow{\text{open bridge}}\;
+  \mathrm{EscapeQual}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{EscapeQuant}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{UFDStrong}
+  \;\xRightarrow{\text{proved}}\;
+  \mathrm{VariantMC}.
+\]
+Every arrow except the first is machine-checked with zero \code{sorry}.
+The most concrete attack target is MinFacRatioEscapeQual: one needs to
+show that $\minFac$ and $\operatorname{secondMinFac}$ do not
+persistently agree modulo every character.  OrbitMFRE faces the same
+orbit-specificity barrier as CME for standard MC.
+
+\paragraph{Stochastic Two-Point MC.}
+The non-self-consistent machinery yields a clean quantitative statement.
+Define the \defname{StochasticTwoPointMC} problem: under UFDStrong$(q)$
+with $q \geq 3$, does every element of $(\ZZ/q\ZZ)^\times$ appear with
+positive count in the product multiset of padded unit sets?
+
+\begin{theorem}[\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{stochastic\_two\_point\_mc\_proved}]
+\label{thm:stochastic-two-point}
+$\mathrm{UFDStrong}(q) \;\Longrightarrow\; \mathrm{StochasticTwoPointMC}(q)$.
+\end{theorem}
+
+\noindent The product multiset grows exponentially
+($\geq 2^N$ paths for $q \geq 3$,
+\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{productMultiset\_card\_ge\_two\_pow}).
+A \defname{fairCoin} schedule ($\varepsilon = 1/2$ at every step) gives
+the \defname{fairTreeCharSum}---the tree character sum at constant
+$1/2$---which is bounded by~$1$ in norm
+(\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{fairTreeCharSum\_norm\_le\_one}).
+TreeContractionHypothesis implies the weaker
+\defname{TreeContractionAtHalf}
+(\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{treeContraction\_of\_hypothesis}),
+and at $\varepsilon = 0$ the tree degenerates to the deterministic
+$\minFac$ path
+(\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{treeCharSum\_at\_zero\_step}).
+
+The gap between the non-self-consistent result (proved) and a
+\emph{self-consistent} stochastic MC is the \textbf{selection coherence}
+problem: the non-self-consistent product multiset uses factor sets from
+the actual EM walk (which always picks $\minFac$), so the factor sets
+are fixed and the product factorizes; in the self-consistent tree,
+picking $\operatorname{secondMinFac}$ at step~$n$ changes the
+accumulator, hence the factor set at step~$n{+}1$, preventing
+factorization.
+
+\paragraph{Faithful character escape.}
+A character $\chi$ on $(\ZZ/q\ZZ)^\times$ is \defname{faithful} if it
+is injective (equivalently, $\ker(\chi) = \{1\}$).  For faithful
+characters, whenever the raw two-point unit set has two distinct
+elements, their $\chi$-values are automatically distinct---giving a
+positive spectral gap at every non-fallback step, with no
+number-theoretic hypothesis.  Combined with the fallback case (gap $= 1$
+at fallback steps, already proved), this yields unconditional
+non-summability:
+
+\begin{theorem}[\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{faithful\_character\_escape}]
+\label{thm:faithful-escape}
+For every prime $q \geq 3$ and every faithful nontrivial character
+$\chi$ on $(\ZZ/q\ZZ)^\times$:
+\[
+  \sum_n \bigl(1 - \|\bar\chi(\text{paddedUnitSet}_n)\|\bigr)
+  = +\infty.
+\]
+Unconditional---zero open hypotheses.
+\end{theorem}
+
+\noindent For groups of prime order, every nontrivial character is
+faithful (by Lagrange: the kernel is a subgroup of a prime-order group,
+hence trivial or the whole group;
+\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{prime\_order\_nontrivial\_is\_faithful}).
+Since $|(\ZZ/3\ZZ)^\times| = 2$ is prime, UFDStrong$(3)$ holds
+\emph{unconditionally}
+(\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{ufdStrong\_three}), and
+the full chain closes:
+
+\begin{theorem}[\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{variant\_mc\_three\_unconditional}]
+\label{thm:variant-mc-3}
+$\mathrm{StochasticTwoPointMC}(3)$ holds with zero open hypotheses:
+every element of $(\ZZ/3\ZZ)^\times$ appears with positive count
+in the product multiset.
+\end{theorem}
+
+\noindent For primes $q \geq 5$ where $|(\ZZ/q\ZZ)^\times| = q{-}1$ is
+composite, non-faithful nontrivial characters exist, and the sole
+remaining open hypothesis is
+\defname{NonFaithfulCharacterEscape}---spectral gap non-summability
+for characters with nontrivial kernel.  The faithful/non-faithful
+decomposition is clean:
+
+\begin{theorem}[\lean{EM/Stochastic/VanishingNoiseVariantC.lean}{nfce\_implies\_ufdStrong}]
+\label{thm:nfce-ufdstrong}
+$\mathrm{NonFaithfulCharacterEscape}(q)
+\;\Longrightarrow\; \mathrm{UFDStrong}(q)$
+for all primes $q \geq 3$.
+\end{theorem}
+
+\noindent The faithful half is free; only the non-faithful half
+remains open.
+
+\paragraph{NFCE infrastructure.}
+The formalization develops a precise characterization of what NFCE
+requires.  Define the \defname{factorRatio} at step~$n$ as
+$\mathrm{liftToUnit}(\minFac) \cdot
+\mathrm{liftToUnit}(\operatorname{secondMinFac})^{-1}$
+in~$(\ZZ/q\ZZ)^\times$.
+At non-fallback steps (raw card $\geq 2$), the spectral gap is zero
+if and only if this ratio lies in~$\ker(\chi)$
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{gap\_zero\_iff\_ratio\_in\_ker}).
+NFCE thus reduces to: for each non-faithful nontrivial~$\chi$, the
+factor ratio does not eventually stay in~$\ker(\chi)$.
+
+If NFCE fails for a specific~$\chi$, the gaps are summable,
+which forces \defname{KernelConfinement}: the ratio is eventually
+confined to~$\ker(\chi)$
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{summable\_implies\_ratio\_confined}).
+Since $\ker(\chi)$ has index $\geq 2$ for nontrivial~$\chi$
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{ker\_index\_ge\_two}),
+kernel confinement is a strong arithmetic constraint:
+$\minFac / \operatorname{secondMinFac} \bmod q$ eventually lies in a
+proper subgroup of the unit group.
+
+\paragraph{NFCE(5): reduction to a single quadratic escape.}
+For $q = 5$, the unit group $(\ZZ/5\ZZ)^\times$ has order~$4$
+(cyclic, $\cong \ZZ/4\ZZ$).  Its characters partition as: the trivial
+character, two faithful characters (order~$4$, handled unconditionally
+by FaithfulCharacterEscape), and one non-faithful nontrivial character
+(order~$2$, the unique quadratic character).  Thus NFCE(5) reduces to a
+single escape condition: the factor ratio
+$\minFac / \operatorname{secondMinFac} \bmod 5$ must leave the unique
+index-2 subgroup of $(\ZZ/5\ZZ)^\times$ infinitely often.
+The formalization proves that this
+\defname{RatioKernelEscape} condition suffices for the full chain
+\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{variant\_mc\_five\_of\_ratio\_escape}
+{\color{leanink}$\checkmark$}:
+RatioKernelEscape $\Rightarrow$ NFCE(5) $\Rightarrow$ UFDStrong(5)
+$\Rightarrow$ StochasticTwoPointMC(5).
+
+\paragraph{Intersection kernel dichotomy.}
+When NFCE fails for \emph{all} non-faithful nontrivial characters
+simultaneously (\defname{TotalNFCEFailure}), the factor ratio is
+eventually confined to every non-faithful kernel (from the
+summability-to-confinement lemma of Part~25).
+The intersection of these kernels is constrained by a group-theoretic
+fact: in a finite group whose order has $\geq 2$ distinct prime
+factors, there exist subgroups of coprime orders whose intersection is
+trivial
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{coprime\_order\_zpowers\_inf\_bot}
+{\color{leanink}$\checkmark$}).  Combined with Cauchy's theorem, this
+yields \defname{NonFaithfulCharSeparation}~(NFCS): for every
+$g \neq 1$, some non-faithful nontrivial character has $\chi(g) \neq 1$.
+NFCS is
+\textbf{proved} for all groups whose order has $\geq 2$ distinct prime
+factors
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{nonFaithfulCharSeparation\_of\_two\_prime\_factors}
+{\color{leanink}$\checkmark$}), which for $(\ZZ/q\ZZ)^\times$ covers
+all primes except $q = 2, 3, 5$ and Fermat primes (where $q - 1$ is a
+power of~$2$).
+Under NFCS, TotalNFCEFailure forces
+$\minFac / \operatorname{secondMinFac} \equiv 1 \pmod{q}$ eventually
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{total\_confinement\_implies\_ratio\_one}
+{\color{leanink}$\checkmark$}).
+This yields:
+
+\begin{theorem}[Intersection kernel dichotomy]
+\label{thm:kernel-dichotomy}
+Let $q$ be prime with $q - 1$ having $\geq 2$ distinct prime factors.
+Then exactly one of the following holds:
+\begin{enumerate}[nosep]
+\item $\mathrm{NFCE}(q)$ holds, giving
+  $\mathrm{UFDStrong}(q)$ and $\mathrm{StochasticTwoPointMC}(q)$; or
+\item $\minFac(\Prod{2}(n)+1) \equiv \operatorname{secondMinFac}(\Prod{2}(n)+1) \pmod{q}$
+  for all sufficiently large~$n$.
+\end{enumerate}
+The second alternative is a strong arithmetic rigidity: the two
+smallest prime factors of each Euclid number are eventually
+indistinguishable mod~$q$.
+\end{theorem}
+
+\noindent
+The proof combines NonFaithfulCharSeparation
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{nonFaithfulCharSeparation\_of\_two\_prime\_factors}
+{\color{leanink}$\checkmark$})
+with the summability-to-confinement lemma
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{total\_confinement\_implies\_ratio\_one}
+{\color{leanink}$\checkmark$}).
+The condition ``$q{-}1$ has $\geq 2$ distinct prime factors'' covers
+all primes except $q = 2, 3, 5$ and Fermat primes (where $q{-}1$ is a
+power of~$2$).
+
+\paragraph{Quotient character lift.}
+The quotient character infrastructure, formalized in Part~28 of
+\code{EM/Stochastic/NonFaithfulCharacterEscape.lean} (173~lines),
+provides a structural reduction of NFCE\@.
+For a non-faithful nontrivial character~$\chi$, the kernel
+$\ker(\chi)$ is a proper nontrivial subgroup; by the universal
+property, $\chi$ factors as
+$\chi = \bar\chi \circ \pi$
+where $\pi \colon G \to G/\ker(\chi)$ is the quotient map.
+The induced character~$\bar\chi$ on the quotient group is
+\textbf{faithful} (injective)
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{quotientChar\_faithful}
+{\color{leanink}$\checkmark$}),
+the quotient has order $\geq 2$
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{quotient\_card\_ge\_two}
+{\color{leanink}$\checkmark$}),
+and KernelConfinement is equivalent to the quotient projection
+of the factor ratio being eventually trivial
+(\lean{EM/Stochastic/NonFaithfulCharacterEscape.lean}{kernelConfinement\_iff\_quotient\_eventually\_one}
+{\color{leanink}$\checkmark$}).
+\begin{theorem}[Quotient character lift]
+\label{thm:quotient-lift}
+For any non-faithful nontrivial character~$\chi$ on~$(\ZZ/q\ZZ)^\times$:
+\begin{enumerate}[nosep]
+\item $\chi = \bar\chi \circ \pi$ where $\bar\chi$ is faithful
+  on $G/\ker(\chi)$ and $|G/\ker(\chi)| \geq 2$.
+\item $\mathrm{KernelConfinement}(\chi) \;\Longleftrightarrow\;$
+  the quotient projection of the factor ratio is eventually trivial.
+\item $\mathrm{RatioKernelEscape}(\chi) \;\Longleftrightarrow\;$
+  the quotient projection is nontrivial infinitely often.
+\end{enumerate}
+\end{theorem}
+
+\noindent This reduces NFCE to: the image of factorRatio in each quotient
+$G/\ker(\chi)$ escapes~$\{1\}$ infinitely often.
+Since $\bar\chi$ is faithful on the (smaller) quotient group, the
+unconditional FaithfulCharacterEscape result
+(Theorem~\ref{thm:faithful-escape}) applies to $G/\ker(\chi)$,
+connecting the non-faithful case to the faithful framework.
+
+\paragraph{Comparison of open hypotheses.}
+Standard MC requires CME (orbit-level conditional equidistribution of
+$\minFac$ residues).  The $\{\minFac, \operatorname{secondMinFac}\}$ variant
+requires UFDStrong (spectral diversity of two-point factor sets), and
+for $q = 3$ this is now \textbf{unconditional}; for $q \geq 5$ the
+residual hypothesis is NonFaithfulCharacterEscape.
+Neither CME nor UFDStrong implies the other: CME is about the
+\emph{selected} factor's equidistribution; UFDStrong is about the
+\emph{pair}'s spectral gap.
+But both are instances of the same meta-question: does the deterministic
+EM construction produce enough diversity in its factorizations to
+prevent persistent alignment with any fixed character?
+
+\paragraph{Ensemble two-point: population-level reduction.}
+The ensemble framework of Section~\ref{sec:ensemble} can also be
+applied to the two-point variant.  For generalized EM starting from
+squarefree~$n$, the \defname{genFactorRatio} at step~$k$ is the ratio
+$\minFac / \operatorname{secondMinFac} \bmod q$ in
+$(\ZZ/q\ZZ)^\times$.  For a nontrivial character~$\chi$, a step
+``escapes'' if this ratio lies outside~$\ker(\chi)$---producing a
+spectral gap.  The formalization
+(\code{EM/Ensemble/TwoPointEnsemble.lean}, 566~lines, zero \code{sorry})
+develops the full first-moment chain:
+\[
+  \text{PRED}
+  \;\xrightarrow[\text{Fubini}]{\checkmark}\;
+  \text{linear first moment}
+  \;\xrightarrow[\text{partition}]{\checkmark}\;
+  \text{positive density of high escapers.}
+\]
+Here \textbf{PopulationRatioEscapeDensity}~(PRED) asserts that for
+each nontrivial~$\chi$ and each step $k \geq 1$, a positive
+density~$\delta > 0$ of squarefree starting points have factor ratio
+outside~$\ker(\chi)$.  Under PRED, the ensemble average of cumulative
+escape counts grows linearly
+(\lean{EM/Ensemble/TwoPointEnsemble.lean}{escape\_first\_moment\_linear}
+{\color{leanink}$\checkmark$}), and the partition argument gives
+\lean{EM/Ensemble/TwoPointEnsemble.lean}{positive\_density\_high\_escape}
+{\color{leanink}$\checkmark$}: for each threshold~$M$, a positive
+density of starting points achieve $\geq M$ cumulative escapes
+within~$K$ steps.  PRED itself is open; an earlier draft expected it
+from MFRE (MinFacResidueEquidist), which is false (Dead End~\#160), so
+the expected route is gone (\code{MFREImpliesPopulationRatioEscape} is
+archived).
+
+\paragraph{Self-consistent random walk: the Fourier bridge.}
+The stochastic two-point variant above fixes the factor sets
+$\{p_1(n), p_2(n)\}$ from the \emph{actual} EM walk and randomizes
+the selection.  A stronger variant makes the construction
+\emph{self-consistent}: at each step, the accumulator determines the
+available factors, and the fair-coin choice feeds back into the next
+accumulator.  Formally, define
+$\mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, 0) = \mathrm{acc}$,
+$\mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, n{+}1)
+= P_n \cdot (\text{if } \sigma(n) \text{ then } \minFac(P_n{+}1)
+\text{ else } \operatorname{secondMinFac}(P_n{+}1))$
+where $P_n = \mathrm{epsWalkProdFrom}(\mathrm{acc}, \sigma, n)$.
+The decision sequence $\sigma : \NN \to \mathrm{Bool}$ replaces the
+deterministic $\minFac$ rule with a random binary choice.
+
+The central result is the \textbf{Fourier bridge identity}
+(\lean{EM/Stochastic/RandomTwoPointMC.lean}{fourier\_bridge\_identity\_proved}
+{\color{leanink}$\checkmark$}): for any accumulator $\mathrm{acc} \geq 2$,
+\[
+  \mathrm{treeCharSum}(q, \chi, N, \mathrm{acc}, \tfrac{1}{2})
+  \;=\;
+  \frac{1}{2^N}
+  \sum_{\sigma \in \{0,1\}^N}
+  \prod_{k < N} \mathrm{chiAt}(q, \chi,
+    \mathrm{epsWalkFactorFrom}(\mathrm{acc}, \sigma, k)).
+\]
+The proof is by induction on~$N$: at each step, the $2^N$ paths split
+by first bit into two halves corresponding to the left and right
+subtrees of the tree recursion; shift lemmas
+(\code{epsWalkProdFrom\_shift}, \code{epsWalkFactorFrom\_shift})
+connect the concatenated walk to the shifted walk at the new
+accumulator; the $\tfrac{1}{2}$ weights combine to match the tree
+recurrence.  Specializing to $\mathrm{acc} = 2$ gives the
+unconditional identity
+$\mathrm{fairTreeCharSum} = \mathrm{pathCharSum}$
+(\lean{EM/Stochastic/RandomTwoPointMC.lean}{fairTreeCharSum\_eq\_pathCharSum}
+{\color{leanink}$\checkmark$}).
+
+\defname{RandomTwoPointMC}
+(\lean{EM/Stochastic/RandomTwoPointMC.lean}{RandomTwoPointMC})
+asks: for $q \geq 3$ and every unit $a \in (\ZZ/q\ZZ)^\times$, does
+some binary decision sequence of finite length produce a walk from
+$\mathrm{acc} = 2$ landing in residue class~$a$?  This is the
+self-consistent analog of StochasticTwoPointMC.
+The Fourier bridge connects the tree to the path character sum.
+To connect path character sums to reached residue classes, one needs
+\defname{ChiAtMultiplicativity}: that $\mathrm{chiAt}(\mathrm{acc})
+\cdot \prod_k \mathrm{chiAt}(\text{factor}_k)
+= \mathrm{chiAt}(\text{endpoint})$, provided $q$ does not divide the
+endpoint.  This is \textbf{proved}
+(\lean{EM/Stochastic/RandomTwoPointMC.lean}{chiAt\_multiplicativity\_proved}
+{\color{leanink}$\checkmark$})
+by induction on~$N$ with backward non-divisibility propagation:
+if $q \nmid P_N$, then $q \nmid P_k$ for all $k \leq N$
+(\lean{EM/Stochastic/RandomTwoPointMC.lean}{not\_dvd\_epsWalkProdFrom\_of\_le}
+{\color{leanink}$\checkmark$}),
+so every factor is coprime to~$q$ and $\mathrm{chiAt}$ is
+multiplicative.
+
+A full Fourier counting infrastructure is built on top: character
+orthogonality on $(\ZZ/q\ZZ)^\times$, death/survival partition
+(\lean{EM/Stochastic/RandomTwoPointMCB.lean}{survival\_plus\_death}
+{\color{leanink}$\checkmark$}:
+$\mathrm{survivalCount} + \mathrm{deathCount} = 2^N$),
+the Fourier indicator formula
+$|G| \cdot \mathrm{pathCount}(a)
+= \sum_\chi \overline{\chi(a)} \cdot U(\chi, N)$,
+and norm bounds for the unit endpoint character sum.
+The chain is:
+\[
+  \mathrm{TCA}
+  \;\xRightarrow{\checkmark}\;
+  \text{vanishing pathCharSum}
+  \;\xRightarrow{\text{ChiAtMult}\ \checkmark}\;
+  \text{Fourier counting}
+  \;\xRightarrow{?}\;
+  \text{RandomTwoPointMC}.
+\]
+The remaining gap is \defname{PathSurvival}
+(\lean{EM/Stochastic/RandomTwoPointMCB.lean}{PathSurvival}):
+the ratio $\mathrm{survivalCount}(N) / \mathrm{deathCount}(N)$
+grows without bound.  Without positive survival at the same~$N$
+where pathCharSum is small, the Fourier inversion gives no
+information about unit classes.
+
+For $q = 3$, the analysis reveals a structural obstruction.
+Since $\mathrm{acc} = 2$ and $\minFac(3) = \operatorname{secondMinFac}(3) = 3$,
+the walk immediately dies: $3 \mid P_1 = 6$ on \emph{all} paths,
+and absorption is permanent.
+Thus PathSurvival(3) is false---but
+$\mathrm{TreeContractionAtHalf}(3)$ is \emph{also} false (the tree
+character sum is identically~$1$ at every depth, because all
+post-death factors are $\equiv 1 \pmod{3}$), making
+$\mathrm{TreeContractionImpliesRandomMC}(3)$ vacuously true.
+
+For $q = 3$, the \textbf{zero-mean property} gives maximal per-step
+contraction
+(\lean{EM/Stochastic/RandomTwoPointMC.lean}{mean\_char\_zero\_at\_diverse\_step\_three}
+{\color{leanink}$\checkmark$}):
+$(1/2)\chi(a) + (1/2)\chi(b) = 0$ whenever $\chi(a) \neq \chi(b)$
+for a nontrivial character on $(\ZZ/3\ZZ)^\times$ (order~$2$, so
+$\chi$ maps to $\{1, -1\}$).  Although this property is proved,
+the immediate death at $q = 3$ means the zero-mean steps are
+never reached from the standard starting point.
+
+\paragraph{TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC.}
+The conditional implication is now \textbf{proved}
+(\lean{EM/Stochastic/RandomTwoPointMCB.lean}{tca\_path\_survival\_implies\_random\_mc\_proved}
+{\color{leanink}$\checkmark$}).
+The proof~(${\sim}400$~lines) builds the full Fourier counting
+infrastructure on $(\ZZ/q\ZZ)^\times$:
+\begin{enumerate}[nosep]
+\item \textbf{Path sum decomposition}
+  (\lean{EM/Stochastic/RandomTwoPointMCB.lean}{path\_sum\_decomp}
+  {\color{leanink}$\checkmark$}):
+  the unscaled path sum
+  $2^N \cdot \mathrm{pathCharSum}$ splits as
+  $\mathrm{chiAt}(2)^{-1}\cdot U(\chi,N) + E(\chi,N)$,
+  where $U$ sums over surviving paths via ChiAtMultiplicativity and
+  $E$ sums over death paths.
+
+\item \textbf{Death error bound}
+  (\lean{EM/Stochastic/RandomTwoPointMCB.lean}{death\_error\_norm\_le}
+  {\color{leanink}$\checkmark$}):
+  $\|E(\chi,N)\| \leq \mathrm{deathCount}(N)$
+  (each death term has norm $\leq 1$).
+
+\item \textbf{Unit endpoint bound}
+  (\lean{EM/Stochastic/RandomTwoPointMCB.lean}{uecsi\_norm\_le}
+  {\color{leanink}$\checkmark$}):
+  $\|U(\chi,N)\| \leq 2^N\|\mathrm{pathCharSum}\| + \mathrm{deathCount}$.
+
+\item \textbf{Fourier counting identity}
+  (\lean{EM/Stochastic/RandomTwoPointMCB.lean}{fourier\_counting\_identity}
+  {\color{leanink}$\checkmark$}):
+  $\sum_\chi \overline{\chi(a)} \cdot U(\chi,N)
+  = |G| \cdot \mathrm{pathCount}(a,N)$.
+
+\item \textbf{Fourier lower bound}
+  (\lean{EM/Stochastic/RandomTwoPointMCB.lean}{fourier\_lower\_bound}
+  {\color{leanink}$\checkmark$}):
+  $(q{-}1)\cdot\mathrm{pathCount}(a) \geq
+  \mathrm{survivalCount} - (q{-}2)\cdot B$
+  where $B$ is the uniform bound on nontrivial $\|U(\chi)\|$.
+\end{enumerate}
+Combining: TCA gives $\|\mathrm{pathCharSum}\| < 1/(2q)$ for
+$N \geq N_0$; PathSurvival gives
+$\mathrm{survivalCount} > 2q^2 \cdot \mathrm{deathCount}$ for
+$N \geq N_1$.  At $N = \max(N_0,N_1)$, the Fourier lower bound yields
+$\mathrm{pathCount}(a) > 0$ for every unit~$a$, via the algebraic
+identity $2q^3 + 2q^2 + 3q + 2 > 0$ (true for all $q \geq 5$).
+For $q = 3$, TCA is vacuously false, so the implication holds trivially.
+The self-consistent RandomTwoPointMC thus reduces to exactly two open
+hypotheses: TreeContractionAtHalf and PathSurvival.
+
+\paragraph{Ensemble $\varepsilon$-walk.}
+The formalization
+(\code{EM/Stochastic/EpsilonWalk.lean}, 458~lines, zero \code{sorry})
+develops an ensemble version: instead of fixing $\mathrm{acc} = 2$,
+parametrize the $\varepsilon$-walk by squarefree starting point~$n$.
+The \defname{SigmaCRTPropagationStep} hypothesis (open) asserts that
+CRT equidistribution propagates across steps for $\sigma$-walks,
+mirroring CRTPropagationStep for deterministic walks.
+Under SRE $+$ SigmaCRTPropagationStep, the death density (fraction of
+squarefree~$n$ with $q \mid \mathrm{epsWalkProdFrom}(n,\sigma,k)+1$)
+converges to~$1/(q{-}1)$ for every fixed~$k$ and~$\sigma$
+(\archived{EM/Archive/Stochastic/EpsilonWalkArchive.lean}{sigma\_death\_density\_tendsto}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Deterministic coverage via Cauchy--Davenport.}
+An independent, purely group-theoretic route to coverage is formalized in
+\code{EM/Stochastic/IteratedProductCoverage.lean} (293~lines, zero \code{sorry}).
+Given a sequence $S_0, S_1, \ldots$ of subsets of a finite commutative
+group~$G$ with $\mathrm{minOrder}(G) = |G|$ (true when $|G|$ is prime),
+the \defname{iterated product} $P_n = P_{n-1} \cdot S_{n-1}$ starting
+from $P_0 = \{1\}$ satisfies
+\[
+  |P_n| \;\geq\; \min\Bigl(|G|,\; 1 + \sum_{k<n}(|S_k| - 1)\Bigr)
+\]
+by iterated application of the Cauchy--Davenport theorem
+(\lean{EM/Stochastic/IteratedProductCoverage.lean}{iteratedMulFinset\_card\_growth}
+{\color{leanink}$\checkmark$}).
+If every $|S_k| \geq 2$, then after $|G| - 1$ steps the product is
+$\mathrm{Finset.univ}$
+(\lean{EM/Stochastic/IteratedProductCoverage.lean}{iteratedMulFinset\_eq\_univ}
+{\color{leanink}$\checkmark$}).
+For $(\ZZ/p\ZZ)^\times$ with $p{-}1$ prime (safe primes: $p = 5, 7, 11, 23, \ldots$),
+$\mathrm{minOrder} = p{-}1 = |G|$, and the coverage bound gives diameter
+$p - 2$
+(\lean{EM/Stochastic/IteratedProductCoverage.lean}{safe\_prime\_coverage}
+{\color{leanink}$\checkmark$}).
+This complements the probabilistic Fourier approach: if the
+$\varepsilon$-walk factor sets have $|S_k| \geq 2$ at every step (the
+diversity condition), then Cauchy--Davenport gives deterministic coverage
+in finitely many steps---no spectral hypothesis needed.  The gap is
+ensuring diversity: when $\minFac \equiv \operatorname{secondMinFac}
+\pmod{q}$, the factor set has size~$1$, and the Cauchy--Davenport
+step gives no progress.
+
+\paragraph{Dense capture and Baire category.}
+A topological perspective on the two-point variant is developed in
+\code{EM/Stochastic/DenseCapture.lean} (301~lines, zero \code{sorry}).
+The space of binary selection sequences $\sigma : \NN \to \mathrm{Bool}$
+carries the product topology (Cantor space), which is compact Hausdorff
+and hence a Baire space.  The \defname{captureSet}$(q, \mathrm{acc})$---the
+set of selection sequences that capture prime~$q$ starting from
+accumulator~$\mathrm{acc}$---is \emph{open}, unconditionally
+(\lean{EM/Stochastic/DenseCapture.lean}{captureSet\_isOpen}
+{\color{leanink}$\checkmark$}):
+it equals $\bigcup_k \{\sigma \mid \mathrm{factor}(k) = q\}$,
+and each level set is open because the factor at step~$k$
+depends only on $\sigma(0), \ldots, \sigma(k)$ (finitary dependence,
+\lean{EM/Stochastic/DenseCapture.lean}{epsWalkFactorFrom\_depends\_on\_prefix}
+{\color{leanink}$\checkmark$}).
+
+The sole open hypothesis is \defname{DenseCaptureHypothesis}: for
+$\mathrm{acc} \geq 2$, captureSet$(q, \mathrm{acc})$ is \emph{dense}.
+Under this hypothesis, the Baire category theorem gives that the
+intersection $\bigcap_{q\;\text{prime}} \mathrm{captureSet}(q, \mathrm{acc})$
+is \emph{comeager} (residual): a generic selection sequence captures
+every prime
+(\lean{EM/Stochastic/DenseCapture.lean}{fullCapture\_residual}
+{\color{leanink}$\checkmark$}).
+In particular, such a sequence exists
+(\lean{EM/Stochastic/DenseCapture.lean}{fullCapture\_nonempty}
+{\color{leanink}$\checkmark$}).
+A tail restart identity
+(\lean{EM/Stochastic/DenseCapture.lean}{epsWalkProdFrom\_tail\_restart}
+{\color{leanink}$\checkmark$})
+shows the walk from step~$K$ onward is a fresh walk from the
+accumulator at step~$K$, connecting the density hypothesis to
+the ensemble framework.
+
+%%% The Mixed (1-eps)minFac + eps Random section has been subsumed by
+%%% §6.2 (Factor Tree), §6.3 (Factor Confinement), §6.4 (Almost All GenMixedMC).
+

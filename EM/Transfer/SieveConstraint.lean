@@ -37,8 +37,10 @@ that drives the EM construction.
 * `genSupport_not_dvd_succ` -- support elements do not divide genProd(m, k)+1
 
 ### Phase 4: Specialization
-* `genSupport_two_shift` -- genSupport 2 k = image of seq over {1,...,k}
-* `emSupport_eq_insert` -- emSupport n = {seq 0} union (image of genSeq 2 over {0,...,n-1})
+* `genSupport_two_eq_seq_image` -- genSupport 2 k = image of seq over {1,...,k}
+* `seq_succ_mem_genSupport_two` -- seq(n+1) belongs to genSupport 2 (n+1)
+* `emSupport_succ` -- emSupport (n+1) = insert (seq (n+1)) (emSupport n)
+* `emSupport_card_succ` -- emSupport grows by one element at each step
 -/
 
 open Mullin Euclid

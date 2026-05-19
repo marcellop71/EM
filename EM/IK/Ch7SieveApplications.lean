@@ -203,8 +203,8 @@ def DFTParsevalPrime : Prop :=
     The key step is showing that `stdAddChar (b * n)` equals `eAN(val(n) * val(b) / p)`. -/
 theorem dft_parseval_prime_proved : DFTParsevalPrime := by
   intro p hp A
-  haveI : Fact (Nat.Prime p) := ⟨hp⟩
-  haveI : NeZero p := ⟨hp.ne_zero⟩
+  have : Fact (Nat.Prime p) := ⟨hp⟩
+  have : NeZero p := ⟨hp.ne_zero⟩
   -- Decompose p = p' + 1 so ZMod p = Fin p definitionally
   obtain ⟨p', rfl⟩ : ∃ p', p = p' + 1 := ⟨p - 1, (Nat.succ_pred_eq_of_pos hp.pos).symm⟩
   -- For p = p'+1, ZMod (p'+1) = Fin (p'+1) definitionally, so f = A
@@ -230,7 +230,7 @@ theorem dft_parseval_prime_proved : DFTParsevalPrime := by
     rw [Int.cast_natCast]
     exact ZMod.natCast_zmod_val (show ZMod (p' + 1) from r)
   rw [hcast] at hbridge
-  exact hbridge.trans (by rw [eAN_eq_root_eAN]; congr 1)
+  exact hbridge.trans (by congr 1)
 
 /-- **Residue class sum**: for a sequence `a : Fin N → ℂ` and modulus `p`,
     `residueClassSum a p r` is ∑_{n : Fin N, n ≡ r (mod p)} a_n. -/
@@ -309,7 +309,6 @@ def Lemma715Prime : Prop :=
 theorem eAN_mod_eq {n b p : ℕ} (hp : 0 < p) :
     eAN ((↑n : ℝ) * (↑b : ℝ) / (↑p : ℝ)) =
     eAN ((↑(n % p) : ℝ) * (↑b : ℝ) / (↑p : ℝ)) := by
-  rw [eAN_eq_root_eAN, eAN_eq_root_eAN]
   have hp_ne : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.pos_iff_ne_zero.mp hp)
   -- Strategy: show n*b/p = (n/p)*b + (n%p)*b/p as reals, where (n/p)*b is integer.
   -- To avoid Nat.cast_div turning ↑(n/p) into ↑n/↑p, we work through intermediate steps.
@@ -446,9 +445,9 @@ theorem dftParseval_implies_lemma715Prime :
     simp only [Nat.cast_zero, mul_zero, zero_div] at h
     convert h using 1
     · apply Finset.sum_congr rfl; intro n _
-      rw [show eAN (0 : ℝ) = 1 from by rw [eAN_eq_root_eAN]; exact _root_.eAN_zero, mul_one]
+      rw [_root_.eAN_zero, mul_one]
     · apply Finset.sum_congr rfl; intro r _
-      rw [show eAN (0 : ℝ) = 1 from by rw [eAN_eq_root_eAN]; exact _root_.eAN_zero, mul_one]
+      rw [_root_.eAN_zero, mul_one]
   rw [s0_eq]
   -- Step 2: Regroup each coprime exponential sum
   have exp_regroup : ∀ b ∈ (Finset.range p).filter (Nat.Coprime · p),
@@ -462,7 +461,7 @@ theorem dftParseval_implies_lemma715Prime :
   -- Step 3: Parseval identity
   have parseval := hParseval p hp A
   -- Step 4: Split b=0 and b≠0 in Parseval sum
-  have eAN_zero_eq : eAN (0 : ℝ) = 1 := by rw [eAN_eq_root_eAN]; exact _root_.eAN_zero
+  have eAN_zero_eq : eAN (0 : ℝ) = 1 := _root_.eAN_zero
   have full_split : (p : ℝ) * ∑ r : Fin p, ‖A r‖ ^ 2 =
       ‖∑ r : Fin p, A r‖ ^ 2 +
       ∑ b ∈ (Finset.univ : Finset (Fin p)).filter (fun b : Fin p => (b : ℕ) ≠ 0),
@@ -780,7 +779,7 @@ theorem als_implies_farey_large_sieve_proper (hals : AdditiveLargeSieve) :
         a n * eAN ((↑(n : ℕ) : ℝ) * ((0 : ℕ) : ℝ) / ((1 : ℕ) : ℝ)) = a n := by
       intro n
       have : ((↑(n : ℕ) : ℝ) * ((0 : ℕ) : ℝ) / ((1 : ℕ) : ℝ)) = 0 := by simp
-      rw [this, eAN_eq_root_eAN, _root_.eAN_zero, mul_one]
+      rw [this, _root_.eAN_zero, mul_one]
     conv_lhs => rw [show ∑ n : Fin N, a n * eAN ((↑(n : ℕ) : ℝ) * ((0 : ℕ) : ℝ) / ((1 : ℕ) : ℝ)) =
         ∑ n : Fin N, a n from Finset.sum_congr rfl (fun n _ => hsimp_exp n)]
     -- Need: ‖∑ a_n‖² ≤ (↑1 ^ 2 + ↑N - 1) * l2NormSq a

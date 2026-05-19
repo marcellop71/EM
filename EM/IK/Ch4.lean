@@ -21,6 +21,11 @@ import Mathlib.Analysis.SpecialFunctions.Log.Basic
 Formalization of Chapter 4 of H. Iwaniec and E. Kowalski,
 *Analytic Number Theory*, AMS Colloquium Publications vol. 53, 2004.
 
+**Reference tier**: this file is a statement catalog transcribed from
+Iwaniec–Kowalski for orientation; its declarations are definitions/statements
+(with a handful of proofs) that the reduction network does NOT depend on.
+Only the root `EM.lean` imports it.
+
 ## Contents
 - §4.2: The Euler-Maclaurin formula (Bernoulli polynomials, sawtooth function)
 - §4.3: The Poisson summation formula (bridges to Mathlib)
@@ -137,10 +142,6 @@ and `Real.tsum_eq_tsum_fourier_of_rpow_decay` for functions with power decay.
 -/
 
 section PoissonSummation
-
--- In Mathlib v4.29, FourierTransform instance for SchwartzMap needs manual provision.
-noncomputable instance : FourierTransform (SchwartzMap ℝ ℂ) (SchwartzMap ℝ ℂ) :=
-  SchwartzMap.instFourierTransform
 
 /-- Poisson summation for Schwartz functions — IK Theorem 4.4 (4.23).
     Mathlib: `SchwartzMap.tsum_eq_tsum_fourier`. -/

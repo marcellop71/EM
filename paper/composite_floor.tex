@@ -1,0 +1,1120 @@
+%% =========================================================================
+%% The Composite Floor: (C-infinity)
+%% Promoted out of "Variants of the Conjecture" (2026-08-17 revision):
+%% (C-infinity) is not a variant of MC, it is the necessary condition beneath
+%% every route to it, and it carries the paper's longest unconditional arc.
+%% =========================================================================
+\section{The Composite Floor: $(\mathrm{C}\infty)$}
+\label{sec:cinfty}
+%% =========================================================================
+
+\begin{roadmap}
+Three independent lines of attack on Mullin's conjecture---the target
+ladder, the smallness family, and the obstruction programme---terminate at
+the same open statement:
+\[
+  (\mathrm{C}\infty):\qquad
+  \Prod{2}(n)+1 \text{ is composite for infinitely many } n .
+\]
+This section is about that statement alone.  The arc:
+\begin{enumerate}[nosep,leftmargin=*]
+\item[\S\ref{sec:cinfty-beneath}] Everything rests on it, and the
+  heuristics say it should be true with density one.
+\item[\S\ref{sec:growth-floor}] What the smallness family actually needs is
+  stronger: not that Euclid numbers are sometimes composite, but that they
+  are sometimes \emph{smooth relative to their own size}.
+\item[\S\ref{sec:defect-telescope}] Growth is governed by a single real
+  number $C = \lim_N \log\Prod{2}(N)/2^N$, and $C = 0$ is \emph{equivalent}
+  to $(\mathrm{C}\infty)$---so the failure branch is exactly the autonomous
+  branch, and every obstruction in this paper bears on all of it.
+\item[\S\ref{sec:sylvester-tower}] $(\mathrm{C}\infty)$ is Sylvester-tower
+  primality: no orbit of $s \mapsto s^2-s+1$ through a Euclid number is
+  all-prime.
+\item[\S\ref{sec:backward-orbit}--\ref{sec:level-tower}] Restated in the
+  paper's own language it is a \emph{hitting} statement for the residue
+  walk, against a target of which the classical $\Phi_3$ death equation is
+  only the first rung.  Rungs two and three are reachable by quadratic
+  reciprocity; the ladder is finite.
+\item[\S\ref{sec:arboreal}] The arboreal input---what Chebotarev would
+  supply---is free.  The residual gap is disjoint from it.
+\item[\S\ref{sec:ff-telescope}] Over $\FF_p[t]$, where every analytic input
+  is a theorem, the whole telescope holds with the epsilons removed---and
+  nothing moves.
+\item[\S\ref{sec:cinfty-verdict}] The verdict: $\MC$ implies a
+  no-infinite-prime-tower statement for a doubly exponential sequence,
+  of the shape of the Fermat question.
+\end{enumerate}
+\end{roadmap}
+
+%% =========================================================================
+\subsection{Why Everything Rests on It}
+\label{sec:cinfty-beneath}
+%% =========================================================================
+
+$(\mathrm{C}\infty)$ and its negation, perpetual primality, were defined in
+\S\ref{sec:autonomous-branch}; the branch is not believed to hold, but no
+current method excludes it.  Three separate routes to $\MC$ run into it.
+
+\emph{The smallness family.}  Every statement of
+\S\ref{sec:composite-floor}---$\mathrm{RD}$, $\mathrm{WM}$,
+$\mathrm{MissingFinite}$, and $\MC$ itself---implies $(\mathrm{C}\infty)$,
+and each of the three smallness statements fails outright on the branch.
+
+\emph{The target ladder.}  Even (V)---the weakest orbit target of
+\S\ref{sec:target-ladder}, asking only that every odd prime \emph{divide}
+some Euclid number---forces $(\mathrm{C}\infty)$
+(\lean{EM/Population/SylvesterTower.lean}{infinitelyManyComposite\_of\_everyPrimeDividesEuclid}).
+On the perpetual branch, Bertrand supplies a prime strictly between
+$\Prod{2}(T)+1$ and the next Euclid number: too large to divide the earlier
+ones, too small to equal any later one, and those are all prime.
+
+\emph{The obstruction programme.}  \S\ref{sec:anatomy-axis} shows
+$(\mathrm{C}\infty)$ is what that programme leaves behind: it is not a
+statement about the distribution of primes at all, but about the anatomy of
+the numbers $\Prod{2}(n)+1$.
+
+\smallskip\noindent
+So the question is not whether $(\mathrm{C}\infty)$ is needed.  It is
+whether it can be had.
+
+\paragraph{Why a Euclid number should generally not be prime.}
+The reason is not that primes are scarce among large integers.  It is
+that this sequence \emph{penalises} primality, and at a doubly
+exponential rate.  Compare the two branches of a single step.  If
+$\Prod{2}(n)+1$ is composite, its least factor is a proper factor and the
+accumulator grows by that factor.  If $\Prod{2}(n)+1$ is prime, the least
+factor is the whole Euclid number, so
+\[
+  \Prod{2}(n+1) \;=\; \Prod{2}(n)\bigl(\Prod{2}(n)+1\bigr)
+  \;>\; \Prod{2}(n)^2 ,
+\]
+and the accumulator \textbf{squares}
+(\lean{EM/Population/CompositeFloor.lean}{sq\_lt\_prod\_succ\_of\_prime}).
+Each prime Euclid number doubles $\log \Prod{2}(n)$, so the next
+candidate---whose primality has probability of order $1/\log$---is twice
+as unlikely.  Primality here does not merely occur rarely: it consumes
+the very resource that makes it possible.
+
+That is enough for an unconditional theorem.  Nothing need be assumed,
+because the composite steps only help: they enlarge the accumulator too.
+
+\begin{theorem}[Primality is self-limiting ---
+\lean{EM/Population/CompositeFloor.lean}{two\_pow\_two\_pow\_primeEuclidCount\_le\_prod}]
+\label{thm:self-limiting}
+Let $m$ be the number of $n < N$ with $\Prod{2}(n)+1$ prime.  Then
+\[
+  2^{2^{m}} \;\leq\; \Prod{2}(N),
+  \qquad\text{equivalently}\qquad
+  m \;\leq\; \log_2 \log_2 \Prod{2}(N) .
+\]
+Prime Euclid numbers are at most \emph{doubly logarithmically} many in
+the size of the accumulator.
+\end{theorem}
+
+\paragraph{The matching heuristic.}
+It is worth seeing that this bound is essentially sharp, because the
+naive sieve heuristic---done carefully---reproduces it.  The Euclid
+number is coprime to every prime in the bag, so it is rough, and
+roughness makes primality \emph{more} likely, not less: for a number of
+size $X$ all of whose small prime factors have been excluded,
+\[
+  \mathbb{P}(\text{prime})
+  \;\approx\;
+  \frac{1}{\log X}\prod_{p \in S_n}\Bigl(1-\frac1p\Bigr)^{-1}.
+\]
+On the behaviour the conjecture predicts, the bag $S_n$ is essentially
+the primes up to $p_n$, so by Mertens the correction is
+$\asymp e^{\gamma}\log p_n$, while $\log \Prod{2}(n) = \theta(p_n) \asymp p_n$.
+Hence
+\[
+  \mathbb{P}\bigl(\Prod{2}(n)+1 \text{ prime}\bigr)
+  \;\approx\; \frac{e^{\gamma}\log p_n}{p_n}
+  \;\asymp\; \frac{e^{\gamma}}{n},
+\]
+using $p_n \asymp n\log n$.  Two things follow, and they pull in
+opposite directions.  The probability tends to~$0$, so the Euclid numbers
+should be composite for \emph{almost every}~$n$---which is
+$(\mathrm{C}\infty)$ with density one.  But $\sum 1/n$ diverges, so one
+should expect \emph{infinitely many} prime Euclid numbers as well: the
+sequence should enter the autonomous branch again and again, and leave it
+every time.
+
+(A different heuristic, recorded as Dead End~\#91, predicts only finitely
+many prime Euclid numbers; it assumes doubly exponential growth
+$\log \Prod{2}(n) \asymp 2^{n}$, i.e.\ the perpetual-primality branch,
+under which $\sum 1/\log\Prod{2}(n)$ converges.  The two are not in
+conflict: they condition on the two branches of the dichotomy of
+\S\ref{sec:sylvester-tower}, and on the branch MC predicts the count
+diverges.)  The two estimates agree.  The heuristic predicts $\asymp \log N$ primes
+among the first $N$ Euclid numbers; Theorem~\ref{thm:self-limiting} caps
+that count by $\log_2\log_2 \Prod{2}(N) \asymp \log_2(n \log n) \asymp
+\log N$ on the same behaviour.  So the unconditional bound is saturated
+by the expected truth, and cannot be improved without genuinely new
+input---which is the same conclusion, reached from the opposite side, as
+\S\ref{sec:sylvester-tower}.
+
+\paragraph{Can either half be proved?}
+Neither.  But they are not symmetric, and it is worth being precise about
+how.  The prime and composite stages partition~$\NN$, so
+\emph{at least one} of ``infinitely many prime Euclid numbers'' and
+$(\mathrm{C}\infty)$ is true---that much is free.  Only one of the two
+disjuncts carries content: if $(\mathrm{C}\infty)$ fails, MC fails and
+every smallness statement of \S\ref{sec:composite-floor} fails with it; if instead only
+finitely many Euclid numbers are prime, nothing at all follows.  The
+free disjunction therefore says: \emph{either the interesting statement
+holds, or the harmless one does}, which is no help.
+
+For the prime half there is no technique to try.  Every method that
+produces infinitely many primes in a sparse sequence needs one of two
+things: a positive-density family to sieve, or an algebraic structure
+supporting a Chebotarev-type equidistribution.  The Euclid numbers offer
+neither---there is one integer per index, and the recursion defining them
+invokes factorisation itself.  Fermat, Mersenne and primorial numbers are
+far more structured, and the corresponding questions are open for all
+three.
+
+\smallskip\noindent
+So $(\mathrm{C}\infty)$ is required, expected to hold with density one, and
+carries the whole content of the disjunction.  The rest of this section
+takes it apart.  The first surprise is that the smallness family does not
+need it: it needs something stronger.
+
+%% =========================================================================
+\subsection{The Floor Is a Growth Statement}
+\label{sec:growth-floor}
+%% =========================================================================
+
+The floor of \S\ref{sec:composite-floor} was proved by showing that on the
+perpetual-primality branch $\sum_k 1/\seq{2}(k)$ converges.  It is worth
+asking what that argument actually consumed, because it is not primality.
+Perpetual primality enters only through the inequality
+$\seq{2}(n+1) \geq 2^{\,n}$.  Any lower bound on the selected primes
+would do, and ``large'' may be measured against \emph{any} benchmark
+whose reciprocals converge.  Stripping the hypothesis to what the proof
+uses gives the following, whose proof is a comparison of series with no
+arithmetic in it at all.
+
+\begin{keyresult}
+\textbf{The growth floor} $(\mathrm{S})$
+(\lean{EM/Population/CompositeFloor.lean}{growth\_floor\_landscape}).
+Let $f$ be positive with $\sum_n 1/f(n) < \infty$.  If
+$f(n) \leq \seq{2}(n)$ for all large $n$, then
+$\sum_k 1/\seq{2}(k) < \infty$
+(\lean{EM/Population/CompositeFloor.lean}{summable\_one\_div\_seq\_of\_lower\_bound}).
+Contrapositively, $\mathrm{RD}$ forces the selected primes below every
+such benchmark infinitely often
+(\lean{EM/Population/CompositeFloor.lean}{exists\_lt\_of\_reciprocalDivergence}); in
+arithmetic terms, for every fixed $c$,
+\[
+  \minFac\bigl(\Prod{2}(n)+1\bigr) \;<\; 2^{\,n-c}
+  \qquad\text{for infinitely many } n
+\]
+(\lean{EM/Population/CompositeFloor.lean}{exists\_small\_minFac\_of\_reciprocalDivergence}).
+\end{keyresult}
+
+\noindent
+This is strictly stronger than $(\mathrm{C}\infty)$, which asks only that
+the least factor be \emph{proper}.  Indeed $(\mathrm{S})$ with $c = 0$
+returns $(\mathrm{C}\infty)$ at once, since $2^{\,n} < \Prod{2}(n)+1$
+(\lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_reciprocalDivergence\_via\_growth}),
+and perpetual primality is recovered as the extreme case
+$f(n) = 2^{\,n}$.  So the true content of the floor is not that the
+Euclid numbers are sometimes composite, but that they are sometimes
+\emph{smooth relative to their own size}.  That is a strictly harder
+demand, and it is what the whole smallness family rests on.
+
+%% =========================================================================
+\subsection{The Defect Telescope}
+\label{sec:defect-telescope}
+%% =========================================================================
+
+\paragraph{The criterion, and why it looked lossy.}
+The self-limiting bound of \S\ref{sec:cinfty-beneath} yields a genuine
+reformulation of $(\mathrm{C}\infty)$.  Splitting the first $N$ stages into
+prime and composite ones and applying Theorem~\ref{thm:self-limiting},
+\[
+  N \;\leq\; \#\{n < N : \Prod{2}(n)+1 \text{ composite}\}
+      \;+\; \log_2\log_2 \Prod{2}(N)
+\]
+(\lean{EM/Population/CompositeFloor.lean}{le\_compositeEuclidCount\_add\_log\_log}),
+so composite Euclid numbers occur past every stage as soon as $N$ outruns
+$\log_2\log_2 \Prod{2}(N)$ by an unbounded margin
+(\lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_subtower\_growth}).
+\emph{$(\mathrm{C}\infty)$ follows from any bound saying the accumulator
+grows strictly slower than the maximal tower rate.}
+
+This reformulation is honest about its own difficulty.  The selected
+factor never exceeds the Euclid number, so the accumulator obeys the
+unconditional ceiling
+\[
+  \Prod{2}(N) + 1 \;\leq\; 3^{\,2^{N}}
+\]
+(\lean{EM/Population/CompositeFloor.lean}{prod\_add\_one\_le\_three\_pow}),
+whence $\log_2\log_2 \Prod{2}(N) \leq N + O(1)$ and the displayed
+inequality is vacuous unless the ceiling can be beaten by an unbounded
+margin.  Beating it is precisely what perpetual primality forbids, so the
+reformulation ought to be equivalent in strength to $(\mathrm{C}\infty)$
+rather than weaker.  The rest of this subsection proves that it is,
+exactly, and in the process shows that the change of subject---from the
+primality of individual terms to the growth rate of one explicit
+recursion---is information-preserving rather than lossy.
+
+\smallskip\noindent
+What follows makes the growth side into an object.  It attaches to the
+orbit a single real number, shows that the criterion above is
+\emph{exactly} the vanishing of that number, and---this is the point---%
+shows that the number is forced to vanish by hypotheses far weaker than
+$\MC$.  Everything here is elementary; none of it is about the primality of
+any individual term.
+
+\paragraph{The identity.}
+Write $L(n) = \log \Prod{2}(n)$.  Since
+$\Prod{2}(n+1) = \Prod{2}(n)\,\seq{2}(n+1)$,
+\[
+  L(n+1) \;=\; L(n) + \log \seq{2}(n+1).
+\]
+The maximal step is the perpetual-primality step
+$\seq{2}(n+1) = \Prod{2}(n)+1$, where the second summand is $L(n)$ again
+and $L$ doubles.  Measuring every step against that maximum defines the
+\textbf{defect}
+\[
+  \delta(n) \;:=\; L(n) - \log \seq{2}(n+1),
+\]
+and the recursion becomes exactly
+\[
+  L(n+1) \;=\; 2L(n) - \delta(n)
+\]
+(\lean{EM/Population/DefectTelescope.lean}{logProd\_succ\_eq\_two\_mul\_sub\_defect}).
+Dividing by $2^{\,n+1}$ telescopes it:
+\begin{equation}
+\label{eq:defect-telescope}
+  \frac{L(N)}{2^{N}}
+  \;=\; L(0) \;-\; \sum_{n<N} \frac{\delta(n)}{2^{\,n+1}}
+\end{equation}
+(\lean{EM/Population/DefectTelescope.lean}{normLog\_eq\_sub\_sum}).
+The defect is not quite nonnegative---a prime Euclid number overshoots,
+because $\seq{2}(n+1) = \Prod{2}(n)+1 > \Prod{2}(n)$---but it overshoots
+by at most $\log(1 + 1/\Prod{2}(n)) \leq 2^{-(n+1)}$, using the
+unconditional bound $2^{\,n+1} \leq \Prod{2}(n)$
+(\lean{EM/Population/DefectTelescope.lean}{neg\_two\_pow\_le\_defect}).  So
+$L(N)/2^{N}$ is decreasing up to a summable error, is positive, and
+therefore \textbf{converges}.
+
+\begin{definition}[The growth constant]
+\label{def:growth-constant}
+$C \;:=\; \displaystyle\lim_{N\to\infty} \frac{\log \Prod{2}(N)}{2^{N}}
+ \;=\; L(0) - \sum_{n\geq 0} 2^{-(n+1)}\delta(n) \;\geq\; 0$
+(\lean{EM/Population/DefectTelescope.lean}{tendsto\_normLog},
+ \lean{EM/Population/DefectTelescope.lean}{growthConstant\_nonneg}).
+\end{definition}
+\noindent The existence of such a limit for a doubly exponential
+recurrence $x_{n+1} = x_n^2(1+o(1))$ is the standard Aho--Sloane
+argument~\cite{AhoSloane1973}; what is specific here is the exact
+defect telescope and the identification of $C = 0$ below.
+
+\noindent
+Note the weighting.  A defect incurred at stage $n$ is discounted by
+$2^{-n}$, so \emph{no finite computation can contribute to $C$}: the
+first fifty stages move it by an amount that the tail can undo.  This is
+not a defect of the definition but a correct reflection of the problem,
+and it is the reason the numerical evidence of \S\ref{sec:hard} is
+silent here.
+
+\paragraph{What the constant decides.}
+Three statements, all proved, and all about $C$ alone.
+
+\begin{keyresult}
+\textbf{The defect landscape}
+(\lean{EM/Population/DefectTelescope.lean}{defect\_landscape}).
+\begin{enumerate}[nosep,leftmargin=*]
+\item The sub-tower growth criterion of \S\ref{sec:composite-floor}---%
+that $N$ outruns $\log_2\log_2\Prod{2}(N)$ by an unbounded margin---holds
+\emph{if and only if} $C = 0$
+(\lean{EM/Population/DefectTelescope.lean}{subtower\_growth\_iff\_growthConstant\_eq\_zero}).
+\item $C = 0 \Rightarrow (\mathrm{C}\infty)$
+(\lean{EM/Population/DefectTelescope.lean}{infinitelyManyComposite\_of\_growthConstant\_eq\_zero}).
+\item $\mathrm{RD} \Rightarrow C = 0$
+(\lean{EM/Population/DefectTelescope.lean}{growthConstant\_eq\_zero\_of\_reciprocalDivergence}),
+hence so do $\mathrm{WM}$, $\mathrm{MissingFinite}$ and $\MC$.
+\end{enumerate}
+\end{keyresult}
+
+\noindent
+Item (1) is what the previous subsection could only gesture at.  The
+criterion that looked merely sufficient for $(\mathrm{C}\infty)$ is
+\emph{identical} to $C = 0$; and if $C > 0$ then
+$\log_2\log_2 \Prod{2}(N) = N + \log_2 C + \log_2\log_2 e + o(1)$ (natural
+$\log$ in $C$), which is exactly why the
+inequality $N \leq \#\{\text{composites}\} + \log_2\log_2\Prod{2}(N)$ is
+vacuous on that branch.
+
+Item (3) is the new floor, and it is strictly below $(\mathrm{S})$.  Where
+$(\mathrm{S})$ says the selected primes are sometimes small,
+$\mathrm{RD} \Rightarrow C = 0$ says $\log \Prod{2}(N) = o(2^{N})$: a
+statement about the orbit as a whole, with no reference to any individual
+term.  The chain
+\[
+  \MC \;\Rightarrow\; \mathrm{RD} \;\Rightarrow\; C = 0
+  \;\Rightarrow\; (\mathrm{C}\infty)
+\]
+replaces an anatomy question by a growth question at both ends.
+
+\paragraph{How wide is the failure branch?  Not at all.}
+The natural next question is what the surviving alternative looks like.
+If $C > 0$ then the terms $2^{-(n+1)}\delta(n)$ of
+\eqref{eq:defect-telescope} are summable, so
+$\delta(n) = o(2^{n}) = o(L(n))$, that is
+\begin{equation}
+\label{eq:near-perpetual}
+  \frac{\log \seq{2}(n+1)}{\log \Prod{2}(n)} \;\longrightarrow\; 1
+\end{equation}
+(\lean{EM/Population/DefectTelescope.lean}{tendsto\_log\_seq\_div\_logProd\_of\_pos}).
+Read naively this looks like a branch far wider than perpetual primality:
+the least prime factor need only be $\Prod{2}(n)^{1-o(1)}$, not the Euclid
+number itself, and on such a branch no Euclid number need be prime.
+
+That reading is wrong, and the fact that kills it is the oldest one in the
+subject.  \emph{Trial division}: if $\minFac(X) > \sqrt X$ then $X$ is
+prime, since otherwise $X = pm$ with $m \geq p > \sqrt X$ forces $X > X$
+(\lean{EM/Core/Euclid.lean}{minFac\_sq\_le}).  A ratio in
+\eqref{eq:near-perpetual} eventually above $1/2$ therefore \emph{is}
+primality.  Quantitatively, the defect has a gap.
+
+\begin{lemma}[The defect gap ---
+\lean{EM/Population/DefectTelescope.lean}{defect\_gap}]
+\label{lem:defect-gap}
+For every $n$, either $\delta(n) \leq 0$---which happens exactly when
+$\Prod{2}(n)+1$ is prime---or
+\[
+  \delta(n) \;\geq\; \tfrac12 L(n) - 2^{-(n+2)} ,
+\]
+which happens exactly when it is composite.  Nothing lies in between: the
+ratio \eqref{eq:near-perpetual} never enters $(\tfrac12 + \varepsilon,\, 1)$.
+\end{lemma}
+
+\noindent
+Feeding the composite case back into the telescope, one composite stage
+multiplies the (corrected) normalised accumulator by $3/4$.  Iterating
+gives an unconditional bound in which composite stages \emph{provably damp
+the tower}:
+\begin{equation}
+\label{eq:damping}
+  \log \Prod{2}(N)
+  \;\leq\;
+  \Bigl(\log 2 + \tfrac13\Bigr)\,
+  \Bigl(\tfrac34\Bigr)^{\#\{n<N\,:\,\Prod{2}(n)+1 \text{ composite}\}}
+  \, 2^{N}
+\end{equation}
+(\lean{EM/Population/DefectTelescope.lean}{logProd\_le\_pow\_mul}).  This
+refines the tower ceiling $\Prod{2}(N)+1 \leq 3^{2^N}$ of
+\S\ref{sec:composite-floor}, which is the case of no composite stages at
+all.  And it closes the circle: infinitely many composite stages drive the
+right-hand side of \eqref{eq:damping} to $o(2^N)$, so $C = 0$.
+
+\begin{keyresult}
+\textbf{The growth constant is a complete invariant}
+(\lean{EM/Population/DefectTelescope.lean}{infinitelyManyComposite\_iff\_growthConstant\_eq\_zero},
+ \lean{EM/Population/DefectTelescope.lean}{growthConstant\_pos\_iff\_perpetualPrimality}).
+\[
+  C = 0 \iff (\mathrm{C}\infty),
+  \qquad
+  C > 0 \iff \Prod{2}(n)+1 \text{ is prime for all large } n .
+\]
+\end{keyresult}
+
+\begin{theorem}[The dichotomy, sharp ---
+\lean{EM/Population/DefectTelescope.lean}{defect\_dichotomy}]
+\label{thm:defect-dichotomy}
+Either $(\mathrm{C}\infty)$ holds and $C = 0$; or the sequence is
+eventually on the perpetual-primality branch, $C > 0$, and
+$\minFac(\Prod{2}(n)+1) = \Prod{2}(n)^{1-o(1)}$.  Each alternative is
+equivalent to its growth-side description.
+\end{theorem}
+
+\paragraph{What this settles, and what it costs.}
+It costs the hope that the growth reformulation was weaker than
+$(\mathrm{C}\infty)$.  It is not weaker by any margin: $C$ is a complete
+invariant, so \S\ref{sec:composite-floor}'s remark that the reformulation
+is ``equivalent in strength'' is now literally a theorem.  Together with
+\S\ref{sec:target-ladder} and \S\ref{sec:composite-floor} that is three
+attempted weakenings, all of which came back exactly equivalent, for the
+same structural reason: the problem has very few genuine degrees of
+freedom.
+
+What it settles is more useful.  The failure branch is \emph{exactly} the
+autonomous branch.  Every obstruction in this paper---the autonomous-map
+argument of \S\ref{sec:hard}, the density-$1/2$ $\Phi_3$ exclusion, the
+$\Phi_6$ orbit counting of \S\ref{sec:sylvester-tower}, the refutation
+below stage~$8$---applies only where the recursion degenerates into an
+autonomous map $w \mapsto w^2+w$, and one might have feared that this was
+a measure-zero corner of the true failure set.  It is the whole of it.
+Nothing escapes, and the machinery is aimed correctly.
+
+Finally, the route to item (3) is worth isolating, because it converts a
+growth statement back into an arithmetic one without using trial division
+at all.  On the branch \eqref{eq:near-perpetual} the selected primes
+eventually exceed $(\sqrt 2)^{\,n}$---geometric growth, with room to
+spare---and $(\mathrm{S})$ then makes $\sum_k 1/\seq{2}(k)$ converge
+(\lean{EM/Population/DefectTelescope.lean}{not\_reciprocalDivergence\_of\_growthConstant\_pos}).
+Given the equivalence this is a second proof of $\mathrm{RD} \Rightarrow
+(\mathrm{C}\infty)$, and the only one that is insensitive to how large the
+least prime factor is allowed to be.
+
+\paragraph{The seeded growth constant: $C$ as a factor map.}
+\label{sec:seeded-growth}
+Nothing in the telescope uses the seed.  For every $m \ge 2$ the same
+argument gives $C(m) = \lim_n \log(T^n m)/2^n$ with $T(n) = n \cdot
+\minFac(n{+}1)$ (\code{EM/Population/SeededGrowth.lean}, \code{sgrowth}),
+and the tail identity $T^{n+1} m = T^n(Tm)$ turns the limit into a
+\emph{semiconjugacy}: $C(Tm) = 2\,C(m)$ and $C(T^k m) = 2^k C(m)$
+(\lean{EM/Population/SeededGrowth.lean}{sgrowth\_T},
+ \lean{EM/Population/SeededGrowth.lean}{sgrowth\_iterate}).  The complete
+invariance holds seed by seed---$C(m) = 0$ iff the orbit of $m$ has
+infinitely many composite Euclid numbers, $C(m) > 0$ iff it is eventually
+on the perpetual-primality branch
+(\lean{EM/Population/SeededGrowth.lean}{seedInfinitelyManyComposite\_iff\_sgrowth\_eq\_zero},
+ \lean{EM/Population/SeededGrowth.lean}{sgrowth\_pos\_iff\_eventually\_prime})---and
+$C(2)$ is the constant above
+(\lean{EM/Population/SeededGrowth.lean}{sgrowth\_two}).  So $C$ maps
+$(X,T)$ onto doubling on $[0,\infty)$; the set $\{C > 0\}$ is
+$T$-invariant, and \defname{MixedDiversity} (\S\ref{sec:variants}), the
+statement that $(\mathrm{C}\infty)$ holds from \emph{every} seed, is
+exactly the statement that this invariant set is empty
+(\lean{EM/Population/SeededGrowth.lean}{mixedDiversity\_iff\_sgrowth\_zero}).
+One consequence, and one non-consequence.  A seed with $C(m) > 0$ would be a doubly exponential
+Sylvester-type prime tower; its non-existence for every seed is a
+universal Fermat-shaped statement, strictly stronger than the floor
+$(\mathrm{C}\infty)$ for the seed~$2$ and independent of MC.  (We do
+\emph{not} claim an ergodic content: $(X,T)$ has no invariant probability
+measure at all, trivially, because $T(m) > m$ on a countable set; the
+semiconjugacy to doubling adds nothing to that.)
+
+\paragraph{How thin is $\{C>0\}$?}
+\label{sec:growth-density}
+Threshold by threshold, null.  Writing $E_N = \{m : T^n m + 1 \text{
+prime for all } n \ge N\}$, one has $\{C > 0\} = \bigcup_N E_N$
+(\lean{EM/Population/GrowthDensity.lean}{sgrowth\_pos\_subset\_iUnion}),
+and every $E_N$ has natural density zero
+(\lean{EM/Population/GrowthDensity.lean}{hasDensityZero\_perpetual}).
+The proof uses no prime number theorem: primes have density zero by the
+elementary sieve bound with the primorial modulus and $\prod_{r<z}(1-1/r)
+\to 0$ (\lean{EM/Population/GrowthDensity.lean}{hasDensityZero\_prime}),
+and density zero pulls back under $T$
+(\lean{EM/Population/GrowthDensity.lean}{hasDensityZero\_comp\_T}: split by
+$p = \minFac(m+1)$; each fixed $p \le z$ injects $m \mapsto mp$ into a thin
+set, and the tail $\minFac(m+1) > z$ is the rough count of density
+$c(z{+}1) \to 0$), so at every fixed stage almost no seed has a prime
+Euclid number
+(\lean{EM/Population/GrowthDensity.lean}{hasDensityZero\_genProd\_prime}).
+What does \emph{not} follow, and is not claimed: that $\{C>0\}$ itself is
+null.  Natural density is not countably subadditive, and the pull-back
+costs a factor depending on the head cut $z$ that iterating $N$ times does
+not control uniformly.  ``MixedDiversity holds for almost every seed'' is
+therefore a threshold-by-threshold statement here, and the uniform version
+is a genuine open question, though a mild one next to MC.
+
+\paragraph{What the growth coordinate says about the walk.}
+\label{sec:size-residue}
+The two projections are coupled through exactly one bit.  At a
+\emph{prime} stage the multiplier is $P+1$ itself, so its residue is forced
+by the walk position, $\minFac(P+1) \equiv w+1$
+(\lean{EM/Population/SizeResidueDecoupling.lean}{multiplier\_residue\_of\_prime\_stage}):
+this is the autonomous branch $w \mapsto w(w+1)$ of
+\S\ref{sec:autonomous-branch}, the branch on which $C>0$ lives.  At a
+\emph{composite} stage nothing is forced.  In the ensemble, for every odd
+prime~$q$, every walk position $w \ne -1$, every unit residue~$a$ and every
+bound~$K$ there is a squarefree seed $m \equiv w \pmod q$ whose Euclid
+number is composite with $\minFac(m+1) \equiv a \pmod q$ and
+$\minFac(m+1) \ge K$
+(\lean{EM/Population/SizeResidueDecoupling.lean}{exists\_seed\_composite\_residue\_size};
+take $m = 2m'$ with $m'$ a Dirichlet prime in a CRT class that makes
+$2m'+1 \equiv 0$ modulo a Dirichlet prime $p \equiv a$, $p > K$, and
+$\equiv 2$ modulo every other odd prime below~$p$).  So on $\{C = 0\}$ the
+growth projection carries no residue information beyond ``the walk is not on
+its autonomous branch at these stages''---which is why the two projections
+are not on a par, and why nothing above the floor came from the growth
+side.  This is a statement about seeds; along the orbit of~$2$ the pairs
+(position, size) are what they are (Dead Ends~\#90/\#117).
+
+\paragraph{A second invariant: relative size.}
+\label{sec:relative-size}
+$C$ is scaled by~$T$.  An invariant that is \emph{not} scaled is the
+asymptotic relative size of the selected multiplier,
+\[
+  \rho(m) \;=\; \liminf_{n}\;
+  \frac{\log \minFac(T^n m + 1)}{\log T^n m},
+\]
+for which $\rho(Tm) = \rho(m)$ exactly, since $T$ acts on the orbit as the
+shift (\lean{EM/Population/RelativeSize.lean}{rho\_T}).  It refines the
+dichotomy: $C(m) > 0 \iff \rho(m) = 1$ (on the perpetual-primality branch
+the ratio tends to~$1$), $C(m) = 0 \iff \rho(m) \le \tfrac12$ (at a
+composite stage $\minFac(P+1)^2 \le P+1$), so $\rho \in [0,\tfrac12] \cup
+\{1\}$
+(\lean{EM/Population/RelativeSize.lean}{sgrowth\_pos\_iff\_rho\_eq\_one},
+ \lean{EM/Population/RelativeSize.lean}{sgrowth\_eq\_zero\_iff\_rho\_le\_half},
+ \lean{EM/Population/RelativeSize.lean}{rho\_dichotomy}); and reciprocal
+divergence forces $\rho = 0$, because $\rho > \varepsilon$ makes
+$\minFac(T^n m+1) \ge (T^n m)^{\varepsilon} \ge 2^{\varepsilon n}$
+eventually and the reciprocals summable
+(\lean{EM/Population/RelativeSize.lean}{rho\_eq\_zero\_of\_seedRD}).  For
+the orbit of~$2$ this inserts a rung in the floor ladder
+(\lean{EM/Population/RelativeSize.lean}{relative\_size\_landscape}):
+\[
+  \MC \;\Rightarrow\; \mathrm{RD} \;\Rightarrow\; \rho(2) = 0
+  \;\Rightarrow\; \rho(2) \le \tfrac12 \;\iff\; (\mathrm{C}\infty)
+  \;\iff\; C = 0 .
+\]
+Whether $\rho(2) = 0$ is strictly weaker than RD, or strictly stronger
+than $(\mathrm{C}\infty)$, is open; (S) sits between RD and $\rho(2)=0$.
+Nothing here points upward: $\rho$ is a growth-side quantity and inherits
+the decoupling of the previous paragraph.
+
+%% =========================================================================
+\subsection{$(\mathrm{C}\infty)$ Identified: the Sylvester Tower}
+\label{sec:sylvester-tower}
+%% =========================================================================
+
+The floor is worth naming, because it is not new.  On the
+perpetual-primality branch the Euclid numbers satisfy
+\[
+  \bigl(\Prod{2}(n+1)+1\bigr)
+  = \bigl(\Prod{2}(n)+1\bigr)^{2} - \bigl(\Prod{2}(n)+1\bigr) + 1,
+\]
+which is \emph{Sylvester's recursion} $s \mapsto s^2 - s + 1$.  And
+$\Prod{2}(n)+1$ for $n = 0,1,2,3$ is
+\[
+  3,\quad 7,\quad 43,\quad 1807,
+\]
+which is Sylvester's sequence $2, 3, 7, 43, 1807, 3263443, \dots$ from
+its second term.  The Euclid--Mullin sequence \emph{is} Sylvester's
+sequence for exactly as long as the Euclid numbers stay prime, and it
+broke away at $1807 = 13 \cdot 139$---which is why $\seq{2}(4) = 13$.
+
+\begin{theorem}[(C$\infty$) is Sylvester-tower primality ---
+\lean{EM/Population/SylvesterTower.lean}{infinitelyManyComposite\_iff\_tower\_composite}]
+\label{thm:sylvester-tower}
+Perpetual primality from~$N$ holds if and only if every term of the
+Sylvester tower seeded at $\Prod{2}(N)+1$ is prime.  Hence
+(C$\infty$) holds if and only if, for every~$N$, the tower seeded at
+$\Prod{2}(N)+1$ contains a composite term.
+\end{theorem}
+
+\noindent
+This closes a loop with the take-all rule of the previous subsection,
+which \emph{is} Sylvester's sequence: the $\minFac$ rule degenerates to
+the take-all rule precisely on the perpetual-primality branch, which is
+the one branch where the min rule's growth advantage evaporates.
+Whether Sylvester's own sequence contains infinitely many primes (or
+only finitely many, or is even squarefree) is open~\cite{Vardi1991};
+what is known is that the primes dividing some Sylvester number have
+density zero~\cite{Odoni1985}.
+
+\paragraph{Why the two elementary attacks are unavailable.}
+Both standard routes to a compositeness theorem are provably blocked
+here, and by obstructions this paper has already established.
+
+\emph{Congruence.}  Forcing a small prime $\ell$ into $\Prod{2}(n)+1$
+means steering $\Prod{2}(n) \bmod \ell$ into a prescribed set of residues.
+Taken naively that set is the root set of $\Phi_6$, non-empty only for
+$\ell \equiv 1 \pmod 6$---and \S\ref{sec:backward-orbit} shows the real
+target is considerably larger than that.  But enlarging it does not help,
+because the obstruction is not the size of the target: it is that the
+requirement is a statement about the position of \emph{one specific orbit}
+modulo a prime outside the bag, and
+\lean{EM/Obstruction/NoInvariant.lean}{free\_transition} says congruence
+data does not constrain it.  \S\ref{sec:backward-orbit}--\ref{sec:arboreal}
+make that verdict progressively sharper; none of them overturns it.
+
+\emph{Reciprocity.}  The available symbol data is automatically
+consistent.  Since $\Prod{2}(n) \equiv 2 \pmod 4$, the candidate
+$p = \Prod{2}(n)+1$ satisfies $p \equiv 3 \pmod 4$ and $(p-1)/2$ is odd;
+since $p \equiv 1 \pmod{\seq{2}(k)}$ for every $k \leq n$, quadratic
+reciprocity gives $\bigl(\tfrac{\seq{2}(k)}{p}\bigr) = (-1)^{(\seq{2}(k)-1)/2}$
+and hence
+\[
+  \Bigl(\tfrac{\Prod{2}(n)}{p}\Bigr) = \Bigl(\tfrac{2}{p}\Bigr) \cdot (-1)^{t},
+  \qquad t = \#\{k \leq n : \seq{2}(k) \equiv 3 \bmod 4\}.
+\]
+But $\bigl(\tfrac{\Prod{2}(n)}{p}\bigr) = \bigl(\tfrac{-1}{p}\bigr) = -1$,
+and $\bigl(\tfrac{2}{p}\bigr)$ is fixed by $\Prod{2}(n) \bmod 8$, which is
+fixed by the \emph{same} parity~$t$.  The two sides agree identically.
+This is the concrete instance of
+\lean{EM/Reciprocity/NoReciprocityInvariant.lean}{no\_reciprocity\_induction\_proof}.
+
+%% =========================================================================
+\subsection{$(\mathrm{C}\infty)$ as a Hitting Statement}
+\label{sec:backward-orbit}
+%% =========================================================================
+
+The congruence attack is blocked, but the target it aims at is far smaller
+than the one actually available, and it is worth saying by how much.  A
+prime $\ell$ divides the $k$-th term of the tower seeded
+at $s$ exactly when $s \bmod \ell$ reaches $0$ after $k$ steps of
+$\Phi_6$, because reduction mod $\ell$ commutes with the recursion
+(\lean{EM/Population/BackwardOrbit.lean}{cast\_tower},
+ \lean{EM/Population/BackwardOrbit.lean}{dvd\_tower\_iff}).  Write
+\[
+  \mathrm{PreZero}(\ell)
+  \;=\;
+  \{x \in \ZZ/\ell\ZZ \;:\; \Phi_6^{\,k}(x) = 0 \text{ for some } k \geq 0\}
+\]
+for the \emph{backward orbit of~$0$}.  Then (C$\infty$) is exactly a
+hitting statement for the residue walk.
+
+\begin{theorem}[(C$\infty$) is walk-hitting ---
+\lean{EM/Population/BackwardOrbit.lean}{backwardOrbitHitting\_iff\_infinitelyManyComposite}]
+\label{thm:backward-orbit}
+$(\mathrm{C}\infty)$ holds if and only if for every~$N$ there is a
+prime~$\ell$ and a level~$k$ with
+$\Phi_6^{\,k}\bigl(\walkZ{2}{\ell}{N}+1\bigr) = 0$, witnessed below the tower
+term it kills.  Contrapositively, on the perpetual-primality branch the
+walk value at the branch point satisfies
+\[
+  \walkZ{2}{\ell}{N} + 1 \;\notin\; \mathrm{PreZero}(\ell)
+  \qquad\text{for \emph{every} prime } \ell \leq \Prod{2}(N)
+\]
+(\lean{EM/Population/BackwardOrbit.lean}{walkZ\_notMem\_preZero\_of\_perpetual}).
+\end{theorem}
+
+\noindent
+The equivalence is exact, so nothing is lost; what changes is the shape
+of what must be proved, and the comparison is stark.
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+\textbf{Statement} & \textbf{Target in $\ZZ/q\ZZ$} & \textbf{Moduli needed} \\
+\midrule
+$\MC$ & the single residue $-1$ & \emph{every} prime $q$ \\
+$(\mathrm{C}\infty)$ & $\mathrm{PreZero}(\ell)$ & \emph{some} prime $\ell$, per stage \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+Two features make the second target the larger one.  First,
+$\mathrm{PreZero}$ is backward-closed under $\Phi_6$
+(\lean{EM/Population/BackwardOrbit.lean}{mem\_preZero\_of\_phi6\_mem}): it
+is the union of all iterated preimages of $0$, not a single residue.
+Second---and this locates the classical obstruction precisely---%
+\[
+  \Phi_6(w+1) \;=\; w^2 + w + 1 \;=\; \Phi_3(w)
+\]
+(\lean{EM/Population/BackwardOrbit.lean}{phi6\_add\_one}), so \emph{level
+one} of $\mathrm{PreZero}$ is exactly the death equation of the take-all
+rule, the one whose insolubility modulo $q \equiv 2 \pmod 3$ drives the
+density-$1/2$ failure of \S\ref{sec:selection-landscape}.  Every argument
+the project has aimed at $\Phi_3$ uses one level; $(\mathrm{C}\infty)$ may
+use any level.
+
+Against that, the supply of usable moduli is halved: a nonzero element of
+$\mathrm{PreZero}(\ell)$ forces a root of $\Phi_6$, hence a primitive
+sixth root of unity, hence $6 \mid \ell-1$ (for primes $\ell \ne 2, 3$;
+\lean{EM/Population/BackwardOrbit.lean}{six\_dvd\_sub\_one\_of\_phi6\_root}).
+For $\ell \not\equiv 1 \pmod 6$ the target is $\{0\}$ and useless.  Even
+so, heuristically the in-tree of a node in the functional graph of a map
+on $\ZZ/\ell\ZZ$ has size of order $\sqrt{\ell}$, so the target density is
+about $\ell^{-1/2}$ rather than $\ell^{-1}$, and
+$\sum_{\ell \equiv 1 (6)} \ell^{-1/2}$ diverges---at rate
+$\sqrt L/\log L$ rather than $\log\log L$.  (That count is a heuristic and
+is not formalised; the criterion, the backward-closure and the $\Phi_3$
+identification are.)
+
+The conclusion is a calibration, not a proof.  $(\mathrm{C}\infty)$ needs
+an \emph{existential} hit against a large target; $\MC$ needs a
+\emph{universal} hit against a single residue.  Every hitting hypothesis
+in this paper is therefore far more than $(\mathrm{C}\infty)$ requires---%
+and none of them is available, because the obstruction is not the size of
+the target but the fact that one specific orbit is being asked about.
+
+%% =========================================================================
+\subsection{The Level Tower: Past $\Phi_3$}
+\label{sec:level-tower}
+%% =========================================================================
+
+\paragraph{One map, arrived at three times.}
+Before climbing, it is worth pausing on a coincidence that this paper has
+so far kept hidden by naming the same object differently in three places.
+The map
+\[
+  q(w) \;=\; w^2 + w
+\]
+has appeared as: the \emph{residue walk on the perpetual-primality branch},
+where the recursion degenerates and $\walkZ{2}{q}{n+1} = f(\walkZ{2}{q}{n})$
+with $f(w) = w(w+1)$ (\S\ref{sec:autonomous-branch}); the walk of the
+\emph{take-all selection rule}, which banks every prime factor and closes
+the recursion into the same autonomous map
+(\S\ref{sec:selection-landscape}); and now, conjugated by $w \mapsto w+1$,
+the map whose backward orbit of $-1$ is the $(\mathrm{C}\infty)$ target.
+They are the same map, and its death condition $q(w) = -1$, i.e.\
+$\Phi_3(w) = 0$, is the same equation in all three readings.  From here on
+we write $q$ for it throughout.
+
+\paragraph{Raising the level past $\Phi_3$.}
+The comparison above is only useful if the higher levels are genuinely
+occupied, and they can be located exactly.  Translation by~$1$ conjugates
+$q$ to $\Phi_6$, since $\Phi_6(w+1) = (w+1)w + 1 = q(w)+1$; iterating,
+$\Phi_6^{\,k}(w+1) = q^{\,k}(w) + 1$
+(\lean{EM/Population/BackwardLevels.lean}{iterate\_phi6\_add\_one}).  Hence
+
+\begin{theorem}[Levels are take-all steps ---
+\lean{EM/Population/BackwardLevels.lean}{mem\_preZero\_iff\_sylvWalk\_reaches\_neg\_one}]
+\label{thm:levels-are-steps}
+$\walkZ{2}{\ell}{N} + 1 \in \mathrm{PreZero}(\ell)$ if and only if the
+take-all walk started at $\walkZ{2}{\ell}{N}$ reaches~$-1$.  The hit level
+is the number of take-all steps before death.
+\end{theorem}
+
+\noindent
+So level~$0$ is ``the walk value is already $-1$'', level~$1$ is
+$q(w) = -1$, i.e.\ $\Phi_3(w) = 0$---\emph{the classical condition}---and
+level~$k$ is death after $k$ steps.  Two structural facts follow at once.
+The levels are \textbf{disjoint}, because $q(-1) = 0$ and $q(0) = 0$, so
+an orbit that dies is absorbed at~$0$ and never returns
+(\lean{EM/Population/BackwardLevels.lean}{death\_level\_unique}).  And
+raising the level buys \textbf{no new moduli}: a hit at any level $\geq 1$
+produces a root of $\Phi_3$, hence a primitive cube root of unity, hence
+$6 \mid \ell-1$ (again for $\ell \ne 2, 3$;
+\lean{EM/Population/BackwardLevels.lean}{six\_dvd\_sub\_one\_of\_death}).
+What it buys is a strictly larger target \emph{inside} those moduli.
+
+That target is non-empty, and one ring identity governs every level of
+it.  The two $q$-preimages of a point are $y$ and $-1-y$, since
+$q(-1-y) = q(y)$; passing from a level-$m$ point $z$ to level $m+1$ means
+solving $y^2+y=z$, so it is possible exactly when the discriminant $1+4z$
+is a square
+(\lean{EM/Population/BackwardLevels.lean}{sylvWalk\_step\_of\_isSquare}),
+and the two discriminants produced at the next level satisfy
+\begin{equation}
+\label{eq:delta-identity}
+  (1+4y)\,\bigl(1+4(-1-y)\bigr) \;=\; -3 - 16\,q(y)
+\end{equation}
+(\lean{EM/Population/BackwardLevels.lean}{preimage\_pair\_discriminant})---a
+polynomial identity, with no appeal to Vieta and no field hypothesis.
+Write $\Delta(z) = -3-16z$.  Then \emph{the pair of discriminants one level
+above $z$ multiplies to $\Delta(z)$}, and the whole tower is governed by
+evaluating $\Delta$ along backward orbits.
+
+\begin{theorem}[The lift ---
+\lean{EM/Population/BackwardLevels.lean}{exists\_death\_level\_add\_two}]
+\label{thm:level-lift}
+If $z$ is at level~$m$, $1+4z$ is a square, and $\Delta(z)$ is a
+\emph{non}-square, then level $m+2$ is occupied.
+\end{theorem}
+
+\noindent
+Both levels beyond $\Phi_3$ are instances.  At $z = -1$ (level zero),
+$\Delta(-1) = 13$, and \eqref{eq:delta-identity} reads
+$(1+4\omega)(1+4\omega^{2}) = 13$
+(\lean{EM/Population/BackwardLevels.lean}{cube\_root\_pair\_product\_eq\_thirteen}).
+At $z = \omega$ (level one) the constant is
+$\Delta(\omega)\Delta(\omega^{2}) = 217 = 7\cdot 31$
+(\lean{EM/Population/BackwardLevels.lean}{delta\_pair\_product\_eq\_217}).
+
+\begin{keyresult}
+\textbf{Levels two and three}
+(\lean{EM/Population/BackwardLevels.lean}{exists\_death\_level\_two},
+ \lean{EM/Population/BackwardLevels.lean}{exists\_death\_level\_three\_of\_split}).
+Suppose $\Phi_3$ has a root modulo $\ell$.
+\begin{enumerate}[nosep,leftmargin=*]
+\item If $13$ is a quadratic non-residue, level two is occupied.
+\item If both level-two branches are present and $217$ is a quadratic
+  non-residue, level three is occupied.
+\end{enumerate}
+Both constants are $\equiv 1 \pmod 4$, so the Jacobi reciprocity sign is
+trivial and each criterion is a congruence condition on~$\ell$ alone:
+$13$ (resp.\ $217$) is a non-residue mod $\ell$ iff
+$\bigl(\tfrac{\ell}{13}\bigr) = -1$ (resp.\ $\bigl(\tfrac{\ell}{217}\bigr) = -1$)
+(\lean{EM/Population/BackwardLevels.lean}{not\_isSquare\_iff\_jacobiSym}).
+\end{keyresult}
+
+\noindent
+Because the levels are disjoint, each occupied level is a fresh avoidance
+condition on the perpetual-primality branch, none of them a consequence of
+the $\Phi_3$ obstruction:
+\[
+  q^{\,k}\bigl(\walkZ{2}{\ell}{N}\bigr) \neq -1
+  \qquad\text{for every } k \text{ and every prime } \ell \leq \Prod{2}(N),
+\]
+written out at $k = 2$ and $k = 3$ as
+$w^4+2w^3+2w^2+w+1 \neq 0$ and
+$w^8+4w^7+8w^6+10w^5+9w^4+6w^3+3w^2+w+1 \neq 0$ for $w = \walkZ{2}{\ell}{N}$
+(\lean{EM/Population/BackwardLevels.lean}{psi\_two\_ne\_zero\_of\_perpetual},
+ \lean{EM/Population/BackwardLevels.lean}{psi\_three\_ne\_zero\_of\_perpetual}).
+
+\paragraph{Where the climb stops, and why that is worth knowing.}
+Two limits appear at level three, and they are the real information.
+
+\emph{The criteria stop being rational.}  When $13$ is a non-residue only
+one level-two branch exists, and the level-three criterion is
+$\Delta(\omega)$ being a non-square---a condition on~$\omega$, not on a
+rational constant.  That is precisely where the tower ceases to be decided
+by congruences on~$\ell$ and becomes a splitting condition in a larger
+field.  The general statement is an arboreal-Chebotarev question about the
+iterated preimage tree of $q$, and it is not proved here.
+
+\emph{The tower is finite.}  Levels are disjoint subsets of a finite
+field, so only finitely many are occupied
+(\lean{EM/Population/BackwardLevels.lean}{realizedLevels\_finite}).
+Raising the level is a bounded resource: the depth of the backward-orbit
+tree of $-1$ is an invariant of $\ell$, and it is what the heuristic
+$|\mathrm{PreZero}(\ell)| \asymp \sqrt{\ell}$ actually measures.
+
+So the accounting is this.  The classical $\Phi_3$ obstruction is level one
+of a tower driven by the single identity \eqref{eq:delta-identity}; levels
+two and three are occupied on explicit congruence classes of $\ell$,
+produced by reciprocity rather than by search; the moduli never widen; the
+tower has a top; and the barrier is untouched, because the criterion still
+asks where \emph{one specific orbit} sits.  What has changed is that the
+obstruction is now a tower with a known engine, and the first two rungs
+above the classical one have been climbed.
+
+%% =========================================================================
+\subsection{The Arboreal Tower}
+\label{sec:arboreal}
+%% =========================================================================
+
+\paragraph{The arboreal tower: Chebotarev is not the missing ingredient.}
+Climbing rung by rung terminates, so the natural next move is to ask about
+the whole tree at once.  That is the arboreal picture, where the tool of
+record is the Chebotarev density theorem applied to the splitting fields of
+the iterates: for how many primes $\ell$ is level~$n$ occupied?  Carrying
+it out reverses the expected verdict.
+
+Write $\Psi_n(w) = q^{\,n}(w)+1$, so that level~$n$ is occupied at~$w$
+exactly when $\Psi_n(w) = 0$.  Two identities organise the tree.  First
+$\Psi_n(0) = 1$, because $q(0)=0$: \emph{every level polynomial has
+constant term one}.  Second, the tree carries the Euclid--Mullin
+accumulator identity itself,
+\begin{equation}
+\label{eq:tree-accumulator}
+  q^{\,n+1}(w) \;=\; w \prod_{j \leq n} \Psi_j(w)
+\end{equation}
+(\lean{EM/Population/ArborealTower.lean}{sylvWalk\_iterate\_succ\_eq\_prod}),
+whence the level values are pairwise coprime
+(\lean{EM/Population/ArborealTower.lean}{coprime\_level\_values}) --- the
+Euclid cascade of \S\ref{sec:bag}, one level up.
+
+The first identity settles the qualitative half of the Chebotarev question
+without any density theorem.  Feeding $q^{\,n}$ a multiple of $B!$ returns
+a value $\equiv 1 \pmod{B!}$, so every prime factor of it exceeds~$B$.
+
+\begin{theorem}[Arboreal existence, unconditional ---
+\lean{EM/Population/ArborealTower.lean}{exists\_large\_prime\_level\_occupied}]
+\label{thm:arboreal-existence}
+For every level~$n$ and every bound~$B$ there is a prime $\ell > B$ at which
+level~$n$ is occupied; hence infinitely many, for every level
+(\lean{EM/Population/ArborealTower.lean}{levelPrimes\_infinite}).
+\end{theorem}
+
+\noindent
+This is Euclid's argument, in a paper about Euclid's argument.  Chebotarev
+would upgrade ``infinitely many'' to ``a positive density of''---and that
+upgrade is not what is missing, as the same construction shows when it is
+pointed at the orbit rather than at an auxiliary multiple of $B!$.
+
+Take $w = \Prod{2}(N)$.  A prime $\ell$ puts the walk value
+$\walkZ{2}{\ell}{N}$ at level~$k$ exactly when $\ell \mid \Psi_k(\Prod{2}(N))$
+(\lean{EM/Population/ArborealTower.lean}{level\_witness\_iff}), and
+$\Psi_k(\Prod{2}(N))$ is the $k$-th Sylvester tower term above the Euclid
+number (\lean{EM/Population/ArborealTower.lean}{tower\_eq\_sylvNat}).  So a
+witness prime always exists---take the least prime factor---and by
+coprimality the witnesses at distinct levels are \emph{distinct} primes
+(\lean{EM/Population/ArborealTower.lean}{minFac\_level\_injective}).  Every
+stage~$N$ thus carries an infinite sequence of distinct primes, free of
+charge.
+
+\begin{keyresult}
+\textbf{Witnesses are free; smallness is everything}
+(\lean{EM/Population/ArborealTower.lean}{infinitelyManyComposite\_iff\_witness\_proper}).
+\[
+  (\mathrm{C}\infty)
+  \iff
+  \text{for every } N \text{ some witness } \minFac\bigl(\Psi_k(\Prod{2}(N))\bigr)
+  \text{ is a \emph{proper} factor.}
+\]
+On the perpetual-primality branch the witness at level~$k$ is forced to be
+$\Psi_k(\Prod{2}(N))$ itself---a prime larger than $\Prod{2}(N)$---which is
+exactly the branch
+(\lean{EM/Population/ArborealTower.lean}{witness\_eq\_self\_of\_perpetual}).
+\end{keyresult}
+
+\noindent
+That is the whole of it, and it is the same shape as $(\mathrm{S})$ in
+\S\ref{sec:composite-floor}: not \emph{does something exist}, but \emph{is
+the thing that exists small}.  A density theorem over $\ell$ cannot supply
+it, because the prime it must produce has to divide one specific integer.
+The arboreal picture therefore makes Dead End~\#90 as sharp as it can be
+made: \textbf{the arboreal input is free, and the residual gap is disjoint
+from it.}  Chebotarev is not the missing ingredient, and neither is any
+strengthening of it.
+
+
+%% =========================================================================
+\subsection{The Same Telescope over $\FF_p[t]$}
+\label{sec:ff-telescope}
+%% =========================================================================
+
+The function-field analogue of \S\ref{sec:function-field} is the one
+setting in which every analytic input is a theorem rather than a
+hypothesis, so it is the natural place to test whether the growth axis is
+obstructed by analysis or by something else.  The answer is unambiguous,
+and it is the sharpest evidence in this paper that the obstruction was
+never analytic.
+
+The growth axis of \S\ref{sec:defect-telescope} transfers to $\Fpt$, and
+this is the one place where the function-field model is unambiguously
+better behaved.  Over $\ZZ$ the defect telescope carries two
+approximations, both artefacts of taking logarithms of integers: the
+defect $\delta(n)$ can be slightly negative, so the normalised sequence is
+only antitone after a summable correction; and $\delta(n)$ is a real
+number, so nothing separates ``the selected factor is proper'' from ``the
+selected factor is almost everything''.
+
+Over $\Fpt$ both vanish.  Degrees are additive exactly, and
+$\deg(\ffprod(n)+1) = \deg\ffprod(n)$ on the nose
+(Lemma~\ref{lem:ff-degree-growth} and
+\lean{EM/FunctionField/Analog.lean}{ffProdPlusOne\_natDegree}), so with
+$D(n) = \deg \ffprod(n)$ and
+$\delta_{\mathrm{FF}}(n) = D(n) - \deg \ffseq(n+1)$ one has the exact
+integer recursion
+\[
+  D(n+1) + \delta_{\mathrm{FF}}(n) \;=\; 2D(n),
+  \qquad \delta_{\mathrm{FF}}(n) \in \{0,1,\dots,D(n)-1\}
+\]
+(\lean{EM/FunctionField/DegreeTelescope.lean}{ffDeg\_succ\_add\_ffDefect}),
+telescoping---since $D(0) = 1$---to
+\[
+  \frac{D(N)}{2^{N}} \;=\; 1 - \sum_{n<N}\frac{\delta_{\mathrm{FF}}(n)}{2^{\,n+1}}
+\]
+(\lean{EM/FunctionField/DegreeTelescope.lean}{ffNormDeg\_eq\_sub\_sum}).
+The right-hand side is antitone with \emph{no} correction term
+(\lean{EM/FunctionField/DegreeTelescope.lean}{ffNormDeg\_antitone}), so
+$C_{\mathrm{FF}} = \lim_N D(N)/2^{N}$ exists in $[0,1]$, and
+$\delta_{\mathrm{FF}}(n) = 0$ holds \emph{if and only if} $\ffprod(n)+1$
+is irreducible
+(\lean{EM/FunctionField/DegreeTelescope.lean}{ffDefect\_eq\_zero\_iff})---an
+equivalence, where the integer statement is only an approximation.  In
+particular
+\[
+  C_{\mathrm{FF}} = 0 \;\Longrightarrow\;
+  \ffprod(n)+1 \text{ reducible for infinitely many } n,
+\]
+which here is a two-line argument---on the perpetually-irreducible branch
+$D(N)/2^{N}$ is eventually \emph{constant} and positive---against the
+$\log_2\log_2$ chase the integer case requires
+(\lean{EM/FunctionField/DegreeTelescope.lean}{ffInfinitelyManyReducible\_of\_ffGrowthConstant\_eq\_zero}).
+
+Trial division transfers too, and here it is an exact inequality on
+integers rather than an estimate.  If $\ffprod(n)+1$ is reducible, the
+cofactor carries a monic irreducible factor, which minimality forces to be
+at least as large as the selected one; hence
+$2\deg \ffseq(n+1) \leq D(n)$, i.e.\ $\delta_{\mathrm{FF}}(n) \geq D(n)/2$
+(\lean{EM/FunctionField/DegreeTelescope.lean}{two\_mul\_ffDeg'\_le\_of\_not\_irreducible}).
+One reducible stage therefore multiplies $D(N)/2^N$ by exactly $3/4$---no
+correction term, unlike over $\ZZ$---giving the sharp
+\[
+  \deg \ffprod(N)
+  \;\leq\;
+  \Bigl(\tfrac34\Bigr)^{\#\{n<N\,:\,\ffprod(n)+1 \text{ reducible}\}}\, 2^{N}
+\]
+(\lean{EM/FunctionField/DegreeTelescope.lean}{ffDeg\_le\_pow\_mul}), and
+$C_{\mathrm{FF}}$ is a \emph{complete invariant}:
+$C_{\mathrm{FF}} = 0$ iff $\ffprod(n)+1$ is reducible infinitely often,
+and $C_{\mathrm{FF}} > 0$ iff the sequence is eventually perpetually
+irreducible
+(\lean{EM/FunctionField/DegreeTelescope.lean}{ffInfinitelyManyReducible\_iff\_ffGrowthConstant\_eq\_zero},
+ \lean{EM/FunctionField/DegreeTelescope.lean}{ffGrowthConstant\_pos\_iff\_perpetual}).
+This is Theorem~\ref{thm:defect-dichotomy} over $\Fpt$, with every epsilon
+removed.
+
+And yet the question does not move---which is the sharpest available form
+of the barrier thesis.  Both settings reduce $(\mathrm{C}\infty)$ to a
+single real number defined \emph{from the orbit}, and in both that number
+is beyond any finite computation, since a defect at stage~$n$ is
+discounted by $2^{-n}$.  What would settle it is the least-degree
+irreducible factor of the \emph{one} polynomial $\ffprod(n)+1$; the density
+of irreducibles of each degree, which over $\Fpt$ is not merely known but
+exactly computable, is a statement about the population.  This is Dead
+End~\#90 in the setting where every analytic input is a theorem---which is
+the strongest available evidence that the analytic input was never the
+obstruction.
+
+%% =========================================================================
+\subsection{The Verdict}
+\label{sec:cinfty-verdict}
+%% =========================================================================
+
+Collecting the section: $(\mathrm{C}\infty)$ is required by every route to
+$\MC$; it is equivalent to the vanishing of one real number; that number
+vanishes if and only if the sequence does \emph{not} eventually become a
+Sylvester tower of primes; and the failure branch is exactly the autonomous
+branch, on which every obstruction this paper owns applies.  What remains is
+a single statement, and it is worth writing it in the plainest form
+available.
+
+\begin{keyresult}
+\textbf{$(\mathrm{C}\infty)$, plainly.}
+There is no $N$ with $\Prod{2}(n)+1$ prime for every $n \geq N$.
+Equivalently: no Sylvester tower $s \mapsto s^2-s+1$ seeded at a Euclid
+number is all-prime.  Equivalently:
+$C = \lim_N \log\Prod{2}(N)/2^{N}$ vanishes.
+\end{keyresult}
+
+\noindent
+Since $\MC \Rightarrow (\mathrm{C}\infty)$
+(\lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_mullin};
+a short implication---perpetual primality would leave only finitely many
+primes selected), Mullin's conjecture \textbf{implies a
+no-infinite-prime-tower statement for a doubly exponential sequence},
+which is open.  Every conjecture is at least as hard as its open
+consequences, so this is not a lower bound on difficulty in any
+technical sense; it is a statement of \emph{shape}: any proof of $\MC$
+must, along the way, rule out a Sylvester-type prime tower.
+
+\paragraph{The Fermat test.}
+The comparison is not loose.  The Fermat numbers $F_n = 2^{2^n}+1$ have the
+same shape: doubly exponential, $\sum_n 1/\log F_n < \infty$, believed
+composite for all large~$n$---and whether infinitely many $F_n$ are
+composite is \emph{open}.  Our $C$ plays the role of $\log 2$ there.
+The analogy is one of shape, not of reduction: nothing here relates the
+two questions formally, and a method exploiting the recursion
+$E_{n+1} = \Phi_3(E_n - 1)$ specific to Euclid numbers need not say
+anything about $2^{2^n}+1$.
+
+This suggests a filter, and we have applied it to every technique proposed
+in this section:
+
+\begin{center}
+\emph{If a proposed method would not settle the Fermat question, it will
+not settle $(\mathrm{C}\infty)$.}
+\end{center}
+
+\noindent
+Congruence and reciprocity fail it (\S\ref{sec:sylvester-tower}); so do
+$abc$ and Baker's method, for reasons recorded in
+\S\ref{app:dead-ends}; the growth axis fails it because $C$ is a complete
+invariant (\S\ref{sec:defect-telescope}); level-by-level climbing fails it
+because the ladder is finite (\S\ref{sec:level-tower}); and the arboreal
+route fails it because its input is free and its output is a density
+statement, where a size condition on one integer is wanted
+(\S\ref{sec:arboreal}).  The one method that has ever worked on a question
+of this shape---varying the seed, as for generalised Fermat numbers
+$a^{2^n}+1$, where the composite-infinitely-often statement \emph{is} known
+for almost all~$a$---is available here too, through the ensemble framework
+of \S\ref{sec:ensemble-variant}; and it delivers almost-all statements
+while leaving the specific orbit untouched.  That is the orbit-specificity
+barrier, arrived at for the sixth time in this section and by six
+independent routes.
+
+\begin{frontierbox}
+\textbf{What would settle it.}
+A method that decides, for one explicitly given integer of doubly
+exponential size, whether its least prime factor is proper---without a
+factorisation and without a density hypothesis.  No such method is known
+for any sequence of this shape.  Until one exists, $(\mathrm{C}\infty)$ is
+where every route in this paper stops, and the results of
+\S\S\ref{sec:growth-floor}--\ref{sec:arboreal} are best read as a map of
+that stopping point rather than as progress towards passing it.
+\end{frontierbox}

@@ -478,7 +478,7 @@ theorem dynamical_hitting_pre_implies_mullin
       -- IH gives MC(< q)
       have hmc : MCBelow q := fun r hr hrq => ih r (by omega) hr.toIsPrime
       -- Bootstrap: MC(< q) + PrimeResidueEscape → SE(q)
-      haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+      have : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
       have hse := mcBelow_pre_implies_se hpre hq hne hmc
       -- DynamicalHitting: SE(q) → HH(q)
       obtain ⟨N, hN⟩ := exists_bound q (fun p hpq hp => ih p (by omega) hp)
@@ -578,7 +578,7 @@ theorem single_hit_pre_implies_mullin
       -- IH gives MC(< q)
       have hmc : MCBelow q := fun r hr hrq => ih r (by omega) hr.toIsPrime
       -- Bootstrap: MC(< q) + PrimeResidueEscape → SE(q)
-      haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+      have : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
       have hse := mcBelow_pre_implies_se hpre hq hne hmc
       -- exists_bound: uniform bound N₀ such that all primes < q appear by N₀
       obtain ⟨N, hN⟩ := exists_bound q (fun p hpq hp => ih p (by omega) hp)

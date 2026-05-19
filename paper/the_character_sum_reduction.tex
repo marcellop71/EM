@@ -108,7 +108,7 @@ This is a single-hypothesis reduction with no additional parameters.
 The proof composes three bridges:
 
 \begin{enumerate}[nosep]
-\item \textbf{Fourier inversion} (\lean{EM/Equidist/Fourier.lean}{complex\_csb\_implies\_hit\_count\_lb\_proved}):
+\item \textbf{Fourier inversion} (\lean{EM/Equidist/FourierB.lean}{complex\_csb\_implies\_hit\_count\_lb\_proved}):
   CCSB implies that the hit count at~$-1$ satisfies
   $|\{n < N : \walkZ{2}{q}{n} = -1\}| = N/(q{-}1) + o(N)$,
   which is eventually positive.  This directly contradicts permanent
@@ -134,7 +134,7 @@ The Fourier bridge is the single most important proved result after
 DH~$\Rightarrow$~MC itself: it converts character sum bounds into hit
 count lower bounds, and hence into MC.
 
-\begin{theorem}[\lean{EM/Equidist/Fourier.lean}{walk\_hit\_count\_fourier\_step}]
+\begin{theorem}[\lean{EM/Equidist/FourierB.lean}{walk\_hit\_count\_fourier\_step}]
 \label{thm:fourier-step}
 For any target $t \in (\ZZ/q\ZZ)^\times$:
 \[
@@ -172,7 +172,8 @@ The Fourier bridge thus converts the geometric statement ``the walk
 avoids~$-1$ permanently'' into the spectral statement ``some character
 sum has sustained bias,'' and CCSB negates the latter.
 
-Returning to our running example ($q = 41$): the walk must accumulate
+Take as a running example $q = 41$, the smallest prime not yet known
+to appear in the sequence: the walk must accumulate
 a deficit of $\sim N/40$ hits at~$-1$ compared to uniform, which
 requires sustained character sum bias across the 39~non-trivial
 characters.  Proving CCSB for $q = 41$ would rule out this bias and
@@ -275,13 +276,16 @@ CME says the multiplier distribution is the same at every walk
 position.  Since the death channel is a function of walk position,
 CME implies the death channel has no special status---the multiplier
 is no more likely to avoid the forbidden class than any other.
-Formally, CME is strictly stronger than Decorrelation: it bounds the
+Formally, CME implies Decorrelation (and, being quantified over missing
+primes, is equivalent to MC, \lean{EM/CME/Equivalences.lean}{cme\_iff\_mc};
+Decorrelation is also implied by MC vacuously, and whether Decorrelation
+implies MC is open): it bounds the
 fiber sums
 $\sum_{\substack{n<N \\ \walkZ{2}{q}{n} = c}} \chi(\multZ{2}{q}{n}) = o(N)$
 separately for each position~$c$, not just the global sum.
 Since the global sum is the sum of the fiber sums, CME implies
 Decorrelation by the triangle inequality
-(\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_dec}).
+(\lean{EM/CME/Reduction.lean}{cme\_implies\_dec}).
 The significance of CME is that it also implies CCSB
 \emph{directly}, bypassing PED and BRE entirely: the fiber
 decomposition and the telescoping identity together convert
@@ -330,7 +334,7 @@ density into walk character sum cancellation.
 
 However, the PED route is not the only path.  CME implies CCSB
 \emph{directly}, bypassing PED and BRE entirely
-(\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}):
+(\lean{EM/CME/Reduction.lean}{cme\_implies\_ccsb}):
 \[
 \mathrm{CME}
 \;\xrightarrow{\text{proved}}\;
@@ -378,7 +382,7 @@ constant cannot equal~1; the telescope then forces the walk character
 sum to be $o(N)$, ruling out the sustained bias needed for permanent
 avoidance.
 
-\begin{proposition}[\lean{EM/LargeSieve/Spectral.lean\#L2007}{cme\_implies\_vcb}]
+\begin{proposition}[\lean{EM/CME/FiberAnalysis.lean}{cme\_implies\_vcb}]
 $\mathrm{CME} \Rightarrow \mathrm{VCB}$ with $\mu = 0$.
 Conversely, $\mathrm{VCB} + \mathrm{Dec} \Rightarrow \mathrm{CME}$.
 Thus CME decomposes as $\mathrm{CME} = \mathrm{VCB} + \mathrm{Dec}$.
@@ -386,7 +390,7 @@ VCB alone is strictly weaker than CME: it permits the fiber sums to
 be $\Theta(N)$, provided they are proportional to the visit counts.
 \end{proposition}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L2256}{vcb\_ped\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/CME/FiberAnalysis.lean}{vcb\_ped\_implies\_ccsb}]
 \label{thm:vcb-ped-ccsb}
 $\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \mathrm{CCSB}$.
 \end{theorem}
@@ -402,8 +406,8 @@ that at least $\delta N$ multipliers escape $\ker(\chi)$.  For each
 escaping multiplier, $\chi(m(n))$ is a non-trivial $d$-th root of
 unity, satisfying $\mathrm{Re}(\chi(m(n))) \leq 1 - \eta_0^2/2$
 where $\eta_0 = \min_{\zeta \in \mu_d \setminus \{1\}} |\zeta - 1| > 0$
-(\lean{EM/LargeSieve/Spectral.lean\#L2024}{norm\_sub\_one\_sq\_eq},
-\lean{EM/LargeSieve/Spectral.lean\#L2037}{unit\_norm\_re\_le\_of\_dist}).
+(\lean{EM/CME/FiberAnalysis.lean}{norm\_sub\_one\_sq\_eq},
+\lean{EM/CME/FiberAnalysis.lean}{unit\_norm\_re\_le\_of\_dist}).
 This real-part defect accumulates over $\delta N$ escaping steps,
 forcing $|\sum \chi(m(n)) - N| \geq c_0 N$ for
 $c_0 = \delta \eta_0^2 / 2$.  Combined with VCB's control
@@ -412,7 +416,7 @@ triangle inequality gives $|1 - \mu| \geq c_0/2$ for small
 $\varepsilon$.
 \end{proof}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L2366}{vcb\_ped\_implies\_mc}]
+\begin{theorem}[\lean{EM/CME/FiberAnalysis.lean}{vcb\_ped\_implies\_mc}]
 $\mathrm{VCB} + \mathrm{PED} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
@@ -574,6 +578,16 @@ depending on both the walk state and the factorization outcome, so the
 identity factorizes one correlated variable into two correlated
 variables.  This is formalized as a dead end (Dead End~\#115).
 
+%% =========================================================================
+\subsection{Sieve Routes, in Brief}
+\label{sec:sieve-routes}
+%% =========================================================================
+
+Three further reductions run through sieve machinery rather than through
+the telescoping identity.  Each is machine-verified as a reduction, and in
+each the sole open content is the same orbit-specificity transfer; the
+details are in Appendix~\ref{app:routes}.
+
 \paragraph{The Large Sieve Route}
 \label{sec:large-sieve}
 
@@ -586,8 +600,8 @@ prove than pointwise ones.  The large sieve inequality and the
 Bombieri--Vinogradov theorem are the two central tools for this.
 
 The formalization develops this multi-modular route across three files
-(\code{LargeSieve/Basic.lean}, \code{Large\-Sieve\-Harmonic.lean},
-\code{Large\-Sieve\-Analytic.lean}) totaling ${\sim}5{,}870$~lines,
+(\code{EM/LargeSieve/Basic.lean}, \code{EM/LargeSieve/Harmonic.lean},
+\code{EM/LargeSieve/Analytic.lean}) totaling ${\sim}5{,}870$~lines,
 connecting classical analytic number theory to MC via a multi-modular
 character sum bound.
 
@@ -622,7 +636,7 @@ exceptional primes below~$Q_0$.  This weakening is crucial because
 averaged results like BV naturally produce bounds that fail for
 finitely many moduli.
 
-\begin{theorem}[\lean{EM/LargeSieve/Basic.lean\#L303}{mmcsb\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Basic.lean}{mmcsb\_implies\_mc}]
 \label{thm:mmcsb-mc}
 $\mathrm{MultiModularCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
@@ -646,11 +660,20 @@ the expected $\pi(x)/\phi(q)$.  If this applies to the EM multipliers,
 the death channel---a single progression---gets its fair share of
 multipliers, breaking the avoidance.
 
-\begin{theorem}[\lean{EM/LargeSieve/Basic.lean\#L362}{bv\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Basic.lean}{bv\_chain\_mc}]
 $\mathrm{BV} + \mathrm{BVImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
-The transfer hypothesis BVImpliesMMCSB is a \textbf{genuine frontier}:
-it requires transferring the averaged equidistribution statement of BV
+\noindent\emph{Correction (2026-08-18).}  Until this revision the Lean
+statement \code{BombieriVinogradov} was `$\exists E,\ E \le x/(\log x)^A
+\wedge 0 \le E$', which is trivially true, so \code{BVImpliesMMCSB} was
+literally \code{MultiModularCSB} and no BV entered the chain.  BV and EH
+are now stated faithfully in the $\psi$-form
+($\sum_{q \le \sqrt{x}/(\log x)^B} \max_{(a,q)=1} |\psi(x;q,a) - x/\varphi(q)|
+\ll x/(\log x)^A$; \code{bvError}), and \code{BVImpliesMMCSB} is no longer
+an open point of the network: the route is a dead end
+(\#54, \#61, \#75, \#96), recorded, not pursued.  The transfer
+hypothesis BVImpliesMMCSB would require transferring the averaged
+equidistribution statement of BV
 (valid for primes in generic progressions) to the specific EM walk orbit.
 The EM sequence is not a generic sample of primes---it is a deterministic
 sequence defined by iterated factorization---so its multipliers could
@@ -671,7 +694,7 @@ where EMMultCSB bounds the \emph{multiplier} character sums)
 from the dynamical content (EMMultCSB~$\Rightarrow$~MMCSB, converting
 multiplier bounds to \emph{walk} bounds).  However, the walk bridge
 \textbf{MultCSBImpliesMMCSB is false in general}
-(\lean{EM/LargeSieve/Basic.lean\#L1226}{MultCSBImpliesMMCSB}):
+(\lean{EM/LargeSieve/Structural.lean}{MultCSBImpliesMMCSB}):
 the walk character sum $\sum \chi(w(n))$ is a \emph{partial product}
 $\prod_{k<n} \chi(m(k))$ of the multiplier characters, and partial
 products of equidistributed unit complex numbers need not cancel---they

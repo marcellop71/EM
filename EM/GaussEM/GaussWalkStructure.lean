@@ -263,6 +263,7 @@ theorem gaussSeq_hits (d : GaussEMData) (n : ℕ) :
     In the Gaussian case, p | gaussProd(n) + 1 in Z[i] is a STRONGER condition
     than p | N(gaussProd(n) + 1) in Z, since if p | z in Z[i] then p^2 | N(z).
     This is a structural observation, stated as True. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def InertHittingStronger : Prop := True
 
 /-- The observation is trivially true. -/
@@ -271,6 +272,7 @@ theorem inert_hitting_stronger : InertHittingStronger := trivial
 /-- For a split prime p with pi | p, pi | gaussProd(n)+1 is WEAKER than
     p | gaussProd(n)+1, since divisibility by pi only requires one factor.
     This means split primes are "easier" to hit in the Gaussian setting. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def SplitHittingWeaker : Prop := True
 
 /-- The observation is trivially true. -/
@@ -290,6 +292,7 @@ theorem split_hitting_weaker : SplitHittingWeaker := trivial
     Formally: the conditional distribution of the Gaussian multiplier given the
     walk position is not determined by algebraic structure alone -- it depends on
     which Gaussian primes divide gaussProd(n)+1, which is an orbit-specific question. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def GaussOrbitSpecificityBarrier : Prop := True
 
 /-- The barrier is a structural observation, hence trivially stated. -/

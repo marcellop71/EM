@@ -31,8 +31,27 @@ the integer case: the orbit-specificity barrier.  This subsection
 develops the FF-EM sequence, proves an unconditional six-step sieve
 chain and the $\Phi_3$ exclusion criterion, and presents three formally
 verified dead ends that delineate the boundary of current techniques.
-The function-field module of the formalization comprises 17~files and
+The function-field module of the formalization comprises 16~files and
 ${\sim}7{,}372$~lines with zero \texttt{sorry}.
+
+\medskip\noindent\textbf{What is and is not machine-checked here (audit
+2026-08-17).}\enspace The Weil bound is not formalized: \code{WeilBound},
+\code{FFPopulationEquidist}, \code{FFDirichletEquidist},
+\code{PopulationMultCCSB}, \code{FFMultiplierCCSB}, \code{FFDSL},
+\code{FFCME}, \code{SelectionBiasNeutral} and a few relatives are
+\emph{placeholder propositions}---their Lean bodies are \code{True}, they
+record intended statements, and every ``theorem'' whose only content is
+an implication between them (\code{weil\_implies\_population\_equidist},
+\code{weil\_implies\_population\_mult\_ccsb},
+\code{selection\_bias\_chain}, clause~(1) of
+\code{barrier\_setting\_independent}, \dots) is trivial.  Such items are
+marked \placeholder\ below.  The machine-checked content of this
+section is: the FF-EM sequence and its structural theory (coprimality
+cascade, injectivity, degree growth), FFDH~$\Rightarrow$~FF-MC, the
+$\Phi_3$ exclusion, the exact degree telescope
+(\S\ref{sec:ff-telescope}), the stochastic FF-MC and its phase
+transition, and the density chain whose one
+hypothesis \code{FFDirichletDensity} is honestly stated (\code{EM/FunctionField/DensityMC.lean}).
 \end{roadmap}
 
 \paragraph{Setting and definitions.}
@@ -178,8 +197,8 @@ Over $\Fpt$, \emph{every arrow is unconditional}.
 \toprule
 \textbf{Step} & \textbf{Over $\ZZ$} & \textbf{Over $\Fpt$} \\
 \midrule
-Char.\ cancellation & GRH & Exact (necklace) \\
-PNT-in-APs & Siegel--Walfisz & Exact ($\irredcount(d)\geq 1$) \\
+Prime counting & PNT & Exact (necklace identity) \\
+Primes in APs & Siegel--Walfisz & Existence only ($\irredcount(d)\geq 1$); Weil = \placeholder \\
 $\FCD$ & WPNT-in-APs & Linear supply \\
 $\SPV$ & FCD + sparsity & Necklace bound \\
 $\PSCDff$ & FCD + SPV & Density bound \\
@@ -188,20 +207,23 @@ Almost-all MC & PSCD + pigeonhole & PNT + necklace \\
 \end{tabular}
 \end{center}
 
-\paragraph{Step 1 --- Character cancellation.}
-\begin{theorem}[FF Character Sum Cancellation ---
+\paragraph{Step 1 --- Counting irreducibles.}
+\begin{theorem}[FF irreducible count ---
 \lean{EM/FunctionField/FFCharacterSums.lean}{ff\_char\_sum\_cancellation\_proved}]
-The necklace identity (Theorem~\ref{thm:necklace}) holds unconditionally,
-giving exact cancellation rather than an asymptotic bound.
+The necklace identity (Theorem~\ref{thm:necklace}) holds unconditionally
+and gives the exact count of monic irreducibles of each degree.
 \end{theorem}
 
-Over $\ZZ$, the analogous statement is the Riemann Hypothesis for
-Dirichlet $L$-functions; over $\Fpt$ it is an identity of natural
-numbers.
+To be precise about the analogy: the necklace identity is the
+function-field \emph{prime number theorem} (an exact count of primes by
+degree), not the analogue of the Riemann Hypothesis for Dirichlet
+$L$-functions; that analogue is the Weil bound for $\Fpt$-Dirichlet
+characters, which in this development is a \placeholder\ (see the audit note at the start of this section).
+What is exact here is counting, not character cancellation.
 
 \paragraph{Step 2 --- PNT in arithmetic progressions.}
 \begin{theorem}[FF PNT-in-APs ---
-\lean{EM/FunctionField/Finiteness.lean}{ffIrredCount\_pos}]
+\lean{EM/FunctionField/NecklaceFormula.lean}{ffIrredCount\_pos}]
 For every $d \geq 1$, $\irredcount(d) \geq 1$.
 \end{theorem}
 
@@ -247,18 +269,31 @@ Divide both sides of Step~4 by~$n$.  Reduction:
 \lean{EM/FunctionField/FFSieve.lean}{ff\_spv\_implies\_pscd}.
 \end{theorem}
 
+\noindent
+As a standalone Prop, \textsf{FFPSCD} is a \emph{counting proxy}: it
+records the irreducible-count bound that the sieve consumes, not
+confinement decay itself.  The genuine FF confinement decay---for
+every proper residue subset, the density of confined starting points
+tends to zero---is
+\lean{EM/FunctionField/DensityMC.lean}{ff\_density\_pscd}, proved
+conditionally on Kornblum's theorem (see the genuine density statement
+below).
+
 \paragraph{Step 6 --- Almost-all generalized mixed MC.}
 A \emph{mixed} selection at each step picks \emph{any} irreducible factor
 of $\ffprod(n)+1$ (not necessarily minimal-degree); the
 \emph{generalized} variant starts from an arbitrary monic squarefree
-polynomial.  ``Almost-all'' refers to density-one over starting points.
+polynomial.  The Step-6 Prop
+\lean{EM/FunctionField/FFSieve.lean}{FFAlmostAllGenMixedMC} is again a
+counting proxy: it packages the two counting inputs the sieve consumes
+(positivity of $\irredcount$ in every degree, and FF-SPV).  The
+density-one statement itself is Theorem~\ref{thm:ff-density} below.
 
-\begin{theorem}[Almost-All FF-GenMixedMC is unconditional ---
+\begin{theorem}[FF sieve-chain inputs are unconditional ---
 \lean{EM/FunctionField/FFSieve.lean}{ff\_almost\_all\_unconditional}]
 \label{thm:ff-almost-all}
 For every prime $p$, the conjunction of FF-PNT-in-APs and FF-SPV holds
-unconditionally; in particular, a density-$1$ set of monic squarefree
-starting polynomials satisfies generalized mixed MC.
+unconditionally.
 \end{theorem}
 
 \begin{keyresult}
@@ -270,8 +305,63 @@ the conjunction
   \,\wedge\, \SPV \,\wedge\, \PSCDff \,\wedge\,
   \text{Almost-All FF-GenMixedMC}
 \]
-holds unconditionally for every prime~$p$.  Zero open hypotheses.
+holds unconditionally for every prime~$p$, where the last conjunct
+abbreviates the counting proxy of Step~6.  Zero open hypotheses.
 \end{keyresult}
+
+\paragraph{The genuine density statement.}
+The density-one theorem that the Step-5/6 proxies stand in for is
+formalized in \texttt{EM/FunctionField/DensityMC.lean}, transplanting
+the integer-side chain of \S\ref{sec:almost-all-mixed} to $\FF_p[t]$
+with one striking simplification: over $\FF_p[t]$ the sieve counting is
+\emph{exact}.  Monic polynomials of degree $d \geq \deg N$ distribute
+exactly $p^{\,d - \deg N}$ per residue class mod any monic~$N$
+(\lean{EM/FunctionField/DensityMC.lean}{ffMonicDeg\_residue\_card},
+a division-algorithm bijection with no error term), the congruence
+sieve bound
+$\leq \bigl(\prod_{P \in S}(1 - p^{-\deg P})\bigr)\,p^{\,d}$
+is exact
+(\lean{EM/FunctionField/DensityMC.lean}{ffSievedDegCount\_le\_real}),
+and at least a quarter of the monics of each degree are squarefree
+(\lean{EM/FunctionField/DensityMC.lean}{ffSqfreeDegCount\_quarter},
+unconditional).  Trapped starting points are confined to a proper
+residue subset mod the target, and a pigeonhole over the finitely many
+proper subsets
+(\lean{EM/FunctionField/DensityMC.lean}{ff\_trapped\_le\_sum\_confined})
+reduces the density statement to per-subset confinement decay.  The
+sole analytic input is the FF analogue of Dirichlet's theorem in the
+divergence form:
+
+\begin{property}[FF Dirichlet density (Kornblum~\cite{Kornblum1919}) ---
+\lean{EM/FunctionField/DensityMC.lean}{FFDirichletDensity}]
+For every monic irreducible $Q$ and every $a$ with $Q \nmid a$,
+\[
+  \sum_{\substack{P \text{ monic irreducible},\ P \equiv a \ (\mathrm{mod}\ Q) \\ \deg P \leq Y}}
+    p^{-\deg P} \;\longrightarrow\; \infty
+  \qquad (Y \to \infty).
+\]
+\end{property}
+
+\begin{theorem}[Almost-all FF-GenMixedMC, genuine density ---
+\lean{EM/FunctionField/DensityMC.lean}{ff\_almost\_all\_genmixed\_density}]
+\label{thm:ff-density}
+Assume \textup{FFDirichletDensity}.  Then for every monic irreducible
+target~$Q$: among monic squarefree $m$ with $1 \leq \deg m \leq n$, the
+proportion of starting points with $Q \nmid m$ from which $Q$ is not
+tree-reachable tends to~$0$ as $n \to \infty$.  (The restriction
+$Q \nmid m$ is necessary: if $Q \mid m$ then $Q$ divides every mixed
+walk product from~$m$, hence never divides $\mathrm{walk}+1$.)
+\end{theorem}
+
+\noindent
+The contrast with the integer side is instructive: over~$\ZZ$ the
+corresponding divergence input ($\sum_{p \equiv a\,(q)} 1/p = \infty$)
+is proved unconditionally from the Mathlib $L$-function machinery
+(\S\ref{sec:almost-all-mixed}), while Mathlib has no polynomial
+Dirichlet $L$-functions, so Kornblum's 1919 theorem---strictly easier
+than its integer counterpart, as the relevant $L$-functions are
+polynomials in $p^{-s}$---remains an isolated named hypothesis.
+Formalizing it is a natural future campaign.
 
 \paragraph{The factor tree and structural prerequisites.}
 Independent of the sieve chain, the factor-tree structure (any valid
@@ -296,29 +386,33 @@ For any valid mixed selection from any monic squarefree start,
 \end{enumerate}
 \end{theorem}
 
-\paragraph{Stochastic FF-MC and the phase transition.}
+\paragraph{Mixed walks: what is and is not proved.}
 
-\begin{theorem}[Stochastic FF-MC ---
+\begin{theorem}[Degree growth along every mixed walk ---
 \lean{EM/FunctionField/StochasticMC.lean}{stochastic\_mc\_unconditional}]
 \label{thm:ff-stoch}
-For any monic irreducible target~$Q$ and any valid mixed walk, the
-factor pool eventually has degree exceeding $\deg(Q)$; with any positive
-probability $\varepsilon > 0$ of non-greedy selection, every target is
-eventually captured.
+For any monic irreducible target~$Q$, any monic non-constant start, and
+any valid mixed walk (any admissible choice of factor at each step),
+there is a stage~$n$ at which the Euclid polynomial has degree
+$\geq \deg Q$.
 \end{theorem}
-
-\begin{theorem}[Phase transition at $\varepsilon = 0$ ---
-\lean{EM/FunctionField/StochasticMC.lean}{ff\_phase\_transition\_unconditional}]
+\noindent This is all that the Lean name \code{FFStochasticMC} asserts:
+the factor pool becomes large enough for $Q$ to be \emph{a potential}
+factor.  It says nothing about probability or capture; whether the
+greedy walk selects~$Q$ is $\FFMC$ itself, and the probabilistic
+``with any $\varepsilon > 0$ of non-greedy selection every target is
+captured'' is a heuristic that is \textbf{not} formalized.  Earlier
+drafts overstated this theorem and its companion
+\lean{EM/FunctionField/StochasticMC.lean}{ff\_phase\_transition\_unconditional}
+(``phase transition at $\varepsilon = 0$''), whose Lean content is the
+pair \emph{(degree grows along every mixed walk, degree grows along the
+greedy walk)}; we no longer use the phrase.
 \label{thm:ff-phase}
-For $\varepsilon > 0$, stochastic MC captures every monic irreducible.
-For $\varepsilon = 0$, the walk is the standard greedy FF-EM and capture
-of every irreducible is exactly $\FFMC$.  The phase transition is sharp.
-\end{theorem}
 
 \paragraph{The bootstrap: from dynamical hitting to FF-MC.}
 
 \begin{property}[FF Dynamical Hitting (FFDH) ---
-\lean{EM/FunctionField/Analog.lean}{FFDynamicalHitting}]
+\lean{EM/FunctionField/Bootstrap.lean}{FFDynamicalHitting}]
 \label{prop:ffdh}
 For every FF-EM data and every monic irreducible $Q$ not in the
 sequence, there exist cofinally many indices~$n$ at which
@@ -446,24 +540,29 @@ equidistribution:
   Weil bound.  \textbf{Unconditional} over $\Fpt$.
 \item \emph{Orbit equidistribution}: the specific walk
   $\ffprod(n) \bmod Q$ visits each residue class with frequency
-  $1/(p^{\deg Q}-1)$ (the function-field DSL).  \textbf{Open}.
+  $1/(p^{\deg Q}-1)$ (the function-field orbit hypothesis, the analogue
+  of CME).  \textbf{Open}.
 \end{itemize}
 
-\begin{theorem}[Population CCSB from Weil ---
-\lean{EM/FunctionField/MultiplierCCSB.lean}{weil\_implies\_population\_mult\_ccsb}]
-The Weil bound proves population-level multiplier CCSB unconditionally;
-\lean{EM/FunctionField/MultiplierCCSB.lean}{selection\_bias\_chain}
-formalizes the population~$\to$~fiber~$\to$~selection~$\to$~orbit
-hierarchy.
-\end{theorem}
+\begin{remark}[Population CCSB from Weil \placeholder]
+Mathematically, the Weil bound gives population-level multiplier CCSB
+unconditionally, and the intended hierarchy
+population~$\to$~fiber~$\to$~selection~$\to$~orbit is recorded in
+\code{weil\_implies\_population\_mult\_ccsb} and
+\code{selection\_bias\_chain} (\code{EM/FunctionField/MultiplierCCSB.lean}).
+These are placeholder propositions: nothing about the Weil bound is
+machine-checked, and the two ``theorems'' are implications between
+\code{True}s.
+\end{remark}
 
 \paragraph{Dead End \#127 --- Weil bound insufficient.}
 
 \begin{theorem}[Weil does not close the gap ---
 \lean{EM/FunctionField/OrbitBarrier.lean}{dead\_end\_127\_weil\_not\_sufficient}]
 \label{thm:de127}
-The Weil bound implies population equidistribution but does not imply
-$\FFDH$, because:
+The Weil bound implies population equidistribution (clause~(1) of the
+Lean statement is a placeholder implication, \placeholder) but does not
+imply $\FFDH$, because:
 (i) Weil controls $\sum_{f\;\mathrm{monic},\;\deg f = d}\chi(f \bmod Q)$,
 i.e.\ averages over \emph{all} polynomials of degree~$d$;
 (ii) $\FFDH$ requires $\sum_{n<N}\chi(\ffprod(n) \bmod Q)$, a sum along
@@ -504,10 +603,10 @@ The following counterexample shows this is insufficient.
 On $\ZZ/4\ZZ$, the steps $\{1, 3\}$ generate the full group, yet the
 \emph{alternating} walk $0, 1, 0, 1, \ldots$ visits only $\{0, 1\}$,
 missing $\{2, 3\}$.  Witnessed in
-\lean{EM/FunctionField/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two};
+\lean{EM/Group/CyclicWalkCoverage.lean}{alternating\_walk\_misses\_two};
 the converse direction (cancellation $\Rightarrow$ coverage via Weyl)
 is
-\lean{EM/FunctionField/CyclicWalkCoverage.lean}{walk\_cancel\_implies\_covers}.
+\lean{EM/Group/CyclicWalkCoverage.lean}{walk\_cancel\_implies\_covers}.
 \end{theorem}
 
 \paragraph{The barrier theses.}
@@ -524,23 +623,32 @@ properties:
 \item $\FFDH \Rightarrow \FFMC$ (Theorem~\ref{thm:ff-bootstrap}).
 \item $\FFDH$ is the sole remaining hypothesis.
 \item The barrier is not closed by population statistics
-  (Theorem~\ref{thm:de127}).
+  (Theorem~\ref{thm:de127}; in Lean this clause is the placeholder
+  implication \code{WeilBound}~$\to$~\code{FFPopulationEquidist}
+  \placeholder).
 \item The barrier is not closed by Galois theory
-  (Theorem~\ref{thm:de129}).
+  (Theorem~\ref{thm:de129}; the surviving formal content is the
+  coprimality cascade).
 \item The barrier is not closed by algebraic generation
   (Theorem~\ref{thm:de130}).
-\item The barrier dissolves under stochastic perturbation
-  ($\varepsilon > 0$, Theorem~\ref{thm:ff-stoch}).
+\item Along every mixed walk the degree grows past any target
+  (Theorem~\ref{thm:ff-stoch}); the probabilistic ``capture for
+  $\varepsilon > 0$'' is a heuristic, not a theorem.
 \item The barrier is sharp at $\varepsilon = 0$
   (Theorem~\ref{thm:ff-phase}).
 \end{enumerate}
+The final Lean clause, \code{PopulationMultCCSB}~$\to$
+\code{SelectionBiasNeutral}~$\to$~\code{FFMultiplierCCSB}, is a
+placeholder implication \placeholder.
 \end{theorem}
 
 \begin{theorem}[Setting independence ---
 \lean{EM/FunctionField/OrbitBarrier.lean}{barrier\_setting\_independent}]
 \label{thm:setting-independent}
 \begin{enumerate}[nosep,label=(\roman*)]
-\item Over $\Fpt$: ANT is free (Weil $\Rightarrow$ PE).
+\item Over $\Fpt$: ANT is free (Weil $\Rightarrow$ equidistribution of
+  irreducibles of large degree modulo~$Q$; in the formalization this
+  clause is a placeholder implication \placeholder\ and proves nothing).
 \item Over $\Fpt$: orbit specificity remains ($\FFDH$ open;
   $\FFDH \Rightarrow \FFMC$).
 \item Over $\Fpt$: stochastic perturbation dissolves the barrier;
@@ -548,12 +656,27 @@ properties:
 \end{enumerate}
 \end{theorem}
 
-The function-field setting eliminates the ``easy'' obstacle (ANT for
-PE) and adds new structural information ($\Phi_3$ exclusion), but the
-``hard'' obstacle---orbit specificity~$=$~DSL---is identical to the
-integer case.  This proves that the difficulty of Mullin's Conjecture
+The function-field setting eliminates the ``easy'' obstacle (ANT)
+and adds new structural information ($\Phi_3$ exclusion), but the
+``hard'' obstacle---orbit specificity, i.e.\ CME and its analogue---is
+identical to the integer case.  (The population-level $\minFac$
+statement PE fails over $\Fpt$ for the same reason as over $\ZZ$: the
+class density of the least-degree irreducible factor among $Q$-rough
+polynomials is a head-dominated convergent series, Dead End~\#160; what
+Weil supplies is the counting statement for irreducibles of a fixed
+large degree, which is not PE\@.)  This proves that the difficulty of Mullin's Conjecture
 lies \emph{entirely} in the orbit-specificity barrier and not in the
 analytic number theory.
+
+\paragraph{The degree telescope.}
+The growth axis of \S\ref{sec:defect-telescope} transfers to $\Fpt$, and
+it is the one place where the function-field model is unambiguously better
+behaved: over $\Fpt$ every approximation in the integer telescope
+disappears.  Because that comparison belongs with the telescope rather than
+with the function-field programme, it is carried out in
+\S\ref{sec:ff-telescope}; the conclusion, that the model is \emph{exactly}
+as stuck, is recorded in the table below.
+
 
 \paragraph{Side-by-side summary.}
 
@@ -563,14 +686,17 @@ analytic number theory.
 \toprule
 \textbf{Aspect} & \textbf{Over $\ZZ$} & \textbf{Over $\Fpt$} \\
 \midrule
-Population equidist.\ (PE) & Open (WPNT) & \textbf{Free} (Weil) \\
+Prime equidist.\ mod $q$ (ANT) & Mertens form proved & \textbf{Free} (Weil) \\
 Subgroup escape (SE) & Proved (PRE) & Proved (Weil) \\
 Coprimality cascade & Proved & Proved \\
 $\CME \Rightarrow \MC$ chain & Proved & Proved \\
-Orbit specificity (DSL) & \textbf{Open} & \textbf{Open} \\
+Orbit specificity (CME / FF analogue) & \textbf{Open} & \textbf{Open} \\
 Walk character sums & Not standard & Not standard \\
 Stochastic MC ($\varepsilon > 0$) & Proved & Proved \\
 $\Phi_3$ exclusion & --- & \textbf{Proved} \\
+Defect telescope & Approximate & \textbf{Exact} \\
+Growth constant $C = 0 \Leftrightarrow (\mathrm{C}\infty)$ & Proved & Proved \\
+$(\mathrm{C}\infty)$ itself & \textbf{Open} & \textbf{Open} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -590,13 +716,13 @@ open content is exactly the $\varepsilon = 0$ boundary.
 \end{frontierbox}
 
 \begin{frontierbox}
-\textbf{Controlling the $\varepsilon \to 0$ limit.}
-Stochastic FF-MC is proved for all $\varepsilon > 0$.  Can the limit
-$\varepsilon \to 0$ be controlled to deduce deterministic FF-MC?
-Specifically: does the capture time $T_Q(\varepsilon)$ for a target~$Q$
-remain bounded as $\varepsilon \to 0$?  The phase transition is
-sharp---the proof structure for $\varepsilon > 0$ relies on non-greedy
-exploration, which is absent at $\varepsilon = 0$.
+\textbf{The $\varepsilon \to 0$ limit.}
+Heuristically, $\varepsilon$-perturbed selection captures every target
+almost surely for every fixed $\varepsilon > 0$ (not formalized; see
+Theorem~\ref{thm:ff-stoch}).  Even granting it, the integer case shows
+the limit is not a route: the $\varepsilon$-family is a faithful
+reformulation of MC, not a relaxation (Dead End~\#159), and the same
+holds over $\FF_p[t]$.
 \end{frontierbox}
 
 \begin{frontierbox}
@@ -622,12 +748,13 @@ formal analog.
 
 \begin{frontierbox}
 \textbf{Selection bias neutrality}
-(\lean{EM/FunctionField/MultiplierCCSB.lean}{SelectionBiasNeutral}).
+(\code{SelectionBiasNeutral} in \code{EM/FunctionField/MultiplierCCSB.lean}
+is a placeholder proposition; the question is stated here in prose).
 Does greedy minimal-degree selection preserve character-sum cancellation?
 A positive answer would close the orbit-specificity gap for both FF-MC
 and MC simultaneously, since the question concerns the selection
 mechanism, not the ambient ring.  This is the cleanest formulation of
-the barrier; the integer analog is DSL.
+the barrier; the integer analog is CME.
 \end{frontierbox}
 
 \paragraph{Headline summary.}

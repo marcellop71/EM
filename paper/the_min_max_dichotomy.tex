@@ -1,0 +1,1278 @@
+%% =========================================================================
+\section{The Min/Max Dichotomy: No Congruence Invariant Blocks a Prime}
+\label{sec:min-max-dichotomy}
+%% =========================================================================
+
+Every theorem asserting that a prime is \emph{missing} from a
+Euclid--Mullin sequence has, historically, been a theorem about the
+$\mathrm{maxFac}$ rule.  This section makes the difference between the
+two rules into a formal statement.  On the $\mathrm{maxFac}$ side we
+machine-verify a complete omission certificate---the prime~$5$ never
+occurs in the second sequence---and package it as an instance of an
+abstract obstruction class.  On the $\minFac$ side we prove that the
+very same obstruction class is \emph{empty}: for a missing prime~$q$
+and \emph{every} modulus rich enough to express the capture condition
+for~$q$, no propagating congruence invariant can block~$q$.
+
+Two further layers sharpen this.  Abstracting the argument away from
+residues isolates the single semantic condition that drives it
+(\S\ref{sec:obstruction-calculus}), and lifting it from invariants to
+\emph{proofs} turns the no-go into a statement about a proof system:
+within the congruence-induction fragment, provability of avoidance and
+membership in the sequence are the same predicate
+(\S\ref{sec:proof-fragment}).
+
+\begin{roadmap}
+\begin{enumerate}[nosep,leftmargin=*]
+\item[\S\ref{sec:pop-to-point}] The population-to-point gap --- inverse theorems and obstruction-killing.
+\item[\S\ref{sec:two-sequences}] The two sequences --- open congruence condition vs.\ thin multiplicative condition.
+\item[\S\ref{sec:cvdp-control}] The control case --- the Cox--van der Poorten obstruction for $\mathrm{maxFac}$, formalized.
+\item[\S\ref{sec:no-invariant}] The No-Invariant Theorem --- eviction, free-state fullness, CRT-reach.
+\item[\S\ref{sec:formal-dichotomy}] The formal dichotomy --- the obstruction class is inhabited for max, empty for min.
+\item[\S\ref{sec:ic-min}] $\mathrm{IC}_{\min}$ and its exact position in the reduction network.
+\item[\S\ref{sec:obstruction-calculus}] The obstruction calculus --- enrichments, certificates, the Emptiness Theorem; max provably not killable.
+\item[\S\ref{sec:proof-fragment}] The proof-theoretic dichotomy --- provability of avoidance decides appearance; every guard direction closed.
+\item[\S\ref{sec:reciprocity-frontier}] The reciprocity frontier --- no invariant at the growing symbol modulus blocks a prime.
+\end{enumerate}
+\end{roadmap}
+
+%% =========================================================================
+\subsection{The Population-to-Point Gap}
+\label{sec:pop-to-point}
+%% =========================================================================
+
+The recurring difficulty of this paper is that MC asks for a
+\emph{generic} property (equidistribution, hitting) of one
+\emph{specific} object (the orbit of~$2$).  Sections~\ref{sec:walk}
+through~\ref{sec:hard} attack the positive half of that problem:
+find a hypothesis under which the specific orbit inherits the generic
+behaviour.
+
+There is a complementary half, standard in additive combinatorics and
+in the modern treatment of pseudorandomness, that this section
+supplies.  The technique has two moves:
+
+\begin{enumerate}[nosep]
+\item An \textbf{inverse theorem}: failure of the generic behaviour
+  forces the object to correlate with a \emph{classified} obstruction.
+\item \textbf{Obstruction-killing}: the specific object provably
+  correlates with none of the classified obstructions.
+\end{enumerate}
+
+\noindent
+Together these give the generic behaviour for the specific object.  We
+are not aware of any inverse theorem for either Euclid--Mullin sequence
+in the literature; the search for one, in both directions, came back
+empty.  What this section delivers is move~2, in full, for one
+obstruction class: the class of \emph{propagating congruence
+invariants}.  This is exactly the class into which the classical
+$\mathrm{maxFac}$ omission proof of Cox and van der
+Poorten~\cite{CoxVdP1968} falls.  The result is a no-go theorem, and
+its scientific content is entirely negative: it says where a disproof
+of MC cannot come from.
+
+%% =========================================================================
+\subsection{The Two Sequences and the Structural Asymmetry}
+\label{sec:two-sequences}
+%% =========================================================================
+
+The second Euclid--Mullin sequence (OEIS A000946) replaces the smallest
+prime factor by the largest:
+\[
+  Q_0 = 2, \qquad
+  r_n = \mathrm{maxFac}(Q_{n-1}+1), \qquad
+  Q_n = Q_{n-1} \cdot r_n ,
+\]
+formalized as
+\lean{EM/Obstruction/MaxVariant.lean}{mseq} and
+\lean{EM/Obstruction/MaxVariant.lean}{mprod}, built from
+\lean{EM/Obstruction/MaxVariant.lean}{maxFac},
+the supremum of \code{n.primeFactors}.  The basic structure theory
+mirrors the $\minFac$ side: every term is prime
+(\lean{EM/Obstruction/MaxVariant.lean}{mseq\_prime}), no prime repeats
+(\lean{EM/Obstruction/MaxVariant.lean}{mseq\_injective}), and every term
+divides every later accumulator
+(\lean{EM/Obstruction/MaxVariant.lean}{mseq\_dvd\_mprod}).
+Cox and van der Poorten~\cite{CoxVdP1968} showed that the primes
+$\{5, 11, 13, 17, 19, 23, 29, 31, 37, 41, 47\}$ (all primes below~$53$
+other than the terms $2,3,7,43$) are missing from this sequence, and
+conjectured that infinitely many primes are.  Booker~\cite{Booker2012} showed that infinitely many primes are
+omitted; Pollack and Treviño~\cite{PollackTrevino2014} gave an
+elementary proof of Booker's theorem.
+
+\paragraph{Where the two rules part company.}
+Fix a prime~$q$ and a Euclid number~$N$.  Ask: what does it take for
+the rule to \emph{select}~$q$ at this step?
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{}}
+\toprule
+\textbf{Rule} & \textbf{Appearance condition} $\sigma(N) = q$ \\
+\midrule
+$\minFac$
+  & $q \mid N$ and no prime $< q$ divides~$N$ \\
+  & \emph{an open congruence condition} \\[0.4em]
+$\mathrm{maxFac}$
+  & $q \mid N$ and $N$ is $q$-smooth \\
+  & \emph{a thin multiplicative condition} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The first condition is a nonempty union of residue classes modulo
+$q \cdot \prod_{p < q,\ p \text{ odd}} p$---the modulus called
+\lean{EM/Obstruction/NoInvariant.lean}{forcingModulus} in the
+formalization.  It is a positive-density congruence condition that meets
+\emph{every} residue class mod~$4$, and it says nothing at all about the
+large prime factors of~$N$: the cofactor $N/q$ is arithmetically
+unconstrained.
+
+The second condition is not a congruence condition at any modulus:
+every residue class contains integers with arbitrarily large prime
+factors, so $q$-smoothness cannot be detected modulo anything.  But
+intersected with congruence data it collapses violently.  For $q = 5$,
+smoothness plus ``$N$ odd'' plus ``$3 \nmid N$'' forces
+$N = 5^c$ (\lean{EM/Obstruction/MaxVariant.lean}{eq\_pow\_five\_of\_maxFac\_five}),
+a single geometric progression, all of whose members lie in the single
+class $1 \pmod 4$
+(\lean{EM/Obstruction/MaxVariant.lean}{five\_pow\_mod\_four}).
+A congruence invariant now has something to bite on.
+
+This is the whole asymmetry: \emph{congruence invariants can kill thin
+multiplicative conditions, and have nothing to bite on against open
+congruence conditions.}  The formalization witnesses it on a single
+number.
+
+\begin{theorem}[The asymmetry witness ---
+\lean{EM/Obstruction/MaxVariant.lean}{min\_side\_no\_smoothness\_forcing},
+\lean{EM/Obstruction/MaxVariant.lean}{cvdp\_selection\_rule\_asymmetry}]
+\label{thm:asymmetry-witness}
+There is a natural number~$N$ satisfying \emph{every} congruence
+hypothesis used in the Cox--van der Poorten argument---$N \geq 3$,
+$N$ odd, $3 \nmid N$, $N \equiv 3 \pmod 4$---with
+$\minFac(N) = 5$ and $\mathrm{maxFac}(N) \neq 5$; moreover $N$ is not a
+power of~$5$.  The witness is $N = 35$.  (Since
+\S\ref{sec:formal-dichotomy} the single-number witness has been superseded by
+a statement about the entire class of arguments; it is kept here because it
+exhibits the mechanism on one integer.)
+\end{theorem}
+
+\noindent
+The same number is a forcing state for~$5$ on the min side and is
+blocked on the max side.  Note that
+\lean{EM/Obstruction/MaxVariant.lean}{maxFac\_thirtyfive\_ne\_five}
+is derived abstractly from the mod-$4$ collision
+(\lean{EM/Obstruction/MaxVariant.lean}{maxFac\_ne\_five\_of\_mod\_four}),
+not by factoring~$35$.
+
+%% =========================================================================
+\subsection{The Control Case: the Cox--van der Poorten Obstruction, Formalized}
+\label{sec:cvdp-control}
+%% =========================================================================
+
+Before proving that an object does not exist, it is worth building one.
+The formalization carries a self-contained construction of the second
+sequence and a machine-checked omission theorem for it.
+
+\begin{keyresult}
+\begin{theorem}[\lean{EM/Obstruction/MaxVariant.lean}{five\_not\_mem\_mseq}]
+\label{thm:five-not-mem}
+The prime $5$ never occurs in the second Euclid--Mullin sequence:
+$\forall n,\ \mathrm{mseq}(n) \neq 5$.  Unconditional, computation-free,
+zero \code{sorry}.
+\end{theorem}
+\end{keyresult}
+
+\noindent The proof is three moves.
+
+\begin{enumerate}[nosep]
+\item \emph{Congruence bookkeeping.}  The prime~$3$ occurs at step~$1$
+  (\lean{EM/Obstruction/MaxVariant.lean}{mseq\_one}), so
+  $3 \mid Q_n$ for $n \geq 1$
+  (\lean{EM/Obstruction/MaxVariant.lean}{three\_dvd\_mprod}) and hence
+  $3 \nmid Q_n + 1$
+  (\lean{EM/Obstruction/MaxVariant.lean}{three\_not\_dvd\_mprod\_succ}).
+  Every multiplier past step~$0$ is odd
+  (\lean{EM/Obstruction/MaxVariant.lean}{mseq\_succ\_odd}), whence
+  $Q_n \equiv 2 \pmod 4$
+  (\lean{EM/Obstruction/MaxVariant.lean}{mprod\_mod\_four}) and, combining,
+  $Q_n \equiv 6 \pmod{12}$
+  (\lean{EM/Obstruction/MaxVariant.lean}{mprod\_mod\_twelve}).
+  So the Euclid number satisfies $N \equiv 3 \pmod 4$ and $3 \nmid N$.
+\item \emph{Smoothness forcing.}  $\mathrm{maxFac}(N) = 5$ bounds
+  \emph{all} prime factors of~$N$ by~$5$; oddness kills~$2$ and step~1
+  kills~$3$, so $N = 5^c$
+  (\lean{EM/Obstruction/MaxVariant.lean}{eq\_pow\_five\_of\_maxFac\_five}).
+\item \emph{The mod-$4$ collision.}  $5^c \equiv 1 \pmod 4$ for
+  every~$c$, contradicting $N \equiv 3 \pmod 4$
+  (\lean{EM/Obstruction/MaxVariant.lean}{maxFac\_ne\_five\_of\_mod\_four}).
+\end{enumerate}
+
+\paragraph{The obstruction, packaged.}
+The three moves are then repackaged abstractly, so that the omission
+genuinely \emph{flows from} an obstruction rather than merely
+coinciding with one.  Define the max-side transition relation on
+$\ZZ/m\ZZ$
+(\lean{EM/Obstruction/MaxVariant.lean}{MaxR}):
+$r \to r'$ iff there is an odd $N \geq 3$ with
+$N \equiv r+1$ and $r' = r \cdot \mathrm{maxFac}(N)$.
+A set is \emph{propagating}
+(\lean{EM/Obstruction/MaxVariant.lean}{MaxPropagating}) if closed under
+this relation; a state is \emph{forcing} for~$q$
+(\lean{EM/Obstruction/MaxVariant.lean}{MaxForcingState}) if some legal
+candidate in its class has largest prime factor~$q$; and $S$
+\emph{blocks}~$q$
+(\lean{EM/Obstruction/MaxVariant.lean}{MaxBlocks}) if it contains no
+forcing state.  A
+\lean{EM/Obstruction/MaxVariant.lean}{MaxCvdPObstruction} is a propagating
+set that blocks~$q$ and contains the orbit tail.
+
+\begin{keyresult}
+\begin{theorem}[The obstruction class is inhabited ---
+\lean{EM/Obstruction/MaxVariant.lean}{max\_cvdp\_obstruction\_five}]
+\label{thm:max-obstruction-inhabited}
+The singleton $\{6\} \subseteq \ZZ/12\ZZ$ is a Cox--van der Poorten
+obstruction to the prime~$5$ for the $\mathrm{maxFac}$ sequence.
+\end{theorem}
+\end{keyresult}
+
+\noindent
+Propagation is
+\lean{EM/Obstruction/MaxVariant.lean}{maxPropagating\_six}
+(an odd $N \equiv 7 \bmod 12$ has odd largest prime factor~$p$, and
+$6p \equiv 6 \bmod 12$); blocking is
+\lean{EM/Obstruction/MaxVariant.lean}{maxBlocks\_six\_five}
+(exactly moves~2 and~3 above); tail containment is
+\lean{EM/Obstruction/MaxVariant.lean}{mprod\_mem\_six}.  The real sequence
+step is an instance of the abstract relation
+(\lean{EM/Obstruction/MaxVariant.lean}{mprod\_step\_maxR}), and the
+omission is then re-derived abstractly: any prime blocked by a
+propagating set containing the orbit tail is missing
+(\lean{EM/Obstruction/MaxVariant.lean}{missing\_of\_obstruction}), giving
+\lean{EM/Obstruction/MaxVariant.lean}{five\_not\_mem\_mseq'}.
+
+\begin{remark}[Why the modulus must be $12$, not $4$]
+\label{rem:mod-twelve}
+The mod-$4$ collision supplies the \emph{contradiction}, but the mod-$3$
+information is essential to \emph{propagation and blocking}.  At $m = 4$
+the singleton $\{2\}$ does not block~$5$: the number $N = 15$ is odd,
+$\equiv 3 \pmod 4$, and has $\mathrm{maxFac}(15) = 5$, so the state
+$2 \in \ZZ/4\ZZ$ admits a legal candidate capturing~$5$.  Only after
+$3 \nmid N$ is imposed---which costs the factor~$3$ in the
+modulus---does smoothness collapse to $\{5^c\}$.  \emph{(The failure at
+$m=4$ is stated here for orientation only; it is not part of the Lean
+development, which works throughout at $m = 12$.)}
+\end{remark}
+
+\begin{remark}[Reach of this reconstruction]
+\label{rem:reach-mod-four}
+The mod-$4$ collision closes $q = 5$ and only $q = 5$.  For $q = 11$ the
+forced smooth numbers are $5^a 7^b 11^c$, and since
+$7 \equiv 11 \equiv 3 \pmod 4$ these do meet the class $3 \pmod 4$;
+mod~$4$ alone gives no contradiction.  The remaining Cox--van der
+Poorten primes need further quadratic-residue input, and no claim about
+them is made here.
+\end{remark}
+
+%% =========================================================================
+\subsection{The No-Invariant Theorem}
+\label{sec:no-invariant}
+%% =========================================================================
+
+We now mirror the entire apparatus on the $\minFac$ side and prove it
+vacuous.
+
+\begin{definition}[The min-side transition system]
+\label{def:min-transition}
+Fix a modulus $m \neq 0$.  The \defname{transition relation}
+on $\ZZ/m\ZZ$
+(\lean{EM/Obstruction/NoInvariant.lean}{Transition}) is
+\[
+  r \to r'
+  \iff
+  \exists N \in \NN,\quad
+  N \text{ odd},\ N \geq 3,\
+  N \equiv r + 1 \ (\mathrm{mod}\ m),\
+  r' = r \cdot \minFac(N).
+\]
+A set $S \subseteq \ZZ/m\ZZ$ is \defname{propagating}
+(\lean{EM/Obstruction/NoInvariant.lean}{Propagating}) if it is closed
+under~$\to$; $r$ is a \defname{forcing state} for~$q$
+(\lean{EM/Obstruction/NoInvariant.lean}{ForcingState}) if \emph{every}
+candidate~$N$ in the class $r+1$ has $q \mid N$ and is divisible by no
+odd prime below~$q$; $S$ \defname{blocks}~$q$
+(\lean{EM/Obstruction/NoInvariant.lean}{Blocks}) if it contains no forcing
+state; and $S$ \defname{contains the tail}
+(\lean{EM/Obstruction/NoInvariant.lean}{ContainsTail}) if
+$\Prod{2}(n) \bmod m \in S$ for all large~$n$.
+A \defname{CvdP obstruction}
+(\lean{EM/Obstruction/NoInvariant.lean}{CvdPObstruction}) is a set that is
+propagating, blocks~$q$, and contains the tail.
+The modulus is \defname{rich enough}
+(\lean{EM/Obstruction/NoInvariant.lean}{RichEnough}) for~$q$ if
+$q \mid m$ and every odd prime $< q$ divides~$m$; the minimal such
+modulus is
+$M(q) = q \cdot \prod_{p < q,\ p \text{ odd}} p$
+(\lean{EM/Obstruction/NoInvariant.lean}{forcingModulus},
+\lean{EM/Obstruction/NoInvariant.lean}{richEnough\_of\_forcingModulus\_dvd}).
+\end{definition}
+
+\begin{remark}[Deliberate over-approximation, and what it costs]
+\label{rem:over-approximation}
+In \code{Transition}, $N$ ranges over \emph{all} natural numbers in the
+residue class $r+1$---not only those actually realizable as
+Euclid--Mullin candidates.  The relation is therefore strictly larger
+than the true orbit dynamics.  We should be precise about the direction
+this cuts.  If $\to_{\mathrm{true}} \subseteq \to_{\mathrm{big}}$, then a set that
+propagates under $\to_{\mathrm{big}}$ propagates under
+$\to_{\mathrm{true}}$, so ``no big-propagating blocking set exists'' is
+\emph{implied by}, hence \emph{weaker than}, ``no true-propagating
+blocking set exists''.  (For the true dynamics the latter question is in
+fact vacuous: the tail residues of the actual orbit form a propagating
+set, which blocks~$q$ iff $q$ is missing.)  The honest reading of the
+No-Invariant Theorem is therefore about \emph{proofs}, not dynamics: it
+excludes any omission argument whose only knowledge of the candidate~$N$
+is its residue class modulo~$m$---because, on the min side, capture
+$\minFac N = q$ is itself a residue-class condition on~$N$
+(Theorem~\ref{thm:min-congruence-determined}) and Dirichlet supplies
+candidates in every class.  That is a one-paragraph observation with a
+machine-checked proof, and it is all we claim.
+
+The two definitions of ``blocks'' are set up in the same spirit: on the
+min side \code{ForcingState} is universally quantified over candidates,
+on the max side \code{MaxForcingState} is existentially quantified, so
+that each side is set up against the conclusion it reaches.
+\end{remark}
+
+\noindent
+That \code{Blocks} is the right notion is not a matter of taste; it is a
+lemma.  At a forcing state the capture really happens:
+
+\begin{lemma}[Semantics of forcing ---
+\lean{EM/Obstruction/NoInvariant.lean}{forcingState\_captures}]
+\label{lem:forcing-captures}
+If $q$ is prime and $\Prod{2}(n) \bmod m$ is a forcing state for~$q$,
+then $\seq{2}(n{+}1) = q$.
+\end{lemma}
+
+\noindent
+So a set containing a forcing state cannot certify that $q$ is missing;
+a genuine certificate must block, and the definition captures exactly
+that.
+
+\paragraph{Move 1: eviction.}
+The engine is the finiteness of the hitting set for a missing prime.
+
+\begin{lemma}[Finite Hitting ---
+\lean{EM/Obstruction/NoInvariant.lean}{hittingSet\_finite},
+alias \lean{EM/Obstruction/NoInvariant.lean}{hittingSet\_finite}]
+\label{lem:finite-hitting}
+For $q$ a missing prime, $\mathrm{HittingSet}(q) = \{n : q \mid
+\Prod{2}(n)+1\}$ is finite, with
+$|\mathrm{HittingSet}(q)| \leq q$
+(\lean{EM/Obstruction/NoInvariant.lean}{hittingSet\_ncard\_le}).
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+At a hitting step the guardian bound
+(\lean{EM/Population/HittingSetStructure.lean}{hitting\_step\_guardian})
+gives $\seq{2}(n{+}1) < q$, since $\minFac(\Prod{2}(n)+1) \le q$ and
+equality would mean $q$ appears.  Because no prime repeats
+(\lean{EM/Core/Defs.lean}{seq\_injective}), the map
+$n \mapsto \seq{2}(n{+}1)$ is injective on the hitting set, which
+therefore injects into the primes below~$q$.
+\end{proof}
+
+\noindent
+This is the first place the rule matters: the guardian bound
+$\minFac(\Prod{2}(n)+1) < q$ is exactly what fails for
+$\mathrm{maxFac}$, where the chosen factor is $\geq q$ and the hitting
+set may well be infinite.
+
+Finite hitting feeds an eviction statement that is
+\textbf{unconditional}---no missing-prime assumption:
+
+\begin{lemma}[Eviction ---
+\lean{EM/Obstruction/NoInvariant.lean}{exists\_tail\_coprime}]
+\label{lem:eviction}
+For every modulus $m \neq 0$ there is $N_0$ with
+$\gcd(\Prod{2}(n)+1, m) = 1$ for all $n \geq N_0$.
+\end{lemma}
+
+\noindent
+The proof is the \textbf{A/B split}, applied to each prime $\ell \mid m$
+(\lean{EM/Obstruction/NoInvariant.lean}{eventually\_not\_dvd\_succ}):
+either $\ell$ occurs in the sequence, in which case $\ell \mid
+\Prod{2}(n)$ from that point on and so $\ell \nmid \Prod{2}(n)+1$; or
+$\ell$ is missing, in which case its hitting set is finite by
+Lemma~\ref{lem:finite-hitting}.  Taking the maximum over the finitely
+many prime factors of~$m$ gives $N_0$.  In particular the orbit is
+eventually \emph{free} forever: $\Prod{2}(n)+1$ is a unit mod~$m$.
+
+\paragraph{Move 2: free-state fullness.}
+From a free state, every unit multiple is reachable in a single step.
+
+\begin{lemma}[Free-state fullness ---
+\lean{EM/Obstruction/NoInvariant.lean}{free\_transition}]
+\label{lem:free-transition}
+Let $m \neq 0$, $r \in \ZZ/m\ZZ$ with $r+1$ a unit.  Then for
+\emph{every} unit $s \in (\ZZ/m\ZZ)^\times$ there is a transition
+$r \to r\cdot s$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+Apply Dirichlet twice.  Pick a prime $\pi > 2$ with $\pi \equiv s$, then
+a prime $M > \pi$ with $M \equiv (r+1)s^{-1}$---a unit class, since both
+$r+1$ and $s$ are units.  Set $N = \pi M$.  Then $N$ is odd,
+$N \equiv r+1$, and $\minFac(N) = \pi \equiv s$
+(\lean{EM/Obstruction/NoInvariant.lean}{minFac\_mul\_of\_lt}).
+\end{proof}
+
+\noindent
+The Mathlib input is
+\code{Nat.forall\_exists\_prime\_gt\_and\_eq\_mod}
+(\code{Mathlib/NumberTheory/LSeries/PrimesInAP.lean}).
+This lemma is \textbf{rule-symmetric}, and it is \emph{not} where the
+two rules part company.  For $\mathrm{maxFac}$ the very same
+$N = \pi M$ would give $\mathrm{maxFac}(N) = M$, whose class is
+$(r+1)s^{-1}$; but one is free to pick the two primes in the other
+order---first a prime $\pi \equiv (r+1)s^{-1}$, then a prime
+$M > \pi$ with $M \equiv s$, so that again $N = \pi M \equiv r+1$
+while now $\mathrm{maxFac}(N) = M \equiv s$.  Free-state fullness
+therefore holds under \emph{both} rules.  The genuine break points are
+the guardian bound (Lemma~\ref{lem:finite-hitting}) and, decisively,
+the capture condition of \S\ref{sec:two-sequences}---a congruence
+condition for $\minFac$, satisfiable modulo
+$\mathrm{forcingModulus}(q)$, versus a smoothness condition for
+$\mathrm{maxFac}$, which no fixed modulus can express, so max-side
+blocking degenerates and obstructions exist trivially.  That is where
+Booker-type omissions live; see
+\S\ref{sec:congruence-receptacle}.
+
+\begin{remark}[Consistency note]
+\label{rem:fullness-symmetric}
+For a time our own reading---and the Lean docstrings---located the
+min/max break point at this lemma: under $\minFac$ the pair
+$N = \pi M$ with $\pi < M$ gives multiplier~$\pi$, whose class is
+free, while under $\mathrm{maxFac}$ it gives~$M$, whose class is
+forced to be $(r{+}1)s^{-1}$.  That reading is \textbf{wrong}, and
+the docstrings have been corrected accordingly: as shown above, one
+merely picks the two primes in the other order.  The rows of the
+summary table in \S\ref{sec:formal-dichotomy} recording the
+multiplier of $\pi M$ and the reachable set should be read with this
+correction in mind: they describe the \emph{particular} candidate
+used in the min-side proof, not an obstruction on the max side.  The
+two rules are separated by the capture condition and by the guardian
+bound (Lemma~\ref{lem:finite-hitting}), not by fullness.
+\end{remark}
+
+\paragraph{Move 3: CRT-reach.}
+Combining the moves gives the theorem.
+
+\begin{keyresult}
+\begin{theorem}[No-Invariant Theorem ---
+\lean{EM/Obstruction/NoInvariant.lean}{no\_cvdp\_obstruction}]
+\label{thm:no-invariant}
+Let $q$ be a prime that never occurs in the (first, $\minFac$)
+Euclid--Mullin sequence.  Then for \emph{every} modulus $m \neq 0$ with
+$\mathrm{RichEnough}(q,m)$, \textbf{no} set $S \subseteq \ZZ/m\ZZ$ is a
+CvdP obstruction for~$q$ modulo~$m$.
+\end{theorem}
+\end{keyresult}
+
+\begin{proof}[Proof sketch]
+By Lemma~\ref{lem:eviction} the tail is free forever, and by
+\code{ContainsTail} some free tail state $r = \Prod{2}(n) \bmod m$ lies
+in~$S$.  By Lemma~\ref{lem:free-transition} and propagation, $S$
+contains $r \cdot s$ for every unit~$s$.  Choose by CRT a unit~$s$ with
+$s \equiv -\Prod{2}(n)^{-1} \pmod q$ and $s \equiv 1$ modulo every other
+prime factor of~$m$.  Then $r s + 1 \equiv 0 \pmod q$, while for every
+odd prime $p < q$ we get $rs + 1 \equiv r + 1 \not\equiv 0 \pmod p$
+\emph{by freeness}---so the A/B split is not even needed at this stage.
+Thus $r \cdot s \in S$ is a forcing state, contradicting
+\code{Blocks}.
+\end{proof}
+
+\noindent
+No parity hypothesis on~$m$ is needed.  The frozen $2$-adic data of the
+first sequence ($\Prod{2}(n) \equiv 2 \bmod 4$, candidate
+$\equiv 3 \bmod 4$) blocks nothing, because ``$q \mid N$ and
+$N \equiv 3 \pmod 4$'' is satisfiable for every odd~$q$, and the
+Dirichlet construction prescribes the candidate class modulo the
+\emph{whole} modulus, absorbing the mod-$4$ constraint automatically.
+The two-part specialisation is
+\lean{EM/Obstruction/NoInvariant.lean}{no\_cvdp\_obstruction\_two\_part}:
+for $m = 2^a m_0$ with $m_0 \neq 0$, still no obstruction.
+
+Contrast with max, where the appearance condition for~$5$ is $N = 5^c$,
+which forces $N \equiv 1 \pmod 4$ and is killed by the frozen
+$3 \bmod 4$.  \emph{That} is the dichotomy: a congruence obstruction can
+only bite when the appearance condition is not itself a full-freedom
+congruence condition, and for $\minFac$ it always is.
+
+\paragraph{Lifting, with an honest caveat.}
+An invariant modulo~$m$ pulls back along $\ZZ/m'\ZZ \to \ZZ/m\ZZ$
+whenever $m \mid m'$
+(\lean{EM/Obstruction/NoInvariant.lean}{liftSet}).  Propagation lifts
+(\lean{EM/Obstruction/NoInvariant.lean}{propagating\_lift}) and tail
+containment lifts
+(\lean{EM/Obstruction/NoInvariant.lean}{containsTail\_lift}), but the
+forcing form of \code{Blocks} does \emph{not}: \code{ForcingState} at the
+finer modulus is a weaker condition on the projected state, since the
+class being quantified over is smaller.  What does lift is the stronger
+\emph{death-avoiding} form
+(\lean{EM/Obstruction/NoInvariant.lean}{BlocksDeath}), in which $S$ avoids
+$r+1 \equiv 0 \bmod q$ altogether; it implies \code{Blocks}
+(\lean{EM/Obstruction/NoInvariant.lean}{blocks\_of\_blocksDeath}) and it
+lifts (\lean{EM/Obstruction/NoInvariant.lean}{blocksDeath\_lift}), giving
+\lean{EM/Obstruction/NoInvariant.lean}{cvdpObstruction\_lift}.
+This is why Theorem~\ref{thm:no-invariant} takes
+$\mathrm{RichEnough}(q,m)$ as a hypothesis rather than deriving it by
+lifting from a coarser modulus.
+
+%% =========================================================================
+\subsection{The Formal Dichotomy}
+\label{sec:formal-dichotomy}
+%% =========================================================================
+
+Putting the two halves side by side gives the centerpiece.
+
+\begin{keyresult}
+\textbf{The min/max dichotomy}
+(\lean{EM/Obstruction/RuleTransition.lean}{cvdp\_dichotomy}).
+Let $\Phi$ be a selection rule and write
+\[
+  R_\Phi^{(m)}(r, r') \;:\Longleftrightarrow\;
+  \exists N \text{ odd},\ N \geq 3,\ N \equiv r+1 \!\!\pmod m,\
+  r' = r \cdot \Phi(N),
+\]
+with \emph{propagating}, \emph{forcing} and \emph{blocking} defined from it and
+an accumulator supplying the orbit tail.  For this one system:
+\begin{itemize}[nosep]
+\item the class is \textbf{inhabited} at $\Phi = \mathrm{maxFac}$:
+  $\{6\} \subseteq \ZZ/12\ZZ$ blocks~$5$
+  (\lean{EM/Obstruction/MaxVariant.lean}{max\_cvdp\_obstruction\_five}), and
+  the omission of~$5$ follows from it
+  (\lean{EM/Obstruction/MaxVariant.lean}{five\_not\_mem\_mseq'});
+\item the class is \textbf{empty} at $\Phi = \minFac$, for every missing
+  prime~$q$ and \emph{every} modulus
+  (\lean{EM/Obstruction/RuleTransition.lean}{no\_min\_rule\_obstruction}).
+\end{itemize}
+The two sides are instances of the same definition, not analogues of it:
+$\mathrm{MaxR}$ and $\mathrm{Transition}$ are $R_\Phi$ at
+$\Phi = \mathrm{maxFac}$ and $\Phi = \minFac$ by \texttt{Iff.rfl}
+(\lean{EM/Obstruction/RuleTransition.lean}{maxR\_iff},
+\lean{EM/Obstruction/RuleTransition.lean}{minR\_iff}).
+This is a formal statement separating the two Euclid--Mullin sequences at
+the level of congruence obstructions: the class is inhabited under
+$\mathrm{maxFac}$ (and machine-checks Cox--van der Poorten's omission of~$5$)
+and empty under $\minFac$.  It says nothing about the truth values of the
+two conjectures, one of which is open.
+\end{keyresult}
+
+\paragraph{Why ``every modulus'' is the load-bearing word.}
+An earlier form of the min-side theorem carried a parity hypothesis: the
+fragment was proved empty at every \emph{odd} modulus.  That left the
+statement open to a fair objection, because the one obstruction anybody
+has ever exhibited for a Euclid-type sequence---Cox and van der
+Poorten's---lives at $m = 12$.  The technique that works was outside the
+theorem that says the technique fails.
+
+The parity entered at a single point.  Extraction has to produce, at each
+invariant residue~$r$, an \emph{odd} candidate $N \geq 3$ in the class
+$r+1$; for odd~$m$ every class contains odd naturals, but for even~$m$ a
+class can consist entirely of even ones, and there the fragment's step and
+avoid clauses say nothing.  The repair is to carry the parity as a witness:
+$\mathrm{OddRepresentable}(m,r)$ asserts that the class $r+1$ contains an
+odd natural.  It holds along the orbit, since $\Prod{2}(n)$ is even; it is
+closed under the transition, and for a reason cheaper than expected, since
+$r+1$ odd forces $r$ even and $r \cdot s$ stays even whatever the multiplier
+is; and it is exactly what realization needs, because $N = c + 2mK$ remains
+in the class, remains odd, and exceeds any prescribed bound at
+\emph{every} modulus
+(\lean{EM/Obstruction/RuleTransition.lean}{exists\_large\_odd\_of\_representable}).
+Intersecting the invariant with it yields a certificate at every modulus, and
+the oddness hypothesis drops out
+(\lean{EM/Obstruction/RuleTransition.lean}{no\_congruence\_induction\_proof\_of\_ne\_zero}).
+
+\paragraph{A min-side obstruction \emph{is} an induction proof.}
+The unification also collapses a distinction the two files had maintained
+separately.  Under $\Phi = \minFac$, propagation is the step case of an
+induction, tail-containment supplies its base, and blocking is precisely its
+avoid clause: a min-side obstruction and a congruence-invariant induction
+proof are the same object
+(\lean{EM/Obstruction/RuleTransition.lean}{toCongruenceProof}).  The semantic
+no-go and the proof-theoretic no-go of \S\ref{sec:proof-fragment} are two
+readings of one theorem.
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+ & $\boldsymbol{\minFac}$ \textbf{(first)} & $\mathbf{maxFac}$ \textbf{(second)} \\
+\midrule
+Appearance condition for~$q$
+  & open congruence & $q$-smooth, then $q^c$ \\
+Hitting set of a missing prime
+  & finite & may be infinite \\
+Guardian bound $\sigma(N) < q$
+  & holds & fails \\
+$\sigma(\pi M)$, $\pi < M$ primes
+  & $\pi$ & $M$ \\
+Reachable set from a free state
+  & all units & all units (reorder $\pi, M$) \\
+Discarded cofactor
+  & large part, unconstrained & small part, already omitted \\
+\midrule
+\textbf{Congruence obstruction}
+  & \textbf{provably none} & \textbf{exists} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The two summary statements are packaged as single theorems:
+\lean{EM/Obstruction/NoInvariant.lean}{no\_invariant\_landscape}
+and
+\lean{EM/Obstruction/MaxVariant.lean}{max\_variant\_landscape}.
+
+\begin{remark}[What this does and does not say about MC]
+\label{rem:scope}
+The theorem is a no-go, and its scope must be stated precisely.
+
+What is killed is the class of \textbf{elementary congruence
+obstructions}: a fixed set of residues modulo a fixed modulus, closed
+under the dynamics, containing the orbit tail.  This is exactly the
+mechanism that kills primes $\equiv 1 \pmod 4$ on the max side,
+including the~$5$ formalized above.  So: \emph{the elementary congruence
+mechanism, at every modulus, odd or even, provably cannot exist for the
+first sequence.}
+
+What is \textbf{not} killed is Booker's general
+argument~\cite{Booker2012}.  It is not a fixed propagating invariant at
+all: it is a finite-window reductio.  One assumes that all primes
+$\leq X$ except a known exclusion set appear, isolates the last to
+appear, and then \emph{constructs} by CRT an auxiliary integer~$d$ whose
+Jacobi symbol against the Euclid number is forced to two contradictory
+values by quadratic reciprocity.  The construction needs an analytic
+existence step at each escalation---Burgess character-sum bounds in
+Booker's version, bounds on runs of quadratic residues in the elementary
+version of Pollack and Treviño~\cite{PollackTrevino2014}.  The class
+handled by Theorem~\ref{thm:no-invariant} does not literally contain
+this mechanism.  See \S\ref{sec:reciprocity-frontier}.
+
+Finally, a no-go is not evidence \emph{for} MC beyond its literal
+content.  It says only that a disproof of MC cannot be elementary and
+congruential.
+\end{remark}
+
+%% =========================================================================
+\subsection{$\mathrm{IC}_{\min}$ and Its Position in the Network}
+\label{sec:ic-min}
+%% =========================================================================
+
+It is natural to ask what a congruence-certificate approach to MC would
+require.  The formalization states it exactly.
+
+\begin{definition}[$\mathrm{IC}_{\min}$ ---
+\lean{EM/Obstruction/NoInvariant.lean}{IC\_min}]
+\label{def:ic-min}
+\emph{If a prime~$q$ never occurs in the first Euclid--Mullin sequence,
+then its omission is certified by a propagating congruence invariant}:
+there exist $m \neq 0$ with $\mathrm{RichEnough}(q,m)$ and a set
+$S \subseteq \ZZ/m\ZZ$ that is a CvdP obstruction for~$q$.
+\end{definition}
+
+\noindent
+This is the exact analogue of what is \emph{true} on the max side.  By
+Theorem~\ref{thm:no-invariant} it implies MC
+(\lean{EM/Obstruction/NoInvariant.lean}{ic\_min\_implies\_mullin}).
+
+\begin{keyresult}
+\begin{theorem}[Position in the network ---
+\lean{EM/Obstruction/NoInvariant.lean}{ic\_min\_network}]
+\label{thm:ic-min-network}
+$\DH \Rightarrow \mathrm{IC}_{\min}$,
+$\mathrm{SingleHitHypothesis} \Rightarrow \mathrm{IC}_{\min}$, and
+\[
+  \mathrm{IC}_{\min} \iff \MC .
+\]
+\end{theorem}
+\end{keyresult}
+
+\noindent
+\textbf{This must be read correctly.}  The forward implication is the
+No-Invariant Theorem; the backward implication
+(\lean{EM/Obstruction/NoInvariant.lean}{mullin\_implies\_ic\_min}) is that
+MC makes $\mathrm{IC}_{\min}$ \emph{vacuously} true, there being no
+missing primes to certify.  Hence $\mathrm{IC}_{\min}$ sits at the
+\textbf{top} of the reduction network, strictly above
+$\DH$ and $\mathrm{SingleHitHypothesis}$
+(\lean{EM/Obstruction/NoInvariant.lean}{dynamicalHitting\_implies\_ic\_min},
+\lean{EM/Obstruction/NoInvariant.lean}{singleHit\_implies\_ic\_min}).
+
+$\mathrm{IC}_{\min}$ is therefore \textbf{not} a weakening of MC and
+\textbf{not} a new route to a proof.  It is the precise statement of
+what a congruence-certificate approach would require, and it is
+logically identical to the conjecture itself.  The entire scientific
+value of \code{EM/Obstruction/NoInvariant.lean} lies in the no-go content
+of \code{no\_cvdp\_obstruction}, not in the reduction $\mathrm{IC}_{\min}
+\Rightarrow \MC$.
+
+%% =========================================================================
+\subsection{The Obstruction Calculus}
+\label{sec:obstruction-calculus}
+%% =========================================================================
+
+The proof of Theorem~\ref{thm:no-invariant} barely used the fact that a
+certificate tracks \emph{residues}.  Eviction is a statement about which
+primes have appeared; fullness is a statement about the richness of the
+transition relation; CRT-reach is a statement about forcing states.
+Only the last mentions congruences at all.  The natural object is
+therefore one level up.
+
+\begin{definition}[Enrichment ---
+\lean{EM/Obstruction/Calculus.lean}{Enrichment}]
+\label{def:enrichment}
+An \defname{enrichment} $E$ is any state space a would-be avoidance
+certificate is allowed to track: a type $\mathrm{State}$, an
+\defname{observation} map $\mathrm{observe} \colon \NN \to
+\mathrm{State}$ giving the enriched shadow of the orbit, a
+\defname{transition relation} $\mathrm{Trans}$ under which certificates
+must be closed, a proof that the actual orbit steps are transitions, and
+a predicate $\mathrm{Forcing}\ q$ marking the states at which capture
+of~$q$ is at issue.  The transition relation is deliberately allowed to
+be \emph{larger} than the true dynamics---the skeptic's-favour rule of
+Definition~\ref{def:min-transition}---which makes non-existence of
+certificates a stronger statement.
+\end{definition}
+
+\begin{definition}[Certificate, killability ---
+\lean{EM/Obstruction/Calculus.lean}{Certificate},
+\lean{EM/Obstruction/Calculus.lean}{Killable}]
+\label{def:certificate}
+A \defname{certificate} for~$q$ in~$E$ is a set of states that is
+propagating, contains the orbit tail, and contains no forcing state
+for~$q$.  The enrichment is \defname{killable at~$q$} if from every late
+orbit state a forcing state is reachable inside $\mathrm{Trans}$.
+\end{definition}
+
+Eviction, fullness and reach are exactly a proof method for
+killability, and once killability is isolated the no-go is three lines.
+
+\begin{theorem}[Emptiness Theorem ---
+\lean{EM/Obstruction/Calculus.lean}{no\_certificate}]
+\label{thm:emptiness}
+A killable enrichment admits no certificate.
+\end{theorem}
+
+\begin{proof}
+The tail meets the certificate; from that state a forcing state is
+reachable; propagation drags the certificate onto it; this contradicts
+blocking.
+\end{proof}
+
+The abstraction passes the obvious test: instantiating at the congruence
+enrichment (states $\ZZ/m\ZZ$, transition $\mathrm{Transition}\ m$,
+forcing $\mathrm{ForcingState}\ q\ m$) and proving \emph{that} enrichment
+killable
+(\lean{EM/Obstruction/Calculus.lean}{congruence\_killable})
+recovers Theorem~\ref{thm:no-invariant} with no further argument
+(\lean{EM/Obstruction/Calculus.lean}{no\_cvdp\_obstruction'}).
+
+\paragraph{The framework is not vacuous.}
+The max side fits the same shape, and there the Cox--van der Poorten
+obstruction \emph{is} a certificate
+(\lean{EM/Obstruction/Calculus.lean}{maxCertificate\_five}).  By
+Theorem~\ref{thm:emptiness} the max enrichment is therefore \emph{not}
+killable
+(\lean{EM/Obstruction/Calculus.lean}{max\_not\_killable}).  This is
+worth emphasising: ``fullness is min-specific'' is not asserted, it is
+\emph{derived}---the very theorem provable for $\mathrm{Transition}\ m$
+is refutable for its max analogue, and the room between them is exactly
+where an omission proof can live.
+
+\paragraph{Comparison of enrichments.}
+Enrichments form a category of sorts: a \defname{refinement}
+(\lean{EM/Obstruction/Calculus.lean}{Refines}) projects a finer state
+space onto a coarser one, certificates pull back along it
+(\lean{EM/Obstruction/Calculus.lean}{Certificate.pullback}) and killability pushes
+forward
+(\lean{EM/Obstruction/Calculus.lean}{Killable.of\_refines}).  Growing the killed
+class is therefore a matter of exhibiting new killable enrichments, and
+each one removes one more possible shape of a disproof of~$\MC$.
+
+\paragraph{Time-dependent invariants.}
+A certificate fixes one invariant set for all time.  That is a real
+restriction, and it is removed by grading: a
+\defname{graded certificate}
+(\lean{EM/Obstruction/Calculus.lean}{GradedCertificate}) carries a
+family $S_n$ of state sets, propagating from stage~$n$ to stage~$n{+}1$
+and blocking at every stage.  Ordinary certificates are the constant
+families
+(\lean{EM/Obstruction/Calculus.lean}{Certificate.toGraded}), so this is
+strictly wider.
+
+The emptiness argument survives, but only against a \emph{quantitative}
+form of killability: one must know how many transitions the reach takes,
+because a $k$-step reach from stage~$n$ lands at stage~$n+k$.  The
+congruence enrichment satisfies the counted form in the strongest way---
+its witness is a \emph{single} transition, multiplication by the
+CRT-chosen unit
+(\lean{EM/Obstruction/Calculus.lean}{congruence\_killableIn})---so
+nothing is lost, and time-dependent congruence invariants do not block a
+missing prime either
+(\lean{EM/Obstruction/Calculus.lean}{no\_graded\_certificate\_congruence}).
+
+\begin{remark}[Honesty about completeness]
+\label{rem:trace-complete}
+Over any killable family, the statement ``every missing prime admits a
+certificate somewhere in the family'' is \emph{equivalent} to~$\MC$
+(\lean{EM/Obstruction/Calculus.lean}{traceComplete\_iff\_mullin}),
+exactly as $\mathrm{IC}_{\min} \Leftrightarrow \MC$; for the congruence
+family the two statements literally coincide
+(\lean{EM/Obstruction/Calculus.lean}{traceComplete\_congruence\_iff\_ic\_min}).
+The calculus therefore produces no new \emph{weaker} route to~$\MC$.
+Its value is entirely in the growing no-go content, and the whole
+landscape is packaged as
+\lean{EM/Obstruction/Calculus.lean}{obstruction\_calculus\_landscape}.
+\end{remark}
+
+%% =========================================================================
+\subsection{The Proof-Theoretic Dichotomy}
+\label{sec:proof-fragment}
+%% =========================================================================
+
+Everything so far concerns \emph{semantic} invariants: sets of states.
+One can go further and ask about \emph{proofs}.  Fix a proof shape---the
+one every classical omission argument in this family has---and ask
+whether the shape can establish anything at all on the min side.
+
+\begin{definition}[The congruence-induction fragment ---
+\lean{EM/Obstruction/Fragment.lean}{CongruenceInductionProof}]
+\label{def:fragment}
+A \defname{congruence-invariant induction proof} that~$q$ is eventually
+never captured consists of an invariant $\mathrm{inv} \subseteq
+\ZZ/m\ZZ$, a stage~$N_0$ at which the actual orbit satisfies it, an
+induction \emph{step}, and a \emph{conclusion}.  The step and the
+conclusion are required to hold for \emph{every} admissible candidate
+$N$ (odd, $\geq 3$) in the class $r+1$: the proof's only knowledge of
+the orbit is the residue~$r$, so it cannot distinguish candidates the
+invariant does not separate.
+\end{definition}
+
+The fragment is a genuine proof system: an inhabitant really does prove
+the omission
+(\lean{EM/Obstruction/Fragment.lean}{eventually\_avoids}).  It is also
+not a straw man in the other direction---its conclusion field asks only
+that \emph{capture} be excluded ($\minFac N \neq q$), the weakest
+conclusion an omission proof can have, which makes its emptiness a
+stronger theorem.
+
+Proof mining converts an inhabitant into a certificate
+(\lean{EM/Obstruction/Fragment.lean}{toCertificate}): the step case,
+read semantically, is propagation; the conclusion, read semantically,
+is blocking.  With Theorem~\ref{thm:emptiness} this gives:
+
+\begin{theorem}[Unprovability ---
+\lean{EM/Obstruction/Fragment.lean}{no\_congruence\_induction\_proof}]
+\label{thm:unprovability}
+For a missing prime~$q$ the fragment is \textbf{empty}, at every odd
+modulus.  No richness hypothesis is needed: a proof at a poor modulus
+lifts to a rich one
+(\lean{EM/Obstruction/Fragment.lean}{lift}), and at the proof level the
+$\mathrm{BlocksDeath}$ caveat of the lifting discussion in
+\S\ref{sec:no-invariant} dissolves,
+because every field of a fragment proof is universally quantified over
+candidates and candidates cast down.
+\end{theorem}
+
+The converse direction is where the statement acquires its sting.  For a
+prime that \emph{has} appeared the fragment is inhabited, and by
+Euclid's own argument: once $q \mid \Prod{2}(n)$ it divides the
+accumulator forever, so it can never divide a candidate---an induction
+whose invariant is the congruence condition ``$q \mid r$''
+(\lean{EM/Obstruction/Fragment.lean}{appearedProof}).
+
+\begin{keyresult}
+\textbf{Provability decides appearance}
+(\lean{EM/Obstruction/Fragment.lean}{congruence\_provability\_iff}).
+For a prime~$q$ and an odd modulus~$m$ divisible by~$q$,
+\[
+  \text{the fragment proves ``$q$ eventually avoided''}
+  \quad\Longleftrightarrow\quad
+  \text{$q$ appears in the sequence.}
+\]
+Within this proof genre, provability of avoidance and membership in the
+sequence are the \emph{same predicate}: the fragment can certify an
+avoidance only for the trivial reason that there is nothing to avoid.
+\end{keyresult}
+
+\paragraph{The max-side control.}
+The corresponding max fragment is \emph{inhabited} at $q = 5$,
+$m = 12$: Cox--van der Poorten's proof is literally a fragment
+inhabitant, with invariant $\{6\}$ and base stage~$1$
+(\lean{EM/Obstruction/Fragment.lean}{maxProofFive}), and fragment
+soundness re-derives the omission
+(\lean{EM/Obstruction/Fragment.lean}{max\_fragment\_proves\_five}).  So
+the provability equivalence \emph{fails} for the max rule
+(\lean{EM/Obstruction/Fragment.lean}{max\_provability\_not\_iff}).  The
+dichotomy, now at the level of proofs rather than invariants: \emph{the
+same proof system that proves the max sequence misses~$5$ provably
+cannot establish any omission for the min sequence}
+(\lean{EM/Obstruction/Fragment.lean}{proof\_theoretic\_dichotomy}).
+
+\paragraph{How wide is the fragment?}
+Definition~\ref{def:fragment} restricts the invariant to be uniform
+in~$n$ and the clauses to be uniform over candidates.  Three relaxations
+suggest themselves, and all three are free.
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Time-dependence.}  Let the invariant be a family
+  $\mathrm{inv}_n$.  This dies because the congruence enrichment is
+  killable in one step (\S\ref{sec:obstruction-calculus}), so a graded
+  invariant is dragged onto a forcing state exactly as a constant one
+  is.
+\item \textbf{Size.}  Let the step and conclusion be required only for
+  candidates $N \geq B(n)$, so the proof may use an archimedean lower
+  bound on the Euclid number.  This dies because Dirichlet hands out
+  arbitrarily large primes: the two-prime construction of
+  Move~2 can be run with its first prime above any prescribed bound
+  (\lean{EM/Obstruction/NoInvariant.lean}{free\_transition\_large}), and
+  a class always contains arbitrarily large odd representatives
+  (\lean{EM/Obstruction/NoInvariant.lean}{exists\_large\_odd\_in\_class}).
+\item \textbf{Factor count.}  Let the clauses be required only for
+  candidates with at least $K(n)$ distinct prime factors.  This dies for
+  a reason worth isolating: multiplying by a prime $p \equiv 1
+  \pmod m$ chosen above the current value changes \emph{neither the
+  residue class nor the least prime factor}, while raising $\omega$
+  by one
+  (\lean{EM/Obstruction/NoInvariant.lean}{exists\_class\_omega}).
+  Iterating pushes $\omega$ as high as desired without disturbing
+  anything the congruence machinery can see.
+\end{itemize}
+
+A guard is \defname{admissible} when it admits the orbit's own
+candidates---$B(n) \leq \Prod{2}(n) + 1$ and $K(n) \leq
+\omega(\Prod{2}(n)+1)$---since otherwise the fragment says nothing about
+the orbit and soundness fails.  Note how generous that is: the proof may
+assume the candidate is as large as the Euclid number itself, and has as
+many distinct prime factors as it actually has.
+
+\begin{theorem}[The widened unprovability theorem ---
+\lean{EM/Obstruction/Fragment.lean}{no\_omega\_graded\_induction\_proof}]
+\label{thm:widened-unprovability}
+For a missing prime~$q$ and any admissible guards $(B, K)$, the fragment
+with a stage-dependent invariant and both guards is still empty at every
+odd modulus; and provability still decides appearance
+(\lean{EM/Obstruction/Fragment.lean}{omega\_graded\_provability\_iff}).
+The eight clauses are packaged as
+\lean{EM/Obstruction/Fragment.lean}{graded\_proof\_theoretic\_dichotomy}.
+\end{theorem}
+
+\paragraph{The smoothness axis, and why it closes too.}
+It is tempting to record ``multiplicative anatomy'' wholesale as the
+surviving guard direction, on the grounds that the fullness construction
+produces $N = \pi M$ with $\omega(N) = 2$.  The third bullet above
+refutes that: $\omega$ can be raised arbitrarily at no cost.
+
+The genuinely different direction is the \emph{opposite} one---a guard
+bounding the candidate from above, demanding it be $y$-smooth.  Every
+construction in this section produces candidates whose cofactors are
+huge primes, so such a guard is never \emph{reached} by the killing
+argument.  But it is also never \emph{usable}, and for an independent
+reason: a guard is meaningful only if the orbit's own candidates satisfy
+it, and they do not.  Each prime either enters the accumulator or has a
+finite hitting set, so for every~$y$ the Euclid numbers are eventually
+$y$-rough---every prime factor exceeds~$y$
+(\lean{EM/Obstruction/NoInvariant.lean}{eventually\_rough}).  A
+$y$-smooth fragment therefore excludes the orbit's own candidates from
+some stage on, and proves nothing about the orbit
+(\lean{EM/Obstruction/NoInvariant.lean}{smooth\_guard\_inadmissible},
+\lean{EM/Obstruction/Fragment.lean}{smooth\_fragment\_never\_sound}).
+
+\begin{keyresult}
+\textbf{The fragment analysis is complete for fixed-threshold guards}
+(\lean{EM/Obstruction/Fragment.lean}{fragment\_analysis\_complete}).
+Guards bounding the candidate from \emph{below}---stage-dependence,
+size, number of prime factors---are free: the fragment carrying all of
+them is still empty for every missing prime, and provability still
+decides appearance.  The guard bounding it from \emph{above} is
+unusable: no fixed smoothness threshold is admissible.
+\end{keyresult}
+
+\begin{frontierbox}
+\textbf{The growing guard closes too.}  A \emph{growing} smoothness
+guard $y(n)$ looks like a genuine residue: its admissibility is the
+anatomy statement $P^{+}(\Prod{2}(n)+1) \leq y(n)$, and the
+constructions above produce candidates with large prime factors.  It is
+not, and the reason is an order-of-quantifiers point.
+
+The killing construction does not need candidates tailored to the stage.
+By pigeonhole the orbit returns to some residue $r_0$ modulo the working
+modulus cofinally often
+(\lean{EM/Obstruction/Fragment.lean}{exists\_recurrent\_residue}), and
+the candidates' defining conditions mention the stage \emph{only}
+through that residue.  So one may choose the candidates first and the
+stage afterwards.  Once fixed they are two specific integers with some
+largest prime factor~$C$, and admissibility together with
+\code{eventually\_rough} forces $y(n) > C$ at all late stages.  Every
+admissible growing guard therefore admits them
+(\lean{EM/Obstruction/Fragment.lean}{no\_smooth\_graded\_induction\_proof}).
+
+\smallskip
+\noindent
+The guard axis is therefore closed in both directions
+(\lean{EM/Obstruction/Fragment.lean}{guard\_analysis\_complete}): weakening
+the proof's obligations---in the size of the candidate, its number of
+prime factors, or its smoothness---never helps.
+
+\smallskip\noindent
+Stated positively, and within the fragment analysed here: \emph{any
+omission proof for the $\minFac$ sequence whose knowledge of the
+candidate is congruential---fixed or growing modulus, with the guards
+above---must first establish an unproven anatomy property of the Euclid
+numbers}, specifically about the large prime factors of
+$\Prod{2}(n)+1$, exactly the part that $\minFac$ discards.  Proofs
+outside this fragment are not excluded by anything here.
+\end{frontierbox}
+
+%% =========================================================================
+\subsection{The Reciprocity Frontier}
+\label{sec:reciprocity-frontier}
+%% =========================================================================
+
+Remark~\ref{rem:scope} left a gap: Booker's mechanism is not a fixed
+congruence invariant, so Theorem~\ref{thm:no-invariant} does not
+literally cover it.  That gap is now closed \emph{for induction proofs
+with a $\Pi_n$-congruence-closed invariant} (Booker's and
+Pollack--Trevi\~no's actual arguments are finite-window reductios using
+smoothness of the largest-factor sequence, and nothing shows a min-side
+transplant would have the invariant shape).  The symbol algebra was
+machine-verified first---the Euclid unit and parity laws, the
+moving-modulus symbol update, and the Character Non-Constancy Lemma---and
+the assembled no-invariant statement is now a theorem as well
+(Theorem~\ref{thm:no-reciprocity-invariant}).
+
+\paragraph{Reciprocity invariants are congruence invariants with a
+moving modulus.}
+For a \emph{fixed} finite anchor set $d_1,\dots,d_s$, each Jacobi symbol
+$\left(\tfrac{d_j}{\,\cdot\,}\right)$ is a real Dirichlet character, so
+tracking it is tracking the accumulator modulo a fixed modulus:
+these are already covered by Theorem~\ref{thm:no-invariant} at
+$m' = \mathrm{lcm}(m, 4|d_1|, \dots, 4|d_s|)$.  The genuinely new data
+are symbols whose \emph{modulus is the new multiplier}: for orbit primes
+$p_i$, the bits $\left(\tfrac{p_i}{p_j}\right)$ together with
+$p_i \bmod 8$.  The whole symbol update at step~$n$ is a function of the
+new multiplier modulo
+\[
+  \Pi_n \;=\; 8\, m\, \Prod{2}(n),
+\]
+and this is a theorem, not a heuristic:
+\lean{EM/Reciprocity/SymbolAlgebra.lean}{symbolModulus\_spec} shows that
+two odd candidates agreeing mod~$\Pi_n$ carry identical level-$n$
+reciprocity data---every symbol $J(p_i \mid \cdot)$ for $i \leq n$, the
+class mod~$8$, and the class mod~$m$.  So the reciprocity enrichment is
+\emph{exactly} the replacement of a fixed modulus by an orbit-dependent
+growing one, with old coordinates never rewritten.
+
+This is what makes the formalization tractable: a reciprocity invariant
+need not be modelled as a tuple of symbol coordinates with a
+realisability side condition.  It is a predicate on accumulators closed
+under congruence modulo~$\Pi_n$
+(\lean{EM/Reciprocity/NoReciprocityInvariant.lean}{ReciprocityInductionProof}),
+which is a statement of first-order shape with no dependent types.
+
+\paragraph{Why the three moves survive---concretely.}
+\emph{Eviction is automatic.}  $\Pi_n$ contains $\Prod{2}(n)$ as a
+factor, and the Euclid number is coprime to it; $\Pi_n$ contains~$8$,
+and the Euclid number is odd.  So the Euclid unit law
+($N \equiv 1 \bmod p_i$) and the mod-$4$ law ($N \equiv 3 \bmod 4$) are
+\emph{consequences} of taking the candidate in the class
+$\Prod{2}(n)+1$ mod~$\Pi_n$, not additional hypotheses.  The orbit
+primes evict themselves.
+
+\emph{Fullness needs no new analytic input.}  Free-state fullness
+(Move~2) was proved for an \emph{arbitrary} modulus, so it applies
+verbatim at~$\Pi_n$
+(\lean{EM/Obstruction/NoInvariant.lean}{free\_transition\_large}):
+Dirichlet at~$\Pi_n$ supplies the new multiplier in any prescribed
+class, and the cofactor realises the candidate's class.  The
+qualitative Dirichlet input is the same theorem at a larger modulus---no
+Chebotarev, no Burgess.
+
+\emph{Reach is unchanged.}  Forcing is a condition modulo~$m$ alone and
+$m \mid \Pi_n$, so the forcing states of the fixed-modulus theory are
+still forcing at every stage.  The one piece of bookkeeping is that the
+CRT-chosen unit lives mod~$m$ and must be lifted to a unit mod~$\Pi_n$,
+which is possible because $\mathrm{unitsMap}$ is surjective along
+divisibility.
+
+\begin{theorem}[Reciprocity-class No-Invariant Theorem ---
+\lean{EM/Reciprocity/NoReciprocityInvariant.lean}{no\_reciprocity\_induction\_proof}]
+\label{thm:no-reciprocity-invariant}
+Let $q$ be a prime that never occurs in the first Euclid--Mullin
+sequence and let $m \neq 0$.  Then there is \textbf{no} induction proof
+of $q$'s eventual avoidance whose invariant is closed under congruence
+modulo the growing symbol modulus $\Pi_n = 8\,m\,\Prod{2}(n)$.
+Consequently, in this fragment as in the fixed-modulus one, provability
+of avoidance \emph{decides} appearance
+(\lean{EM/Reciprocity/NoReciprocityInvariant.lean}{reciprocity\_provability\_iff}):
+the fragment certifies an avoidance only when there is nothing to avoid.
+\end{theorem}
+
+\paragraph{What the Character Non-Constancy Lemma contributes.}
+The formal proof above runs through fullness at~$\Pi_n$ and does not
+invoke character non-constancy.  The lemma remains the conceptual
+account of \emph{why} the max-side argument cannot transfer, and it too
+is machine-verified: a nontrivial character on $\ZZ/D\ZZ$ takes distinct
+values on the primes above any bound~$Y$
+(\lean{EM/Reciprocity/SymbolAlgebra.lean}{char\_non\_constancy},
+with the eventually-constant variant
+\lean{EM/Reciprocity/SymbolAlgebra.lean}{char\_not\_eventually\_constant}).
+Under $\mathrm{maxFac}$ the factor support of the Euclid number is
+confined to a \textbf{finite} set of primes, where a character can be
+made constant---this is exactly what Booker's and Pollack--Treviño's
+choice of the auxiliary discriminant~$d$ achieves, and the bottom-up
+product then contradicts the top-down evaluation.  Under $\minFac$ the
+support is confined to a \textbf{cofinite} set, where no character is
+ever constant, so no choice of~$d$ produces a contradiction.  Two proofs
+of the same asymmetry: one structural, one formal.
+
+\begin{frontierbox}
+\textbf{The payoff, and its exact scope.}  Two axes of widening have to
+be distinguished, and the results close one of them completely.
+
+\smallskip
+\noindent\emph{Obligations.}  Which candidates the step and conclusion
+clauses must handle.  Weakening these---by a lower bound on the size of
+the candidate, a lower bound on its number of prime factors, or an upper
+bound on its prime factors---never helps
+(\S\ref{sec:proof-fragment},
+\lean{EM/Obstruction/Fragment.lean}{guard\_analysis\_complete}).
+\textbf{Closed.}
+
+\smallskip
+\noindent\emph{State.}  What the invariant may track.  Residues modulo a
+fixed modulus (Theorem~\ref{thm:no-invariant}) and modulo the growing
+symbol modulus (Theorem~\ref{thm:no-reciprocity-invariant}) are both
+killed.  \textbf{Closed for congruence data.}
+
+\smallskip\noindent
+What remains is a state tracking \emph{anatomy} rather than congruence
+data---$\omega(\Prod{2}(n)+1)$, its largest prime factor, its
+smoothness---which is a different object from a smoothness \emph{guard}
+and is not covered by any theorem here.  That is where the max-side
+mechanism lives: Cox--van der Poorten's non-congruence ingredient is the
+$q$-smoothness forced by $\mathrm{maxFac}$, and the live min-side
+example is the eventually-prime branch of
+\S\ref{sec:autonomous-branch}.  It is also, so far as we know, where any
+disproof of MC would have to live.
+\end{frontierbox}
+
+\noindent
+A second boundary is more radical still and lies outside every framework
+in this section: \emph{exact-value} arguments, which use
+$\Prod{2}(n)+1$ as an integer identity rather than as a congruence
+class.
+
+\smallskip\noindent
+Two expectations recorded in earlier drafts turned out to be too
+pessimistic, and it is worth saying so.  That $\omega$ would survive as
+an axis: it does not---raising $\omega$ costs the killing argument
+nothing.  That a growing smoothness guard would survive: it does not
+either---the candidates can be chosen before the stage.  What survives
+is neither of those, but the strictly different possibility of an
+invariant whose \emph{state} is anatomical rather than congruential.
+That possibility is settled in the next subsection.
+
+%% =========================================================================
+\subsection{The Anatomy Axis, Settled}
+\label{sec:anatomy-axis}
+%% =========================================================================
+
+An omission proof reasons backwards from the selection event: \emph{if
+$q$ were selected at $N$, then $N$ would have to look like this}.  So the
+content of the axis is the strength of the implication
+\[
+  \Phi(N) = q \;\Longrightarrow\; \text{(some property of } N\text{)}.
+\]
+For the two rules the answers are opposite, and the gap between them is
+exactly the gap between congruence data and anatomy.
+
+\begin{theorem}[$\minFac$ selection is a congruence condition ---
+\lean{EM/Obstruction/Anatomy.lean}{minFac\_eq\_congruence\_determined}]
+\label{thm:min-congruence-determined}
+For an odd $N \geq 3$ and a prime $q$,
+\[
+  \minFac(N) = q
+  \iff
+  q \mid N \ \text{ and } \ p \nmid N \text{ for every odd prime } p < q .
+\]
+Every clause is a divisibility by a prime $\leq q$.  Consequently, if $M$
+is rich enough for $q$ and $N_1 \equiv N_2 \pmod M$ are both odd and
+$\geq 3$, then $\minFac(N_1) = q$ if and only if $\minFac(N_2) = q$.
+\end{theorem}
+
+\begin{theorem}[$\mathrm{maxFac}$ selection is determined by no modulus ---
+\lean{EM/Obstruction/Anatomy.lean}{maxFac\_not\_congruence\_determined}]
+\label{thm:max-not-determined}
+For every modulus $M \neq 0$ there are odd $N_1, N_2 \geq 3$ with
+$N_1 \equiv N_2 \pmod M$ and a prime $q$ such that
+$\mathrm{maxFac}(N_2) = q$ and $\mathrm{maxFac}(N_1) \neq q$.
+\end{theorem}
+
+\noindent
+The witness is cheap, which is itself the point.  Take $N_1 = 2M+1$ and,
+by Dirichlet, a prime $p \equiv 1 \pmod M$ with $p > N_1$.  Then
+$\mathrm{maxFac}(p) = p$ while $\mathrm{maxFac}(N_1) \leq N_1 < p$.  No
+amount of congruence bookkeeping sees the difference.
+
+So the min rule hands an omission proof \emph{no anatomy at all}: its
+selection condition is already inside the congruence fragment, which
+\S\ref{sec:formal-dichotomy} shows to be empty at every modulus.  The max
+rule hands over genuine anatomy---$\mathrm{maxFac}(N) = 5$ forces
+$5$-smoothness---and that is the ingredient Cox--van der Poorten's
+argument consumes at its second move.
+
+\paragraph{Anatomy carried as state.}
+There remains the possibility of an invariant whose anatomy component is
+not derived from the selection event at all: $\omega$ of the accumulator,
+its largest prime factor, its smoothness.  Model it directly.  An
+\emph{anatomy-state induction proof} has an invariant on pairs
+(residue, anatomy value), and its step clause must admit \emph{every}
+anatomy value---because the anatomy of $\Prod{2}(n+1)$ is not a function
+of the residue of $\Prod{2}(n)$ together with the candidate.  A proof
+that could predict it would already be an anatomy theorem about the
+Euclid numbers, which is the thing being sought, not a tool for finding
+it.
+
+\begin{theorem}[Anatomy as state is inert ---
+\lean{EM/Obstruction/Anatomy.lean}{no\_anatomy\_induction\_proof}]
+\label{thm:anatomy-inert}
+For every missing prime $q$, every modulus $m \neq 0$ and every anatomy
+type, the anatomy-state fragment is empty.
+\end{theorem}
+
+The proof is a projection: forgetting the anatomy component leaves a
+congruence-invariant induction proof
+(\lean{EM/Obstruction/Anatomy.lean}{AnatomyInductionProof.toCongruenceProof}).
+The step survives because the anatomy value may be carried unchanged, and
+the avoid clause never consulted it---whether $q$ is selected at $N$
+depends on $N$, not on how the accumulator factors.
+
+\begin{frontierbox}
+\textbf{What the anatomy axis leaves.}
+Nothing on this axis is an \emph{invariant} question any more.  What
+survives is a demand for a theorem about the anatomy of the specific
+integers $\Prod{2}(n)+1$: that they are composite infinitely often
+(\S\ref{sec:composite-floor}), that their largest prime factor is large,
+that they are not smooth.  Those are not properties of a proof system;
+they are number-theoretic facts about one orbit, and the
+orbit-specificity barrier applies to them verbatim.
+
+The residue of the obstruction programme is therefore not a wider class
+of invariants to kill.  It is a single, named, open anatomy statement.
+\end{frontierbox}

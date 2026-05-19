@@ -6,7 +6,7 @@ import EM.Population.TransferStrategy
 
 This file introduces **OrbitConditionalEquidist (OCE)** and proves it is
 *definitionally equal* to **ConditionalMultiplierEquidist (CME)** from
-`LargeSieveSpectral.lean`. This is an important finding: what appears
+`EM/CME/Reduction.lean`. This is an important finding: what appears
 conceptually as a new hypothesis (conditioning on walk position within
 the EM orbit) is in fact exactly CME.
 
@@ -64,7 +64,7 @@ section OCE
     indices n < N where w(n) = a satisfies ||sum|| <= eps * N eventually.
 
     **Key finding**: this is definitionally equal to `ConditionalMultiplierEquidist`
-    from `LargeSieveSpectral.lean`. The conceptual names differ (orbit-conditional
+    from `EM/CME/Reduction.lean`. The conceptual names differ (orbit-conditional
     vs fiber-restricted) but the mathematical content is identical. -/
 def OrbitConditionalEquidist : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
@@ -101,7 +101,7 @@ section ReturnVisit
     returns to position a. This is a conceptual wrapper around the sum
     that appears in both OCE and CME.
 
-    Definitionally equal to `fiberMultCharSum` from `LargeSieveSpectral.lean`. -/
+    Definitionally equal to `fiberMultCharSum` from `EM/CME/Reduction.lean`. -/
 def returnVisitCharSum (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q)
     (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ) (a : (ZMod q)ˣ) (N : ℕ) : ℂ :=
   ∑ n ∈ (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a),
@@ -156,6 +156,7 @@ section PopulationConditional
     the population has conditional equidistribution, the EM orbit is a specific
     deterministic sequence within that population. Transferring population
     statistics to orbit statistics is exactly the content of DSL. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def PopulationConditionalEquidist : Prop :=
   ∀ (q : Nat) (_hq : Nat.Prime q) (c a : Nat) (_hc : c % q ≠ 0) (_ha : a % q ≠ 0),
   ∀ (ε : ℝ) (_hε : 0 < ε),
@@ -199,6 +200,19 @@ section CRTBridge
 def CRTPointwiseTransferBridge : Prop :=
   PopulationConditionalEquidist → OrbitConditionalEquidist
 
+/-- `PopulationConditionalEquidist` is a placeholder and holds trivially. -/
+theorem populationConditionalEquidist_trivial : PopulationConditionalEquidist :=
+  fun _ _ _ _ _ _ _ _ => ⟨0, fun _ _ => trivial⟩
+
+/-- **The CRT pointwise transfer bridge is CME** (collapse audit 2026-08-17): its hypothesis
+`PopulationConditionalEquidist` is a `True` placeholder and its conclusion is `OCE = CME`
+(`oce_eq_cme`).  Retired as an open point; the live statement is CME itself. -/
+theorem crtPointwiseTransferBridge_iff_cme :
+    CRTPointwiseTransferBridge ↔ ConditionalMultiplierEquidist := by
+  constructor
+  · intro h; exact h populationConditionalEquidist_trivial
+  · intro h _; exact h
+
 /-- CRTPointwiseTransferBridge gives MC when combined with PCE.
     Chain: PCE -> (via bridge) -> OCE = CME -> CCSB -> MC. -/
 theorem pce_bridge_implies_mc
@@ -220,38 +234,22 @@ end CRTBridge
 
 section Comparison
 
-/-- **DSL subsumes CRT bridge**: if DSL holds (PE -> CME), then in particular
-    PCE -> OCE holds (since OCE = CME and PE gives CME via DSL, making the
-    PCE hypothesis unnecessary).
-
-    In other words, DSL is strictly stronger: it does not need the intermediate
-    PCE hypothesis at all. The CRT bridge factors DSL's content into
-    "population conditional equidist" + "transfer to orbit", while DSL
-    bypasses the factorization entirely. -/
-theorem dsl_implies_crt_bridge
-    (hdsl : DeterministicStabilityLemma)
-    (hpe : PopulationEquidist) :
-    CRTPointwiseTransferBridge :=
-  fun _ => hdsl hpe
 
 /-- **Structural comparison**: the landscape of "X implies CME" hypotheses.
 
-    - DSL:                   PE -> CME
     - CRTPointwiseTransfer:  PCE -> CME (= OCE)
     - EMDImpliesCME:         EMD -> CME
 
-    All three are open. DSL is the broadest (PE is provable from ANT).
+    (The former first route, DSL: PE -> CME, is retired — PE is false, Dead End #160.)
     CRTPointwiseTransfer refines DSL by making the CRT mechanism explicit.
     EMDImpliesCME is the narrowest (EMD = DecorrelationHypothesis, which
     is strictly weaker than CME by `cme_implies_emd`).
 
     This theorem witnesses that all three routes end at MC. -/
 theorem all_routes_to_mc :
-    (DeterministicStabilityLemma → PopulationEquidist → MullinConjecture) ∧
     (CRTPointwiseTransferBridge → PopulationConditionalEquidist → MullinConjecture) ∧
     (EMDImpliesCME → EMDirichlet → MullinConjecture) :=
-  ⟨fun hdsl hpe => pe_dsl_implies_mc hpe hdsl,
-   fun hbridge hpce => pce_bridge_implies_mc hpce hbridge,
+  ⟨fun hbridge hpce => pce_bridge_implies_mc hpce hbridge,
    fun hcme hemd => emd_cme_implies_mc hcme hemd⟩
 
 end Comparison

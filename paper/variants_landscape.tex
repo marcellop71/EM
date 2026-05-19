@@ -1,0 +1,416 @@
+%% =========================================================================
+\section{Variants of the Conjecture}
+\label{sec:variants}
+%% =========================================================================
+
+The Euclid--Mullin construction makes sense with any factor-selection
+rule: at each step, $\Prod{2}(n)+1$ has a non-empty set of prime
+factors, and the rule picks one.  Mullin's Conjecture is specific to
+the $\minFac$ rule.  This section collects the known variants---some
+easy, some provably incomplete, one almost closed---and uses them to
+locate standard MC within a broader landscape.
+
+\begin{roadmap}
+\begin{enumerate}[nosep,leftmargin=*]
+\item[\S\ref{sec:target-ladder}] The target ladder --- how little must be proved; down to (V), the weakest orbit statement.
+\item[\S\ref{sec:composite-floor}] The smallness family $\mathrm{MissingFinite} \Rightarrow \mathrm{WM} \Rightarrow \mathrm{RD}$, and the elementary \emph{floor} beneath all of it.  That floor, $(\mathrm{C}\infty)$, is the subject of \S\ref{sec:cinfty}.
+\item[\S\ref{sec:random-variant}] Random-factor variant --- MC by mixing; independence vs.\ selection trade-off.
+\item[\S\ref{sec:factor-tree}] Factor tree and GenMixedMC --- nondeterministic access to all prime factors.
+\item[\S\ref{sec:almost-all-mixed}] Almost all GenMixedMC --- per-prime density-$1$ result plus diagonal, \emph{unconditional} (the Dirichlet-density input is itself machine-checked).
+\item[\S\ref{sec:minfac-secondminfac}] $\{\minFac,\operatorname{secondMinFac}\}$ variant --- two-point spectral contraction, UFDStrong.
+\item[\S\ref{sec:ensemble-variant}] Ensemble MC --- almost every starting point, backward dynamics.
+\item[\S\ref{sec:weak-mullin}] Weak Mullin --- analytic weakenings, partial results.
+\item[\S\ref{sec:function-field}] Function field analog --- $\FF_p[t]$, Weil bound, orbit-specificity barrier.
+\end{enumerate}
+\end{roadmap}
+
+\paragraph{The Selection Rule Landscape}
+\label{sec:selection-landscape}
+
+Fix an initial prime $p_0 = 2$.  Given a \emph{selection rule}
+$\sigma$ that, for any integer $N \geq 2$, chooses a prime factor
+$\sigma(N) \mid N$, define:
+\begin{align}
+  P_\sigma(0) &= 2, &
+  P_\sigma(n{+}1) &= P_\sigma(n) \cdot \sigma(P_\sigma(n)+1).
+\end{align}
+The selection rule determines the sequence; the running product
+$P_\sigma(n)$ determines the sequence history.
+Five rules are studied in the formalization:
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+\textbf{Selection rule} $\sigma$ & \textbf{MC status} & \textbf{Key property} \\
+\midrule
+Random (uniform) & Open (heuristically easy) & Randomised selection \\
+$\minFac$ (standard EM) & \textbf{Open} (CME) & Deterministic, lethal \\
+$\{\minFac, \operatorname{secondMinFac}\}$ & \textbf{Open} (UFDStrong) & Two-point diversity \\
+$(1{-}\varepsilon)\,\minFac + \varepsilon\,$random & a.a.\ (unconditional) & Full factor access \\
+Steered (Booker~\cite{BoSa2012}) & True (by construction) & Adversarial \\
+$\mathrm{maxFac}$ (Cox--vdP~\cite{CoxVdP1968}) & False & Misses primes \\
+\emph{every} factor (Sylvester) & \textbf{False} & Autonomous closure \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The landscape reveals a tension: the random rule is the easiest to
+analyze (mixing theory) but the worst at selection (probability
+$1/|F|$ per hit); $\minFac$ is the best at selection (lethal hits)
+but the hardest to analyze (deterministic, no independence); the
+$\{\minFac, \operatorname{secondMinFac}\}$ variant sits between them,
+offering a two-point spectral contraction that is provably sufficient
+under a single open hypothesis; and the factor tree framework
+(\S\ref{sec:factor-tree}) generalizes all three by allowing access
+to the full factor set at every step, reducing GenMixedMC to sieve
+theory for almost all starting points.
+
+\paragraph{Growth against capture: the take-all rule.}
+It is tempting to think that a \emph{more generous} rule---one that
+banks every prime factor of the Euclid number rather than a single
+one---could only help, and that if even that rule missed primes then
+$\minFac$ would have no chance.  The opposite is true, and the
+computation is short enough to record.
+
+Banking every factor gives
+$P_{n+1} = P_n \cdot \operatorname{rad}(P_n+1)$, and whenever the
+Euclid number is squarefree---as it is for every computed term---this
+is
+\[
+  P_{n+1} \;=\; P_n\,(P_n+1),
+\]
+i.e.\ $2, 6, 42, 1806, 3263442, \dots$: \emph{Sylvester's sequence},
+shifted by one.  The rule has closed the recursion into an autonomous
+polynomial map, and modulo~$q$ the walk becomes
+$w \mapsto w^2 + w$ with no dependence on anything but~$w$.  Death
+requires $w^2 + w = -1$, that is $w^2+w+1 = 0$, whose roots are the
+primitive cube roots of unity---present in $\FF_q$ exactly when
+$q \equiv 1 \pmod 3$.  So the take-all rule misses \emph{every} prime
+$q \equiv 2 \pmod 3$ \emph{as long as its Euclid numbers stay
+squarefree}---an assumption (whether every Sylvester number is squarefree
+is open~\cite{Vardi1991}) that we do not formalize; the statement is
+therefore conditional, not a theorem of the development.
+
+The reason is growth.  Ordering the rules by how fast they enlarge the
+accumulator,
+\[
+  \minFac \;<\; \cdots \;<\; \mathrm{maxFac} \;<\; \text{take-all},
+\]
+and ordering them by how badly they fail gives the \emph{same} order.
+Each prime~$q$ needs many steps at which $q$ might divide $P_n+1$;
+the faster the accumulator grows, the fewer such trials it gets.  This
+is the greedy-for-slow-growth and $0$-accessibility analysis of
+\S\ref{sec:bag} seen from the far end: $\minFac$ is not merely one rule
+among several, it is the extreme point of the only axis that matters,
+and the take-all rule is the opposite extreme where the dynamics
+degenerates into an algebraic obstruction.
+
+\smallskip\noindent
+This also isolates what generosity was worth having.  The take-all rule
+buys the removal of the \emph{selection} barrier and pays for it with
+\emph{growth}.  The next subsection keeps the first and refuses the
+second.
+
+\smallskip\noindent
+The map $w \mapsto w^2+w$ found here is not confined to this variant.  It is
+also the residue walk of the $\minFac$ rule on the perpetual-primality
+branch (\S\ref{sec:autonomous-branch}) and, conjugated by $w \mapsto w+1$,
+the map governing $(\mathrm{C}\infty)$ itself (\S\ref{sec:level-tower}).
+
+%% =========================================================================
+\subsection{The Target Ladder: How Little Must Be Proved?}
+\label{sec:target-ladder}
+%% =========================================================================
+
+Keep the $\minFac$ accumulator---so the growth advantage is
+untouched---but count a prime as captured as soon as it \emph{divides}
+a Euclid number, whether or not it is the factor selected.  This is a
+weakening of the \emph{question}, not a change of rule, and it yields
+
+\begin{definition}[\defname{(V)} ---
+\lean{EM/Equidist/WeakHitting.lean}{EveryPrimeDividesEuclid}]
+\label{def:V}
+Every odd prime divides some Euclid number: for each prime $q \neq 2$
+there is an~$n$ with $q \mid \Prod{2}(n)+1$; equivalently
+$\mathrm{HittingSet}(q) \neq \emptyset$.  The parity restriction is
+forced---$\Prod{2}(n)$ is always even, so no Euclid number is even
+and~$2$ is the seed rather than a capture.
+\end{definition}
+
+\noindent
+(V) slots into a chain of successively weaker targets, all of them
+statements about the \emph{same} orbit:
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{}}
+\toprule
+\textbf{Target} & \textbf{What it asks of the walk mod~$q$} \\
+\midrule
+$\mathrm{HH}$ & hits $-1$ \emph{cofinally often} \\
+$\mathrm{SingleHit}$ & hits $-1$ \emph{once past the sieve gap} \\
+$\MC$ & is captured, i.e.\ hits $-1$ where $q$ is minimal \\
+$(\mathrm{V})$ & hits $-1$ \emph{at least once, ever} \\
+$\mathrm{GenMixedMC}(2)$ & hits $-1$ somewhere in the factor tree \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The implications run downwards and are machine-verified
+(\lean{EM/Equidist/WeakHitting.lean}{weak\_hitting\_ladder}).  The
+repository already carried the outer rungs; (V) was the missing one.
+Matching the ladder of targets is a ladder of hypotheses: the
+one-horizon Fourier criterion of \S\ref{sec:hard} asks for a good
+window past \emph{every} stage because $\MC$ needs the
+first-missing-prime bootstrap, whereas (V) follows from a single window
+per prime, anywhere
+(\lean{EM/Equidist/WeakHitting.lean}{oneWindowGain\_implies\_V}).
+
+\begin{aside}
+\textbf{How much weaker is (V), really?}  Less than it looks.  Suppose
+every prime below~$q$ has appeared by stage~$N_0$.  Then for $n \geq
+N_0$ no prime below~$q$ divides $\Prod{2}(n)+1$, so a hit at such an~$n$
+forces $\minFac(\Prod{2}(n)+1) = q$ and $q$ \emph{is} captured.  So
+$\MC$ and (V) differ only on hits occurring \emph{before} the sieve
+gap---at most $\pi(q)$ steps, since each such hit is shielded by a
+distinct smaller prime
+(\lean{EM/Population/HittingSetStructure.lean}{hittingSet\_ncard\_le\_appearing}).
+Widening the notion of capture buys a finite prefix per prime, not a
+different problem: the bottleneck was never selection, which is free
+past the gap, but hitting.
+\end{aside}
+
+%% =========================================================================
+\subsection{The Smallness Family and Its Floor}
+\label{sec:composite-floor}
+%% =========================================================================
+
+Below $\MC$ sits a second family of weakenings, orthogonal to the target
+ladder of \S\ref{sec:target-ladder}.  Instead of asking less of the
+walk, they ask only that the set of \emph{missed} primes
+$\mathcal{M} = \{q \text{ prime} : \forall k,\ \seq{2}(k) \neq q\}$ be small:
+
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{}}
+\toprule
+\textbf{Statement} & \textbf{Assertion} \\
+\midrule
+$\mathrm{MissingFinite}$ & $\mathcal{M}$ is finite \\
+$\mathrm{WM}$ (Weak Mullin) & $\sum_{q \in \mathcal{M}} 1/q$ converges \\
+$\mathrm{RD}$ & $\sum_k 1/\seq{2}(k)$ diverges \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+These are ordered: $\MC \Rightarrow \mathrm{MissingFinite} \Rightarrow
+\mathrm{WM} \Rightarrow \mathrm{RD}$, the last step because the primes
+split into those that appear and those that do not, and
+$\sum_p 1/p$ diverges
+(\lean{EM/Population/WeakMullin.lean}{wm\_implies\_rd}).  Every one of
+these implications runs \emph{downwards} from $\MC$.  Until now the
+family had no lower bound at all: nothing in it was known
+unconditionally, and nothing was known to require anything.
+
+\paragraph{The floor.}
+It has one, and the argument is elementary.  Suppose $\Prod{2}(n)+1$ is
+prime for every $n \geq N$ (\emph{perpetual primality}).  Then the least
+factor of the Euclid number is the Euclid number, so
+$\seq{2}(n+1) = \Prod{2}(n)+1$, and the accumulator's growth---already
+geometric for trivial reasons, since every term is at least $2$---is
+inherited by the selected primes:
+\[
+  2^{\,n+1} \leq \Prod{2}(n)
+  \quad\text{unconditionally}
+  \qquad\Longrightarrow\qquad
+  \sum_k \frac{1}{\seq{2}(k)} < \infty
+  \ \text{ on this branch.}
+\]
+
+\begin{keyresult}
+\textbf{The composite floor}
+(\lean{EM/Population/CompositeFloor.lean}{composite\_floor\_landscape}).
+Write \textbf{(C$\infty$)} for the statement that $\Prod{2}(n)+1$ is
+composite for infinitely many~$n$.  Then
+\[
+  \mathrm{RD} \Rightarrow (\mathrm{C}\infty), \quad
+  \mathrm{WM} \Rightarrow (\mathrm{C}\infty), \quad
+  \mathrm{MissingFinite} \Rightarrow (\mathrm{C}\infty), \quad
+  \MC \Rightarrow (\mathrm{C}\infty),
+\]
+and on the perpetual-primality branch every one of the three smallness
+statements fails outright.  \textbf{(C$\infty$) is open.}
+\end{keyresult}
+
+\noindent
+Note how little is consumed.  The autonomous-branch analysis of
+\S\ref{sec:hard} derives $\lnot\MC$ on this branch through Bertrand's
+postulate, and a density-$1/2$ failure through $\Phi_3$ having no root
+modulo $q \equiv 2 \pmod 3$.  Neither is needed here: geometric growth of
+the accumulator alone kills the reciprocal-sum statements, which sit far
+below $\MC$.  So $\MC \Rightarrow (\mathrm{C}\infty)$ is recovered from a
+strictly weaker hypothesis by a strictly more elementary route.
+
+\smallskip\noindent
+That floor is the subject of \S\ref{sec:cinfty}, which is where the rest of
+this paper's unconditional work on $(\mathrm{C}\infty)$ lives.  Two remarks
+belong here, with the smallness family itself.
+
+\smallskip\noindent
+One unconditional inequality survives in the other direction.  Every
+prime below the least missed prime \emph{has} been selected, so it
+contributes to the sequence's reciprocal sum:
+\[
+  \sum_{p < \min \mathcal{M}} \frac{1}{p}
+  \;\leq\; \sum_k \frac{1}{\seq{2}(k)}
+  \qquad
+  \text{(\lean{EM/Population/CompositeFloor.lean}{sum\_inv\_primes\_below\_le\_tsum})}
+\]
+whenever the right-hand side converges.  It runs opposite to
+$\mathrm{WM} \Rightarrow \mathrm{RD}$: there, thinness of the missed set
+forces the sum to diverge; here, a convergent sum caps how far the first
+gap can be.
+
+
+\smallskip\noindent
+And what the family actually needs is stronger than $(\mathrm{C}\infty)$:
+not that the Euclid numbers are sometimes composite, but that they are
+sometimes \emph{smooth relative to their own size}
+(\S\ref{sec:growth-floor}).
+
+%% =========================================================================
+\subsection{The Random-Factor Variant}
+\label{sec:random-variant}
+
+Consider a variant where, instead of the smallest prime factor, one
+picks a \emph{random} prime factor of~$\Prod{2}(n)+1$ at each step.
+Heuristically MC should be easy here, and one is tempted to say ``by
+classical mixing theory'': the residue $r_n = \Prod{2}(n) \bmod p$
+performs a multiplicative walk on $(\ZZ/p\ZZ)^\times$ whose multipliers
+are random elements of the group.  But the steps are \emph{not}
+independent and \emph{not} independent of the position: the multiplier is
+a uniformly random prime factor of the specific integer
+$\Prod{2}(n)+1$ (if that integer is prime the step is forced), so
+Diaconis--Shahshahani does not apply as stated (Dead End~\#47).  What is
+formalized is the nondeterministic content only: purification,
+$\mathrm{PureRandomMC} \leftrightarrow \mathrm{MixedMC}$
+(\code{EM/Stochastic/RandomFactorMC.lean}); the probabilistic statement
+``$p$ is eventually selected almost surely'' is \textbf{not} formalized
+and we do not claim it.
+
+\paragraph{Comparison with $\minFac$.}
+The actual EM sequence uses
+$\seq{2}(n{+}1) = \minFac(\Prod{2}(n){+}1)$, a \emph{deterministic}
+function of the walk position.  Compared to the random-factor variant,
+$\minFac$ is strictly better in every measurable dimension:
+
+\smallskip
+\begin{center}
+\begin{tabular}{l@{\quad}l@{\quad}l}
+\toprule
+ & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
+\midrule
+\textbf{Selection when $q \mid P(n){+}1$}
+  & Probability $1/|F(S_n)|$ & Probability~1 \\
+\textbf{Accumulator growth}
+  & Faster (random $\geq \minFac$) & Slowest possible \\
+\textbf{Hits on $-1$ needed}
+  & Infinitely many & \textbf{One} (lethal hit) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+\emph{Selection efficiency.}\enspace Past the sieve gap, 0-accessibility
+guarantees: if $q \mid \Prod{2}(n)+1$ then
+$q = \minFac(\Prod{2}(n)+1)$---selection is certain, not
+probabilistic.  \emph{Growth rate.}\enspace Since
+$\minFac(N) \leq p$ for any factor~$p$ of~$N$, the accumulator
+$\Prod{2}(n)$ grows minimally under the $\minFac$ rule, giving
+exponentially more steps before it becomes astronomically large---more
+chances for~$q$ to divide.  \emph{Lethality.}\enspace The inductive
+bootstrap shows one single hit suffices: $\MC({<}\,q)$ ensures~$q$
+is minimal whenever it divides, so hitting $-1$ once means~$q$
+enters the sequence.  The random variant requires infinitely many
+hits to overcome low per-hit selection probability.
+
+\emph{MinFac is strictly better in every measurable dimension.
+So why can't we prove it works?}
+
+\paragraph{The independence trade-off.}
+The answer is surgical: the random variant possesses a single property
+that $\minFac$ lacks, and that property is the \emph{only thing the
+proof uses}.
+
+The property is \textbf{independence of multiplier from walk
+position}.  In the random-factor variant, the multiplier at step~$n$
+is selected independently of which residue class
+$\Prod{2}(n) \bmod q$ occupies.  Walk position and multiplier are
+independent random variables, and independence is the engine that
+drives mixing.  Diaconis--Shahshahani's theorem applies whenever the
+multipliers are i.i.d.\ from a distribution whose support generates
+the group.
+
+In the $\minFac$ variant, the multiplier is
+$\minFac(\Prod{2}(n){+}1) \bmod q$---a deterministic function of the
+full integer~$\Prod{2}(n)+1$.  The CRT multiplier invariance
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}) shows
+that the outcome is independent of $\Prod{2}(n) \bmod q$ at the
+\emph{population} level: for generic integers, knowing the mod-$q$
+residue does not predict $\minFac$.  But for the specific orbit~$n=2$,
+the multiplier is a deterministic value, and mixing theorems for
+deterministic sequences cannot be invoked.
+
+The random variant thus sacrifices selection efficiency (it may
+miss~$q$ even when $q$ divides) in exchange for statistical
+independence.  The $\minFac$ variant has perfect selection but no
+independence:
+
+\smallskip
+\begin{center}
+\begin{tabular}{l@{\quad}l@{\quad}l}
+\toprule
+ & \textbf{Random factor} & $\boldsymbol{\minFac}$ \\
+\midrule
+Selection & Bad ($1/k$ chance) & Perfect \\
+Mixing & Random walk theorem & Unproved \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The random variant's proof: mixing $\to$ cofinal hitting $\to$
+infinitely many chances compensate for low per-hit probability.
+The $\minFac$ variant needs only one hit---absurdly less than the
+random variant achieves---but has no way to produce even that one
+without mixing.
+
+\paragraph{The stochastic domination failure.}
+\label{sec:stoch-dom}
+The natural instinct is to argue by \emph{stochastic domination}:
+if the random walk visits~$-1$ cofinally, and $\minFac$ is ``better
+in every way,'' then $\minFac$ should also visit~$-1$.  This argument
+fails because the two processes \emph{diverge after one step}.
+
+At step~$n$, both processes face the same Euclid number
+$\Prod{2}(n)+1$ with factor set~$F(S_n)$.  The random variant picks a
+uniformly random element of~$F(S_n)$; the $\minFac$ variant picks the
+minimum.  After this step, the two processes have different
+accumulators (they multiplied by different primes), so they face
+different Euclid numbers at the next step.  The processes explore
+completely different trajectories.  Domination fails because the
+two walks live on different probability spaces after step~1; we
+cannot compare them step-by-step.
+
+A subtler comparison uses \emph{visit measures}.  Define
+$\mu_{\mathrm{rand}}(a) = \lim_{N} \frac{1}{N}|\{n < N :
+w_q^{\mathrm{rand}}(n) = a\}|$ and analogously
+$\mu_{\min}(a)$ for the $\minFac$ walk.  For the random variant,
+$\mu_{\mathrm{rand}} = $ uniform on $(\ZZ/q\ZZ)^\times$ by mixing.
+For $\minFac$, CME/CCSB asserts $\mu_{\min} \approx$ uniform.  The
+comparison $\mu_{\min}(-1) \geq 1/(q{-}1)$ is precisely what needs
+proof, and is the content of CME\@.
+

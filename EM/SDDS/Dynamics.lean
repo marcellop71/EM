@@ -30,10 +30,14 @@ and s_0 = 2.
 ## Open hypotheses
 
 * `SuperExponentialGrowth` — orbit grows super-exponentially
-* `CoprimeCascade` — each multiplier divides all subsequent orbit values
 * `SieveRegularity` — the factoring rule distributes uniformly mod q
 * `NoAlgebraicObstruction` — the multipliers generate (ZMod q)^times
 * `SieveMapEquidistribution` — the walk hits every unit (master conjecture)
+
+## Proved results
+
+* `CoprimeCascade` — each multiplier divides all subsequent orbit values
+  (PROVED for every SDDS: `SDDS.coprimeCascade`)
 -/
 
 open Mullin Euclid

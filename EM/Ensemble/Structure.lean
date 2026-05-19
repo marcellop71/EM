@@ -28,9 +28,7 @@ the ensemble averaging framework (Steps 6–10 of the master proof strategy).
 * `genSeq_two_eq_seq_succ`    — genSeq 2 k = seq (k + 1) for all k (PROVED)
 
 ### DSL-Hitting (Weaker Variant)
-* `DSLHitting`                — PE → DH (weaker than DSL, sufficient for MC)
-* `pe_dsl_hitting_implies_mc` — PE + DSLHitting → MC (PROVED)
-* `equidist_dsl_hitting_implies_mc` — MinFacResidueEquidist + DSLHitting → MC (PROVED)
+* (DSLHitting section ARCHIVED 2026-08-17, Dead End #160 — PE is false)
 -/
 
 noncomputable section
@@ -184,86 +182,68 @@ theorem genSeq_two_eq_seq_succ (k : Nat) : genSeq 2 k = seq (k + 1) := by
 
 end StandardConnection
 
-/-! ## DSL-Hitting: A Weaker Form of DSL -/
+/-! ## Asymptotic Growth -/
 
-section DSLHitting
+section AsymptoticGrowth
 
-/-- **DSL-Hitting**: Population Equidistribution implies Dynamical Hitting.
+/-- The generalized EM sequence tends to infinity: for squarefree n,
+    genSeq n k → ∞ as k → ∞.
 
-    This is a weaker form of `DeterministicStabilityLemma` (= PE → CME): rather
-    than requiring full conditional equidistribution of the multipliers, it
-    only asks that the walk hits −1 mod q (sufficient for MC via the
-    `dynamical_hitting_implies_mullin` reduction in EquidistBootstrap.lean).
+    This follows directly from injectivity of `genSeq n` (proved in this file).
+    An injective function ℕ → ℕ must tend to infinity because it cannot
+    repeat values, so it must eventually exceed any bound.
 
-    DSLHitting is sufficient for MC because:
-    - DynamicalHitting → MC (proved in EquidistBootstrap.lean)
-    - PE is provable from standard ANT (pe_of_equidist in PopulationEquidistProof.lean)
+    Same technique as `seq_tendsto_atTop` in `LargeSieve/Structural.lean`. -/
+theorem genSeq_tendsto_atTop {n : Nat} (hn : Squarefree n) :
+    Filter.Tendsto (genSeq n) Filter.atTop Filter.atTop :=
+  Function.Injective.nat_tendsto_atTop (genSeq_injective hn)
 
-    The three structural conditions that support DSLHitting are the same
-    as for DSL:
-    1. **Generation** (SubgroupEscape, PROVED): multipliers generate (ℤ/qℤ)×
-    2. **Position-blindness** (crt_multiplier_invariance, PROVED): minFac is q-blind
-    3. **Population support** (PE, from standard ANT): every residue class
-       has positive density of minFac values
+/-- Eventually exceeding any bound: for squarefree n and any M,
+    there exists N such that for all k ≥ N, M < genSeq n k. -/
+theorem genSeq_eventually_gt {n : Nat} (hn : Squarefree n) (M : Nat) :
+    ∃ N, ∀ k ≥ N, M < genSeq n k := by
+  have h := (genSeq_tendsto_atTop hn) (Filter.Ioi_mem_atTop M)
+  exact (Filter.eventually_atTop.mp h).imp fun N hN => fun k hk => hN k hk
 
-    **Value:** DSLHitting is strictly weaker than DSL and may be more
-    accessible to prove. DSL requires quantitative equidistribution
-    (character sum cancellation), while DSLHitting only needs the walk
-    to visit −1 at least once — a qualitative property. -/
-def DSLHitting : Prop := PopulationEquidist → DynamicalHitting
+/-- Exponential lower bound on the generalized accumulator: for n ≥ 1,
+    genProd n k ≥ n * 2^k for all k.
 
-/-- **PE + DSLHitting → MC.** The reduction chain with DSLHitting as the
-    sole gap: PE → (by DSLHitting) DH → MC. -/
-theorem pe_dsl_hitting_implies_mc
-    (hpe : PopulationEquidist) (hdsl : DSLHitting) :
-    MullinConjecture :=
-  dynamical_hitting_implies_mullin (hdsl hpe)
+    Proof by induction: genProd n (k+1) = genProd n k * genSeq n k
+    ≥ (n * 2^k) * 2 = n * 2^(k+1), since genSeq n k ≥ 2 (prime). -/
+theorem genProd_ge_mul_pow_two {n : Nat} (hn : 1 ≤ n) (k : Nat) :
+    n * 2 ^ k ≤ genProd n k := by
+  induction k with
+  | zero => simp [genProd]
+  | succ k ih =>
+    rw [genProd_succ]
+    calc n * 2 ^ (k + 1) = n * (2 ^ k * 2) := by ring
+      _ = (n * 2 ^ k) * 2 := by ring
+      _ ≤ genProd n k * genSeq n k :=
+          Nat.mul_le_mul ih (genSeq_prime hn k).two_le
 
-/-- **MinFacResidueEquidist + DSLHitting → MC.** The full chain from standard
-    analytic number theory: MinFacResidueEquidist → PE → (by DSLHitting) DH → MC. -/
-theorem equidist_dsl_hitting_implies_mc
-    (h_equidist : ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q)
-    (hdsl : DSLHitting) :
-    MullinConjecture :=
-  pe_dsl_hitting_implies_mc (pe_of_equidist h_equidist) hdsl
+/-- The generalized accumulator tends to infinity: for n ≥ 1,
+    genProd n k → ∞ as k → ∞.
 
-end DSLHitting
+    From genProd n k ≥ n * 2^k and n * 2^k → ∞ for n ≥ 1. -/
+theorem genProd_tendsto_atTop {n : Nat} (hn : 1 ≤ n) :
+    Filter.Tendsto (genProd n) Filter.atTop Filter.atTop := by
+  apply Filter.tendsto_atTop_mono (fun k => genProd_ge_mul_pow_two hn k)
+  apply Filter.tendsto_atTop_atTop.mpr
+  intro b
+  use b
+  intro k hk
+  calc b ≤ k := hk
+    _ ≤ 2 ^ k := Nat.lt_two_pow_self.le
+    _ ≤ n * 2 ^ k := Nat.le_mul_of_pos_left _ (by omega)
 
-/-! ## Hierarchy of Open Hypotheses
+end AsymptoticGrowth
 
-The open hypotheses form a strict hierarchy:
+/-! ## Former "DSL-Hitting" section — ARCHIVED (Dead End #160, 2026-08-17)
 
-```
-DSL (PE → CME)          — strongest: full conditional equidistribution
-  ↓ (implies)
-DSLHitting (PE → DH)    — weaker: walk hits −1 mod q
-  ↓ (implies MC)
-MullinConjecture        — the target
-```
-
-Both DSL and DSLHitting give MC with PE provable from standard ANT
-(via `pe_of_equidist`). The hierarchy is:
-
-- `pe_dsl_implies_mc` (PopulationTransferStrategy.lean): PE + DSL → MC
-- `pe_dsl_hitting_implies_mc` (this file): PE + DSLHitting → MC
-
-DSL is strictly stronger: CME gives character sum cancellation, which implies
-both CCSB (the character sum bound) and DH (hitting −1). DSLHitting only
-gives the hitting property.
-
-### Why DSLHitting may be easier to prove
-
-DSL requires |∑ χ(m_n)| = o(N) for all nontrivial characters — a quantitative
-bound on correlations. DSLHitting only requires ∃ n, q ∣ prod(n)+1 — an
-existential statement. The three structural conditions (generation, position-
-blindness, population support) are the same for both.
-
-For the specific EM walk:
-- The ensemble framework (PopulationTransferStrategy.lean) shows that for
-  almost all squarefree starting points, equidistribution holds.
-- The structural properties proved in this file (distinctness, injectivity,
-  connection to standard EM) provide the infrastructure for transferring
-  ensemble results to the specific trajectory.
--/
+`DSLHitting := PopulationEquidist → DynamicalHitting` and the chain
+`pe_dsl_hitting_implies_mc` are vacuous because `PopulationEquidist` is false (head
+domination, `EM/Population/HeadDomination.lean`).  They are preserved in
+`EM/Archive/Population/PopulationEquidistArchive.lean`.  The live target is
+`DynamicalHitting → MC` (`dynamical_hitting_implies_mullin`) and CME. -/
 
 end

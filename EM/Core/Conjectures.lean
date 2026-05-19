@@ -390,7 +390,8 @@ theorem prime_not_in_seq_not_dvd_prod {q : Nat} (hq : IsPrime q)
     "every prime either appears or doesn't" (with the "doesn't" case being
     impossible if HH holds), this implies Mullin's Conjecture.
 
-    See `docs/routes_to_conjecture_a.md` for strategies to prove this. -/
+    Registered as an `@[open_point]` in `EM/Meta/Registry.lean`; the routes
+    towards it are discussed in `paper/the_residue_walk.tex`. -/
 def HittingHypothesis : Prop :=
   ∀ q, IsPrime q → (∀ m, seq m ≠ q) → ∀ N, ∃ n, N ≤ n ∧ q ∣ (prod n + 1)
 

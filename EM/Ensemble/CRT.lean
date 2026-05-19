@@ -22,7 +22,7 @@ The generalized EM accumulator `genProd n k` satisfies:
 - genProd n (k+1) = genProd n k * genSeq n k
 - genSeq n k = minFac(genProd n k + 1)
 
-By `crt_multiplier_invariance` (PROVED in MullinCRT.lean), the multiplier
+By `crt_multiplier_invariance` (PROVED in EM/Group/CRT.lean), the multiplier
 genSeq n k = minFac(genProd n k + 1) depends only on the residues of
 genProd n k modulo primes r != q, not on its residue mod q. This CRT
 independence is the structural basis for equidistribution propagation.
@@ -323,14 +323,14 @@ private theorem ensembleCharMean_eq_ofReal_density_sum (X k q : Nat) [NeZero q]
 
     Proof: By the density decomposition, ensembleCharMean X k q chi =
     ∑_a (density(a) : ℂ) * chi(a). The a = 0 term vanishes since chi(0) = 0.
-    For a ≠ 0, density(a) → 1/(q-1) by EME. By `tendsto_finset_sum`, the sum
+    For a ≠ 0, density(a) → 1/(q-1) by EME. By `tendsto_finsetSum`, the sum
     converges to ∑_a limit(a) * chi(a). Since limit(0) * chi(0) = 0 and
     ∑_{a≠0} limit(a) * chi(a) = (1/(q-1)) * ∑_{a≠0} chi(a) = (1/(q-1)) * 0 = 0,
     the total limit is 0, and so ‖ensembleCharMean‖ → 0. -/
 theorem ensemble_mult_equidist_implies_char_mean_zero :
     EnsembleMultEquidistImpliesCharMeanZero := by
   intro heme q hq k chi hchi0 hchisum
-  haveI : NeZero q := ⟨hq.ne_zero⟩
+  have : NeZero q := ⟨hq.ne_zero⟩
   -- Set the common limit constant
   set c : ℂ := ((1 / ((q : ℝ) - 1) : ℝ) : ℂ)
   -- Define the limit value for each a : ZMod q as c * chi a
@@ -353,11 +353,11 @@ theorem ensemble_mult_equidist_implies_char_mean_zero :
       simp only [L]
       exact ((Complex.continuous_ofReal.tendsto _).comp (heme q hq k a ha)).mul
         tendsto_const_nhds
-  -- Step 3: use tendsto_finset_sum to get ∑ converges to ∑ L
+  -- Step 3: use tendsto_finsetSum to get ∑ converges to ∑ L
   have hsum_tends : Filter.Tendsto
       (fun X : Nat => ∑ a : ZMod q, ((sqfreeSeqDensity X k q a : ℝ) : ℂ) * chi a)
       Filter.atTop (nhds (∑ a : ZMod q, L a)) :=
-    tendsto_finset_sum Finset.univ (fun a _ => hterm a)
+    tendsto_finsetSum Finset.univ (fun a _ => hterm a)
   -- Step 4: combine: ensembleCharMean → 0, then ‖·‖ → 0
   simp_rw [hLsum] at hsum_tends
   refine tendsto_zero_iff_norm_tendsto_zero.mp ?_
@@ -484,43 +484,11 @@ theorem condMinFacDensity_le_one (X q : Nat) (c a : ZMod q) :
   div_le_one_of_le₀ (Nat.cast_le.mpr (sqfreeClassMinFacCount_le X q c a))
     (Nat.cast_nonneg _)
 
-/-- **MFREConditional**: conditional equidistribution of minFac mod q with O(1/q^2) error.
-    For prime q, among squarefree m with m ≡ c (mod q) where c is nonzero and c ≠ -1,
-    the density of those with minFac(m+1) ≡ a (mod q) converges to 1/(q-1) + O(1/q^2).
-
-    **Status**: open hypothesis (requires conditional sieve-theoretic analysis). -/
-def MFREConditional : Prop :=
-  ∃ C : ℝ, 0 < C ∧
-    ∀ (q : Nat), Nat.Prime q →
-    ∀ (c : ZMod q), c ≠ 0 → (c : ZMod q) ≠ -1 →
-    ∀ (a : ZMod q), a ≠ 0 →
-      ∃ (L : ℝ),
-        |L - 1 / ((q : ℝ) - 1)| ≤ C / (q : ℝ) ^ 2 ∧
-        Filter.Tendsto
-          (fun X : Nat => condMinFacDensity X q c a)
-          Filter.atTop (nhds L)
-
-/-- **EnsembleSelectionLemma**: orbit-population transfer for conditional MFRE.
-    This bridges from the population-level conditional equidistribution (MFREConditional)
-    to the ensemble-level conditional density of genSeq n k ≡ a (mod q) among squarefree
-    n with genProd n k ≡ c (mod q).
-
-    **Status**: open hypothesis (requires orbit-population transfer analysis). -/
-def EnsembleSelectionLemma : Prop :=
-  MFREConditional →
-    ∀ (q : Nat), Nat.Prime q → ∀ (k : Nat),
-    ∀ (c : ZMod q), c ≠ 0 → (c : ZMod q) ≠ -1 →
-    ∀ (a : ZMod q), a ≠ 0 →
-      ∃ (L : ℝ),
-        (∃ C : ℝ, |L - 1 / ((q : ℝ) - 1)| ≤ C / (q : ℝ) ^ 2) ∧
-        Filter.Tendsto
-          (fun X : Nat =>
-            (((Finset.Icc 1 X).filter (fun n =>
-              Squarefree n ∧ (genProd n k : ZMod q) = c ∧
-              (genSeq n k : ZMod q) = a)).card : ℝ) /
-            (sqfreeAccumCount X k q c : ℝ))
-          Filter.atTop (nhds L)
-
+-- MFREConditional / EnsembleSelectionLemma ARCHIVED 2026-08-17 (Dead End #160) to
+-- EM/Archive/Ensemble/CRTArchive.lean: MFREConditional demands the conditional class
+-- densities be `1/(q−1) + O(1/q²)` with a uniform constant, but the class of `2 mod q`
+-- alone carries the mass of the odd `m` (`minFac (m+1) = 2`), so it is FALSE for large q
+-- (small-prime domination, #157/#160), and EnsembleSelectionLemma is vacuous.
 -- MFRECondImpliesSMLB archived to EM/Archive/Ensemble/CRTArchive.lean (RED #7)
 
 end MFREConditional
@@ -659,14 +627,10 @@ def MinFacSelectionIndependence : Prop :=
       Filter.atTop
       (nhds 0)
 
-/-- MinFacSelectionIndependence implies MFREConditional.
-
-    If the conditional distribution of minFac mod q is independent of the mod-q
-    class (for non-death classes), then each conditional density converges to the
-    same limit. Since the unconditional density sums to 1 over nonzero residues,
-    the common limit must be close to 1/(q-1). -/
-def MSIImpliesMFREConditional : Prop :=
-  MinFacSelectionIndependence → MFREConditional
+-- MSIImpliesMFREConditional ARCHIVED 2026-08-17 (Dead End #160): its conclusion is false,
+-- so it is false whenever MSI holds; the docstring's inference "the common limit must be
+-- close to 1/(q−1)" is the head-domination fallacy (the common limits `L_a` sum to 1 but
+-- need not be equal — `L_2 ≥ 2/3`).  MSI itself (population CRT-blindness) is kept.
 
 end MinFacSelection
 
@@ -773,7 +737,7 @@ theorem death_implies_absorption {q n k : Nat} (_hq : 2 ≤ q)
     means `(genProd n k : ZMod q) = 0`, and `0 ≠ -1` in `ZMod q` when `q ≥ 2`. -/
 theorem absorbed_not_in_death_class {q n k : Nat} (hq : 2 ≤ q)
     (hdvd : q ∣ genProd n k) : ¬((genProd n k : ZMod q) = -1) := by
-  haveI : Fact (1 < q) := ⟨by omega⟩
+  have : Fact (1 < q) := ⟨by omega⟩
   have h0 : (genProd n k : ZMod q) = 0 := by rwa [ZMod.natCast_eq_zero_iff]
   rw [h0]; exact fun h => one_ne_zero (neg_eq_zero.mp h.symm)
 
@@ -824,7 +788,7 @@ theorem death_then_never_death_again {q n k : Nat} (hq : Nat.Prime q) (_hq3 : 3 
 
 end AbsorptionMechanism
 
-/-! ## Dead End #138: AEP Is False at q=3 for k >= 1
+/-! ## Dead End #137: AEP Is False at q=3 for k >= 1
 
 The absorption mechanism formalized above proves the structural ingredients showing that
 `AccumulatorEquidistPropagation` (AEP) is **heuristically false** at all fixed primes q:
@@ -869,7 +833,7 @@ AccumulatorEquidistPropagation
 EnsembleMultiplierEquidist
   + character orthogonality
   → vanishing character means (E_n[chi(genSeq n k)] → 0)
-  → StepDecorrelation (from EnsembleDecorrelation.lean)
+  → StepDecorrelation (from EM/Ensemble/Decorrelation.lean)
   → CharSumVarianceBound
   → EnsembleCharSumConcentration
 ```

@@ -5,7 +5,7 @@ import EM.FunctionField.WeakMC
 # Factor Tree and Mixed MC for the Function Field EM Sequence
 
 This file defines the factor tree, mixed selection, and GenMixedMC over F_p[t],
-mirroring the integer mixed walk infrastructure in `EM/Advanced/EpsilonRandomMC.lean`.
+mirroring the integer mixed walk infrastructure in `EM/Stochastic/EpsilonRandomMC.lean`.
 
 Over F_p[t], monic irreducible polynomials play the role of primes. At each step
 of the standard FF-EM walk, the smallest-degree monic irreducible factor is selected.

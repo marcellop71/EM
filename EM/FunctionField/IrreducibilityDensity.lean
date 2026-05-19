@@ -47,12 +47,12 @@ theorem monic_irreducible_dvd_X_pow_sub_X {d : ℕ} (_hd : d ≠ 0)
     {Q : Polynomial (ZMod p)} (hm : Q.Monic) (hirr : Irreducible Q) (hdeg : Q.natDegree = d) :
     Q ∣ (X ^ p ^ d - X : Polynomial (ZMod p)) := by
   -- Set up AdjoinRoot Q as a field
-  haveI : Fact (Irreducible Q) := ⟨hirr⟩
+  have : Fact (Irreducible Q) := ⟨hirr⟩
   -- AdjoinRoot Q is a finite module over ZMod p (from Q monic)
-  haveI : Module.Finite (ZMod p) (AdjoinRoot Q) := hm.finite_adjoinRoot
+  have : Module.Finite (ZMod p) (AdjoinRoot Q) := hm.finite_adjoinRoot
   -- Therefore AdjoinRoot Q is finite
-  haveI : Finite (AdjoinRoot Q) := Module.finite_of_finite (ZMod p)
-  haveI : Fintype (AdjoinRoot Q) := Fintype.ofFinite _
+  have : Finite (AdjoinRoot Q) := Module.finite_of_finite (ZMod p)
+  have : Fintype (AdjoinRoot Q) := Fintype.ofFinite _
   -- The root alpha in AdjoinRoot Q
   set α := AdjoinRoot.root Q with hα_def
   -- Q = minpoly (ZMod p) alpha (since Q is monic)

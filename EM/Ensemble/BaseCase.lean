@@ -213,7 +213,7 @@ theorem jse_base_case
       (fun X : Nat => sqfreeJointSeqDensity X 0 1 q a b)
       Filter.atTop
       (nhds (1 / (((q : ℝ) - 1) ^ 2))) := by
-  haveI : NeZero q := ⟨hq.ne_zero⟩
+  have : NeZero q := ⟨hq.ne_zero⟩
   -- Step 1: Rewrite the target as a product 1/(q-1) * 1/(q-1)
   rw [show (1 : ℝ) / ((q : ℝ) - 1) ^ 2 = 1 / ((q : ℝ) - 1) * (1 / ((q : ℝ) - 1))
     from by rw [sq, one_div_mul_one_div_rev]]

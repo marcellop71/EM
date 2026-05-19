@@ -227,7 +227,7 @@ end CrossTermHypothesis
 /-! ## Fiber Energy Analysis: From Cross Terms to CME
 
 The key insight is that the **subquadratic fiber energy bound** (FEB, already
-defined in LargeSieveSpectral.lean: `∑_a ‖F(a)‖² ≤ ε·N²`) is equivalent to
+defined in EM/CME/Reduction.lean: `∑_a ‖F(a)‖² ≤ ε·N²`) is equivalent to
 CME. The forward direction `cme_implies_feb` was already proved; here we prove
 the reverse: **FEB implies CME**.
 
@@ -302,7 +302,7 @@ theorem total_cross_term_eq_sum_fiber (χ : (ZMod q)ˣ →* ℂˣ) (k : Nat) :
     (fun a => fiberMultCharSum q hq hne χ a k) (χ (emMultUnit q hq hne k) : ℂ)
 
 /-- **FEB implies CME**: the subquadratic fiber energy bound (defined in
-    LargeSieveSpectral.lean) implies Conditional Multiplier Equidistribution.
+    EM/CME/Reduction.lean) implies Conditional Multiplier Equidistribution.
 
     This closes the equivalence noted in Dead End #93: FEB and CME are
     equivalent for fixed q.
@@ -312,7 +312,7 @@ theorem total_cross_term_eq_sum_fiber (χ : (ZMod q)ˣ →* ℂˣ) (k : Nat) :
     For any target δ > 0, set ε = δ² to get `‖F(a,N)‖ ≤ δ·N` eventually. -/
 theorem feb_implies_cme (hfeb : FiberEnergyBound) : ConditionalMultiplierEquidist := by
   intro q' inst hq' hne' χ hχ a ε hε
-  haveI : Fact (Nat.Prime q') := inst
+  have : Fact (Nat.Prime q') := inst
   -- Choose ε' = ε² so √ε' = ε
   have hε2 : 0 < ε ^ 2 := sq_pos_of_pos hε
   obtain ⟨N₀, hN₀⟩ := hfeb q' hq' hne' χ hχ (ε ^ 2) hε2
@@ -440,7 +440,7 @@ The UPPER bound (fiber energy = o(N²)) is the FEB hypothesis.
 
 ### The FEB-CME Equivalence
 `FEB ⟺ CME` for fixed q (Dead End #93, now fully proved):
-- `cme_implies_feb` (proved in LargeSieveSpectral.lean)
+- `cme_implies_feb` (proved in EM/CME/Reduction.lean)
 - `feb_implies_cme` (proved in this file)
 -/
 

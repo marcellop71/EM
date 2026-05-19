@@ -150,13 +150,13 @@ private theorem seq_fiber_finite (v : ℕ) : (Set.Finite {n : ℕ | seq n = v}) 
   · obtain ⟨n, hn⟩ := h
     apply Set.Finite.subset (Set.finite_singleton n)
     intro m hm
-    simp only [Set.mem_setOf_eq] at hm
+    simp only [Set.mem_ofPred_eq] at hm
     simp only [Set.mem_singleton_iff]
     exact seq_injective m n (by rw [hm, hn])
   · push Not at h
     convert Set.finite_empty (α := ℕ)
     ext n
-    simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+    simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false]
     exact h n
 
 /-- The set of indices where `seq` takes a value ≤ M is finite.
@@ -166,7 +166,7 @@ private theorem seq_bounded_indices_finite (M : ℕ) :
   apply Set.Finite.subset (Set.Finite.biUnion (Set.finite_Iio (M + 1))
     (fun v _ => seq_fiber_finite v))
   intro n hn
-  simp only [Set.mem_setOf_eq] at hn
+  simp only [Set.mem_ofPred_eq] at hn
   simp only [Set.mem_iUnion]
   exact ⟨seq n, Set.mem_Iio.mpr (by omega), rfl⟩
 
@@ -297,7 +297,7 @@ For any SDDS, the walk satisfies a telescoping identity:
 When the walk returns (walk(start) = walk(stop)), and the walk value is
 nonzero (i.e., a unit in ZMod q), the product of intervening multipliers
 equals 1. This is the SDDS analogue of `walk_return_product` from
-`EquidistSelfAvoidance.lean`.
+`EM/Equidist/SelfAvoidance.lean`.
 -/
 
 section WalkReturn
@@ -332,7 +332,7 @@ theorem SDDS.walk_return_product_one (S : SDDS) {m k : ℕ}
   -- htele : S.walk (m + k) = S.walk (m + k) * ∏ mult(m + i)
   -- From hret: walk(m) = walk(m+k), so walk(m+k) ≠ 0
   have hne' : S.walk (m + k) ≠ 0 := hret ▸ hne
-  haveI : Fact (Nat.Prime S.q) := ⟨S.q_prime⟩
+  have : Fact (Nat.Prime S.q) := ⟨S.q_prime⟩
   have heq : S.walk (m + k) * (Finset.range k).prod (fun i => S.mult (m + i)) =
              S.walk (m + k) * 1 := by rw [mul_one]; exact htele.symm
   exact mul_left_cancel₀ hne' heq

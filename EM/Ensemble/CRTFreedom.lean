@@ -320,7 +320,7 @@ theorem sqfreeAccumDensity_zero_vanishes (k r : Nat) (hr : Nat.Prime r)
       (fun X : Nat => sqfreeAccumDensity X k r 0)
       Filter.atTop
       (nhds 0) := by
-  haveI : NeZero r := ⟨hr.ne_zero⟩
+  have : NeZero r := ⟨hr.ne_zero⟩
   -- ∑_{a≠0} sqfreeAccumDensity(a) → (r-1) · 1/(r-1) = 1
   have hsum_nonzero : Filter.Tendsto
       (fun X : Nat => ∑ a ∈ Finset.univ.filter (· ≠ (0 : ZMod r)),
@@ -328,7 +328,7 @@ theorem sqfreeAccumDensity_zero_vanishes (k r : Nat) (hr : Nat.Prime r)
       Filter.atTop
       (nhds (∑ a ∈ Finset.univ.filter (· ≠ (0 : ZMod r)),
         (1 / ((r : ℝ) - 1)))) := by
-    apply tendsto_finset_sum
+    apply tendsto_finsetSum
     intro a ha
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha
     exact hnonzero a ha
@@ -430,8 +430,8 @@ theorem scrti_bootstrap_all_primes
         (fun X : Nat => sqfreeAccumDensity X k q a)
         Filter.atTop
         (nhds (1 / ((q : ℝ) - 1))) := by
-  haveI : NeZero r := ⟨hr.ne_zero⟩
-  haveI : NeZero q := ⟨hq.ne_zero⟩
+  have : NeZero r := ⟨hr.ne_zero⟩
+  have : NeZero q := ⟨hq.ne_zero⟩
   delta SquarefreeCRTIndependence at hscrti
   intro a ha
   -- Zero-class density → 0
@@ -476,7 +476,7 @@ theorem scrti_bootstrap_all_primes
       Filter.atTop
       (nhds (∑ b ∈ Finset.univ.filter (· ≠ (0 : ZMod r)),
         (1 / ((q : ℝ) - 1) * (1 / ((r : ℝ) - 1))))) := by
-    apply tendsto_finset_sum
+    apply tendsto_finsetSum
     intro b hb
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hb
     exact hnonzero_term b hb

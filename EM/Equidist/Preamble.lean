@@ -5,7 +5,7 @@ import EM.Group.SEInstances
 # Equidistribution Hypotheses for Mullin's Conjecture
 
 Equidistribution hypotheses and their implications:
-* `MultEquidistribution`: every unit appears as multiplier infinitely often
+* `MultiplierEquidistribution`: every unit appears as multiplier infinitely often
 * `PairEquidistribution`: every (walk, multiplier) pair appears cofinally
 * `pe_implies_mullin`: PairEquidistribution → MullinConjecture
 * Bootstrapping: descent via auxiliary primes
@@ -17,33 +17,42 @@ open Mullin Euclid MullinGroup RotorRouter
 
 /-! ## Multiplier Equidistribution (marginal) -/
 
-/-- **Multiplier Equidistribution**: every unit in `(ZMod q)ˣ` appears as a
-    multiplier residue `seq(n+1) mod q` infinitely often.
+/-- **Multiplier Equidistribution** (ME): every unit in `(ZMod q)ˣ` appears as a
+    multiplier residue `seq(n+1) mod q` infinitely often — the EM multiplier
+    residues hit every unit class cofinally, the Chebotarev/BV-type statement
+    for the EM sequence.
 
     This is the *marginal* equidistribution statement about the smallest prime
     factors of `prod(n)+1`. It implies `SubgroupEscape` (no proper subgroup
     confines all multipliers) but not `EMPointwiseRecurrence` (which requires
-    knowing the multiplier distribution *conditioned on* the walk position). -/
-def MultEquidistribution : Prop :=
-  ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-    ∀ (a : (ZMod q)ˣ), ∀ N, ∃ n, N ≤ n ∧
-      Units.mk0 (multZ q n) (multZ_ne_zero hq hne n) = a
+    knowing the multiplier distribution *conditioned on* the walk position).
 
-/-- **MultEquidistribution → SubgroupEscape**: if every unit appears as a
+    Canonical definition of the Prop that the analytic program (Fourier bridge,
+    §27b of `EM/Equidist/Fourier.lean`) targets. -/
+def MultiplierEquidistribution : Prop :=
+  ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+    (u : (ZMod q)ˣ) (N : Nat),
+    ∃ n, N ≤ n ∧ emMultUnit q hq hne n = u
+
+/-- Historical alias for `MultiplierEquidistribution` (the two were once
+    separate, definitionally identical Props). -/
+abbrev MultEquidistribution : Prop := MultiplierEquidistribution
+
+/-- **MultiplierEquidistribution → SubgroupEscape**: if every unit appears as a
     multiplier, no proper subgroup confines all multipliers.
 
     Given `H ≠ ⊤`, pick `u ∉ H` (exists since `H` is proper). By
     equidistribution, some multiplier equals `u`, hence escapes `H`. -/
-theorem me_implies_se (hme : MultEquidistribution) : SubgroupEscape := by
+theorem me_implies_se (hme : MultiplierEquidistribution) : SubgroupEscape := by
   intro q inst hq hne H hH
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- H ≠ ⊤ implies some element lies outside H
   obtain ⟨u, hu⟩ : ∃ u : (ZMod q)ˣ, u ∉ H := by
     by_contra h; push Not at h
     exact hH (eq_top_iff.mpr fun x _ => h x)
   -- By equidistribution, some multiplier equals u
   obtain ⟨n, _, hmult⟩ := hme q hq hne u 0
-  exact ⟨n, by rw [hmult]; exact hu⟩
+  exact ⟨n, by show emMultUnit q hq hne n ∉ H; rw [hmult]; exact hu⟩
 
 /-! ## Pair Equidistribution (joint) -/
 
@@ -61,15 +70,15 @@ def PairEquidistribution : Prop :=
     ∀ (x s : (ZMod q)ˣ), ∀ N, ∃ n, N ≤ n ∧
       emWalkUnit q hq hne n = x ∧ emMultUnit q hq hne n = s
 
-/-- **PairEquidistribution → MultEquidistribution**: the joint statement
+/-- **PairEquidistribution → MultiplierEquidistribution**: the joint statement
     implies the marginal — project onto the multiplier coordinate. -/
-theorem pe_implies_me (hpe : PairEquidistribution) : MultEquidistribution := by
+theorem pe_implies_me (hpe : PairEquidistribution) : MultiplierEquidistribution := by
   intro q inst hq hne a N
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   obtain ⟨n, hn, _, hmult⟩ := hpe q hq hne 1 a N
   exact ⟨n, hn, hmult⟩
 
-/-- **PairEquidistribution → SubgroupEscape** (via MultEquidistribution). -/
+/-- **PairEquidistribution → SubgroupEscape** (via MultiplierEquidistribution). -/
 theorem pe_implies_se (hpe : PairEquidistribution) : SubgroupEscape :=
   me_implies_se (pe_implies_me hpe)
 
@@ -79,7 +88,7 @@ theorem pe_implies_se (hpe : PairEquidistribution) : SubgroupEscape :=
     of `PointwiseRecurrence` are simply discarded. -/
 theorem pe_implies_empr (hpe : PairEquidistribution) : EMPointwiseRecurrence := by
   intro q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   intro x _ s _ N
   exact hpe q hq hne x s N
 
@@ -92,7 +101,7 @@ theorem pe_implies_empr (hpe : PairEquidistribution) : EMPointwiseRecurrence := 
     supplies a step `n` where `walkZ q n = -1`, i.e., `q ∣ prod(n) + 1`. -/
 theorem pe_implies_hh (hpe : PairEquidistribution) : HittingHypothesis := by
   intro q hq hne N
-  haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+  have : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
   let neg1 : (ZMod q)ˣ := Units.mk0 (-1) (neg_ne_zero.mpr one_ne_zero)
   obtain ⟨n, hn, hwalk, _⟩ := hpe q hq hne neg1 1 N
   -- Extract walkZ q n = -1 from the unit-level equality

@@ -9,23 +9,23 @@ import EM.Reduction.Master
 This file proves the **Ensemble Population Transfer theorem**: under CRT
 equidistribution hypotheses, Mullin's Conjecture holds for density-1
 squarefree starting points. It ties together all the ensemble infrastructure
-from `EnsembleCRT.lean`, `EnsembleDecorrelation.lean`, `PopulationTransferStrategy.lean`,
+from `EM/Ensemble/CRT.lean`, `EM/Ensemble/Decorrelation.lean`, `EM/Population/TransferStrategy.lean`,
 and the master reduction chain.
 
 ## Mathematical Overview
 
 The ensemble population transfer strategy proceeds in five layers:
 
-1. **CRT Equidistribution** (from EnsembleCRT.lean):
+1. **CRT Equidistribution** (from EM/Ensemble/CRT.lean):
    SRE => base case equidist; CRTPropagationStep (RED #3, archived) => full chain
 
 2. **Decorrelation Bridge** (new open hypothesis):
    EnsembleMultiplierEquidist => StepDecorrelation
 
-3. **Variance and Concentration** (from EnsembleDecorrelation.lean):
+3. **Variance and Concentration** (from EM/Ensemble/Decorrelation.lean):
    StepDecorrelation => CharSumVarianceBound => EnsembleCharSumConcentration
 
-4. **Character Cancellation** (proved in EnsembleDecorrelation.lean):
+4. **Character Cancellation** (proved in EM/Ensemble/Decorrelation.lean):
    EnsembleCharSumConcentration => almost all character sums cancel
 
 5. **Assembly**: combining the above into a single master theorem.
@@ -36,14 +36,12 @@ The ensemble population transfer strategy proceeds in five layers:
 * `EnsembleEquidistImpliesDecorrelation` -- EME => StepDecorrelation
 * `JointAccumulatorEquidist'`            -- genuine joint equidist of accumulator
 * `JointStepEquidist`                    -- genuine joint equidist of genSeq
-* `MultCancelToWalkCancel` (in EnsembleDecorrelation.lean) -- walk cancellation (equiv. CCSB/CME)
+* `MultCancelToWalkCancel` (in EM/Ensemble/Decorrelation.lean) -- walk cancellation (equiv. CCSB/CME)
 
 ### Proved Theorems
 * `equidist_implies_char_mean_vanishing_proved` -- EME => ensemble char means vanish (PROVED)
-* `full_crt_chain_implies_cancellation`  -- SRE+CRT+bridges => char sum cancellation (a.a.)
 * `ensemble_decorrelation_chain`         -- EME+decorr+var+conc => char cancellation
 * `sd_implies_cancellation`              -- SD alone => char cancellation (PROVED, composes 3 reductions)
-* `ensemble_pt_standard_em`              -- all hypotheses + DSL => MC for standard EM
 
 ### Archived (RED chain — see EM/Archive/Ensemble/PTArchive.lean)
 * `JointAccumulatorEquidist_marginal`    -- trivially from AEP (RED #1)
@@ -51,7 +49,7 @@ The ensemble population transfer strategy proceeds in five layers:
 * `ensemble_crt_equidist_chain`          -- SRE+CRT+bridge => EME (RED #3)
 * `ensemble_pt_master_simplified`        -- 4 hypotheses => char cancellation (RED #3)
 * `ensemble_pt_master`                   -- all 6 hypotheses => char cancellation (RED #3)
-* (moved to EnsembleWeylChain.lean): gen_hitting_implies_gen_mc_proved, gen_captures_target,
+* (moved to EM/Ensemble/WeylChain.lean): gen_hitting_implies_gen_mc_proved, gen_captures_target,
   jse_implies_nontrivial_cancellation, weyl_hitting_bridge_proved,
   per_chi_cancellation_bridge_proved, cancel_weyl_implies_mc, jse_transfer_implies_mc
 -/
@@ -589,7 +587,7 @@ theorem joint_step_equidist_implies_step_decorrelation
               (chi (genSeq n j % q) * starRingEnd ℂ (chi (genSeq n k % q))).re)|)
         Filter.atTop (nhds 0) := by
   intro q hq chi hchi0 hchi_sum j k hjk
-  haveI : NeZero q := ⟨hq.ne_zero⟩
+  have : NeZero q := ⟨hq.ne_zero⟩
   suffices h : Filter.Tendsto
       (fun X : Nat =>
         ensembleAvg X (fun n =>
@@ -663,9 +661,9 @@ theorem joint_step_equidist_implies_step_decorrelation
       Filter.atTop
       (nhds (∑ a : ZMod q, ∑ b : ZMod q,
         (if a ≠ 0 ∧ b ≠ 0 then (1 / ((q : ℝ) - 1) ^ 2) * f a b else 0))) := by
-    apply tendsto_finset_sum
+    apply tendsto_finsetSum
     intro a _
-    apply tendsto_finset_sum
+    apply tendsto_finsetSum
     intro b _
     exact h_term_tendsto a b
   rw [h_limit_sum] at h_sum_tendsto
@@ -688,7 +686,7 @@ section CharMeanVanishing
     E_n[chi(genSeq n k)] = ∑_a density(a) * chi(a) -> (1/(q-1)) * ∑_{a≠0} chi(a) = 0.
 
     This is a direct consequence of `EnsembleMultEquidistImpliesCharMeanZero`
-    (PROVED in EnsembleCRT.lean). The statement is identical. -/
+    (PROVED in EM/Ensemble/CRT.lean). The statement is identical. -/
 def EquidistImpliesCharMeanVanishing : Prop :=
   EnsembleMultiplierEquidist →
     ∀ (q : Nat) (hq : Nat.Prime q), ∀ (k : Nat),
@@ -785,10 +783,10 @@ theorem sd_implies_cancellation (hsd : StepDecorrelation) :
 
 end SDToCancellation
 
-/-! ## Sections 4 & 4b: Moved to EnsembleWeylChain.lean
+/-! ## Sections 4 & 4b: Moved to EM/Ensemble/WeylChain.lean
 
 Sections GenMC (Generalized MC from Walk Hitting) and JSEToGenMC (JSE → GenMC Master Chain)
-have been moved to `EnsembleWeylChain.lean`. Key exports there:
+have been moved to `EM/Ensemble/WeylChain.lean`. Key exports there:
 * `GenMullinConjecture` — every prime in generalized EM from n
 * `gen_hitting_implies_gen_mc_proved` — cofinal walk hitting → gen MC (PROVED)
 * `per_chi_cancellation_bridge_proved` — PerChiCancellationBridge (PROVED)
@@ -803,20 +801,6 @@ section MasterTheorem
 
 -- ensemble_pt_master archived to EM/Archive/Ensemble/PTArchive.lean (RED #3)
 
-/-- **Ensemble PT: standard EM via DSL.**
-    Under the ensemble hypotheses plus DSL, MC holds for the standard
-    Euclid-Mullin sequence (starting from n=2). The DSL provides
-    the trajectory-level analogue of the ensemble decorrelation for
-    the specific starting point n=2.
-
-    Chain: DSL gives PE -> CME -> MC directly (proved in MasterReduction.lean).
-    The ensemble framework shows this is part of a broader picture where
-    MC holds for *almost all* starting points even without DSL. -/
-theorem ensemble_pt_standard_em
-    (h_equidist : ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q)
-    (hdsl : DeterministicStabilityLemma) :
-    MullinConjecture :=
-  full_chain_dsl h_equidist hdsl
 
 end MasterTheorem
 
@@ -857,17 +841,6 @@ theorem ensemble_subsumes_reciprocal
     AlmostAllSquarefreeRSD ∧ AlmostAllSquarefreeEqd :=
   ensemble_chains_consistent h_recip h_ens
 
-/-- **DSL closes everything.** Under standard ANT (MinFacResidueEquidist)
-    plus DSL, both MC and all ensemble conclusions hold:
-    - MC (standard EM, via full_chain_dsl)
-    - CCSB (complex character sum bound, via pe_dsl_implies_ccsb)
-    All open ensemble hypotheses become vacuously satisfiable once MC holds. -/
-theorem dsl_closes_all
-    (h_equidist : ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q)
-    (hdsl : DeterministicStabilityLemma) :
-    MullinConjecture ∧ ComplexCharSumBound :=
-  ⟨full_chain_dsl h_equidist hdsl,
-   pe_dsl_implies_ccsb (pe_of_equidist h_equidist) hdsl⟩
 
 end Consistency
 
@@ -876,12 +849,16 @@ end Consistency
 The Ensemble Population Transfer framework establishes:
 
 ```
-Layer 1: CRT Equidistribution
-  SquarefreeResidueEquidist (standard ANT)
-    + CRTPropagationStep (CRT independence)
-    => AccumulatorEquidistPropagation (induction, PROVED)
-    + AccumEquidistImpliesMultEquidist (PE bridge, open)
-    => EnsembleMultiplierEquidist
+Layer 1: CRT Equidistribution (RED chain -- ARCHIVED)
+  The original route
+    SquarefreeResidueEquidist + CRTPropagationStep
+      => AccumulatorEquidistPropagation => EnsembleMultiplierEquidist
+  is RETIRED: AccumulatorEquidistPropagation (AEP) and CRTPropagationStep
+  are heuristically FALSE (Dead End #137, RED #1/#3). The conditional
+  theorems built on them are archived (not compiled) in
+  EM/Archive/Ensemble/PTArchive.lean. EnsembleMultiplierEquidist
+  (EM/Ensemble/CRT.lean) remains an open hypothesis, now taken as a
+  direct input to Layer 2.
 
 Layer 2: Decorrelation
   EnsembleMultiplierEquidist
@@ -902,10 +879,12 @@ Direct composition (sd_implies_cancellation, PROVED):
   StepDecorrelation alone => a.a. character sum cancellation
   (composes all three Layer 3-4 reductions, zero open hypotheses)
 
-Assembly (PROVED):
-  Layers 1-4 compose to give `ensemble_pt_master_simplified` (4 hypotheses):
-    SRE + CRT + AccumBridge + DecorrBridge => char cancellation for a.a.
-  Original `ensemble_pt_master` (6 hypotheses) still available.
+Assembly (ARCHIVED):
+  The master assemblies `ensemble_pt_master_simplified` and
+  `ensemble_pt_master` depended on the RED hypotheses above and are
+  archived (not compiled) in EM/Archive/Ensemble/PTArchive.lean.
+  The live assemblies are `ensemble_decorrelation_chain`,
+  and `sd_implies_cancellation`.
 
 Standard EM (PROVED):
   DSL alone => MC for the standard sequence starting from n=2
@@ -923,7 +902,7 @@ JSE → MC (Section 4b):
     + gen_hitting_implies_gen_mc_proved (PROVED)
     => MullinConjecture (cancel_weyl_implies_mc, PROVED)
 
-  The explicit gap is MultCancelToWalkCancel (EnsembleDecorrelation.lean):
+  The explicit gap is MultCancelToWalkCancel (EM/Ensemble/Decorrelation.lean):
   multiplier character energy (genSeqCharEnergy) does NOT imply walk character
   energy (genWalkCharEnergy). This is the Marginal/Joint Barrier — multiplier
   sums give marginal information, walk sums require joint information about
@@ -942,15 +921,17 @@ JSE → MC (Section 4b):
 * `sqfreeJointAccumDensitySame`      -- joint density: genProd at two steps
 * `JointAccumulatorEquidist'`        -- genuine joint density (open hypothesis)
 * `JointStepEquidist`                -- genuine joint density for genSeq (open hypothesis)
-* `PerChiCancellationBridge`         -- per-chi SD => per-chi cancellation (PROVED)
-* `WeylHittingBridge`                -- walk char cancellation => cofinal hitting (PROVED)
+* `PerChiCancellationBridge`         -- per-chi SD => per-chi cancellation
+                                        (PROVED, now in EM/Ensemble/WeylChain.lean)
+* `WeylHittingBridge`                -- walk char cancellation => cofinal hitting
+                                        (PROVED, now in EM/Ensemble/WeylChain.lean)
 
 ### Open Hypotheses in This File
 1. `EnsembleEquidistImpliesDecorrelation` -- EME => StepDecorrelation
 2. `JointAccumulatorEquidist'`       -- genuine joint equidist of accumulator (not trivial from AEP)
 3. `JointStepEquidist`               -- genuine joint equidist of genSeq (follows from JAE' + PE)
 
-### Open Hypotheses in EnsembleDecorrelation.lean
+### Open Hypotheses in EM/Ensemble/Decorrelation.lean
 4. `MultCancelToWalkCancel`          -- walk cancellation for all squarefree n
                                         (equivalent to CCSB/CME, Dead Ends #58/#117)
 
@@ -962,9 +943,11 @@ JSE → MC (Section 4b):
 * `sqfreeJointAccumCountSame_sum_eq_first`      -- partition identity (PROVED)
 * `DecorrelationImpliesVariance` -- SD => CharSumVarianceBound (PROVED, C=2)
 * `EquidistImpliesCharMeanVanishing` -- EME => vanishing char means (PROVED)
-* `GenHittingImpliesGenMC` -- cofinal walk hitting => gen. MC (PROVED)
 * `sd_implies_cancellation` -- SD alone => char cancellation (PROVED, 3-step composition)
 * `joint_step_equidist_implies_step_decorrelation` -- JSE => per-chi SD (PROVED)
+
+### Proved in EM/Ensemble/WeylChain.lean (moved there from this file)
+* `GenHittingImpliesGenMC` -- cofinal walk hitting => gen. MC (PROVED)
 * `per_chi_cancellation_bridge_proved` -- PerChiCancellationBridge (PROVED, per-chi chain)
 * `weyl_hitting_bridge_proved` -- WeylHittingBridge (PROVED, test function contradiction)
 * `jse_implies_nontrivial_cancellation` -- JSE + PCB => nontrivial cancellation (PROVED)
@@ -987,10 +970,11 @@ to walk energy (genWalkCharEnergy). This is equivalent to CCSB/CME and is the
 core open problem of the project (see Dead Ends #58, #117).
 Composition: `jse_transfer_implies_mc` (JSE + MultCancelToWalkCancel => MC).
 
-**Route C (DSL)**: The DSL (from `PopulationTransferStrategy.lean`) provides a
-stronger, trajectory-level version that gives MC for the specific starting point
-n=2 without needing the ensemble averaging (`full_chain_dsl`). The ensemble
-framework shows MC holds more broadly for density-1 starting points.
+**Route C (DSL)** — RETIRED (Dead End #160): the DSL (`PE → CME`) is vacuous because
+`PopulationEquidist` is false (head domination, `EM/Population/HeadDomination.lean`);
+`full_chain_dsl` / `dsl_closes_all` are archived in
+`EM/Archive/Population/PopulationEquidistArchive.lean`.  The trajectory-level gap is CME
+itself (`cme_implies_mc`).
 -/
 
 end

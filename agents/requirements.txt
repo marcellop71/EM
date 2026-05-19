@@ -1,0 +1,10 @@
+# Core swarm dependencies (claude backend + rendering + qwen backend).
+# Install into a venv at the repo root:
+#   python3 -m venv .venv && .venv/bin/pip install -r agents/requirements.txt
+# Run the swarm with:  .venv/bin/python -m agents <command>
+claude-agent-sdk
+rich
+httpx
+
+# Optional backends — uncomment if used:
+# openai-agents        # openai: provider (openai_backend.py)

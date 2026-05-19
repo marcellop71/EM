@@ -63,7 +63,7 @@ def HilbertIntegerBound : Prop :=
 
 /-- Helper: the Hilbert bilinear form term identity under rescaling.
     If `pts' r = pts r / δ`, then `1/(pts r - pts s) = (1/δ) · 1/(pts' r - pts' s)`. -/
-private theorem hilbert_term_rescale {δ : ℝ} (hδ : 0 < δ)
+private theorem hilbert_term_rescale {R : ℕ} {δ : ℝ} (hδ : 0 < δ)
     (pts : Fin R → ℝ) (r s : Fin R) (_hrs : r ≠ s)
     (hsep : δ ≤ |pts r - pts s|) :
     (↑(pts r - pts s) : ℂ) ≠ 0 ∧
@@ -326,7 +326,7 @@ theorem liftedPts_sep_same {R : ℕ} (α : Fin R → ℝ) (K : ℕ)
     of the fract difference are bounded away from 0.
 
     The proof uses: `|f + m|` for integer m ≥ dist(f, ℤ) = min(|f|, 1−|f|) ≥ δ`. -/
-theorem fract_shift_lower_bound {f : ℝ} {m : ℤ}
+theorem fract_shift_lower_bound {δ f : ℝ} {m : ℤ}
     (_hf_bound : |f| < 1) (hf_circ : ∀ n : ℤ, δ ≤ |f - ↑n|) :
     δ ≤ |f + ↑m| := by
   have := hf_circ (-m)

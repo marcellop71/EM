@@ -34,7 +34,7 @@ def monicIrredSet (d : ℕ) : Set (Polynomial (ZMod p)) :=
 /-- The monic irreducible set of degree 0 is empty. -/
 theorem monicIrredSet_zero_empty : monicIrredSet p 0 = ∅ := by
   ext f
-  simp only [monicIrredSet, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and]
+  simp only [monicIrredSet, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
   intro _ hfi hfd
   exact absurd (Irreducible.natDegree_pos hfi) (by omega)
 
@@ -45,7 +45,7 @@ theorem monicIrredSet_le_finite
   apply Set.Finite.subset (Set.Finite.biUnion (Set.finite_Iio (D + 1))
     (fun e _ => hfin e))
   intro f ⟨hfm, hfi, hfd⟩
-  simp only [Set.mem_iUnion, Set.mem_setOf_eq]
+  simp only [Set.mem_iUnion, Set.mem_ofPred_eq]
   exact ⟨f.natDegree, Set.mem_Iio.mpr (by omega), hfm, hfi, rfl⟩
 
 /-! ## Section 2: Capture Count and Captured Set -/
@@ -206,7 +206,7 @@ def unsievedPool (d_data : FFEMData p) (deg : ℕ) (n : ℕ) :
 /-- The unsieved pool is a subset of the monic irreducible set. -/
 theorem unsievedPool_subset (d_data : FFEMData p) (deg : ℕ) (n : ℕ) :
     unsievedPool d_data deg n ⊆ monicIrredSet p deg :=
-  Set.diff_subset
+  Set.sdiff_subset
 
 /-- The unsieved pool is finite. -/
 theorem unsievedPool_finite
@@ -349,7 +349,7 @@ theorem ffmc_implies_missingFinite :
   intro hmc d_data deg _
   convert Set.finite_empty
   ext Q
-  simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and]
+  simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
   intro hQm hQi _ hQ_missing
   exact hQ_missing (hmc d_data Q hQm hQi).choose (hmc d_data Q hQm hQi).choose_spec
 
@@ -391,6 +391,7 @@ variable (p)
 
 /-- FFDirichletEquidist: irreducibles are equidistributed in residue
     classes modulo Q. A THEOREM over F_p[t] (Weil RH). -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFDirichletEquidist : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
     True

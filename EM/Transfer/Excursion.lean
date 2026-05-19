@@ -286,7 +286,7 @@ theorem eip_bounded_implies_mc
     MullinConjecture := by
   have hccsb : ComplexCharSumBound := by
     intro q inst hq hne χ hχ ε hε
-    haveI : Fact (Nat.Prime q) := inst
+    have : Fact (Nat.Prime q) := inst
     have hcover_q := hcover heip hbmax q hq hne
     exact hcover_q
       (fun c χ' hχ' => heip q hq hne c χ' hχ')

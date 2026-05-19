@@ -18,7 +18,7 @@ of length K:
   - Window j: `seq (jK+1), ..., seq ((j+1)K)`
 
 The character sum over window j is `S_j = sum_{k<K} chi(seq(jK+k+1) mod q)`.
-By the tail identity (proved in TailIdentityAttack.lean), this equals the
+By the tail identity (proved in EM/Reduction/TailIdentity.lean), this equals the
 generalized partial sum from starting point `prod(jK)`.
 
 The total character sum decomposes as `sum_{k<N} chi(seq(k+1)) = sum_{j<J} S_j`

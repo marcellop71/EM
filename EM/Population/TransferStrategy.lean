@@ -1,5 +1,5 @@
 import EM.Population.ReciprocalSum
-import EM.Population.Proof
+import EM.Population.WeakErgodicity
 
 /-!
 # Population Transfer Strategy: Ensemble Equidistribution and DSL
@@ -172,102 +172,5 @@ theorem ensemble_concentration_implies_eqd
 
 end MainReduction
 
-/-! ## Deterministic Stability Lemma -/
-
-section DSL
-
-/-- **Deterministic Stability Lemma (DSL)**: PopulationEquidist → CME.
-
-    This single hypothesis replaces both PopulationTransfer and EMDImpliesCME.
-    It asserts that if the shifted squarefree population has equidistributed
-    minFac residues (PE), then the EM walk's conditional multiplier character
-    sums are o(N) (CME).
-
-    The three conditions that make DSL plausible:
-
-    1. **Generation** = SubgroupEscape (PROVED via PRE): the EM multipliers
-       generate (ℤ/qℤ)× for every prime q. Without this, the walk could
-       be confined to a proper subgroup.
-
-    2. **Position-Blindness** = `crt_multiplier_invariance` (PROVED): the
-       minFac operation is q-blind — em(n+1) mod q does not depend on
-       P(n) mod q. This prevents the walk from "steering" toward bias.
-
-    3. **Population Support** = PE (from standard ANT): every element of
-       (ℤ/qℤ)× receives a positive density of minFac values from the
-       shifted squarefree population.
-
-    **Why DSL gives CME directly (not just EMDirichlet):**
-    Position-blindness means the multiplier doesn't depend on the walk
-    position (P(n) mod q), so fiber-restricted character sums (which
-    condition on walk position = a) inherit the same bounds as the
-    unconditional sums. The conditional→unconditional step that
-    `EMDImpliesCME` encodes is automatic when the mechanism is q-blind.
-
-    **Value:** Reduces the full chain to PE + DSL → MC with a single
-    open hypothesis (DSL), compared to PE + PT + EMDImpliesCME → MC
-    which has two open hypotheses. -/
-def DeterministicStabilityLemma : Prop :=
-  PopulationEquidist → ConditionalMultiplierEquidist
-
-end DSL
-
-/-! ## Full Chain: PE + DSL → MC -/
-
-section FullChain
-
-/-- **PE + DSL → MC.** The full reduction chain with DSL as the sole gap:
-    PE → (by DSL) CME → CCSB → MC. -/
-theorem pe_dsl_implies_mc
-    (hpe : PopulationEquidist) (hdsl : DeterministicStabilityLemma) :
-    MullinConjecture :=
-  cme_implies_mc (hdsl hpe)
-
-/-- **PE + DSL → CCSB.** The intermediate stop: PE → CME → CCSB. -/
-theorem pe_dsl_implies_ccsb
-    (hpe : PopulationEquidist) (hdsl : DeterministicStabilityLemma) :
-    ComplexCharSumBound :=
-  cme_implies_ccsb (hdsl hpe)
-
-/-- **MinFacResidueEquidist + DSL → MC.** The full chain from standard
-    analytic number theory: MinFacResidueEquidist → PE → CME → MC. -/
-theorem equidist_dsl_implies_mc
-    (h_equidist : ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q)
-    (hdsl : DeterministicStabilityLemma) :
-    MullinConjecture :=
-  pe_dsl_implies_mc (pe_of_equidist h_equidist) hdsl
-
-end FullChain
-
-/-! ## Connections -/
-
-section Connections
-
-/-- **DSL implies PT.** DSL (PE → CME) gives PT (PE → EMDirichlet) via
-    the proved implication CME → EMDirichlet (`cme_implies_emd`). -/
-theorem dsl_implies_pt
-    (hdsl : DeterministicStabilityLemma) : PopulationTransfer :=
-  fun hpe => cme_implies_emd (hdsl hpe)
-
-/-- **DSL + PE make EMDImpliesCME trivially true.** Once PE holds, DSL
-    gives CME directly, so `EMDirichlet → CME` holds (ignoring the
-    EMDirichlet hypothesis and using PE + DSL instead).
-
-    This shows DSL subsumes both open gaps (PT and EMDImpliesCME) in the
-    presence of PE, which is provable from standard ANT
-    (`pe_of_equidist` in PopulationEquidistProof.lean). -/
-theorem dsl_pe_implies_bridge
-    (hdsl : DeterministicStabilityLemma) (hpe : PopulationEquidist) :
-    EMDImpliesCME :=
-  fun _ => hdsl hpe
-
-/-- **DSL + PE give both PT and EMDImpliesCME.** This is the conjunction
-    showing DSL is strictly stronger than the two gaps it replaces. -/
-theorem dsl_pe_implies_pt_and_bridge
-    (hdsl : DeterministicStabilityLemma) (hpe : PopulationEquidist) :
-    PopulationTransfer ∧ EMDImpliesCME :=
-  ⟨dsl_implies_pt hdsl, dsl_pe_implies_bridge hdsl hpe⟩
-
-end Connections
 
 end

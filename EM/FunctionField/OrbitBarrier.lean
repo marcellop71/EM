@@ -1,5 +1,5 @@
 import EM.FunctionField.Master
-import EM.FunctionField.CyclicWalkCoverage
+import EM.Group.CyclicWalkCoverage
 
 /-!
 # The Orbit-Specificity Barrier: Formal Documentation

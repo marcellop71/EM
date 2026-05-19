@@ -1,4 +1,6 @@
 import EM.Equidist.SieveTransfer
+import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
+import Mathlib.NumberTheory.DirichletCharacter.Basic
 
 /-!
 # Large Sieve Inequality and Bombieri-Vinogradov
@@ -58,52 +60,54 @@ def AnalyticLargeSieve : Prop :=
       ‖∑ n : Fin N, a n * Complex.exp (2 * ↑Real.pi * Complex.I * ↑(↑n : ℤ) * ↑(α r))‖ ^ 2
     ≤ ((N : ℝ) - 1 + δ⁻¹) * ∑ n : Fin N, ‖a n‖ ^ 2
 
-/-- **Arithmetic Large Sieve for Dirichlet Characters** (Bombieri, 1965).
+open Classical in
+/-- **Arithmetic Large Sieve for Dirichlet Characters** (Bombieri 1965; Bombieri–Davenport).
 
-    For complex numbers `a(M+1), ..., a(M+N)` and all primitive Dirichlet
-    characters chi of modulus q <= Q:
+    For complex numbers `a(0), …, a(N-1)` and all *primitive* Dirichlet characters `χ` of
+    modulus `1 ≤ q ≤ Q`:
 
-      sum_{q <= Q} sum_{chi primitive mod q} |sum_n a(n) chi(n)|^2
-        <= (N - 1 + Q^2) * sum_n |a(n)|^2
+      ∑_{q ≤ Q} ∑*_{χ mod q} ‖∑_n a(n) χ(n)‖²  ≤  (N + Q²) · ∑_n ‖a(n)‖²
 
-    This follows from the analytic large sieve via the Farey dissection
-    (the Gauss sums of distinct primitive characters produce well-separated
-    exponential sum evaluation points).
+    (the classical form carries the extra weight `q/φ(q) ≥ 1` on the left, so this is a
+    weaker, still true, consequence).  It follows from `AnalyticLargeSieve` via the Farey
+    dissection.  **Open Prop** (a known theorem, not in Mathlib): not formalized here.
 
-    **Open Prop**: follows from `AnalyticLargeSieve` plus the Farey spacing
-    argument. Not formalized. -/
+    Corrected 2026-08-18: the previous formalization summed over *all* characters of *all*
+    moduli `q ≤ Q` (including `q = 0, 1` and the principal characters) with the primitive
+    bound, which is false (take `a ≡ 1`). -/
 def ArithmeticLargeSieve : Prop :=
   ∀ (N Q : ℕ) (_hN : 0 < N) (_hQ : 0 < Q) (a : Fin N → ℂ),
-    ∑ q ∈ Finset.range (Q + 1),
-      ∑ χ : DirichletCharacter ℂ q,
+    ∑ q ∈ Finset.Icc 1 Q,
+      ∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter
+          (fun χ => DirichletCharacter.IsPrimitive χ),
         ‖∑ n : Fin N, a n * χ (↑(↑n : ℤ))‖ ^ 2
-    ≤ ((N : ℝ) - 1 + (Q : ℝ) ^ 2) * ∑ n : Fin N, ‖a n‖ ^ 2
+    ≤ ((N : ℝ) + (Q : ℝ) ^ 2) * ∑ n : Fin N, ‖a n‖ ^ 2
 
-/-- **Bombieri-Vinogradov Theorem** (Bombieri 1965, Vinogradov 1965).
+/-- `ψ(x; q, a) = ∑_{n ≤ x, n ≡ a (mod q)} Λ(n)`, the Chebyshev function in a progression. -/
+noncomputable def psiAP (x : ℝ) (q a : ℕ) : ℝ :=
+  ∑ n ∈ (Finset.Icc 1 ⌊x⌋₊).filter (fun n => n % q = a % q), ArithmeticFunction.vonMangoldt n
 
-    Dirichlet's theorem on primes in arithmetic progressions holds
-    uniformly for almost all moduli q <= sqrt(x) / (log x)^B.
+/-- The BV/EH error term at level `Q`: `∑_{q ≤ Q} max_{(a,q)=1} |ψ(x;q,a) − x/φ(q)|`. -/
+noncomputable def bvError (x : ℝ) (Q : ℕ) : ℝ :=
+  ∑ q ∈ Finset.Icc 1 Q,
+    ⨆ a ∈ (Finset.range q).filter (fun a => Nat.Coprime a q),
+      |psiAP x q a - x / (Nat.totient q : ℝ)|
 
-    Formally: for every A > 0 there exists B > 0 and x_0 such that for all x >= x_0,
+/-- **Bombieri–Vinogradov Theorem** (Bombieri 1965, Vinogradov 1965), in the `ψ`-form:
+    for every `A > 0` there are `B, C > 0` and `x₀` such that for all `x ≥ x₀`,
 
-      sum_{q <= sqrt(x)/(log x)^B}  max_{gcd(a,q)=1} |pi(x; q, a) - li(x)/phi(q)|
-        <= x / (log x)^A
+      ∑_{q ≤ √x / (log x)^B}  max_{(a,q)=1} |ψ(x; q, a) − x/φ(q)|  ≤  C · x / (log x)^A .
 
-    This is a fundamental result in analytic number theory, proved using the
-    arithmetic large sieve. It shows that the prime counting function pi(x; q, a)
-    behaves like li(x)/phi(q) for "almost all" moduli q (on average).
+    **Open Prop** (a known theorem, not in Mathlib): not formalized here.
 
-    **Open Prop**: deep result requiring zero-density estimates for L-functions
-    and the arithmetic large sieve. Not in Mathlib. -/
+    Corrected 2026-08-18: the previous formalization was `∃ E, E ≤ x/(log x)^A ∧ 0 ≤ E`,
+    which is trivially true (`E = 0`); consequently `BVImpliesMMCSB` was just `MultiModularCSB`.
+    Nothing downstream used the old body (all uses pass the hypothesis along). -/
 def BombieriVinogradov : Prop :=
   ∀ (A : ℝ) (_hA : 0 < A),
-  ∃ (_B : ℝ) (x₀ : ℝ),
+  ∃ (B C : ℝ) (_hC : 0 < C) (x₀ : ℝ),
   ∀ (x : ℝ), x₀ ≤ x →
-    -- The averaged error over moduli q is bounded
-    -- (We state this abstractly as an existence statement about the error bound)
-    ∃ (E : ℝ), E ≤ x / (Real.log x) ^ A ∧
-    -- E bounds the sum of max errors over primitive residue classes
-    0 ≤ E
+    bvError x ⌊Real.sqrt x / (Real.log x) ^ B⌋₊ ≤ C * x / (Real.log x) ^ A
 
 end LargeSieveStatements
 
@@ -127,7 +131,7 @@ section MMCSBReduction
     at a prime q >= Q_0, the MMCSB data gives the norm bound on the character
     sum along the EM walk.
 
-    Specializes `dirichlet_char_sum_le_of_unit_bound` (in EquidistFourier.lean)
+    Specializes `dirichlet_char_sum_le_of_unit_bound` (in EM/Equidist/FourierB.lean)
     with the per-prime bound extracted from `MultiModularCSB`. -/
 private theorem dirichlet_char_sum_le_of_mmcsb
     (hmmcsb : MultiModularCSB)
@@ -151,7 +155,7 @@ theorem mmcsb_hitcount_lb_at
     (hge : q ≥ hmmcsb.choose)
     (t : (ZMod q)ˣ) :
     ∃ N₀ : ℕ, ∀ N ≥ N₀, WalkHitCount q hq hne t N * (2 * (q - 1)) ≥ N := by
-  haveI : DecidableEq (DirichletCharacter ℂ q) := Classical.decEq _
+  have : DecidableEq (DirichletCharacter ℂ q) := Classical.decEq _
   have hqprime : Nat.Prime q := Fact.out
   have hq2 : 1 < q := hqprime.one_lt
   let card := Fintype.card (DirichletCharacter ℂ q)
@@ -287,7 +291,7 @@ theorem mmcsb_cofinal_hit
 theorem mmcsb_implies_threshold (hmmcsb : MultiModularCSB) :
     ThresholdHitting hmmcsb.choose := by
   intro q inst hq hne hge _hse N
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   exact mmcsb_cofinal_hit hmmcsb hq hne hge N
 
 open Classical in
@@ -551,7 +555,6 @@ theorem finset_markov_inequality {ι : Type*} (s : Finset ι)
     apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
     intro i hi _
     exact hf i hi
-  push_cast at h_sub ⊢
   linarith
 
 /-- **Markov inequality, card bound form**: the number of indices exceeding
@@ -853,3 +856,48 @@ theorem gauss_conductor_small_threshold_mc
 
 end GaussConductorTransfer
 
+
+/-! ## S71. Elliott-Halberstam Conjecture and Chain to MC
+
+(Moved here from EM/LargeSieve/WalkAnalysis.lean §S71.)
+
+The **Elliott-Halberstam conjecture** (1968) asserts that primes have
+level of distribution θ for every θ < 1: the BV-type error bound
+∑_{q ≤ x^θ} max_{(a,q)=1} |π(x;q,a) − li(x)/φ(q)| ≤ x/(log x)^A
+holds for all A > 0 whenever θ < 1.
+
+The Bombieri-Vinogradov theorem proves this for θ = 1/2 only. EH is
+strictly stronger: it allows moduli up to x^θ for any θ < 1, while BV
+only gives √x/(log x)^B.
+
+### Main results
+
+* `ElliottHalberstam` : the EH conjecture as an open Prop
+  (`eh_implies_bv`, `eh_chain_mc`, `eh_small_threshold_mc` removed 2026-08-18: they rested on
+  the former trivial bodies of BV/EH)
+-/
+
+section ElliottHalberstamSection
+
+/-- **Elliott–Halberstam Conjecture** (Elliott–Halberstam 1968), in the `ψ`-form: primes have
+    level of distribution `θ` for every `θ < 1`, i.e. for every `θ ∈ (0,1)` and `A > 0` there
+    are `C > 0` and `x₀` such that for `x ≥ x₀`,
+
+      ∑_{q ≤ x^θ} max_{(a,q)=1} |ψ(x; q, a) − x/φ(q)|  ≤  C · x / (log x)^A .
+
+    **Open Prop** (a major open conjecture).  Corrected 2026-08-18 (see `BombieriVinogradov`);
+    the former one-line `eh_implies_bv` was an artefact of the trivial bodies and is not
+    re-proved here (EH ⇒ BV is standard — for `θ > 1/2` the BV range `√x/(log x)^B` lies inside
+    `x^θ` — but is not needed by any result). -/
+def ElliottHalberstam : Prop :=
+  ∀ (θ : ℝ) (_hθ₀ : 0 < θ) (_hθ₁ : θ < 1),
+  ∀ (A : ℝ) (_hA : 0 < A),
+  ∃ (C : ℝ) (_hC : 0 < C) (x₀ : ℝ),
+  ∀ (x : ℝ), x₀ ≤ x →
+    bvError x ⌊x ^ θ⌋₊ ≤ C * x / (Real.log x) ^ A
+
+/-! The former `eh_chain_mc` / `eh_small_threshold_mc` (EH ⇒ BV ⇒ MMCSB ⇒ MC) were removed
+with the correction: they existed only through the trivial `eh_implies_bv`.  Under a genuine
+EH ⇒ BV they would be `bv_chain_mc (eh_implies_bv heh) …`. -/
+
+end ElliottHalberstamSection

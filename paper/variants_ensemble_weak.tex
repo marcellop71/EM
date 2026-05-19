@@ -1,0 +1,328 @@
+\subsection{Ensemble MC: Almost Every Starting Point}
+\label{sec:ensemble-variant}
+
+The variants above change the \emph{selection rule}; here we change the
+\emph{starting point}.  The generalized EM construction
+(Section~\ref{sec:ensemble}) parametrizes the sequence by its initial
+value~$n$: $\Prod{n}(0) = n$,
+$\seq{n}(k) = \minFac(\Prod{n}(k)+1)$,
+$\Prod{n}(k{+}1) = \Prod{n}(k)\cdot\seq{n}(k)$.
+The standard orbit is $n = 2$.
+
+\begin{definition}[\lean{EM/Ensemble/WeylChain.lean}{GenMullinConjecture}]
+$\mathrm{GenMC}(n)$: every prime appears in the generalized EM
+sequence from~$n$, i.e.\ $\forall q$ prime, $\exists k$,
+$\seq{n}(k) = q$.
+\end{definition}
+
+The reduction
+\lean{EM/Ensemble/WeylChain.lean}{gen\_hitting\_implies\_gen\_mc\_proved}
+{\color{leanink}$\checkmark$} proves that cofinal walk hitting
+implies~$\mathrm{GenMC}(n)$ for every squarefree~$n$, mirroring the
+standard inductive bootstrap.  And
+\lean{EM/Ensemble/WeylChain.lean}{gen\_mc\_two\_implies\_mc}
+{\color{leanink}$\checkmark$} shows $\mathrm{GenMC}(2) \Rightarrow
+\mathrm{MC}$, so the generalized conjecture specializes to the
+standard one.
+
+\paragraph{Bag arithmetic.}
+At each step~$k$, the Euclid number $\Prod{n}(k)+1$ has a ``bag'' of
+prime factors; the selected prime $\seq{n}(k)$ is the minimum of this
+bag.  The formalization
+(\code{EM/Ensemble/BagArithmetic.lean}, 224~lines, zero \code{sorry})
+develops the bag-level quantities:
+\defname{genEuclidOmega}~$\omega(n,k) = |\text{primeFactors}(\Prod{n}(k)+1)|$
+(at least~1,
+\lean{EM/Ensemble/BagArithmetic.lean}{genEuclidOmega\_pos}
+{\color{leanink}$\checkmark$}),
+\defname{genBagDiversity} (number of distinct residue classes mod~$q$
+among the factors, $\leq \omega$ and $\leq q$),
+\defname{genFactorsInClass}~$F_a$ (factors in class~$a$, with the
+partition identity
+$\sum_a |F_a| = \omega$,
+\lean{EM/Ensemble/BagArithmetic.lean}{genFactorsInClass\_card\_sum}
+{\color{leanink}$\checkmark$}),
+and \defname{genEuclidCofactor} (the quotient
+$(\Prod{n}(k)+1)/\seq{n}(k)$, whose prime factors are a subset of
+the bag,
+\lean{EM/Ensemble/BagArithmetic.lean}{cofactor\_primeFactors\_subset}
+{\color{leanink}$\checkmark$}).
+For $k \geq 1$, all bag elements are $\geq 3$
+(\lean{EM/Ensemble/BagArithmetic.lean}{primeFactors\_ge\_three\_of\_pos}
+{\color{leanink}$\checkmark$}).
+
+\paragraph{Density variants.}
+Instead of proving $\mathrm{GenMC}(n)$ for the single orbit $n = 2$,
+one can ask how many starting points satisfy it.  Two density levels
+are formalized:
+
+\begin{itemize}
+\item \textbf{PositiveDensityRSD}
+  (\lean{EM/Population/ReciprocalSum.lean}{PositiveDensityRSD}):
+  a positive density~$\delta > 0$ of squarefree~$n$ have divergent
+  reciprocal sums $\sum_k 1/\seq{n}(k) = \infty$.
+
+\item \textbf{AlmostAllSquarefreeRSD}
+  (\lean{EM/Population/ReciprocalSum.lean}{AlmostAllSquarefreeRSD}):
+  density~$1$ of squarefree~$n$ have divergent reciprocal sums.
+\end{itemize}
+
+\noindent
+The reciprocal sum is a natural proxy: if $\sum 1/\seq{n}(k)$
+diverges, then the primes appearing in the sequence from~$n$ cannot be
+confined to a thin set; although divergence alone does not formally
+imply~$\mathrm{GenMC}(n)$, it rules out the worst obstruction (a
+bounded sequence of captured primes).
+
+\paragraph{The one-hypothesis route: LMG.}
+The proved chain
+\archived{EM/Archive/Population/ReciprocalSumArchive.lean}{lmg\_implies\_positive\_density\_rsd}
+{\color{leanink}$\checkmark$} shows:
+\[
+  \mathrm{LMG} \;\Longrightarrow\; \mathrm{PositiveDensityRSD},
+\]
+where \textbf{LinearMeanGrowth}~(LMG) asks that
+$\mathbb{E}_n[S_K(n)] \geq \kappa K$ for some $\kappa > 0$ and all
+$K$ large enough (here $S_K(n) = \sum_{k<K} 1/\seq{n}(k)$ is the
+partial reciprocal sum, averaged over squarefree~$n$).
+LMG is a \emph{population-level} statement: it involves no specific
+orbit, bypassing the orbit-specificity barrier that obstructs CME\@.
+It is also strictly weaker than CME---it requires only that the
+ensemble mean grows linearly, not conditional equidistribution.
+
+With the additional hypothesis PairwiseStepDecorrelation~(PSD)---that
+$\operatorname{Cov}[1/\seq{n}(j),\, 1/\seq{n}(k)] \to 0$ for
+$j \neq k$---the stronger conclusion follows:
+$\mathrm{PSD} + \mathrm{LMG} \Rightarrow \mathrm{AlmostAllSquarefreeRSD}$
+(\archived{EM/Archive/Population/ReciprocalSumArchive.lean}{dead\_end\_125\_pairwise\_revival}
+{\color{leanink}$\checkmark$}).
+This is the revival of Dead End~\#125: pairwise cancellation does not
+imply $k$-wise cancellation, but variance bounds only use $k = 2$, so
+pairwise decorrelation is exactly enough.
+The bridges are all machine-verified:
+$\mathrm{IVB}(1/4)$ {\color{leanink}$\checkmark$},
+$\mathrm{PSD} + \mathrm{IVB} \Rightarrow$ variance bound
+{\color{leanink}$\checkmark$},
+Chebyshev concentration {\color{leanink}$\checkmark$}.
+
+\paragraph{The first moment, and a dead CRT route.}
+LMG follows from the open hypothesis
+\textbf{FirstMomentStep}~(FMS):
+$\mathbb{E}_n[1/\seq{n}(k)] \to \kappa$ as $X \to \infty$ for each~$k$
+(\lean{EM/Ensemble/FirstMoment.lean}{FirstMomentStep}).
+The CRT-propagation and backward-dynamics route to FMS---via
+CRTPropagationStep, EnsembleTransitionApprox, and Tao-style backward
+density decomposition---is dead: the absorption mechanism falsifies
+AccumulatorEquidistPropagation (Dead End~\#137), and the route is
+catalogued, with its machine-verified but now vacuous reductions, in
+Appendix~\ref{app:dead-ends}.
+
+\paragraph{The accumulator as a commutative state.}
+The EM accumulator $\Prod{n}(k) = \prod S_k$ is a squarefree integer
+determined by its prime set~$S_k$.  The dynamics
+$S \mapsto S \cup \{\minFac(\prod S + 1)\}$ is a well-defined map on
+the lattice of finite prime sets, and the walk mod~$q$ depends on~$S$
+only through $\prod S \bmod q$.  Two orbits from different starting
+points that ever reach the same product mod~$q$ have approximately
+identical future walks---the construction history is forgotten.
+
+This approximate Markov property, combined with the super-exponential
+growth $\Prod{n}(k) \geq 2^{2^k}$ (which makes CRT blindness
+increasingly accurate), suggests that the walk mod~$q$ is effectively
+ergodic from generic starting points.  Making this rigorous---showing
+that the CRT error is summable along the orbit---would give a.a.\
+$\mathrm{GenMC}$ for the standard sequence, without any modification
+of the selection rule.
+
+\paragraph{Comparison with the orbit hypothesis.}
+CME (Section~\ref{sec:ensemble}) is a statement about the single
+orbit $n = 2$.
+The ensemble route here proves a density result for \emph{almost all}
+starting points, contingent on CRTPropagationStep, which is a
+population-level hypothesis with no orbit-specificity.
+Neither subsumes the other: CME gives MC directly; CRTPropagationStep
+gives PositiveDensityRSD (which does not formally imply MC for $n = 2$).
+However, the ensemble route faces a structurally easier barrier, since
+its open hypothesis is a statement about averages, not about one
+specific orbit.
+
+\subsection{Weak Mullin and Analytic Weakenings}
+\label{sec:weak-mullin}
+
+The variants above change the \emph{selection rule}; this subsection
+changes the \emph{conclusion}.  Instead of proving that every prime
+appears ($M = \emptyset$), one can ask that the set of missing
+primes is small, or that the EM reciprocal sum diverges.
+
+\paragraph{Missing primes and Weak Mullin.}
+Define the set of \emph{missing primes}
+\[
+M = \{p \in \mathbb{P} : p \neq \seq{2}(k) \text{ for all } k\}.
+\]
+MC is the assertion $M = \emptyset$.  A natural weakening asks only that
+$M$ is \emph{small} in an analytic sense:
+
+\begin{property}[\defname{WeakMullin} (\abbr{WM})]
+\lean{EM/Population/WeakMullin.lean}{WeakMullin}
+The reciprocal sum over missing primes converges:
+$\sum_{q \in M} 1/q < \infty$.
+\end{property}
+
+This is strictly weaker than MC (which gives $M = \emptyset$ and hence
+a trivially convergent empty sum) but strong enough to have a nontrivial
+consequence:
+
+\begin{property}[\defname{ReciprocalDivergence} (\abbr{RD})]
+\lean{EM/Population/WeakMullin.lean}{ReciprocalDivergence}
+The reciprocal sum over EM primes diverges:
+$\sum_{k=0}^{\infty} 1/\seq{2}(k) = \infty$.
+\end{property}
+
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{mc\_implies\_wm}]
+$\MC \Longrightarrow \mathrm{WM}$.
+\end{theorem}
+
+\begin{theorem}[\lean{EM/Population/WeakMullin.lean}{wm\_implies\_rd}]
+\label{thm:wm-rd}
+$\mathrm{WM} \Longrightarrow \mathrm{RD}$.
+\end{theorem}
+
+\noindent
+The proof partitions $\mathbb{P} = A \cup M$ (appeared vs.\ missing),
+notes that both $\Sigma_A$ and $\Sigma_M$ converge under WM $+$ $\neg$RD,
+contradicting the divergence of $\sum_{p} 1/p$.
+
+\paragraph{Product divergence.}
+The negation of WM has a quantitative consequence: $\neg\mathrm{WM}$ gives
+$\sum_{q \in M} 1/(q{-}1) = \infty$, so the ``safe fraction'' product
+$\prod_{q \in F}(q{-}2)/(q{-}1) \leq e^{-\sum 1/(q-1)} \to 0$ and its
+reciprocal $\prod (q{-}1)/(q{-}2)$ exceeds any bound
+(\lean{EM/Population/WeakMullin.lean}{not\_wm\_product\_diverges}).
+The product $\prod (q{-}1)/(q{-}2)$ over missing primes measures the
+``confinement cost'': each missing prime~$q$ confines the walk to $q-2$
+of the $q-1$ units in $(\ZZ/q\ZZ)^\times$ (avoiding~$-1$).  If WM
+fails, this confinement cost is unbounded.
+
+\paragraph{Confined energy.}
+For a missing prime $q \geq 3$, the walk avoids $-1$ entirely, so the
+$N$ visits are distributed among only $q-2$ residues.  A pigeonhole
+argument gives a confined-energy lower bound
+(\lean{EM/Population/WeakMullin.lean}{per\_prime\_confined\_energy\_lb}):
+$N^2/(q{-}2) \leq (q{-}1)\sum_a V_N(a)^2$.
+The excess energy ratio $(q{-}1)/(q{-}2)$ compared to the
+equidistributed baseline $N^2/(q{-}1)$ is bounded away from~$1$.
+\defname{JointSVE}
+(\lean{EM/Population/WeakMullin.lean}{JointSVE})---joint subquadratic
+visit energy over any finite set of missing primes---implies MMCSB
+(\lean{EM/Population/WeakMullin.lean}{jointSVE\_implies\_mmcsb}),
+connecting the ``missing primes'' picture to the spectral route.
+
+\paragraph{Avoidance tube and tube collapse.}
+Define the \emph{tube ratio} for a finite set~$F$ of primes $\geq 3$:
+\[
+  \tau(F) \;=\; \prod_{q \in F} \frac{q-2}{q-1}.
+\]
+This measures the fraction of $(\ZZ/q\ZZ)^\times$ classes that a walk
+avoiding $-1$ at each~$q$ is allowed to visit.  The tube ratio is
+monotone decreasing in~$F$ and satisfies $0 \leq \tau(F) \leq 1$
+(\lean{EM/Population/AvoidanceTube.lean}{tubeRatio\_monotone}
+{\color{leanink}$\checkmark$},
+\lean{EM/Population/AvoidanceTube.lean}{tubeRatio\_le\_one}
+{\color{leanink}$\checkmark$}).
+
+\begin{theorem}[Tube collapse ---
+\lean{EM/Population/AvoidanceTube.lean}{tube\_collapse}
+{\color{leanink}$\checkmark$}]
+\label{thm:tube-collapse}
+$\neg\mathrm{WM} \;\Longrightarrow\;$ for every $\varepsilon > 0$, there
+exists a finite set~$F \subseteq M$ with $\tau(F) < \varepsilon$.
+\end{theorem}
+
+\noindent
+The proof uses the inequality
+$\tau(F) \leq \exp(-\sum_{q \in F} 1/(q{-}1))$
+together with the divergence of $\sum_{q \in M} 1/(q{-}1)$ under~$\neg$WM\@.
+For any unit~$a$ with $V_N(a) = 0$, the confined energy gives a rogue
+character:
+
+\begin{theorem}[Rogue character ---
+\lean{EM/Population/AvoidanceTube.lean}{rogue\_character\_exists}
+{\color{leanink}$\checkmark$}]
+\label{thm:rogue-character}
+If a unit $a \in (\ZZ/q\ZZ)^\times$ has $V_N(a) = 0$ (zero visits), then
+there exists a nontrivial character~$\chi$ with
+$\lVert S_\chi(N) \rVert^2 \geq N^2 / (q{-}2)^2$.
+In particular, $\lVert S_\chi(N) \rVert \geq N/(q{-}2)$: the
+character sum grows \emph{linearly}, contradicting SVE\@.
+\end{theorem}
+
+\begin{theorem}[SVE contradicts avoidance ---
+\lean{EM/Population/AvoidanceTube.lean}{sve\_contradicts\_avoidance}
+{\color{leanink}$\checkmark$}]
+\label{thm:sve-contradicts-avoidance}
+SVE $\;\Longrightarrow\;$ for all large~$N$, no unit $a$ can have
+$V_N(a) = 0$.
+\end{theorem}
+
+\paragraph{Shielding lemma and spectral conspiracy.}
+The \defname{shielding lemma} observes that $\seq{2}(n{+}1)$ is always
+a term of the sequence, hence never a missing prime:
+
+\begin{theorem}[Shielding lemma ---
+\lean{EM/Population/InfiniteM.lean}{shielding\_lemma}
+{\color{leanink}$\checkmark$}]
+\label{thm:shielding}
+For every~$n$, $\seq{2}(n{+}1) \notin M$.
+\end{theorem}
+
+\noindent
+When a missing prime~$q$ divides $\Prod{2}(n)+1$, some strictly smaller
+appeared prime shields~$q$ from capture
+(\lean{EM/Population/InfiniteM.lean}{factor\_dichotomy\_strong}
+{\color{leanink}$\checkmark$}).
+Under~$\neg$WM, this shielding mechanism creates a \emph{spectral conspiracy}:
+
+\begin{theorem}[Spectral conspiracy ---
+\lean{EM/Population/SpectralConspiracy.lean}{spectral\_conspiracy\_landscape}
+{\color{leanink}$\checkmark$}]
+\label{thm:spectral-conspiracy}
+$\neg\mathrm{WM}$ implies:
+\begin{enumerate}[nosep]
+\item $M$ is infinite
+  (\lean{EM/Population/SpectralConspiracy.lean}{not\_wm\_implies\_missing\_infinite}
+  {\color{leanink}$\checkmark$}).
+\item The joint excess energy $\sum_{q \in M} \log\frac{q-1}{q-2}$ diverges.
+\item For any finite ``guardian pool'' $G$ of appeared primes, the
+  demand $\sum_{q \in F} 1/(q{-}1)$ from a large enough subset
+  $F \subseteq M$ exceeds~$|G|$.
+\item Arbitrarily many missing primes exist, each witnessing a nontrivial
+  character with linear growth (Theorem~\textup{\ref{thm:rogue-character}}).
+\end{enumerate}
+\end{theorem}
+
+\noindent
+The guardian exhaustion clause~(3) formalizes the intuition that finitely
+many appeared primes cannot ``explain away'' the avoidance at infinitely
+many missing primes.  The three files
+\code{EM/Population/AvoidanceTube.lean} (516~lines),
+\code{EM/Population/InfiniteM.lean} (303~lines),
+\code{EM/Population/SpectralConspiracy.lean} (306~lines)
+total 1{,}125~lines, all zero~\code{sorry}.
+
+\paragraph{The shifted squarefree population.}
+The EM accumulator $\Prod{2}(n)$ is squarefree
+(\lean{EM/Population/WeakErgodicity.lean}{prod\_squarefree}),
+so every Euclid number $\Prod{2}(n)+1$ belongs to the shifted
+squarefree population
+$\mathcal{S} = \{m \geq 2 : m{-}1 \text{ squarefree}\}$
+(density $6/\pi^2$).  An earlier draft decomposed the orbit
+equidistribution problem accordingly into a \emph{population
+equidistribution} (PE: among $q$-rough elements of $\mathcal{S}$, the
+smallest prime factor is equidistributed modulo~$q$) and a
+\emph{population transfer} (PT: the EM trajectory samples
+$\mathcal{S}$ without mod-$q$ bias).  PE is false---the class
+densities are head-dominated convergent series (Dead End~\#160,
+\S\ref{sec:ant-def})---so the decomposition is retired; the
+population $\mathcal{S}$ itself remains the right ambient set for the
+ensemble arguments below.
+

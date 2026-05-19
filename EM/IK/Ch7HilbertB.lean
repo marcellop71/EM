@@ -136,7 +136,8 @@ theorem int_div_circular_sep {d : ℤ} {p : ℕ} (hp : 0 < p)
     by rw [sub_div, mul_div_cancel_right₀ _ hp_ne]]
   rw [abs_div, abs_of_pos hp_pos, le_div_iff₀ hp_pos, one_div_mul_cancel hp_ne]
   -- Goal: 1 ≤ |(↑d - ↑n * ↑p : ℝ)|
-  convert hone_le using 1; push_cast; ring
+  rw [show ((d : ℝ) - (n : ℝ) * (p : ℝ)) = ((d - n * (p : ℤ) : ℤ) : ℝ) from by push_cast; ring]
+  exact hone_le
 
 /-- **Phase-shifted l2 norm preservation**: `l2NormSq (fun r => b r * eAN(t * α r)) = l2NormSq b`
     because `‖eAN(x)‖ = 1`. -/

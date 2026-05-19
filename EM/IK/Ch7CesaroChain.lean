@@ -575,11 +575,11 @@ theorem cross_r_cesaro_convergence_proved : CrossRCesaroConvergence := by
   simp_rw [hCR_unfold]
 
   -- Target: ∑_{r≠s} (2K+1)⁻¹ • D(r,s,K) → ↑π * G
-  -- Apply tendsto_finset_sum after distributing π into the sums
+  -- Apply tendsto_finsetSum after distributing π into the sums
   simp only [G, Finset.mul_sum]
-  apply tendsto_finset_sum
+  apply tendsto_finsetSum
   intro r _
-  apply tendsto_finset_sum
+  apply tendsto_finsetSum
   intro s hs
   simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hs
   -- Need: (2K+1)⁻¹ • D(r,s,K) → ↑π * c_r conj(c_s) / sin(π(α_r - α_s))
@@ -994,7 +994,6 @@ theorem gram_offdiag_circular_implies_als_circular
     rw [Finset.mul_sum]
     congr 1; ext n
     simp only [hx_def]
-    rw [eAN_eq_root_eAN, eAN_eq_root_eAN]
     change b r * _root_.eAN (α r * ↑↑n) * (starRingEnd ℂ (b s) * starRingEnd ℂ (_root_.eAN (α s * ↑↑n))) =
         b r * starRingEnd ℂ (b s) * _root_.eAN (↑↑n * (α r - α s))
     rw [conj_eAN]

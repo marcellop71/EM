@@ -9,9 +9,10 @@ Mullin Conjecture via **EMPointwiseRecurrence** — the hypothesis that the EM w
 satisfies pointwise recurrence (at each infinitely-visited unit, every multiplier
 residue that generates the group is used infinitely often as the schedule).
 
-Unlike the earlier `FairnessHypothesis` (which was probably false due to the
-counterexample in Z/6Z with a fair but non-mixing schedule), `EMPointwiseRecurrence`
-is the correct hypothesis: it IS sufficient for mixing, via `scheduled_walk_covers_all`.
+Unlike a naive global fairness hypothesis (never formalized here, and probably
+false due to the counterexample in Z/6Z with a fair but non-mixing schedule),
+`EMPointwiseRecurrence` is the correct hypothesis: it IS sufficient for mixing,
+via `scheduled_walk_covers_all`.
 
 ## Main Results
 
@@ -65,7 +66,7 @@ def EMPointwiseRecurrence : Prop :=
     often, via the scheduled walk coverage theorem. **No sorry.** -/
 theorem empr_implies_mixing (hempr : EMPointwiseRecurrence) : MixingHypothesis := by
   intro q inst hq hne hfull N
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Apply scheduled walk coverage (Set.range matches definitionally)
   have hcovers := scheduled_walk_covers_all
     (emWalkUnit q hq hne) (emMultUnit q hq hne)

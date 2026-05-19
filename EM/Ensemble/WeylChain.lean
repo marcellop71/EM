@@ -25,8 +25,8 @@ JSE → MC chain via the Weyl test function argument.
 * `jse_transfer_implies_mc`          -- JSE + MultCancelToWalkCancel → MC (PROVED)
 
 ### Open Hypotheses (in other files)
-* `JointStepEquidist` (EnsemblePT.lean)
-* `MultCancelToWalkCancel` (EnsembleDecorrelation.lean)
+* `JointStepEquidist` (EM/Ensemble/PT.lean)
+* `MultCancelToWalkCancel` (EM/Ensemble/Decorrelation.lean)
 -/
 
 noncomputable section
@@ -482,7 +482,7 @@ private theorem weylTestFn_bound (q : Nat) (hq2 : 2 ≤ q) (a : Nat) :
     Sum = 0 (at val=0) + (q-2)/(q-1) (at val=q-1) + (q-2)*(-1/(q-1)) (rest) = 0. -/
 private theorem weylTestFn_sum_zero (q : Nat) (hq : Nat.Prime q) :
     (letI : NeZero q := ⟨hq.ne_zero⟩; ∑ a : ZMod q, weylTestFn q (ZMod.val a) = 0) := by
-  letI : NeZero q := ⟨hq.ne_zero⟩
+  let : NeZero q := ⟨hq.ne_zero⟩
   have hq2 := hq.two_le
   have hval_mod : ∀ a : ZMod q, ZMod.val a % q = ZMod.val a :=
     fun a => Nat.mod_eq_of_lt (ZMod.val_lt a)

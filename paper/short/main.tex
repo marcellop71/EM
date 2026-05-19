@@ -1,0 +1,671 @@
+\documentclass[10pt,a4paper]{article}
+\input{../preamble.tex}
+\input{../codebase_stats.tex}
+\input{../dead_ends_stats.tex}
+\providecommand{\CME}{\mathrm{CME}}
+\providecommand{\CCSB}{\mathrm{CCSB}}
+\newcommand{\lpf}{\operatorname{lpf}}
+\newcommand{\gpf}{\operatorname{gpf}}
+\newcommand{\RD}{\mathrm{RD}}
+\newcommand{\SHH}{\mathrm{SHH}}
+\newcommand{\Cinf}{(\mathrm{C}\infty)}
+
+\title{The Euclid--Mullin sequence as an orbit:\\
+reformulations, a composite floor, and population laws\\
+{\large (with a Lean~4 formalization)}}
+\author{Marcello Paris}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Euclid--Mullin sequence is $a(0)=2$, $a(n{+}1)=\lpf(a(0)\cdots a(n)+1)$,
+$\lpf$ the least prime factor; Mullin's conjecture (MC, 1963) says every
+prime appears.  The running product $P_n=a(0)\cdots a(n)$ evolves by the \emph{Euclid step}
+$T(n)=n\cdot\lpf(n{+}1)$ on squarefree integers (multiply the bag of primes
+collected so far by the least prime factor of the product plus one), so
+the sequence is the orbit of~$2$ under~$T$ and MC asks whether that orbit
+meets every prime.  We record what is provable about one orbit of~$T$, all of it
+machine-checked in Lean~4 over Mathlib.  (i)~\emph{Reformulations.}
+Modulo a prime~$q$ the orbit is a multiplicative walk; $q$ appears iff the
+walk hits~$-1$ at the right stage, and MC is equivalent to each of several
+walk statements---cofinal hitting, character-sum cancellation, and
+\emph{conditional multiplier equidistribution} (CME).  These are
+equivalences, not reductions: each is quantified over missing primes and
+MC makes that quantifier empty; their content is the direction that turns
+a hitting problem into an equidistribution problem.  (ii)~\emph{The
+composite floor.}  $C=\lim\log(a(0)\cdots a(N))/2^{N}$ exists, is a
+semiconjugacy $C(Tm)=2C(m)$, and vanishes iff infinitely many Euclid
+numbers are composite~$\Cinf$; MC implies $\Cinf$, and $\Cinf$ says
+exactly that the sequence is not eventually a Sylvester-type tower of
+primes---an open, Fermat-shaped statement.  A second, unscaled invariant
+$\rho$ (relative size of the multiplier) satisfies $\rho\in[0,\tfrac12]\cup\{1\}$
+and inserts the rung $\mathrm{MC}\Rightarrow\mathrm{RD}\Rightarrow\rho=0\Rightarrow\Cinf$.
+(iii)~\emph{Population laws.}  The density of $\{m:\lpf m=p\}$ is
+$w_p=p^{-1}\prod_{r<p}(1-1/r)$, the $w_p$ telescope, and the class of
+$\lpf\bmod q$ among $q$-rough integers has the \emph{convergent} density
+$\sum_{p\equiv a}w_p$; so fixed-modulus equidistribution of the least
+prime factor is equivalent to a family of series identities that
+Dirichlet's theorem does not touch and that fails by head domination.  On
+the progression $m\equiv1\pmod P$ that contains the Euclid numbers, the
+least prime outside the bag is selected with relative density exactly
+$1/q$---Shanks' heuristic made precise.  For each prime~$q$, almost every
+squarefree seed reaches~$q$ somewhere in its factor tree, unconditionally.
+Karamata's Tauberian theorem and Mertens' theorem in progressions are
+formalized along the way.  (iv)~\emph{Min versus max.}  Cox--van der
+Poorten's omission of~$5$ for the largest-prime-factor variant is
+machine-checked; under $\lpf$ capture is a residue-class condition, so no
+propagating congruence invariant can block a prime.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Euclid's proof that there are infinitely many primes takes a finite set of
+primes and factors the product plus one.  Mullin~\cite{Mullin1963} made
+the choice canonical: always take the \emph{smallest} prime factor.
+\begin{equation}\label{eq:em}
+  a(0)=2, \qquad a(n{+}1)=\lpf\bigl(a(0)a(1)\cdots a(n)+1\bigr).
+\end{equation}
+The first terms are $2,3,7,43,13,53,5,6221671,38709183810571,139,2801,11,
+17,5471,\dots$; only 51 terms are known, and small primes such as $41$ and
+$47$ have not yet been seen.  Every prime appears at most once, since a
+prime dividing $a(0)\cdots a(n)$ cannot divide $a(0)\cdots a(n)+1$.
+
+\begin{conjecture}[Mullin 1963]\label{conj:mc}
+Every prime appears in~\eqref{eq:em}.
+\end{conjecture}
+
+Write $P_n=a(0)\cdots a(n)$ for the running product.  It records the
+whole history---the set of primes collected so far, of which it is the
+product---and one step of~\eqref{eq:em} multiplies it by the least prime
+factor of $P_n+1$.  So $P_n$ evolves by a map that depends only on its
+current value, the \emph{Euclid step}
+\[
+  T(n)=n\cdot\lpf(n{+}1),\qquad P_{n+1}=T(P_n),\qquad P_n=T^{n}(2),
+\]
+defined on the squarefree integers: if $n$ is squarefree then $\lpf(n{+}1)$
+is a prime not dividing~$n$, so $T(n)$ is squarefree with one more prime
+factor and $T(n)\ge2n$.  A squarefree integer \emph{is} a finite set of
+primes, and $T$ is Euclid's construction with Mullin's choice, iterated;
+$a(n{+}1)=T(P_n)/P_n$ is the prime appended at step~$n$.  Mullin's
+conjecture (MC) asks whether one orbit of~$T$---the orbit of~$2$---meets
+every prime.  Shanks~\cite{Shanks1991} observed
+that modulo a prime~$q$ the orbit is a multiplicative walk on
+$(\ZZ/q\ZZ)^\times$ and argued heuristically that a pseudo-random walk
+must hit $-1$, after which $q$ is a candidate for selection.  For the
+variant that takes the \emph{largest} prime factor, Cox and van der
+Poorten~\cite{CoxVdP1968} proved that $5,11,13,\dots$ are omitted and
+conjectured that infinitely many primes are; Booker~\cite{Booker2012}
+proved the infinitude (an elementary proof is in
+Pollack--Trevi\~no~\cite{PollackTrevino2014}).  Nothing comparable is known
+for the least-prime-factor rule, and MC is open.
+
+This paper does not make progress on MC.  It records, with machine-checked
+proofs, what one can say about the orbit of~$2$ from the structure of~$T$,
+organised in four groups.
+
+\paragraph{Reformulations (\S\ref{sec:walk}).}  Modulo~$q$ the walk
+$w_q(n)=P_n\bmod q$ satisfies $w_q(n{+}1)=w_q(n)\,m_q(n)$ with multiplier
+$m_q(n)=a(n{+}1)\bmod q$, and $q\mid P_n+1$ iff $w_q(n)=-1$.  The
+algebraic precondition---that the multipliers generate the group---is
+free.  MC is then equivalent to each of: cofinal hitting of~$-1$; a
+single hit past the sieve gap; $o(N)$ walk character sums (CCSB);
+\emph{conditional multiplier equidistribution} (CME): along the orbit,
+for a missing~$q$, the multiplier residues are equidistributed on each
+fibre of the walk position.  All directions are machine-checked.  We
+insist on the word \emph{equivalent}: every one of these statements is
+quantified over primes that never appear, so MC implies it vacuously.
+The chain $\CME\Rightarrow\CCSB\Rightarrow\mathrm{MC}$ therefore reduces
+MC to nothing weaker; its content is the direction that turns a hitting
+problem into an equidistribution problem, the shape analytic number
+theory knows how to attack.
+
+\paragraph{The composite floor (\S\ref{sec:floor}).}  The limit
+$C=\lim_N \log P_N/2^{N}$ exists (a doubly-exponential-recurrence fact of
+Aho--Sloane type~\cite{AhoSloane1973}, here made exact by a defect
+telescope), and $C=0$ iff infinitely many Euclid numbers $P_n+1$ are
+composite~$\Cinf$.  On the complementary branch---all $P_n+1$ prime from
+some stage on---the recursion closes into $P_{n+1}=P_n(P_n+1)$, Sylvester's
+sequence started at $P_N$, and the walk mod~$q$ becomes the autonomous
+map $w\mapsto w^2+w$, which never reaches~$-1$ when $q\equiv2\pmod3$; so
+MC implies $\Cinf$, i.e.\ MC implies that a doubly exponential
+Sylvester-type sequence is not all prime---an open statement of the same
+shape as ``infinitely many Fermat numbers are composite''.  Weak forms of
+MC (reciprocal divergence RD, and a smallness statement (S)) bottom out at
+$\Cinf$ as well; a second, unscaled invariant $\rho$ refines the ladder.
+
+\paragraph{Population laws (\S\ref{sec:population}).}  The density of
+$\{m:\lpf m=p\}$ is $w_p=p^{-1}\prod_{r<p}(1-1/r)=c(p)-c(p{+}1)$, so among
+$q$-rough integers the class $\lpf\equiv a\pmod q$ has density
+$\sum_{p\equiv a}w_p$: a convergent series dominated by its first terms.
+Fixed-modulus equidistribution of the least prime factor---an assumption
+that a previous version of this project placed beneath CME---is therefore
+equivalent to a family of identities that Dirichlet's theorem does not
+touch, and it is false.  What is true is the \emph{bag-conditioned} law:
+on the progression $m\equiv1\pmod P$ that contains every Euclid number
+with accumulator~$P$, the least prime outside the bag has relative density
+exactly $1/q$.  Unconditionally, for each prime~$q$ almost every squarefree
+seed reaches~$q$ somewhere in its factor tree; the analytic input,
+$\sum_{p\equiv a}1/p=\infty$, is itself machine-checked from Mathlib's
+$L(1,\chi)\ne0$, and Karamata's Tauberian theorem gives Mertens' theorem in
+progressions.
+
+\paragraph{Min versus max (\S\ref{sec:minmax}).}  Cox--van der Poorten's
+omission of~$5$ for the largest-factor variant is machine-checked (a
+mod-$12$ argument).  For the least-factor rule, capture $\lpf N=q$ is a
+residue-class condition on~$N$, so by Dirichlet and CRT no propagating
+congruence invariant---fixed or growing modulus---can block a missing
+prime.  This separates the two sequences at the level of congruence
+obstructions; it says nothing about their truth values.
+
+\paragraph{The formalization (\S\ref{sec:lean}).}  Everything above is
+proved in Lean~4 over Mathlib (\EMFileCount~files, $\EMLineCount$~lines,
+no \code{sorry}, no \code{native\_decide}, standard axioms only).  Each
+theorem carries a link {\color{leanink}\sffamily\footnotesize$\checkmark$}
+to the checked declaration; the statements printed here are the ones
+checked.  A companion technical report (the repository's long paper)
+covers the variants, the spectral routes, a catalogue of \DEentries~dead
+ends, and the methodology.
+
+\section{The residue walk and the equivalences}
+\label{sec:walk}
+
+\subsection{The walk}
+
+Fix a prime~$q$.  Set $w_q(n)=P_n\bmod q$ and $m_q(n)=a(n{+}1)\bmod q$, so
+that $w_q(n{+}1)=w_q(n)\,m_q(n)$.
+
+\begin{proposition}[Walk--divisibility bridge;
+\lean{EM/Group/Core.lean}{walkZ\_eq\_neg\_one\_iff}]
+$w_q(n)=-1$ iff $q\mid P_n+1$.
+\end{proposition}
+
+Consequently $q$ appears at stage $n{+}1$ iff $q\mid P_n+1$ and no prime
+below~$q$ divides $P_n+1$; once $q$ has appeared, $w_q\equiv0$ forever.  If
+$q$ never appears, $w_q(n)$ and $m_q(n)$ are units for all~$n$
+(\lean{EM/Core/Conjectures.lean}{prime\_not\_in\_seq\_not\_dvd\_prod}).
+
+\begin{theorem}[Generation is free;
+\lean{EM/Equidist/Bootstrap.lean}{prime\_residue\_escape}]
+For every prime~$q$, the residues of the primes below~$q$ generate
+$(\ZZ/q\ZZ)^\times$.  Hence, along an inductive proof of MC in which all
+primes below~$q$ have already appeared, the multipliers $m_q(n)$ generate
+the group.
+\end{theorem}
+
+\begin{theorem}[Single hit;
+\lean{EM/Equidist/Bootstrap.lean}{single\_hit\_implies\_mc}]
+Suppose that for every prime~$q$ that never appears, if all primes below
+$q$ appear and the multipliers generate $(\ZZ/q\ZZ)^\times$, then
+$q\mid P_n+1$ for some~$n$ past the stage where all primes below~$q$ have
+appeared.  Then MC holds.
+\end{theorem}
+
+The proof is strong induction on~$q$: past the sieve gap no prime below
+$q$ can divide $P_n+1$, so a single hit gives $a(n{+}1)=q$.
+
+\subsection{Character sums and conditional equidistribution}
+
+For a nontrivial character $\chi$ of $(\ZZ/q\ZZ)^\times$ and a missing~$q$,
+write $S_\chi(N)=\sum_{n<N}\chi(w_q(n))$.
+
+\begin{definition}
+\begin{itemize}[nosep]
+\item \defname{ComplexCharSumBound} (CCSB): for every missing prime~$q$ and
+every nontrivial~$\chi$, $S_\chi(N)=o(N)$
+(\lean{EM/Equidist/FourierB.lean}{ComplexCharSumBound}).
+\item \defname{ConditionalMultiplierEquidist} (CME): for every missing
+prime~$q$, every nontrivial~$\chi$ and every position $c\in(\ZZ/q\ZZ)^\times$,
+\[
+  \sum_{\substack{n<N\\ w_q(n)=c}}\chi\bigl(m_q(n)\bigr)=o(N)
+\]
+(\lean{EM/CME/Reduction.lean}{ConditionalMultiplierEquidist}).
+\end{itemize}
+\end{definition}
+
+The fibre sums are normalised by~$N$, not by the fibre count, so
+zero-density fibres satisfy CME automatically and on positive-density
+fibres CME says the multiplier is $\chi$-equidistributed.
+
+\begin{theorem}[\lean{EM/CME/Reduction.lean}{cme\_implies\_ccsb},
+\lean{EM/Equidist/SelfCorrecting.lean}{complex\_csb\_mc'},
+\lean{EM/CME/Reduction.lean}{cme\_implies\_mc}]
+$\CME\Rightarrow\CCSB\Rightarrow\mathrm{MC}$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+Telescoping, $\chi(w(n{+}1))=\chi(w(n))\chi(m(n))$, gives
+$S_\chi(N)=\sum_{n<N}\chi(w(n))\chi(m(n))+O(1)=\sum_c\chi(c)\sum_{w(n)=c}\chi(m(n))+O(1)$,
+so CME gives CCSB.  Fourier inversion on $(\ZZ/q\ZZ)^\times$ turns CCSB into
+a lower bound $\#\{n<N:w_q(n)=-1\}\ge N/(q-1)-o(N)$
+(\lean{EM/Equidist/FourierB.lean}{walk\_hit\_count\_fourier\_step}), i.e.\
+cofinal hitting, and the single-hit theorem finishes.
+\end{proof}
+
+\begin{theorem}[The walk layer is a set of reformulations;
+\lean{EM/CME/Equivalences.lean}{walk\_layer\_equivalences}]
+Each of the following is equivalent to MC: cofinal hitting for every
+missing prime (HH); the same conditioned on generation (DH); the
+single-hit hypothesis (SHH); walk equidistribution; CME; CCSB; the
+one-horizon window gain.  Threshold forms (multi-modular CCSB,
+subquadratic visit energy, visit equidistribution, self-correcting drift,
+decorrelation) are implied by MC.
+\end{theorem}
+
+\begin{proof}
+Each statement is of the form ``for every prime~$q$ that never appears,
+$\Phi(q)$''.  Under MC no prime never appears, so each holds vacuously;
+the converses are the theorems above.
+\end{proof}
+
+We state this because earlier drafts of this project called CME ``the
+sharpest sufficient condition known'' and treated CME, CCSB, DH as
+strictly ordered; as global propositions they are one proposition.  The
+hierarchy is one of proof obligations \emph{at a fixed missing~$q$}: CME
+asks less per prime than CCSB (a conditional statement about the
+multiplier rather than a bound on the walk sum), and CME $\Rightarrow$ MC
+even has a two-line proof---on a fibre~$c$ visited $\ge N/(q-1)$ times the
+class $-c^{-1}$ has zero mass if $q$ never appears, so some $\chi$ has fibre
+sum of size $\ge N/(q-1)^2$.  A hypothesis with content independent of MC
+would have to speak about the residues of $a(n)$ \emph{without}
+conditioning on missingness, uniformly in~$q$; the population layer that
+tried to supply one is discussed, and refuted, in \S\ref{sec:headdom}.
+
+\subsection{Two illustrations in $(\ZZ/5\ZZ)^\times$}
+
+Two periodic multiplier sequences $A=(2,2,3,3)^\infty$ and
+$B=(2,3,2,3)^\infty$ in $(\ZZ/5\ZZ)^\times$ have identical multiplier
+frequencies in every window of four steps; the walk of $A$ from~$1$ is
+$1,2,4,2,1,\dots$ and hits $-1=4$, the walk of $B$ is $1,2,1,2,\dots$ and
+never does
+(\lean{EM/Meta/OrbitBarrier.lean}{population\_does\_not\_determine\_hitting}).
+With $\chi(2)=i$, the multiplier sums of $B$ are bounded while
+$|S_\chi(N)|=\Theta(N)$
+(\lean{EM/Meta/OrbitBarrier.lean}{mult\_cancel\_not\_walk\_cancel}).  These
+are elementary facts about ordering---first-order multiplier statistics do
+not determine a walk, and cancellation of multiplier sums does not force
+cancellation of walk sums---and they are exactly why every statement in
+this section is conditional on the walk position.  We do not claim more
+for them.
+
+\section{The composite floor}
+\label{sec:floor}
+
+\subsection{The growth constant and the defect telescope}
+
+Let $L(n)=\log P_n$ and $\delta(n)=L(n)-\log a(n{+}1)$, the amount by which
+the selected prime falls short of the maximal choice $P_n$; then
+$L(n{+}1)=2L(n)-\delta(n)$
+(\lean{EM/Population/DefectTelescope.lean}{logProd\_succ\_eq\_two\_mul\_sub\_defect}).
+If $P_n+1$ is prime the multiplier is $P_n+1$ and $\delta(n)\le0$; if it is
+composite, $\lpf(P_n+1)^2\le P_n+1$ and $\delta(n)\ge\tfrac12L(n)-o(1)$
+(\lean{EM/Population/DefectTelescope.lean}{defect\_gap}).
+
+\begin{theorem}[\lean{EM/Population/DefectTelescope.lean}{tendsto\_normLog},
+\lean{EM/Population/DefectTelescope.lean}{infinitelyManyComposite\_iff\_growthConstant\_eq\_zero},
+\lean{EM/Population/DefectTelescope.lean}{growthConstant\_pos\_iff\_perpetualPrimality}]
+$C:=\lim_{N}L(N)/2^{N}$ exists and is $\ge0$.  Moreover $C=0$ iff
+infinitely many Euclid numbers $P_n+1$ are composite $\Cinf$, and $C>0$ iff
+$P_n+1$ is prime for all large~$n$.  Quantitatively,
+$L(N)\le(\log2+\tfrac13)(\tfrac34)^{\#\{n<N:\,P_n+1\text{ composite}\}}2^{N}$
+(\lean{EM/Population/DefectTelescope.lean}{logProd\_le\_pow\_mul}).
+\end{theorem}
+
+\begin{proof}[Sketch]
+Iterating the telescope, $L(N)/2^{N}=L(0)-\sum_{n<N}2^{-(n+1)}\delta(n)$.
+The negative part of $\delta$ is summable after weighting: at a prime stage
+$-\delta(n)=\log(1+1/P_n)\le1/P_n\le4^{-n}$, so $L(N)/2^{N}+\tfrac13 4^{-N}$
+is antitone and bounded below by~$0$, hence converges; this is the
+Aho--Sloane argument~\cite{AhoSloane1973} with the error made explicit.
+At a composite stage $\delta(n)\ge\tfrac12L(n)-o(1)$, so
+$L(n{+}1)\le\tfrac32L(n)+o(1)$, i.e.\ each composite stage multiplies the
+normalised quantity by $\tfrac34$ up to a summable error, giving the
+displayed bound and $C=0$ under $\Cinf$; conversely if only finitely many
+stages are composite then $\delta(n)\le0$ eventually and $L(N)/2^{N}$ is
+eventually nondecreasing and positive.
+\end{proof}  Nothing here uses the
+seed: for every $m\ge2$ the same $C(m)$ exists along the orbit of~$m$, and
+the tail identity makes it a semiconjugacy to doubling,
+$C(Tm)=2C(m)$ (\lean{EM/Population/SeededGrowth.lean}{sgrowth\_T}); the
+statement ``$\Cinf$ from every seed'' is exactly $\{C>0\}=\emptyset$
+(\lean{EM/Population/SeededGrowth.lean}{mixedDiversity\_iff\_sgrowth\_zero}),
+and for every fixed threshold~$N$ the seeds whose orbit is a tower of
+primes from stage~$N$ on form a set of density zero
+(\lean{EM/Population/GrowthDensity.lean}{hasDensityZero\_perpetual}; primes
+have density zero by the elementary sieve, no prime number theorem is
+used).  We do \emph{not} claim that $\{C>0\}$ itself is null: natural
+density is not countably subadditive.
+
+\subsection{Sylvester towers, and MC $\Rightarrow\Cinf$}
+
+On the branch $C>0$ we have $a(n{+}1)=P_n+1$ for $n\ge N$, hence
+$P_{n+1}=P_n(P_n+1)$: the sequence $P_N,P_{N+1},\dots$ is Sylvester's
+recursion $s_{k+1}=s_k^2+s_k$ started at $P_N$, and $\Cinf$ says exactly
+that no such tower of Euclid numbers is all prime
+(\lean{EM/Population/SylvesterTower.lean}{infinitelyManyComposite\_iff\_tower\_composite}).
+On that branch the walk mod~$q$ is autonomous, $w\mapsto w^2+w$
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_walkZ\_eq\_ffAutonomousMap}),
+and reaches $-1$ only through a root of $w^2+w+1$, which exists in $\FF_q$
+only for $q\equiv1\pmod3$ (and $q=3$).
+
+\begin{theorem}[\lean{EM/Population/AutonomousBranch.lean}{eventually\_prime\_implies\_not\_mullin},
+\lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_mullin}]
+If $P_n+1$ is prime for all large~$n$ then every prime $q\equiv2\pmod3$ is
+missing.  Hence $\mathrm{MC}\Rightarrow\Cinf$.
+\end{theorem}
+
+Thus MC implies that a doubly exponential Sylvester-type sequence
+contains infinitely many composites---a statement of the same shape as
+``infinitely many Fermat numbers $2^{2^n}+1$ are composite'', which is
+open; whether Sylvester's own sequence contains infinitely many primes is
+open as well~\cite{Vardi1991}, though the primes dividing it have density
+zero~\cite{Odoni1985}.  We draw the modest conclusion: any proof of MC
+must, along the way, rule out a Sylvester-type prime tower.  Every
+conjecture is at least as hard as its open consequences, so this is a
+statement of shape, not a lower bound on difficulty in any technical
+sense.
+
+\subsection{Weak forms and the invariant $\rho$}
+
+Let RD be $\sum_k1/a(k)=\infty$ and (S) the statement that
+$\lpf(P_n+1)<2^{n-c}$ for infinitely many~$n$, for every~$c$.  Then
+$\mathrm{MC}\Rightarrow\RD\Rightarrow(\mathrm S)\Rightarrow\Cinf$, all
+implications proved
+(\lean{EM/Population/WeakMullin.lean}{mc\_implies\_rd},
+\lean{EM/Population/CompositeFloor.lean}{exists\_small\_minFac\_of\_reciprocalDivergence}).
+The invariant that is \emph{not} scaled by $T$ is
+\[
+  \rho(m)=\liminf_{n}\frac{\log\lpf(T^{n}m+1)}{\log T^{n}m},
+  \qquad \rho(Tm)=\rho(m)
+\]
+(\lean{EM/Population/RelativeSize.lean}{rho\_T}).
+
+\begin{theorem}[\lean{EM/Population/RelativeSize.lean}{rho\_dichotomy},
+\lean{EM/Population/RelativeSize.lean}{rho\_two\_eq\_zero\_of\_rd},
+\lean{EM/Population/RelativeSize.lean}{rho\_two\_le\_half\_iff}]
+For every seed, $\rho\in[0,\tfrac12]\cup\{1\}$, with $\rho=1$ iff $C>0$
+and $\rho\le\tfrac12$ iff $C=0$.  For the orbit of~$2$:
+$\mathrm{MC}\Rightarrow\RD\Rightarrow\rho(2)=0\Rightarrow\rho(2)\le\tfrac12
+\Leftrightarrow\Cinf$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+At a prime stage the multiplier is $P+1$, so the ratio is $1+O(1/P)$; at a
+composite stage $\lpf(P+1)^2\le P+1$, so the ratio is $\le\tfrac12+O(1/P)$;
+this gives the dichotomy and both equivalences.  If $\rho>\varepsilon>0$
+then eventually $\lpf(T^{n}m+1)\ge(T^{n}m)^{\varepsilon}\ge2^{\varepsilon n}$ and
+$\sum1/\lpf(T^{n}m+1)$ converges, so RD forces $\rho=0$.
+\end{proof}
+
+Whether $\rho(2)=0$ is strictly between RD and $\Cinf$ is open; formal
+profiles show neither implication reverses for arbitrary prime sequences,
+and separating them for genuine orbits is an anatomy question of the same
+kind as $\Cinf$.  Along the orbit the growth coordinate and the walk
+coordinate are coupled through one bit only: at a prime stage the residue
+is forced ($m_q(n)=w_q(n)+1$), and at a composite stage every walk position
+$w\ne-1$, residue~$a$ and size bound~$K$ are realised together by some
+squarefree seed
+(\lean{EM/Population/SizeResidueDecoupling.lean}{exists\_seed\_composite\_residue\_size}).
+This is why the growth projection carries the floor and nothing above it.
+
+\section{Population laws}
+\label{sec:population}
+
+\subsection{Head domination}
+\label{sec:headdom}
+
+For a prime~$p$ let $N_p=\prod_{r<p}r$ and $c(n)=\prod_{r<n,\ r\text{ prime}}(1-1/r)$.
+
+\begin{theorem}[\lean{EM/Population/HeadDomination.lean}{card\_minFac\_eq\_ge},
+\lean{EM/Population/HeadDomination.lean}{card\_minFac\_eq\_le},
+\lean{EM/Population/HeadDomination.lean}{w\_eq\_cfun\_sub},
+\lean{EM/Population/HeadDomination.lean}{hasSum\_wq}]
+$\lfloor X/(pN_p)\rfloor\varphi(N_p)\le\#\{m\le X:\lpf m=p\}\le
+(\lfloor X/(pN_p)\rfloor+1)\varphi(N_p)$, so $\{m:\lpf m=p\}$ has density
+$w_p=c(p)/p=c(p)-c(p{+}1)$, and $\sum_{p>q}w_p=c(q{+}1)$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+$\lpf m=p$ iff $p\mid m$ and $\gcd(m,N_p)=1$; the first condition is one
+class mod~$p$, the second is $\varphi(N_p)$ classes mod~$N_p$, and
+$\gcd(p,N_p)=1$, so the set is a union of $\varphi(N_p)$ classes mod
+$pN_p$; counting classes in blocks gives the two bounds.  The telescoping
+$c(p)/p=c(p)-c(p{+}1)$ is $c(p{+}1)=c(p)(1-1/p)$, and $c(n)\to0$ because
+$\sum_p1/p=\infty$; hence $\sum_{p>q}w_p=c(q{+}1)$.
+\end{proof}
+
+\begin{corollary}[\lean{EM/Population/HeadDomination.lean}{tendsto\_classCount\_div},
+\lean{EM/Population/HeadDomination.lean}{roughLPFEquidist\_iff}]
+Among $q$-rough integers ($\lpf m>q$) the class $\lpf m\equiv a\pmod q$ has
+density $\sum_{p\equiv a\,(q)}w_p$.  Hence ``$\lpf\bmod q$ is equidistributed
+among the coprime classes of $q$-rough integers'' is equivalent to
+$\sum_{p\equiv a}w_p=c(q{+}1)/(q-1)$ for every unit class~$a$.
+\end{corollary}
+
+These identities are false: the series is dominated by its first terms,
+the class of the least prime $p_0>q$ receives more than its share (about
+twice, for large~$q$), and Dirichlet's theorem, which controls the
+massless tail, cannot restore the balance
+(\lean{EM/Population/HeadDomination.lean}{not\_roughLPFEquidist\_of\_head}
+is the finite-head criterion).  We state the falsity as a fact about the
+identities and, by a standing rule of this project, do not include a
+numerical certificate for a specific~$q$; the shifted version (Euclid
+numbers) and its uniform-conductor version fail identically, and the
+statement over all integers is refuted outright
+(\lean{EM/Equidist/SieveTransfer.lean}{not\_genericLPFEquidist}: $\lpf n\equiv1
+\pmod3$ forces $\gcd(n,6)=1$).  A previous version of this project placed
+such an equidistribution statement beneath CME, attributing it to Alladi;
+Alladi's theorem~\cite{Alladi1977} is the M\"obius-weighted duality
+$-\sum_{n\le x,\,\lpf n\equiv a}\mu(n)\sim x/\varphi(q)$, which is a
+different statement.
+
+\subsection{The bag-conditioned law}
+
+Every Euclid number $P_n+1$ lies in the progression $1\pmod{P_n}$, and its
+least prime factor is a prime outside the bag.
+
+\begin{theorem}[\lean{EM/Population/BagConditionedLaw.lean}{tendsto\_bagClass\_div\_ap},
+\lean{EM/Population/BagConditionedLaw.lean}{bagWeight\_least\_missing}]
+For $P\ge1$ and a prime $p\nmid P$,
+\[
+  \lim_{X\to\infty}\frac{\#\{m\le X:\ m\equiv1\ (P),\ \lpf m=p\}}
+  {\#\{m\le X:\ m\equiv1\ (P)\}}
+  =\frac1p\prod_{r<p,\ r\nmid P}\Bigl(1-\frac1r\Bigr).
+\]
+In particular, if $q$ is the least prime not dividing~$P$, the relative
+density of $\{\lpf m=q\}$ on the progression is exactly $1/q$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+For $m\equiv1\pmod P$ every prime dividing $P$ is prime to~$m$, so
+$\lpf m=p$ iff $p\mid m$ and $\gcd(m,N')=1$ with
+$N'=\prod_{r<p,\ r\nmid P}r$.  The conditions $m\equiv1\ (P)$ and
+$m\equiv0\ (p)$ combine by CRT into one class $c_0$ mod $pP$, and along the
+progression $m=c_0+pP\,t$ the coprimality to $N'$ holds for exactly
+$\varphi(N')$ values of $t$ in each block of $N'$ consecutive integers,
+because $t\mapsto(pP\,t+c_0)\bmod N'$ is a bijection of $\ZZ/N'$
+(\lean{EM/ForMathlib/CoprimeAffineBlock.lean}{card\_coprime\_affine\_block}).
+Divide by the count $\sim X/P$ of the progression.
+\end{proof}
+
+\noindent This is
+Shanks' ``probability $1/q$'' heuristic~\cite{Shanks1991} made precise at
+the population level; what the orbit inherits from it remains heuristic,
+since $P_n+1$ is one member of the progression, not a random one.
+
+\subsection{Almost-all hitting in the factor tree}
+
+Replace the deterministic choice by the \emph{factor tree}: from a
+squarefree seed $m$, branch to $m\cdot p$ for every prime $p\mid m+1$.  Say
+$m$ \emph{reaches}~$q$ if some node of the tree is $\equiv-1\pmod q$, i.e.\
+$q$ divides some Euclid number along some path.
+
+\begin{theorem}[\lean{EM/Ensemble/UnconditionalPSCD.lean}{almost\_all\_mixed\_hitting\_unconditional},
+\lean{EM/Ensemble/UnconditionalPSCD.lean}{almost\_all\_mixed\_hitting\_diagonal}]
+For each prime~$q$, the squarefree seeds coprime to~$q$ that do not
+reach~$q$ have density zero among squarefree integers; and there is
+$B(X)\to\infty$ such that almost every squarefree seed $\le X$ reaches
+every prime $\le B(X)$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+One step suffices: $m\cdot p\equiv-1\pmod q$ for a prime $p\mid m+1$ iff
+$p\equiv-m^{-1}\pmod q$.  The seeds $m\le X$ for which $m+1$ has no prime
+factor $\le z$ in a given unit class~$a$ number at most
+$X\prod_{p\le z,\ p\equiv a}(1-1/p)+O(2^{\pi(z)})$ by an elementary sieve,
+and $\prod_{p\le z,\ p\equiv a}(1-1/p)\to0$ because
+$\sum_{p\equiv a}1/p=\infty$
+(\lean{EM/IK/DirichletDensity.lean}{prime\_reciprocal\_class\_divergent},
+from Mathlib's $L(1,\chi)\ne0$); a weak unconditional lower bound
+$\#\{m\le X\text{ squarefree}\}\ge X/4$ absorbs the constants.  The
+diagonal statement chooses $B(X)$ growing slowly enough that the finitely
+many bad densities are still small.
+\end{proof}  The
+theorem is modest---one step already suffices, since $m+1$ has a prime
+factor in the required class for almost all~$m$---and it is about the
+tree, not the greedy path.
+
+\subsection{Karamata, and Mertens in progressions}
+
+\begin{theorem}[\lean{EM/IK/Karamata.lean}{karamata}]
+Let $c_n\ge0$, $\sum_n c_n n^{-s}<\infty$ for every $s>0$, and
+$s\sum_n c_n n^{-s}\to C$ as $s\to0^+$.  Then $\sum_{n\le x}c_n\sim C\log x$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+Write $F(s)=\sum_nc_nn^{-s}$ and $y=n^{-s}$.  The hypothesis gives
+$sF(s)\to C$, and for every $k\ge0$, $s\sum_nc_nn^{-s(k+1)}\to C/(k+1)
+=C\int_0^1y^{k}\,dy$; by linearity the same holds with $y^{k}$ replaced by
+any polynomial.  Sandwich the function $y\mapsto y^{-1}\mathbf 1_{[e^{-1},1]}(y)$
+between continuous ramps and, by Weierstrass, between polynomials whose
+integrals differ by less than~$\eta$; since all $c_n\ge0$ the sums are
+monotone in the test function, and $\sum_nc_nn^{-s}\cdot n^{s}\mathbf 1_{n\le e^{1/s}}
+=\sum_{n\le e^{1/s}}c_n$ is squeezed to $C/s\,(1+O(\eta))$.  Put $x=e^{1/s}$.
+\end{proof}
+
+Applied to $c_n=\Lambda(n)\mathbf 1_{n\equiv a\,(q)}$, whose Dirichlet series
+has the pole supplied by Mathlib's $L(1,\chi)\ne0$, this gives Mertens'
+theorem in progressions,
+$\sum_{p\le x,\ p\equiv a}\log p/p\sim\log x/\varphi(q)$ and
+$\sum_{p\le x,\ p\equiv a}1/p\sim\log\log x/\varphi(q)$
+(\lean{EM/IK/Karamata.lean}{weightedPNTinAP\_asymp\_proved},
+\lean{EM/IK/Karamata.lean}{primesEquidistInAP\_asymp\_proved}).  Mathlib has
+neither a Tauberian theorem nor Mertens' theorem, so these are offered as
+infrastructure.
+
+\section{Min versus max}
+\label{sec:minmax}
+
+Let $b(0)=2$, $b(n{+}1)=\gpf(b(0)\cdots b(n)+1)$ be the largest-prime-factor
+variant.
+
+\begin{theorem}[Cox--van der Poorten, machine-checked;
+\lean{EM/Obstruction/MaxVariant.lean}{five\_missing}]
+$5$ never appears in $(b(n))$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+From stage~$1$ on the accumulator is divisible by $2$ and $3$ and is
+$\equiv2\pmod4$, so the candidate $N=P_n+1$ is odd, prime to~$3$, and
+$\equiv3\pmod4$.  If $\gpf N=5$ then $N$ has no prime factor other than
+$5$, so $N=5^c\equiv1\pmod4$, a contradiction
+(\lean{EM/Obstruction/MaxVariant.lean}{maxFac\_ne\_five\_of\_mod\_four}).
+The invariant ``$P\equiv6\pmod{12}$'' propagates and blocks~$5$.
+\end{proof}
+
+The reason this works for $\gpf$ and not for $\lpf$ is a one-line
+asymmetry.
+
+\begin{proposition}
+$\lpf N=q$ iff $q\mid N$ and $r\nmid N$ for every prime $r<q$: a
+residue-class condition on $N$ modulo $q\prod_{r<q}r$.  The condition
+$\gpf N=q$ is not a residue-class condition modulo any fixed integer.
+\end{proposition}
+
+Consequently, for the least-factor rule, an ``invariant'' that sees the
+candidate $N=P_n+1$ only through its residue class modulo some $m$ can
+never certify that $q$ is missed: Dirichlet supplies candidates with
+$\lpf N=q$ in every admissible class.  Formally, call $S\subseteq\ZZ/m$
+\emph{propagating} if it is closed under every transition
+$r\mapsto r\cdot\lpf(N)$ with $N\equiv r+1\pmod m$, and say $S$
+\emph{blocks}~$q$ if no state of $S$ forces capture of~$q$.
+
+\begin{theorem}[\lean{EM/Obstruction/NoInvariant.lean}{no\_cvdp\_obstruction},
+\lean{EM/Reciprocity/NoReciprocityInvariant.lean}{no\_reciprocity\_induction\_proof}]
+For a missing prime~$q$ and any modulus $m\ne0$, no propagating set
+containing the tail of the orbit blocks~$q$; the same holds when the
+modulus is allowed to grow with the orbit (which covers Jacobi-symbol
+invariants against $P_n$).
+\end{theorem}
+
+\begin{proof}[Sketch]
+Since $q$ is missing, from some stage the accumulator is prime to~$m$
+and its residue $r$ satisfies: $r+1$ is a unit mod~$m$ (or, at worst, the
+class $r+1$ contains integers prime to $m$).  By CRT and Dirichlet there is
+$N\equiv r+1\pmod m$ with $\lpf N=q$ (a residue-class condition on~$N$
+modulo $q\prod_{r'<q}r'$, compatible with the class mod~$m$ after removing
+common factors, since $q$ is prime to the accumulator).  So the transition
+$r\mapsto r\cdot q$ is available from every tail state, and a propagating
+set containing the tail contains a state that forces capture; it cannot
+block~$q$.  The growing-modulus version runs the same argument at
+$\Pi_n=8mP_n$, where a Jacobi symbol against $P_n$ is a function of the
+residue.
+\end{proof}
+
+The transition relation is deliberately over-approximated ($N$ ranges over
+the whole residue class), which makes the non-existence statement
+\emph{weaker} than one for the true dynamics; the honest reading is about
+proofs: an omission argument for $(a(n))$ whose only knowledge of the
+candidate is congruential cannot succeed, so any such proof must use the
+anatomy of $P_n+1$---its large prime factors, exactly what $\lpf$
+discards.  Nothing here constrains proofs outside this fragment, and
+Booker's argument for the largest-factor sequence is a finite-window
+reductio using smoothness, not an invariant of this shape.
+
+\section{The formalization}
+\label{sec:lean}
+
+All results are formalized in Lean~4 against Mathlib \texttt{v4.33.0}
+(\EMFileCount~files, $\EMLineCount$~lines).  The verified set is the import
+closure of the root module: no \code{sorry}, no user axioms, no
+\code{native\_decide}; every published declaration depends only on
+\code{propext}, \code{Classical.choice}, \code{Quot.sound} (checked by a
+script over the registry).  The definitions of the sequence
+(\code{Mullin.seq}, \code{Mullin.prod}) use a home-grown constructive
+\code{minFac} bridged to Mathlib's, and \code{MullinConjecture} is
+literally ``every prime is some \code{seq n}''.  Each theorem environment
+above names the checked declaration; the statements printed here were
+written from the Lean statements, and where they abbreviate (e.g.\ the
+$o(N)$ notation for an explicit $\forall\varepsilon\,\exists N_0$) the Lean
+text is the reference.  Published results and open hypotheses are tagged
+\code{@[publish]}/\code{@[open\_point]} and exported to a machine-readable
+registry (\code{registry/}); the open points are MC and its equivalents,
+the threshold hypotheses, and the floor ladder.
+
+The repository's long document is a technical report: the variants
+(factor tree, two-point, $\varepsilon$-perturbed, mixed, function field,
+with placeholders marked), the spectral and variance routes, the
+obstruction calculus, a complete catalogue of \DEentries~documented dead
+ends with the reason each fails, and the human--AI methodology.  Nothing
+in this paper depends on it.
+
+\bigskip
+\noindent\textbf{Acknowledgements.}  The Lean code was written with AI
+assistance (Claude, Anthropic); the mathematics, the choice of what to
+prove, and the errors are the author's.
+
+\begin{thebibliography}{9}
+\bibitem{Mullin1963} A.\,A.~Mullin, Recursive function theory (a modern look at a Euclidean idea), \emph{Bull.\ Amer.\ Math.\ Soc.}\ 69 (1963), 737.
+\bibitem{Shanks1991} D.~Shanks, Euclid's primes, \emph{Bull.\ Inst.\ Combin.\ Appl.}\ 1 (1991), 33--36.
+\bibitem{CoxVdP1968} C.\,D.~Cox and A.\,J.~van der Poorten, On a sequence of prime numbers, \emph{J.\ Austral.\ Math.\ Soc.}\ 8 (1968), 571--574.
+\bibitem{Booker2012} A.\,R.~Booker, On Mullin's second sequence of primes, \emph{Integers} 12A (2012), A4.
+\bibitem{PollackTrevino2014} P.~Pollack and E.~Trevi\~no, The primes that Euclid forgot, \emph{Amer.\ Math.\ Monthly} 121 (2014), 433--437.
+\bibitem{AhoSloane1973} A.\,V.~Aho and N.\,J.\,A.~Sloane, Some doubly exponential sequences, \emph{Fibonacci Quart.}\ 11 (1973), 429--437.
+\bibitem{Vardi1991} I.~Vardi, Are all Euclid numbers squarefree?, in \emph{Computational Recreations in Mathematica}, Addison-Wesley, 1991, 82--89.
+\bibitem{Odoni1985} R.\,W.\,K.~Odoni, On the prime divisors of the sequence $w_{n+1}=1+w_1\cdots w_n$, \emph{J.\ London Math.\ Soc.\ (2)} 32 (1985), 1--11.
+\bibitem{Alladi1977} K.~Alladi, Duality between prime factors and an application to the prime number theorem for arithmetic progressions, \emph{J.\ Number Theory} 9 (1977), 436--451.
+\end{thebibliography}
+
+\end{document}

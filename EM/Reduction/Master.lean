@@ -5,7 +5,7 @@ import EM.Reduction.VisitEquidist
 # Master Reduction: All Roads to Mullin's Conjecture
 
 This file assembles the **complete reduction landscape** for Mullin's Conjecture,
-unifying all proved chains from the 52-file formalization into a single reference.
+unifying all proved chains from across the reduction network into a single reference.
 
 ## The Reduction Hierarchy
 
@@ -23,19 +23,11 @@ MMCSB → MC                (mmcsb_implies_mc)
 CCSB → MC                 (complex_csb_mc')
 ```
 
-### Level 3: Population Framework (1–2 hypotheses)
-```
-PE + DSL        → CME → MC   (pe_dsl_implies_mc)
-PE + DSLHitting → DH  → MC   (pe_dsl_hitting_implies_mc)
-PE + PT + Bridge → MC         (pe_transfer_cme_implies_mc)
-```
-
-### Level 4: Analytic Number Theory (0–1 hypotheses)
-```
-MinFacResidueEquidist → PE     (pe_of_equidist)
-  + DSL → MC                   (equidist_dsl_implies_mc)
-  + DSLHitting → MC             (equidist_dsl_hitting_implies_mc)
-```
+### Levels 3–4: Population Framework — RETIRED (Dead End #160, 2026-08-17)
+The chains PE + DSL → CME → MC, PE + DSLHitting → DH → MC, MinFacResidueEquidist → PE
+are archived in `EM/Archive/Population/PopulationEquidistArchive.lean`: PopulationEquidist
+and MinFacResidueEquidist are FALSE (head domination, `EM/Population/HeadDomination.lean`),
+so DSL/DSLHitting are vacuous.  The live master gap is CME (`cme_implies_mc`).
 
 ### Level 5: Ensemble Framework (open hypotheses)
 ```
@@ -48,16 +40,13 @@ FirstMomentStep + VarianceBound → RSD             (first_moment_variance_impli
 ## Main Results in This File
 
 ### Proved Reductions
-* `full_chain_dsl`          — DSL alone → MC (via PE from ANT) (PROVED)
-* `full_chain_dsl_hitting`  — DSLHitting alone → MC (via PE from ANT) (PROVED)
-* `sve_iff_ve`              — SVE ↔ VE (via excessEnergy = visit deviation) (PROVED)
+* `sve_controls_visit_deviation` — SVE ↔ VE identity: excessEnergy = (p−1)·Σ(V−mean)² (PROVED)
 * `ensemble_chains_summary` — all ensemble reductions are consistent (PROVED)
 
 ## Status Summary
 
 ### What Is Proved (zero sorry)
-- All reductions above: DH→MC, CME→MC, SVE→MC, HOD→MC, PE+DSL→MC, etc.
-- PE from MinFacResidueEquidist (via Dirichlet + sieve)
+- All reductions above: DH→MC, CME→MC, SVE→MC, HOD→MC, etc.
 - Sieve density function g(r) = r/(r²-1): all algebraic properties
 - Ensemble infrastructure: ensembleAvg, buchstabWeight, κ, concentration→RSD
 - Excess energy = visit deviation identity
@@ -68,11 +57,8 @@ FirstMomentStep + VarianceBound → RSD             (first_moment_variance_impli
 - 29 concrete SE instances
 
 ### What Remains Open
-- **DSL** (PE → CME): the single hypothesis replacing all gaps
-- **DSLHitting** (PE → DH): weaker, still sufficient for MC
-- Concentration/variance hypotheses (provable from CRT + PE)
-- The DSL is a statement about deterministic walks on finite abelian groups,
-  with connections to Bourgain-Gamburd expansion.
+- **CME**: the master gap (orbit-level conditional multiplier equidistribution)
+- Concentration/variance hypotheses (ensemble level)
 -/
 
 noncomputable section
@@ -80,39 +66,6 @@ open Classical
 
 open Mullin Euclid MullinGroup RotorRouter
 
-/-! ## Full Chain: DSL Alone → MC -/
-
-section FullChains
-
-/-- **DSL alone implies MC.** The full chain:
-    1. MinFacResidueEquidist holds for all primes q (standard ANT)
-    2. pe_of_equidist: MinFacResidueEquidist → PE
-    3. DSL: PE → CME
-    4. cme_implies_mc: CME → CCSB → MC
-
-    This shows that DSL is the **sole remaining hypothesis** for MC,
-    assuming standard analytic number theory (Dirichlet's theorem +
-    sieve estimates). -/
-theorem full_chain_dsl
-    (h_equidist : ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q)
-    (hdsl : DeterministicStabilityLemma) :
-    MullinConjecture :=
-  equidist_dsl_implies_mc h_equidist hdsl
-
-/-- **DSLHitting alone implies MC.** The weaker chain:
-    1. MinFacResidueEquidist → PE (standard ANT)
-    2. DSLHitting: PE → DH
-    3. DH → MC
-
-    DSLHitting only requires the walk to visit −1 mod q (existential),
-    not full character sum cancellation (quantitative). -/
-theorem full_chain_dsl_hitting
-    (h_equidist : ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q)
-    (hdsl : DSLHitting) :
-    MullinConjecture :=
-  equidist_dsl_hitting_implies_mc h_equidist hdsl
-
-end FullChains
 
 /-! ## SVE ↔ VE Connection -/
 
@@ -164,7 +117,7 @@ end EnsembleConsistency
 
 /-! ## Reduction Map
 
-The complete reduction landscape, with file references:
+The live reduction landscape (2026-08-17; the population branch PE/DSL is archived):
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -176,23 +129,13 @@ The complete reduction landscape, with file references:
          │             │             │
     DH → MC       CCSB → MC    CME → MC
   (Bootstrap)   (SelfCorr)  (LargeSieve)
-         │             │             │
-         │        ┌────┤      ┌──────┤
-         │        │    │      │      │
-         │   SVE→CCSB  │  HOD→CCSB  │
-         │             │             │
-    ┌────┴────┐        │        ┌────┘
-    │         │        │        │
-  PE+DSLHit  │    MMCSB→MC     │
-  (Ensemble) │   (LargeSieve)  │
-    │         │                 │
-    │    PE+DSL → CME → MC     │
-    │    (PopTransStrat)       │
-    │         │                │
-    │    ┌────┘           ┌────┘
-    │    │                │
-    PE ← MinFacResidueEquidist
-    (PopEquidistProof, from ANT)
+                       │             │
+                  ┌────┤      ┌──────┤
+                  │    │      │      │
+             SVE→CCSB  │  HOD→CCSB  │
+                       │             │
+                  MMCSB→MC          │
+                 (LargeSieve)       │
 
 Ensemble chains (all PROVED reductions):
   RecipSumConcentration → AlmostAllSquarefreeRSD
@@ -200,11 +143,8 @@ Ensemble chains (all PROVED reductions):
   FirstMomentStep + VarianceBound → RecipSumConcentration
 ```
 
-**The sole remaining gap**: DSL (or DSLHitting), a statement about
-deterministic walks on finite abelian groups with:
-1. Generation (proved: SubgroupEscape via PRE)
-2. Position-blindness (proved: crt_multiplier_invariance)
-3. Population support (proved: PE from ANT)
+**The sole remaining gap**: CME.  (The former "DSL: PE → CME" framing is void — PE is
+false, Dead End #160.)
 -/
 
 end

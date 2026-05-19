@@ -1,27 +1,62 @@
-# Mathlib Contribution Candidates from the Euclid-Mullin Formalization
+# Mathlib Contribution Candidates from the Euclid–Mullin Formalization
 
-The repository [EM](https://github.com/marcellop71/EM) (~78,000 lines, 148 files, zero sorry)
-formalizes reductions of the Mullin Conjecture in Lean 4 / Mathlib v4.29.0-rc1.
-Along the way it developed general-purpose mathematics that fills genuine gaps in Mathlib.
-Below are the strongest candidates, filtered for non-trivial proofs of well-established
-results that are missing from the current library.
+The repository [EM](https://github.com/marcellop71/EM) (182 files, ~95,000 lines, zero
+`sorry`) formalizes reductions of Mullin's Conjecture against **Mathlib `v4.33.0`**
+(toolchain `leanprover/lean4:v4.33.0`). Along the way it developed general-purpose
+mathematics that appears to fill genuine gaps in Mathlib. This file lists the candidates.
+
+**How to read it.** Entries give the *declaration name* and the *file*, never a line
+number — line numbers rot on every edit, names do not. Everything below is greppable:
+
+```
+grep -rn "necklace_identity_proved" EM/ --include="*.lean"
+```
+
+A machine-readable index of all 356 published declarations is in `registry/`.
+
+**Scope.** Only live code is offered.  The repository's `EM/Archive/` (retired, `#exit`-guarded
+files) is kept locally and is not part of the public tree; no candidate below lives there
+(verified 2026-08-17).
+
+**Status of the "missing from Mathlib" claims.** Re-verified against Mathlib `v4.33.0` on
+2026-08-17 (second pass the same day: every identifier and file path below mechanically
+re-checked; §A7, §B12, §B13 added). **Three** previously-listed items have since landed in Mathlib and are recorded
+as withdrawn rather than silently dropped (§B2, §B7, §B8) — please flag any others; the
+claim is what a reviewer's time is spent on.
+
+**Declarations marked `private`** are not exported and would need unsealing before any
+port. They are flagged.
 
 ---
 
-## 1. Van der Corput Inequality
+## Triage
 
-**File:** `LargeSieveSpectral.lean:591` (~280 lines)
+| Tier | What it means | Items |
+|---|---|---|
+| **A** | Substantial, self-contained, clearly absent, likely wanted | 1–7 |
+| **B** | Real gaps, smaller or more specialised | 8–20 |
+| **C** | One- or two-line facts; cheap to add, cheap to reprove | 21–27 |
 
-The finite Van der Corput bound for exponential/character sums:
-for a bounded sequence `f` with autocorrelation bounds `|R_h| ≤ δN`
-for lags `1 ≤ h ≤ H`:
+If you only look at three, look at **§A7 (Karamata's Tauberian theorem, and Mertens in
+progressions)**, **§A1 (van der Corput)** and **§A2 (Parseval/Plancherel for `ZMod.dft`)**.
+
+---
+
+# Tier A — strongest candidates
+
+## A1. Van der Corput Inequality
+
+**File:** `EM/ForMathlib/VanDerCorput.lean` (Mathlib-only imports; extracted 2026-08-18; un-wrapped statement `vanDerCorput_norm_sq_sum_le`)
+
+The finite van der Corput bound for exponential/character sums: for a bounded sequence `f`
+with autocorrelation bounds `|R_h| ≤ δN` for lags `1 ≤ h ≤ H`,
 
 ```
 ‖∑_{n<N} f(n)‖² ≤ 2N²/(H+1) + 2δN²
 ```
 
-One of the most important techniques in analytic number theory.
-Completely missing from Mathlib. Self-contained proof.
+One of the basic techniques of analytic number theory. No occurrence of `van_der_corput`
+or `vanDerCorput` anywhere in Mathlib. Self-contained proof.
 
 | Identifier | Kind | Description |
 |---|---|---|
@@ -30,463 +65,419 @@ Completely missing from Mathlib. Self-contained proof.
 
 ---
 
-## 2. Parseval Identities for Finite Abelian Groups
+## A2. Parseval / Plancherel for `ZMod.dft`
 
-**Files:** `LargeSieveHarmonic.lean`, `LargeSieveAnalytic.lean`
+**Files:** `EM/LargeSieve/Harmonic.lean`, `EM/LargeSieve/Analytic.lean`
 
-Mathlib defines `ZMod.dft` but has no Parseval/Plancherel identity for it.
-These fill that gap:
-
-| Identifier | File | Description |
-|---|---|---|
-| `zmod_dft_parseval` | `LargeSieveHarmonic.lean:135` | `∑_k ‖(𝓕Φ)(k)‖² = N · ∑_j ‖Φ(j)‖²` |
-| `zmod_dft_plancherel_complex` | `LargeSieveHarmonic.lean:416` | Bilinear Plancherel for `ZMod.dft` |
-| `char_parseval_units` | `LargeSieveAnalytic.lean:809` | `∑_χ ‖∑ g(a)·χ(a)‖² = (p−1)·∑ ‖g(a)‖²` for `(ℤ/pℤ)ˣ` |
-
----
-
-## 3. Gauss Sum API
-
-**Files:** `LargeSieveHarmonic.lean`, `LargeSieveAnalytic.lean`
-
-Mathlib has `gaussSum` and `gaussSum_mul_gaussSum_eq_card` but is missing
-several standard results that are needed for any serious application:
+Mathlib defines `ZMod.dft` in `Mathlib/Analysis/Fourier/ZMod.lean` and gives it a full
+algebraic API (`dft_dft`, `dft_comp_neg`, `dft_comp_unitMul`, …) but **no Parseval or
+Plancherel identity** — the file has no norm-level result at all. That is the first thing
+one reaches for in an application.
 
 | Identifier | File | Description |
 |---|---|---|
-| `gaussSum_norm_sq_eq_prime` | `LargeSieveHarmonic.lean:388` | `‖τ(χ)‖² = p` for nontrivial χ mod p |
-| `gaussSum_stdAddChar_ne_zero` | `LargeSieveAnalytic.lean:255` | `τ(χ) ≠ 0` for nontrivial χ |
-| `gauss_sum_inversion` | `LargeSieveAnalytic.lean:268` | `χ(a) = τ(χ⁻¹)⁻¹ · τ(χ⁻¹, ψ_a)` |
-| `char_sum_to_exp_sum` | `LargeSieveAnalytic.lean:304` | Gauss conductor transfer: character sums → exponential sums |
-| `isPrimitive_of_prime_nontrivial` | `LargeSieveAnalytic.lean:206` | Nontrivial characters at prime level are primitive |
+| `zmod_dft_parseval` (= `ZMod.dft_norm_sq_sum`) | `EM/ForMathlib/ZModDftParseval.lean` | `∑_k ‖(𝓕Φ)(k)‖² = N · ∑_j ‖Φ(j)‖²` |
+| `zmod_dft_parseval_complex` (= `ZMod.dft_mul_conj_sum`) | `EM/ForMathlib/ZModDftParseval.lean` | Complex inner-product Parseval |
+| `zmod_dft_plancherel_complex` | `EM/LargeSieve/Harmonic.lean` | Bilinear Plancherel for `ZMod.dft` |
+| `char_parseval_units` | `EM/LargeSieve/Analytic.lean` | `∑_χ ‖∑ g(a)·χ(a)‖² = (p−1)·∑ ‖g(a)‖²` on `(ℤ/pℤ)ˣ` |
 
 ---
 
-## 4. Finite Weyl Criterion
+## A3. Gauss Sum API
 
-**File:** `LargeSieveSpectral.lean:411`
+**Files:** `EM/LargeSieve/Harmonic.lean`, `EM/LargeSieve/Analytic.lean`
 
-Quantitative equidistribution criterion for finite abelian groups:
-if all nontrivial character sums are small, the sequence is equidistributed.
-
-```
-∀ χ ≠ 1, |∑ χ(x_n)| ≤ ε·N  ⟹  |V(a) − N/(p−1)| ≤ ε·N
-```
-
-General-purpose, not in Mathlib, and the natural finite-group analogue
-of the classical Weyl criterion.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `weyl_criterion_finite_group` | thm | Small char sums ⟹ equidistribution |
-
----
-
-## 5. Liouville Function and Completely Multiplicative Predicate
-
-**File:** `IKCh1.lean`
-
-Mathlib has `ArithmeticFunction.moebius` and `Nat.ArithmeticFunction.IsMultiplicative`
-(coprime only) but is missing:
-
-| Identifier | Line | Description |
-|---|---|---|
-| `IsCompletelyMultiplicative` | 62 | `f(mn) = f(m)f(n)` for ALL m,n (not just coprime) |
-| `liouville` | 172 | `λ(n) = (−1)^{Ω(n)}` |
-| `liouville_isCompletelyMultiplicative` | 191 | λ is completely multiplicative |
-| `liouville_eq_moebius_of_squarefree` | 200 | `λ(n) = μ(n)` for squarefree n |
-
-The Liouville function is as fundamental as Möbius; its absence
-from Mathlib is a clear gap.
-
----
-
-## 6. Rotor-Router on Finite Groups
-
-**File:** `RotorRouter.lean` (455 lines, self-contained)
-
-First formalization of rotor-router (Propp machine) dynamics.
-Could form a new `Mathlib.Dynamics.RotorRouter` module.
-
-| Identifier | Line | Description |
-|---|---|---|
-| `eventually_periodic` | 79 | Every orbit on `[Finite α]` is eventually periodic |
-| `rotor_tracks_visits` | 151 | Pointer = (initial + visit count) mod k |
-| `visit_count_dvd_of_periodic` | 167 | Over one period, `k ∣ visitCount(x)` |
-| `rotor_visits_all` | 328 | Rotor-router on finite group visits every element |
-| `scheduled_walk_covers_all` | 395 | Abstract: pointwise-recurrent walk covers all elements |
-
----
-
-## 7. Jordan's Inequality and Exponential Sum Estimates
-
-**File:** `LargeSieveAnalytic.lean`
-
-| Identifier | Line | Description |
-|---|---|---|
-| `sin_pi_ge_two_mul` | 102 | `sin(πt) ≥ 2t` for `t ∈ [0, 1/2]` |
-| `norm_one_sub_eAN` | 79 | `‖1 − e(β)‖ = 2·|sin(πβ)|` |
-| `norm_eAN_geom_sum_le_inv` | 152 | `‖∑ e(kβ)‖ ≤ 1/(2δ)` when β is δ-separated from ℤ |
-
-Jordan's inequality is a classical result missing from Mathlib.
-The exponential sum bound is the standard estimate used throughout
-analytic number theory.
-
----
-
-## 8. Mittag-Leffler Expansion of csc
-
-**File:** `IKCh7Hilbert.lean:459` (~100 lines)
-
-The classical partial fraction expansion:
-for `θ ∉ ℤ`, the symmetric partial sums
-`∑_{m=-K}^{K} (−1)^m/(θ+m)` converge to `π/sin(πθ)` as `K → ∞`.
-
-This is a standard result in complex analysis (Mittag-Leffler theorem applied
-to `csc`), used in the proof of the Hilbert inequality (IK Corollary 7.9).
-The proof uses Mathlib's `Summable_cotTerm` and `tendsto_logDeriv_euler_cot_sub`
-infrastructure.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `MittagLefflerCsc` | def | Statement: alternating partial sums → `π/sin(πθ)` |
-| `mittag_leffler_csc_proved` | thm | Full proof using Mathlib's cotangent series |
-
----
-
-## 9. Hilbert Inequality Rescaling
-
-**File:** `IKCh7Hilbert.lean:90` (~50 lines)
-
-Reduction of the general δ-separated Hilbert inequality to the 1-separated case:
-given `HilbertInequality1` (for 1-separated points), derive `HilbertInequality`
-(for δ-separated points) via the substitution `λ_r ↦ λ_r/δ`.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `hilbert_rescale` | thm | `HilbertInequality1 → HilbertInequality` |
-| `hilbert1_implies_hilbert` | thm | Same reduction (alternate name) |
-
----
-
-## 10. Cesaro Convergence of Cross Terms (Product-Index Trick)
-
-**File:** `IKCh7Hilbert.lean:1410` (~490 lines)
-
-Infrastructure for the product-index trick (IK Corollaries 7.9–7.10):
-lift R points on `ℝ/ℤ` to `R·(2K+1)` points on `ℝ`, show that cross terms
-(involving `1/(α_r − α_s + k)` summed over `k ∈ [-K,K]`) converge in the
-Cesaro sense to `π·csc(π(α_r − α_s))` using the Mittag-Leffler expansion.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `CrossRCesaroConvergence` | def | Statement of Cesaro convergence of cross terms |
-| `cross_r_cesaro_convergence_proved` | thm | Full proof (~490 lines) |
-| `same_r_antisymmetry` | thm | Self-interaction terms cancel by antisymmetry |
-| `hilbert_lifted_bound` | thm | HilbertInequality applied to lifted point system |
-
----
-
-## 11. One-Sided Tauberian Lemma
-
-**File:** `OneSidedTauberian.lean:59` (~50 lines)
-
-For nonneg `bₙ ≥ 0`, the partial sum `∑_{n≤N} bₙ` is bounded by
-`N^ε · ∑_n bₙ/n^ε` for any `ε > 0`. Elementary proof via `n^ε ≤ N^ε`.
-
-This is the key one-sided bound that, combined with Mathlib's L-function
-infrastructure, reduces `WeightedPNTinAP` to a real-variable
-Wiener-Ikehara hypothesis. Not in Mathlib.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `one_sided_tauberian_upper` | thm | `∑_{n≤N} bₙ ≤ N^ε · ∑_n bₙ/n^ε` for `bₙ ≥ 0` |
-| `one_sided_tauberian_dirichlet` | thm | Applied to Dirichlet series: partial sum ≤ N^ε · L(1+ε) |
-
----
-
-## 12. L-series Upper Bound for Residue Classes
-
-**File:** `OneSidedTauberian.lean:146` (~40 lines)
-
-Mathlib's `PrimesInAP.lean` proves a *lower* bound on `∑ Λ(n)·1_{n≡a}/n^x`
-near `x = 1` (via `LSeries_residueClass_lower_bound`), but does not export
-the corresponding *upper* bound. This file extracts the identity
-
-    tsum = LFunctionResidueClassAux(a, x).re + (φ(q))⁻¹/(x−1)
-
-from Mathlib's proof and derives both bounds, enabling Tauberian applications.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `residueClass_tsum_eq_aux_plus_pole` | thm | Identity: tsum = aux.re + pole |
-| `residueClass_tsum_upper_bound` | thm | Upper bound: tsum ≤ (φ(q))⁻¹/(x−1) + C |
-| `residueClass_tsum_both_bounds` | thm | Two-sided: pole − C ≤ tsum ≤ pole + C |
-
----
-
-## 13. Doubly Stochastic Transition on Finite Groups
-
-**File:** `SelfCorrectingDrift.lean:616` (~20 lines)
-
-For a finite group `G` and uniform measure on `G`, the random walk
-transition matrix is doubly stochastic: each row and column sums to 1.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `group_walk_doubly_stochastic` | thm | Uniform multiplier gives doubly stochastic transitions |
-
----
-
-## 14. Spectral Gap for Generating Sets on Finite Abelian Groups
-
-**File:** `VanishingNoise.lean:110` (~130 lines)
-
-If a finite subset S of a finite commutative group G generates G, contains the
-identity, and has |S| ≥ 2, then for any nontrivial character χ : G →* ℂˣ:
-
-```
-‖∑_{s ∈ S} χ(s)‖ < |S|
-```
-
-Equivalently, the spectral contraction `‖∑ χ(s)‖ / |S| < 1`.
-This is the standard spectral gap that drives mixing on Cayley graphs.
-The proof uses `StrictConvexSpace` (for `‖z + w‖ < 2` when z ≠ w on the unit circle)
-and `Subgroup.closure_le` to find an element where χ is nontrivial.
-
-A variant without the identity assumption is also proved: if there exist s, t ∈ S
-with χ(s) ≠ χ(t), then `‖∑ χ(s)‖ < |S|`.
-
-Completely missing from Mathlib. Self-contained.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `char_norm_one_of_hom` | thm | `‖χ(g)‖ = 1` for group hom χ : G →* ℂˣ (G finite) |
-| `exists_ne_one_of_nontrivial` | thm | Nontrivial χ on generators: ∃ s ∈ S with χ(s) ≠ 1 |
-| `norm_add_lt_two_of_ne` | thm | `‖z + w‖ < 2` for unit-norm z ≠ w (strict convexity) |
-| `spectral_gap_with_identity` | thm | `‖∑ χ(s)‖ < |S|` for nontrivial χ, generating S ∋ 1 |
-| `spectral_contraction_lt_one` | thm | Ratio form: `‖∑ χ(s)‖ / |S| < 1` |
-| `spectral_gap_of_distinct_values` | thm | Without 1 ∈ S: distinct χ-values ⇒ strict bound |
-
----
-
-## 15. Infinite Product Contraction (Divergent Series ⇒ Vanishing Product)
-
-**Files:** `VanishingNoise.lean:330` (~55 lines), `VanishingNoiseC.lean:363` (~55 lines)
-
-For a sequence `γ_k ∈ (0, 1]` with divergent sum `∑ γ_k = +∞`:
-
-```
-∏_{k < N} (1 − γ_k) → 0  as  N → ∞
-```
-
-Proved using `1 − x ≤ exp(−x)` and the exponential:
-`∏(1 − γ_k) ≤ exp(−∑ γ_k) → 0`.
-
-This is a standard real analysis fact (e.g., Rudin, Principles 15.5) that is
-completely missing from Mathlib. Used in probability (Borel–Cantelli),
-dynamics (mixing), and number theory (Euler products).
-
-A **sparse variant** relaxes `0 < a_k` to `0 ≤ a_k ≤ 1`, allowing
-some factors to equal 1 (no contraction at those steps). The conclusion
-is the same: if the gaps `1 − a_k` are non-summable, the partial
-products tend to 0. This is the version actually needed for sieve
-applications where the indicator function is supported on primes in a
-specific residue class (most terms contribute gap 0).
+Mathlib has `gaussSum` and `gaussSum_mul_gaussSum_eq_card`, but not the consequences one
+actually uses:
 
 | Identifier | File | Description |
 |---|---|---|
-| `product_contraction_tendsto` | `VanishingNoise.lean:330` | `γ_k ∈ (0,1], ∑ γ_k = ∞ ⇒ ∏(1 − γ_k) → 0` |
-| `sparse_product_contraction` | `VanishingNoiseC.lean:363` | `a_k ∈ [0,1], ¬Summable(1 − a_k) ⇒ ∏ a_k → 0` |
+| `gaussSum_norm_sq_eq_prime` | `EM/LargeSieve/Harmonic.lean` | `‖τ(χ)‖² = p` for nontrivial `χ` mod `p` |
+| `gaussSum_stdAddChar_ne_zero` | `EM/LargeSieve/Analytic.lean` | `τ(χ) ≠ 0` for nontrivial `χ` |
+| `gauss_sum_inversion` | `EM/LargeSieve/Analytic.lean` | `χ(a) = τ(χ⁻¹)⁻¹ · τ(χ⁻¹, ψ_a)` |
+| `char_sum_to_exp_sum` | `EM/LargeSieve/Analytic.lean` | Conductor transfer: character sums → exponential sums |
+| `isPrimitive_of_prime_nontrivial` | `EM/LargeSieve/Analytic.lean` | Nontrivial characters at prime level are primitive |
 
 ---
 
-## 16. Irrationality of log(p)/log(q) for Distinct Primes
+## A4. Rotor-Router Dynamics on Finite Groups
 
-**File:** `LFunction.lean:206` (~130 lines)
+**File:** `EM/Group/RotorRouter.lean` (455 lines, self-contained)
 
-For distinct primes p, q: `log(p) / log(q) ∉ ℚ`.
+First formalization of rotor-router (Propp machine) dynamics we are aware of. Could form a
+new `Mathlib.Dynamics.RotorRouter`.
 
-The proof proceeds by contradiction: if `log(p)/log(q) = a/b` with a, b ∈ ℤ,
-then `p^b = q^a`, contradicting unique prime factorization.
-Handles all sign cases (a, b could be negative) carefully.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `prime_pow_ne_prime_pow` | thm | `p^a ≠ q^b` for distinct primes, positive exponents |
-| `log_ratio_irrational` | thm | `log(p)/log(q) ∉ ℚ` for distinct primes |
-
----
-
-## 17. Discrete Abel Summation
-
-**File:** `AbelChain.lean:161` (~40 lines)
-
-The summation-by-parts identity for finite sums:
-
-```
-∑_{k=a}^{b-1} f(k)·(g(k+1) − g(k)) = f(b)·g(b) − f(a)·g(a) − ∑_{k=a}^{b-1} g(k+1)·(f(k+1) − f(k))
-```
-
-Used throughout analytic number theory (partial summation / Abel's summation formula).
-Not in Mathlib as a standalone lemma.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `discrete_abel` | thm | Abel summation formula (summation by parts) |
+| Identifier | Description |
+|---|---|
+| `eventually_periodic` | Every orbit on `[Finite α]` is eventually periodic |
+| `rotor_tracks_visits` | Pointer = (initial + visit count) mod `k` |
+| `visit_count_dvd_of_periodic` | Over one period, `k ∣ visitCount(x)` |
+| `rotor_visits_all` | Rotor-router on a finite group visits every element |
+| `scheduled_walk_covers_all` | Abstract: a pointwise-recurrent walk covers all elements |
 
 ---
 
-## 18. Log-Log Integrals via FTC
+## A5. Necklace Identity for Irreducible Polynomials over Finite Fields
 
-**File:** `AbelChain.lean:31` (~80 lines)
+**File:** `EM/FunctionField/NecklaceFormula.lean` (~130 lines)
 
-Explicit evaluation of two standard integrals via the fundamental theorem of calculus,
-plus sandwich inequalities between log-log differences and log ratios:
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `hasDerivAt_log_log` | thm | `d/dt[log(log t)] = 1/(t·log t)` for t > 1 |
-| `hasDerivAt_neg_inv_log` | thm | `d/dt[−(log t)⁻¹] = (t·(log t)²)⁻¹` |
-| `integral_inv_mul_log` | thm | `∫_a^b 1/(t·log t) dt = log(log b) − log(log a)` |
-| `integral_inv_mul_log_sq` | thm | `∫_a^b 1/(t·(log t)²) dt = 1/log(a) − 1/log(b)` |
-| `log_ratio_le` | thm | `(log b − log a)/log b ≤ log(log b) − log(log a)` |
-| `loglog_le_ratio` | thm | `log(log b) − log(log a) ≤ (log b − log a)/log a` |
-
----
-
-## 19. Norm-Squared Partial Sum Telescoping (Inner Product Spaces)
-
-**File:** `DSLInfra.lean:58` (~50 lines)
-
-For a sequence `z_k` in an inner product space:
-
-```
-‖∑_{k<N} z_k‖² = ∑_{k<N} ‖z_k‖² + 2 · ∑_{k<N} ⟪∑_{j<k} z_j, z_k⟫
-```
-
-This is a pure Hilbert space identity (diagonal + cross-term decomposition of
-the squared norm of a partial sum). General-purpose, used in harmonic analysis,
-probability (variance decomposition), and signal processing.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `norm_sq_partial_sum_telescoping` | thm | ‖∑ z_k‖² = diagonal + 2·cross terms |
-
----
-
-## 20. Finiteness of Monic Polynomials per Degree over Finite Rings
-
-**File:** `FunctionField/Finiteness.lean:50` (~25 lines)
-
-Over any finite commutative ring `R`, for each degree `d`,
-the set `{Q : R[X] | Q.Monic ∧ Q.natDegree = d}` is finite.
-Proof: inject via the coefficient map into `Fin (d+1) → R`, which is `Fintype`.
-
-This is completely general (not tied to `ZMod p` or function fields) and fills
-a gap: Mathlib has `Polynomial.degreeLTEquiv` and `Polynomial.monicEquivDegreeLT`
-but never states the resulting finiteness as a standalone lemma.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `monic_natDegree_finite` | thm | `{Q : R[X] \| Q.Monic ∧ Q.natDegree = d}` is `Set.Finite` for `[Fintype R]` |
-| `coeff_injection` | thm | Coefficient map injective on monic degree-d polys |
-
----
-
-## 21. Counting Monic Polynomials over Finite Fields
-
-**File:** `FunctionField/NecklaceFormula.lean:52` (~15 lines)
-
-There are exactly `p^n` monic polynomials of degree `n` over `𝔽_p`.
-Proof composes `monicEquivDegreeLT`, `degreeLTEquiv`, `Fintype.card_fun`, `ZMod.card`.
-
-Mathlib has all the ingredients but not the composed count.
-Immediate corollary of `monic_natDegree_finite` + cardinality calculation.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `card_monic_of_degree` | thm | `Fintype.card {f : (ZMod p)[X] // f.Monic ∧ f.natDegree = n} = p ^ n` |
-
----
-
-## 22. Necklace Identity for Irreducible Polynomials over Finite Fields
-
-**File:** `FunctionField/NecklaceFormula.lean:150` (~130 lines)
-
-The classical necklace identity from combinatorics / Galois theory:
-for every prime `p` and `n ≥ 1`,
+The classical identity (Gauss; Moreau 1872): for every prime `p` and `n ≥ 1`,
 
 ```
 ∑_{d | n} d · π_p(d) = p^n
 ```
 
-where `π_p(d)` is the number of monic irreducible polynomials of degree `d`
-over `𝔽_p`. The proof uses the Galois-theoretic fact that every element of
-`GF(p^n)` has a minimal polynomial of degree dividing `n`, each irreducible
-of degree `d` contributing `d` roots.
-
-This is a well-known identity (Gauss, Moreau, 1872) that is completely
-missing from Mathlib. Self-contained proof.
+where `π_p(d)` counts monic irreducibles of degree `d` over `𝔽_p`. Mathlib has the Galois
+theory of finite fields but states no irreducible-count result; nothing in
+`Mathlib/FieldTheory/Finite/` counts irreducibles. Self-contained proof via minimal
+polynomials of elements of `GF(p^n)`.
 
 | Identifier | Kind | Description |
 |---|---|---|
-| `ffIrredCount` | def | Count of monic irreducible polys of degree d over 𝔽_p |
-| `ffIrredCount_pos` | thm | `π_p(d) ≥ 1` for all `d ≥ 1` |
-| `necklace_identity_proved` | thm | `∑_{d\|n} d · π_p(d) = p^n` |
-| `necklace_implies_irred_lower_bound` | thm | `d · π_p(d) ≤ p^d` (single-term extraction) |
+| `ffIrredCount` | def | Count of monic irreducibles of degree `d` over `𝔽_p` |
+| `ffIrredCount_pos` | thm | `π_p(d) ≥ 1` for `d ≥ 1` |
+| `necklace_identity_proved` | thm | `∑_{d∣n} d · π_p(d) = p^n` |
+| `necklace_implies_irred_lower_bound` | thm | `d · π_p(d) ≤ p^d` |
+
+Supporting counts, also absent from Mathlib and useful independently:
+
+| Identifier | File | Description |
+|---|---|---|
+| `monic_natDegree_finite` | `EM/FunctionField/Finiteness.lean` | `{Q : R[X] \| Q.Monic ∧ Q.natDegree = d}` is finite for `[Fintype R]` |
+| `card_monic_of_degree` | `EM/FunctionField/NecklaceFormula.lean` | exactly `p^n` monic polynomials of degree `n` over `𝔽_p` |
+
+*(`coeff_injection` in `Finiteness.lean` is `private`.)*
 
 ---
 
-## 23. `Nat.minFac` of a Product is the Minimum
+## A6. Spectral Gap for Generating Sets on Finite Abelian Groups
 
-**File:** `Advanced/MarkovSieve.lean:335` (~20 lines)
+**File:** `EM/Stochastic/VanishingNoise.lean` (~130 lines)
 
-For natural numbers `n, m > 1`:
+If a finite `S ⊆ G` generates the finite commutative group `G`, contains `1`, and
+`|S| ≥ 2`, then for every nontrivial character `χ : G →* ℂˣ`,
 
 ```
-Nat.minFac (n * m) = min (Nat.minFac n) (Nat.minFac m)
+‖∑_{s ∈ S} χ(s)‖ < |S|
 ```
 
-No coprimality hypothesis needed. The proof is by antisymmetry:
-(≤) via `Nat.minFac_le_of_dvd` + divisibility; (≥) via `Prime.dvd_mul`.
-Mathlib has extensive `Nat.minFac` API but not this identity.
+— the spectral gap driving mixing on Cayley graphs. Proof via `StrictConvexSpace` and
+`Subgroup.closure_le`. A variant drops `1 ∈ S` in favour of "some `s, t ∈ S` with
+`χ(s) ≠ χ(t)`".
 
-| Identifier | Kind | Description |
-|---|---|---|
-| `minFac_mul_eq_min` | thm | `Nat.minFac (n * m) = min (Nat.minFac n) (Nat.minFac m)` |
-| `minFac_not_multiplicative` | thm | Counterexample: `minFac` is not multiplicative (6 × 35) |
-
----
-
-## 24. Squarefree Integers are Determined by their Prime Factor Set
-
-**File:** `Advanced/InterpolationMC.lean:877` (~8 lines)
-
-If `P` and `Q` are squarefree and `P.primeFactors = Q.primeFactors`, then `P = Q`.
-Proof via `Nat.prod_primeFactors_of_squarefree`.
-
-This is a textbook fact about the fundamental theorem of arithmetic that
-Mathlib does not state directly.
-
-| Identifier | Kind | Description |
-|---|---|---|
-| `eq_of_same_primeFactors_squarefree` | thm | Squarefree + same prime factors ⟹ equal |
+| Identifier | Description |
+|---|---|
+| `char_norm_one_of_hom` | `‖χ(g)‖ = 1` for `χ : G →* ℂˣ`, `G` finite |
+| `exists_ne_one_of_nontrivial` | Nontrivial `χ` on generators: `∃ s ∈ S`, `χ(s) ≠ 1` |
+| `norm_add_lt_two_of_ne` | `‖z + w‖ < 2` for unit-norm `z ≠ w` |
+| `spectral_gap_with_identity` | `‖∑ χ(s)‖ < \|S\|` |
+| `spectral_contraction_lt_one` | Ratio form |
+| `spectral_gap_of_distinct_values` | Without `1 ∈ S` |
 
 ---
 
-## 25. Sieve Density Function and Algebraic Properties
+## A7. Karamata's Tauberian Theorem, and Mertens' Theorem in Progressions
 
-**File:** `Reduction/ShiftedDensity.lean:54` (~120 lines)
+**File:** `EM/IK/Karamata.lean` (~670 lines, self-contained over Mathlib)
 
-The sieve density function `g(r) = r/(r² − 1)` and its properties:
-partial fraction decomposition, strict monotonicity, and tight bounds.
+Mathlib has no Tauberian theorem of any kind (no hit for `Karamata`, `Tauberian`,
+`HardyLittlewood` in `v4.33.0`).  This file proves the classical one for Dirichlet series
+with nonnegative coefficients: if `c n ≥ 0`, `∑ c n · n^{−s}` converges for every `s > 0`,
+and `s · ∑ c n · n^{−s} → C` as `s → 0⁺`, then
+
+```
+(∑_{n ≤ x} c n) / log x  →  C     (x → ∞).
+```
+
+Proof is the textbook Weierstrass-sandwich argument (monomials first, then polynomials, then
+a continuous ramp squeezing the indicator `1_{[e^{−1},1]}`), with all the sandwich estimates
+explicit; nothing is borrowed beyond Weierstrass approximation, `intervalIntegral`, and
+`Summable` calculus.
 
 | Identifier | Kind | Description |
 |---|---|---|
-| `sieveDensity` | def | `g(r) = r/(r² − 1)` |
-| `sieveDensity_partial_frac` | thm | `g(r) = (1/2)(1/(r−1) + 1/(r+1))` |
-| `sieveDensity_gt_inv` | thm | `g(r) > 1/r` for r ≥ 2 |
-| `sieveDensity_lt_inv_pred` | thm | `g(r) < 1/(r−1)` |
-| `sieveDensity_strict_anti` | thm | `g` strictly decreasing on [2, ∞) |
-| `sieveDensity_sub_inv` | thm | `g(r) − 1/r = 1/(r(r² − 1))` (exact correction) |
+| `Karamata.dser`, `Karamata.psum` | def | Dirichlet series `∑ c n · n^{−s}`; partial sums `∑_{1≤n≤x} c n` |
+| `Karamata.tendsto_monomial` | thm | The theorem for the test function `y^k` |
+| `Karamata.tendsto_poly` | thm | … for polynomials |
+| `Karamata.exists_sandwich` | thm | Polynomials `P_l ≤ 1_{[e^{−1},1]}/y ≤ P_u` with integrals within `η` |
+| `Karamata.tendsto_psum_exp` | thm | `s · psum c (e^{1/s}) → C` |
+| `Karamata.karamata` | thm | **The theorem**: `psum c x / log x → C` |
+
+Applied in the same file to the coefficients `c n = Λ(n)·1_{n ≡ a (q)}` (Mathlib's
+`vonMangoldt.residueClass`), whose L-series pole is exactly what
+`Mathlib/NumberTheory/LSeries/PrimesInAP.lean` supplies, this gives **Mertens' theorem in
+arithmetic progressions in asymptotic form**, and with prime-power stripping and Abel
+summation (`EM/IK/Tauberian.lean`, `EM/IK/AbelChain.lean`) the reciprocal form:
+
+| Identifier | File | Description |
+|---|---|---|
+| `Karamata.wcoef_tendsto` | `EM/IK/Karamata.lean` | `(∑_{n≤x, n≡a} Λ(n)/n) / log x → 1/φ(q)` |
+| `IK.weightedPNTinAP_asymp_proved` | `EM/IK/Karamata.lean` | `∑_{p≤x, p≡a} log p / p ~ (log x)/φ(q)` |
+| `IK.prime_power_stripping_asymp_proved` | `EM/IK/Tauberian.lean` | Prime powers contribute `O(1)` |
+| `IK.primesEquidistInAP_asymp_proved` | `EM/IK/Karamata.lean` | `∑_{p≤x, p≡a} 1/p ~ (log log x)/φ(q)` |
+
+Mathlib has no Mertens theorem (not even for `q = 1`), so the second table is a candidate in
+its own right; the natural home for both is next to `PrimesInAP.lean`.  Nothing here is
+`private`.
+
+---
+
+# Tier B — real gaps, smaller or more specialised
+
+## B1. Finite Weyl Criterion
+
+**File:** `EM/LargeSieve/Spectral.lean`
+
+`∀ χ ≠ 1, |∑ χ(x_n)| ≤ ε·N ⟹ |V(a) − N/(p−1)| ≤ ε·N`: the finite-group analogue of the
+classical Weyl criterion.
+
+| Identifier | Description |
+|---|---|
+| `weyl_criterion_finite_group` | Small character sums ⟹ equidistribution |
+
+---
+
+## B2. Completely-Multiplicative Predicate, and Liouville ↔ Möbius — **partially superseded**
+
+**File:** `EM/IK/Ch1.lean`
+
+> **Correction.** An earlier version claimed the Liouville function was missing. As of
+> Mathlib `v4.30`+ it is **not**: `ArithmeticFunction.liouville` lives in
+> `Mathlib/NumberTheory/ArithmeticFunction/Liouville.lean`, with `liouville_apply`,
+> `liouville_apply_mul` and `isMultiplicative_liouville`. `IK.liouville` in this repo is
+> now redundant and should be replaced by Mathlib's.
+
+Two things in that entry are still absent, and both are small but real:
+
+| Identifier | Description | Why still a gap |
+|---|---|---|
+| `IsCompletelyMultiplicative` | `f(mn) = f(m)f(n)` for **all** `m, n` | Mathlib has `IsMultiplicative` (coprime only) and states complete multiplicativity only as a bare equation per function (`liouville_apply_mul`); there is no predicate. `CompletelyMultiplicative` occurs solely as a section name in `EulerProduct/Basic.lean` |
+| `liouville_eq_moebius_of_squarefree` | `λ(n) = μ(n)` for squarefree `n` | Mathlib's Liouville file makes no connection to `moebius` at all |
+
+## B3. Mittag-Leffler Expansion of `csc`
+
+**File:** `EM/IK/Ch7Hilbert.lean` (~100 lines)
+
+For `θ ∉ ℤ`, the symmetric partial sums `∑_{m=−K}^{K} (−1)^m/(θ+m)` converge to
+`π/sin(πθ)`. Built on Mathlib's `Summable_cotTerm` and
+`tendsto_logDeriv_euler_cot_sub`, so it is a genuine extension of existing infrastructure
+rather than a parallel development.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `MittagLefflerCsc` | def | Statement |
+| `mittag_leffler_csc_proved` | thm | Full proof |
+
+---
+
+## B4. Hilbert Inequality Rescaling
+
+**File:** `EM/IK/Ch7Hilbert.lean` (~50 lines)
+
+Reduction of the `δ`-separated Hilbert inequality to the `1`-separated case by
+`λ_r ↦ λ_r/δ`.
+
+| Identifier | Description |
+|---|---|
+| `hilbert_rescale` | `HilbertInequality1 → HilbertInequality` |
+| `hilbert1_implies_hilbert` | Same reduction, alternate name |
+
+---
+
+## B5. Cesàro Convergence of Cross Terms (Product-Index Trick)
+
+**File:** `EM/IK/Ch7CesaroChain.lean` (~490 lines)
+
+Lift `R` points on `ℝ/ℤ` to `R·(2K+1)` points on `ℝ` and show the cross terms converge in
+the Cesàro sense to `π·csc(π(α_r − α_s))`. Infrastructure for IK Corollaries 7.9–7.10.
+
+| Identifier | Kind | Description |
+|---|---|---|
+| `CrossRCesaroConvergence` | def | Statement |
+| `cross_r_cesaro_convergence_proved` | thm | Full proof |
+
+*(`same_r_antisymmetry` and `hilbert_lifted_bound` in the same file are `private`.)*
+
+---
+
+## B6. One-Sided Tauberian Lemma and L-series Bounds for Residue Classes
+
+**File:** `EM/IK/Tauberian.lean`
+
+For `bₙ ≥ 0`, `∑_{n≤N} bₙ ≤ N^ε · ∑_n bₙ/n^ε` for every `ε > 0`. Elementary, and the key
+one-sided bound reducing `WeightedPNTinAP` to a real-variable Wiener–Ikehara hypothesis.
+
+Separately: Mathlib's `PrimesInAP.lean` proves a *lower* bound on
+`∑ Λ(n)·1_{n≡a}/n^x` near `x = 1` (`LSeries_residueClass_lower_bound`) but does not export
+the matching *upper* bound. These extract the identity from Mathlib's own proof and derive
+both.
+
+| Identifier | Description |
+|---|---|
+| `one_sided_tauberian_upper` | `∑_{n≤N} bₙ ≤ N^ε · ∑_n bₙ/n^ε` |
+| `one_sided_tauberian_dirichlet` | Applied to Dirichlet series |
+| `residueClass_tsum_eq_aux_plus_pole` | `tsum = aux.re + pole` |
+| `residueClass_tsum_upper_bound` | Upper bound |
+| `residueClass_tsum_both_bounds` | Two-sided |
+
+---
+
+## B7. Exponential Sum Estimates — **partially superseded**
+
+**File:** `EM/LargeSieve/Analytic.lean`
+
+> **Correction.** An earlier version of this file claimed Jordan's inequality was missing
+> from Mathlib. It is **not**: `Real.mul_le_sin` in
+> `Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean` gives
+> `2/π · x ≤ sin x` on `[0, π/2]`, from which `sin_pi_ge_two_mul` follows by
+> `x = πt`. That entry is withdrawn.
+
+What remains genuinely absent is the geometric-sum bound built on it, which is the estimate
+actually used throughout analytic number theory:
+
+| Identifier | Description |
+|---|---|
+| `norm_one_sub_eAN` | `‖1 − e(β)‖ = 2·\|sin(πβ)\|` |
+| `norm_eAN_geom_sum_le_inv` | `‖∑_{k<K} e(kβ)‖ ≤ 1/(2δ)` for `β` at distance `≥ δ` from `ℤ` |
+
+---
+
+## B8. Discrete Abel Summation — **superseded, withdrawn**
+
+> **Correction.** An earlier version claimed summation by parts was "not in Mathlib as a
+> standalone lemma". It is: `Finset.sum_range_by_parts` (with `sum_Ico_by_parts` and
+> `sum_Ioc_by_parts`) in `Mathlib/Algebra/BigOperators/Module.lean`, stated in the general
+> module setting. The EM version (`discrete_abel` in `EM/IK/AbelChain.lean`) is a `private`
+> real-valued specialisation and should be replaced by Mathlib's, not contributed.
+
+---
+
+## B9. Log-Log Integrals via FTC
+
+**File:** `EM/IK/AbelChain.lean` (~80 lines)
+
+| Identifier | Description |
+|---|---|
+| `hasDerivAt_log_log` | `d/dt[log(log t)] = 1/(t·log t)` for `t > 1` |
+| `hasDerivAt_neg_inv_log` | `d/dt[−(log t)⁻¹] = (t·(log t)²)⁻¹` |
+| `integral_inv_mul_log` | `∫_a^b 1/(t·log t) dt = log log b − log log a` |
+| `integral_inv_mul_log_sq` | `∫_a^b 1/(t·(log t)²) dt = 1/log a − 1/log b` |
+| `log_ratio_le`, `loglog_le_ratio` | Sandwich between log-log differences and log ratios |
+
+---
+
+## B10. Infinite Product Contraction (Divergent Series ⇒ Vanishing Product)
+
+**Files:** `EM/Stochastic/VanishingNoise.lean`, `EM/Stochastic/VanishingNoiseC.lean`
+
+For `γ_k ∈ (0,1]` with `∑ γ_k = ∞`: `∏_{k<N} (1 − γ_k) → 0`. Standard (Rudin,
+*Principles* 15.5); used in Borel–Cantelli, mixing, and Euler products. A **sparse
+variant** relaxes to `0 ≤ a_k ≤ 1`, which is the form sieve applications need (most terms
+contribute gap `0`).
+
+| Identifier | File | Description |
+|---|---|---|
+| `product_contraction_tendsto` | `VanishingNoise.lean` | `γ_k ∈ (0,1]`, `∑ γ_k = ∞` ⟹ `∏(1 − γ_k) → 0` |
+| `sparse_product_contraction` | `VanishingNoiseC.lean` | `a_k ∈ [0,1]`, `¬Summable(1 − a_k)` ⟹ `∏ a_k → 0` |
+
+---
+
+## B11. Divergence of Prime Reciprocals in Arithmetic Progressions
+
+**File:** `EM/IK/DirichletDensity.lean`
+
+For `2 ≤ q` and any unit class `a : ZMod q`, `∑ 1/p` over primes `p ≡ a (mod q)` is not
+summable. Mathlib has the `Λ`-weighted analogue
+(`ArithmeticFunction.vonMangoldt.not_summable_residueClass_prime_div`), which does **not**
+imply this — the weighting goes the wrong way.
+
+The proof runs the classical Dirichlet-density argument: Euler-log split with a uniform
+prime-power tail bound, character orthogonality, principal-character divergence from
+`Nat.Primes.not_summable_one_div`, and boundedness of `∑ χ(p) p^{−σ}` as `σ → 1⁺` for
+`χ ≠ 1` via `LFunction_ne_zero_of_one_le_re` plus path-lifting through
+`Complex.isCoveringMap_exp` (no hand-rolled branch tracking). Self-contained over Mathlib.
+
+Natural home: `Mathlib/NumberTheory/LSeries/PrimesInAP.lean`.
+
+| Identifier | Description |
+|---|---|
+| `prime_reciprocal_class_divergent` | `∑_{p ≡ a (q)} 1/p` diverges |
+
+---
+
+## B12. Coprimality Counts Along an Affine Progression
+
+**File:** `EM/ForMathlib/CoprimeAffineBlock.lean` (Mathlib-only; extracted 2026-08-18; Mathlib-style name `Nat.card_filter_coprime_Ico_affine`)
+
+Mathlib's `Nat.filter_coprime_Ico_eq_totient` counts `t ∈ [k, k+N)` coprime to `N`.  The form
+one needs for sieving an arithmetic progression is the same count for `a·t + b` with
+`Coprime a N`:
+
+```
+#{t ∈ [k, k+N) : Coprime N (a·t + b)} = φ N,      #{t ∈ [k, k+B·N) : …} = B · φ N.
+```
+
+Proof: periodicity (`Nat.filter_Ico_card_eq_of_periodic`) plus `t ↦ (a t + b) mod N` being a
+bijection of `range N` (injectivity in `ZMod N`, then cardinality).
+
+| Identifier | Description |
+|---|---|
+| `BagConditionedLaw.coprime_mod_iff` | `Coprime N (x % N) ↔ Coprime N x` |
+| `BagConditionedLaw.card_coprime_affine_block` | One block |
+| `BagConditionedLaw.card_coprime_affine_blocks` | `B` blocks |
+
+---
+
+## B13. Density of `{m : minFac m = p}` and Head Domination
+
+**File:** `EM/Population/HeadDomination.lean`
+
+For a prime `p`, the natural density of `{m : Nat.minFac m = p}` is
+`w_p = (1/p)∏_{r<p}(1−1/r)`, with two-sided counting bounds and the telescoping
+`w_p = c(p) − c(p+1)`, `c(n) = ∏_{r<n}(1−1/r) → 0`, so `∑_p w_p = 1` (`HasSum`).  Nothing in
+Mathlib counts integers by least prime factor.
+
+| Identifier | Description |
+|---|---|
+| `HeadDomination.totient_prod_primes` | `φ(∏_{r∈s} r) = ∏_{r∈s}(r−1)` for a finset of primes |
+| `HeadDomination.card_minFac_eq_ge`, `…_le` | `⌊X/(pN)⌋·φ(N) ≤ #{m ≤ X : minFac m = p} ≤ (⌊X/(pN)⌋+1)·φ(N)` |
+| `HeadDomination.w_eq_cfun_sub` | `w_p = c(p) − c(p+1)` |
+| `HeadDomination.cfun_tendsto_zero` | `∏_{r<n}(1−1/r) → 0` (from `Nat.Primes.not_summable_one_div`) |
+| `HeadDomination.hasSum_wq` | `∑_{p>q} w_p = c(q+1)` |
+| `HeadDomination.tendsto_classCount_div` | Density of `{minFac ≡ a (q)}` among `q`-rough integers is `∑_{p≡a} w_p` |
+
+Companion, on a progression (`EM/Population/BagConditionedLaw.lean`):
+`BagConditionedLaw.tendsto_bagClass_div_ap` — among `m ≡ 1 (mod P)`, `minFac m = p` (for
+`p ∤ P`) has relative density `(1/p)∏_{r<p, r∤P}(1−1/r)`.
+
+---
+
+# Tier C — small facts, cheap either way
+
+Listed for completeness; each is a few lines, and a reviewer may reasonably prefer to
+reprove rather than port.
+
+| # | Identifier | File | Statement |
+|---|---|---|---|
+| C1 | `minFac_mul_eq_min` | `EM/Meta/MarkovSieve.lean` | `Nat.minFac (n*m) = min (minFac n) (minFac m)` for `n, m > 1`; no coprimality needed |
+| C2 | `minFac_not_multiplicative` | `EM/Meta/MarkovSieve.lean` | Counterexample: `minFac` is not multiplicative (`6 × 35`) |
+| C3 | `eq_of_same_primeFactors_squarefree` | `EM/Stochastic/TreeSieveDecay.lean` | Squarefree + same prime factors ⟹ equal |
+| C4 | `norm_sq_partial_sum_telescoping` | `EM/Reduction/DSLInfra.lean` | `‖∑_{k<N} z_k‖² = ∑‖z_k‖² + 2∑⟪∑_{j<k} z_j, z_k⟫` in an inner product space |
+| C5 | `group_walk_doubly_stochastic` | `EM/Reduction/SelfCorrecting.lean` | Uniform multiplier on a finite group ⟹ doubly stochastic transitions |
+| C6 | `prime_pow_ne_prime_pow`, `log_ratio_irrational` | `EM/Meta/LFunction.lean` | `log p / log q ∉ ℚ` for distinct primes |
+| C7 | `sieveDensity` + 5 lemmas | `EM/Reduction/ShiftedDensity.lean` | `g(r) = r/(r²−1)`: partial fractions, `1/r < g(r) < 1/(r−1)`, strict antitonicity, exact correction `g(r) − 1/r = 1/(r(r²−1))` |
+
+---
+
+## Not yet extracted
+
+One pattern that recurs in `EM/Population/DefectTelescope.lean` looks Mathlib-worthy but is
+currently inlined rather than stated separately:
+
+> A sequence that is **antitone up to a summable error** — `u_{n+1} ≤ u_n + e_n` with
+> `∑ e_n < ∞` — and bounded below, converges.
+
+Mathlib has monotone convergence (`tendsto_atTop_ciInf`) but not this perturbed form, which
+is what one actually meets when a recursion is monotone only approximately. Offered as a
+suggestion rather than a contribution: it would need extracting from the surrounding
+argument first.

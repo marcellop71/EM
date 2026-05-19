@@ -56,7 +56,7 @@ theorem nao_set_eq_range {q : ℕ} [Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) :
     { u : (ZMod q)ˣ | ∃ n : ℕ, (u : ZMod q) = (emSDDS q (IsPrime.toNatPrime hq)).mult n } =
     Set.range (fun n => Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) := by
-  ext u; simp only [Set.mem_setOf_eq, Set.mem_range]
+  ext u; simp only [Set.mem_ofPred_eq, Set.mem_range]
   constructor
   · rintro ⟨n, hn⟩; rw [emSDDS_mult_eq_multZ] at hn; exact ⟨n, Units.ext hn.symm⟩
   · rintro ⟨n, rfl⟩; exact ⟨n, by simp [emSDDS_mult_eq_multZ]⟩
@@ -72,7 +72,7 @@ theorem nao_set_eq_range {q : ℕ} [Fact (Nat.Prime q)]
 theorem se_implies_nao (hse : SubgroupEscape) (q : ℕ) (hq : Nat.Prime q)
     (hiq : IsPrime q) (hne : ∀ k, seq k ≠ q) :
     NoAlgebraicObstruction (emSDDS q hq) := by
-  haveI : Fact (Nat.Prime q) := ⟨hq⟩
+  have : Fact (Nat.Prime q) := ⟨hq⟩
   unfold NoAlgebraicObstruction
   show Subgroup.closure
     { u : (ZMod q)ˣ | ∃ n : ℕ, (u : ZMod q) = (emSDDS q hq).mult n } = ⊤
@@ -89,7 +89,7 @@ theorem mcBelow_pre_implies_nao
     {q : ℕ} (hq : Nat.Prime q) (hiq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (hmc : MCBelow q) :
     NoAlgebraicObstruction (emSDDS q hq) := by
-  haveI : Fact (Nat.Prime q) := ⟨hq⟩
+  have : Fact (Nat.Prime q) := ⟨hq⟩
   unfold NoAlgebraicObstruction
   show Subgroup.closure
     { u : (ZMod q)ˣ | ∃ n : ℕ, (u : ZMod q) = (emSDDS q hq).mult n } = ⊤

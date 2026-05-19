@@ -16,8 +16,10 @@ of the sequence appears completely intractable.
 \paragraph{The largest-factor variant.}
 Cox and van der Poorten~\cite{CoxVdP1968} showed that the related sequence using
 the \emph{largest} prime factor---where each term is
-$\operatorname{gpf}(\Prod{2}(n) + 1)$ instead of $\minFac$---provably
-misses infinitely many primes (for instance,~$5$ never appears).  By
+$\operatorname{gpf}(\Prod{2}(n) + 1)$ instead of $\minFac$---misses
+specific primes (for instance,~$5$ never appears) and conjectured that
+it misses infinitely many; Booker~\cite{Booker2012} proved the
+infinitude.  By
 always jumping to the largest factor of $\Prod{2}(n) + 1$, the sequence
 leaps past small primes and can never return to them, since each Euclid
 number is coprime to every earlier term.  This refuted the natural
@@ -42,7 +44,7 @@ Shanks~\cite{Shanks1991} was the first to articulate the heuristic
 argument underlying the conjecture: if~$q$ is the smallest prime that
 never appears, the walk $\Prod{2}(n) \bmod q$ in $(\ZZ/q\ZZ)^\times$
 is well-defined for all~$n$, and under a pseudo-randomness assumption
-it must eventually hit~$-1$.  The formalization's CME, CCSB, and DSL
+it must eventually hit~$-1$.  The formalization's CME and CCSB
 (Sections~\ref{sec:character}--\ref{sec:ensemble}) are rigorous
 formulations of this heuristic: each specifies the precise sense in
 which ``the walk behaves pseudo-randomly'' would suffice.
@@ -175,14 +177,19 @@ that the Fourier coefficients of the walk's occupation measure tend to
 zero for every non-trivial character.
 
 \paragraph{Smallest prime factor distribution.}
-The SieveTransfer hypothesis (Section~\ref{sec:open}) connects MC to
-the distribution of the smallest prime factor function
-$P^-(n) = \min\{p : p \mid n\}$, studied by Alladi~\cite{Alladi1977},
-Hildebrand~\cite{Hildebrand1986}, and others.  For generic integers in an arithmetic
-progression $n \equiv a \pmod{q}$, the distribution of $P^-(n)$ is
-controlled by the Dickman function and CRT-based equidistribution
-results.  MC asks whether this equidistribution transfers from generic
-integers to the specific subsequence $\{\Prod{2}(n)+1\}_{n \geq 0}$.
+The smallest prime factor function
+$P^-(n) = \min\{p : p \mid n\}$ was studied by Alladi~\cite{Alladi1977},
+Hildebrand~\cite{Hildebrand1986}, and others.  Its distribution is
+dominated by small primes: the density of $\{n : P^-(n) = p\}$ is
+$p^{-1}\prod_{r<p}(1-1/r)$, so $P^-(n) \bmod q$ is \emph{not}
+equidistributed for any fixed~$q$ (Dead End~\#160); Alladi's theorem
+is the M\"obius-weighted duality
+$-\sum_{n \le x,\, P^-(n) \equiv a} \mu(n) \sim x/\varphi(q)$, not an
+unweighted equidistribution.  An earlier draft's SieveTransfer
+hypothesis rested on the unweighted reading and is retired.
+MC asks about the residue of $P^-$ at the specific values
+$\{\Prod{2}(n)+1\}_{n \geq 0}$, where the least prime factor is
+outside the bag and eventually large.
 The same orbit-specificity transfer problem arises for Mersenne
 numbers $2^p - 1$, Fibonacci numbers, and polynomial iterates
 $f^{\circ n}(a)$ in arithmetic dynamics.
@@ -234,7 +241,7 @@ content in each route is the orbit-specificity transfer.
 
 \subsubsection*{Arithmetic Large Sieve Route}
 
-\begin{theorem}[\lean{EM/LargeSieve/Basic.lean\#L403}{arith\_ls\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Basic.lean}{arith\_ls\_chain\_mc}]
 $\mathrm{ArithLS} + \mathrm{ArithLSImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 The arithmetic large sieve gives character sum bounds for Dirichlet
@@ -257,7 +264,7 @@ with $\min_{r \neq s} \|\alpha_r - \alpha_s\| \geq \delta$:
 \]
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L490}{weak\_als\_from\_card\_bound}]
+\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean}{weak\_als\_from\_card\_bound}]
 \label{thm:weak-als}
 A \emph{weak} version with constant $N \cdot (\delta^{-1} + 1)$ is
 proved (the optimal constant is $N - 1 + \delta^{-1}$, but the
@@ -269,7 +276,7 @@ $\tau(\chi) = \sum_{a} \chi(a)\, e(a/p)$ intertwines multiplication
 and addition on~$\ZZ/p\ZZ$, converting character sums to exponential
 sums.
 
-\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L304}{char\_sum\_to\_exp\_sum}]
+\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean}{char\_sum\_to\_exp\_sum}]
 \label{thm:gauss-inversion}
 For a non-trivial character~$\chi$ mod~$p$ prime:
 $\sum_n f(n)\, \chi(n)
@@ -279,17 +286,17 @@ $\sum_n f(n)\, \chi(n)
 The GaussConductorTransfer composes eight internal lemmas (all proved,
 \S56--\S62) into the bridge from ALS to the prime arithmetic large sieve:
 
-\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L1358}{als\_implies\_prime\_arith\_ls}]
+\begin{theorem}[\lean{EM/LargeSieve/PrimeArithLS.lean}{als\_implies\_prime\_arith\_ls}]
 \label{thm:als-prime}
 $\mathrm{AnalyticLargeSieve} \;\Longrightarrow\; \mathrm{PrimeArithLS}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieve/Analytic.lean\#L1535}{als\_prime\_arith\_ls\_chain\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/PrimeArithLS.lean}{als\_prime\_arith\_ls\_chain\_mc}]
 $\mathrm{ALS} + \mathrm{PrimeArithLSImpliesMMCSB} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
 A deeper decomposition of ALS itself is architectured in
-\code{IKCh7.lean}: the \textbf{Hilbert chain}
+\code{EM/IK/Ch7Hilbert.lean}: the \textbf{Hilbert chain}
 \[
 \mathrm{HilbertInequality} + \mathrm{CscPartialFraction}
 \;\xrightarrow{\text{open}}\;
@@ -299,7 +306,7 @@ A deeper decomposition of ALS itself is architectured in
 \;\xrightarrow{\text{proved}}\;
 \mathrm{ALS}
 \]
-(\lean{EM/IKCh7.lean\#L1467}{hilbert\_chain\_als}).
+(\lean{EM/IK/Ch7Hilbert.lean}{hilbert\_chain\_als}).
 \defname{HilbertInequality} is the Montgomery--Vaughan
 generalized Hilbert inequality (IK Lemma~7.8);
 \defname{CscPartialFraction} is the Mittag-Leffler expansion
@@ -325,7 +332,7 @@ Instead of individual character sums, this route examines the
 \emph{total energy} of the walk occupation measure
 $V_N(a) = |\{n < N : \walkZ{2}{q}{n} = a\}|$.
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L89}{walk\_energy\_parseval}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{walk\_energy\_parseval}]
 \label{thm:walk-energy}
 $\sum_\chi \|S_\chi(N)\|^2 = (q{-}1) \sum_{a \in (\ZZ/q\ZZ)^\times} V_N(a)^2$
 \quad (Parseval).
@@ -340,7 +347,7 @@ For every missing prime~$q$ and $\varepsilon > 0$, there exists
 $N_0$ such that for $N \geq N_0$: $E(N) \leq \varepsilon N^2$.
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L238}{sve\_implies\_mmcsb}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{sve\_implies\_mmcsb}]
 \label{thm:sve-mc}
 $\mathrm{SVE} \Longrightarrow \mathrm{MMCSB} \Longrightarrow \MC$.
 \end{theorem}
@@ -353,7 +360,7 @@ each prime individually and MMCSB jointly.
 \paragraph{Van der Corput and higher-order decorrelation.}
 The van der Corput inequality bounds $|\sum z_n|$ via autocorrelations:
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L826}{van\_der\_corput\_bound}]
+\begin{theorem}[\lean{EM/ForMathlib/VanDerCorput.lean}{van\_der\_corput\_bound}]
 \label{thm:vdc}
 $\left\|\sum_{n \leq N} z_n\right\|^2
 \leq \frac{N + H}{H+1}\bigl(N + 2\sum_{h=1}^{H}
@@ -372,7 +379,7 @@ $N \geq N_0$ and all $1 \leq h \leq H$:
 $\|R_h(N)\| \leq \varepsilon N$.
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean\#L1038}{hod\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{hod\_implies\_ccsb}]
 \label{thm:hod-mc}
 $\mathrm{HOD} \Longrightarrow \mathrm{CCSB} \Longrightarrow \MC$.
 \end{theorem}
@@ -386,11 +393,11 @@ $c \in (\ZZ/q\ZZ)^\times$:
 $\|\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))\| \leq \varepsilon N$.
 \end{property}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_dec}]
+\begin{theorem}[\lean{EM/CME/Reduction.lean}{cme\_implies\_dec}]
 $\mathrm{CME} \Longrightarrow \mathrm{DecorrelationHypothesis}$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}]
+\begin{theorem}[\lean{EM/CME/Reduction.lean}{cme\_implies\_ccsb}]
 \label{thm:cme-ccsb}
 $\mathrm{CME} \Longrightarrow \mathrm{CCSB}$.
 \end{theorem}
@@ -410,7 +417,7 @@ barrier.  The proof works for all character orders because it uses
 only the fiber decomposition and telescoping---no block rotation
 estimate is needed.
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_mc}]
+\begin{theorem}[\lean{EM/CME/Reduction.lean}{cme\_implies\_mc}]
 $\mathrm{CME} \Longrightarrow \MC$.
 \end{theorem}
 
@@ -418,7 +425,7 @@ $\mathrm{CME} \Longrightarrow \MC$.
 Compose \texttt{cme\_implies\_ccsb} with \texttt{complex\_csb\_mc'}.
 \end{proof}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_chain\_mc}]
+\begin{theorem}[\lean{EM/CME/Reduction.lean}{cme\_chain\_mc}]
 $\mathrm{CME} + \mathrm{PEDImpliesCSB} \Longrightarrow \MC$.
 \end{theorem}
 
@@ -434,8 +441,11 @@ requires no additional hypotheses.
 \mathrm{CCSB} \;\approx\; \mathrm{HOD}
 \;\approx\; \mathrm{SVE},
 \]
-where ``$<$'' means strictly weaker (proved implication, known not
-to reverse) and ``$\approx$'' means equivalent.
+where ``$<$'' means a proved implication whose converse is not proved
+for a fixed missing~$q$ (as global propositions PED, Dec, CME, CCSB, HOD, SVE
+are all implied by MC vacuously, and CME, CCSB are equivalent to MC,
+\lean{EM/CME/Equivalences.lean}{walk\_layer\_equivalences}) and
+``$\approx$'' means equivalent.
 HOD~$\Leftrightarrow$~CCSB via van der Corput;
 SVE~$\Leftrightarrow$~CCSB via Parseval;
 CME~$\Rightarrow$~CCSB via telescoping + fiber decomposition
@@ -444,170 +454,111 @@ CME~$\Rightarrow$~CCSB via telescoping + fiber decomposition
 Every hypothesis implies MC.  The PED route has an open BRE bridge
 for $d \geq 3$ characters, but this is now bypassed: the direct
 CME~$\to$~CCSB arrow is proved for all character orders.  CME is the
-\emph{sharpest sufficient condition}---the weakest hypothesis known
-to imply MC.
+\emph{sharpest reformulation}: the statement with the least analytic
+content per missing prime that still implies MC (and, being quantified
+over missing primes, is equivalent to it).
 
 %% =========================================================================
 \subsection{Dead Ends Catalogue}
 \label{app:dead-ends}
 %% =========================================================================
 
-137~potential approaches
-were explored and found to be dead ends (catalogued in full in
-\code{Meta/DeadEnds.lean}, with 14~formal Lean witnesses).
-Each elimination is informative:
-it narrows the space of viable strategies.  Eight dead ends have
-weak-MC revival score~$\geq 2$, meaning they contribute to weaker forms
-of the conjecture (see~\S\ref{sec:open}).
-A representative selection, grouped by the type of obstruction:
+The catalogue below is complete: every numbered dead end of the
+project, with the reason it fails.  Numbers are assigned progressively in
+the session logs and are cited by number throughout the repository, so
+they are never reused or renumbered; of the \DEnumbers~numbers,
+\DEunassigned\ (\#25, \#64--\#72) were never assigned to an entry in any
+log and are listed as such rather than back-filled, leaving
+\DEentries~entries.  \DEwitnessed~of them carry a genuine formal Lean
+witness (a theorem whose statement \emph{is} the counterexample, the
+collapse, or the false claim---not a \code{True}-bodied marker), shown
+with the {\color{leanink}\sffamily\footnotesize$\checkmark$} mark;
+\DErevivable~have weak-MC revival score~$\geq 2$ (shown in brackets),
+meaning they contribute to weaker forms of the conjecture despite being
+dead for MC itself.  The single source of truth is
+\code{tools/dead\_ends.tsv}; the table, the registry block in
+\code{EM/Meta/DeadEnds.lean} (whose theorem \code{dead\_end\_registry}
+fixes the counts) and \code{docs/dead\_ends\_catalog.md} are generated
+from it.
+
+The grouping is by \emph{failure mode}, and the failure modes are the
+four requirements of the four-way blocker of \S\ref{sec:four-way} seen
+from the failure side, refined:
+\begin{itemize}[nosep]
+\item \textbf{OS} orbit specificity --- population or ensemble statistics
+  do not determine what one orbit does; the wall in front of every route
+  (\#90);
+\item \textbf{DG} decorrelation gap --- multiplier-level cancellation or
+  independence does not transfer to the walk (\#58, \#117);
+\item \textbf{AG} aggregate gap --- an aggregate or average-case bound
+  does not give the per-fibre bound needed;
+\item \textbf{CO} collapse --- the proposed hypothesis is definitionally
+  (or by a short argument) equivalent to CME, CCSB, DH or MC itself;
+\item \textbf{CI} circularity --- the argument presupposes its conclusion;
+\item \textbf{SF} structurally false --- an explicit counterexample or a
+  proved refutation of the proposed statement (including the three
+  population-level layers refuted in 2026: \#156, \#157, \#160);
+\item \textbf{TM} technique mismatch --- the tool needs independence,
+  multiplicativity, stationarity or an algebraic family that the walk
+  provably lacks (the largest class);
+\item \textbf{SM} scale mismatch --- the tool's error term exceeds the
+  signal on an $O(\log x)$-term or exponentially sparse orbit;
+\item \textbf{MR} methodological rules --- \#1--\#3, standing rules of the
+  project rather than mathematics.
+\end{itemize}
+Read that way the table is the evidence for the blocker, and the blocker
+is the reason the table has so few kinds of entry.  Session numbers
+(S$n$) date each entry; the aliases and numbering collisions found in the
+reconstruction are recorded in the status column of the TSV and in the
+registry's ``numbering aliases'' section.
 
 \smallskip
-\renewcommand{\arraystretch}{1.15}
-\small
-\begin{longtable}{@{}p{3.6cm}p{8.8cm}@{}}
-\toprule
-\textbf{Dead end} & \textbf{Why it fails} \\
-\midrule
-\endfirsthead
-\toprule
-\textbf{Dead end} & \textbf{Why it fails} \\
-\midrule
-\endhead
-\bottomrule
-\endfoot
-\multicolumn{2}{@{}l}{\textsc{Ensemble-to-orbit transfer}:
-  \emph{tool applies to generic sequences, not the specific EM orbit}} \\[2pt]
-BV for EM subsequence
-  & BV applies to all primes in APs, not to a greedy subsequence. \\
-Furstenberg / ergodic theory
-  & Standard ergodic methods assume classical multiplicativity;
-    the EM sequence is recursive and non-multiplicative. \\
-Diaconis--Shahshahani lemma
-  & Requires i.i.d.\ random steps; inapplicable to the
-    deterministic EM walk. \\
-\midrule
-\multicolumn{2}{@{}l}{\textsc{Independence / linearity violated}:
-  \emph{tool requires additive or independent structure the walk lacks}} \\[2pt]
-Large sieve for partial products
-  & The large sieve handles linear sums, not multiplicative walks. \\
-Abel summation
-  & Converts multiplier decorrelation to walk-sum bounds, but the
-    summation weights \emph{amplify} rather than cancel. \\
-Self-avoidance $\Rightarrow$ CCSB
-  & Self-avoidance (no repeated $\hat{\ZZ}$ positions) is invisible
-    to characters, which see only residues. \\
-\midrule
-\multicolumn{2}{@{}l}{\textsc{Wrong algebraic structure}:
-  \emph{the group or decomposition has no room for the desired bound}} \\[2pt]
-Non-abelian / representation
-  & $(\ZZ/q\ZZ)^\times$ is cyclic; all irreps are 1-d characters.
-    No higher-dimensional structure to exploit. \\
-CRT product group
-  & Reformulating on $\prod_{q \leq Q}(\ZZ/q\ZZ)^\times$ makes
-    the problem harder: the product group is exponentially large. \\
-NoLongRuns + PED $\Rightarrow$ BRE ($d \!\geq\! 3$)
-  & Variable block lengths align adversarially with character phases. \\
-DPED $\Rightarrow$ CCSB ($d \!\geq\! 3$)
-  & Alternating $\omega,\omega^2$ rotations satisfy DPED yet produce
-    $\Theta(N)$ walk sums.  All PED-to-CCSB intermediates ruled out. \\
-\midrule
-\multicolumn{2}{@{}l}{\textsc{Reduces to single-modulus CCSB}:
-  \emph{no genuine simplification}} \\[2pt]
-Multi-modular approaches
-  & All variants (BV + threshold, CRT, death coupling) collapse
-    to single-modulus CCSB. \\
-Death set coupling across moduli
-  & Death sets $\{m : \minFac(m) \equiv -c^{-1}\}$ vary per step;
-    no uniform coupling bound exists. \\
-Spectral gap (deterministic walk)
-  & Spectral gap theory applies to probability measures on groups
-    (convergence of random sampling); the EM walk is a single
-    deterministic path. \\
-Information-theoretic bounds
-  & Category error: entropy/mutual-information tools assume a
-    random variable; the EM sequence is deterministic with zero
-    entropy. \\
-\midrule
-\multicolumn{2}{@{}l}{\textsc{Multiplier-to-walk transfer}:
-  \emph{multiplier cancellation does not force walk cancellation}} \\[2pt]
-MultCancelToWalkCancel
-  & Multiplier energy $o(K)$ does not force walk energy $o(K)$.
-    Counterexample: alternating multipliers $\{2,3\} \bmod 5$
-    with $\chi(2)=i$ give multiplier cancellation yet
-    $|W_K| = \Theta(K)$.  Compatible with \emph{all} EM structural
-    properties (squarefree accumulator, coprime cascade, CRT
-    invariance). Dead End~\#117. \\
-Cofactor identity
-  & The ``$+1$ shift'' identity
-    $w(n){+}1 = m(n) \cdot \mathrm{cofZ}(n)$
-    (Theorem~\ref{thm:cofactor}) factorizes one correlated variable
-    into two; the cofactor remains a joint quantity, so the
-    Marginal/Joint Barrier persists. Dead End~\#115. \\
-SelfCorrectingDrift
-  & The Lyapunov function $L(N) = \sum_c (V_c(N) - N/(q{-}1))^2$
-    telescopes to $L(N) = 2R(N) + O(N)$, so
-    SCD ($R(N) = o(N^2)$) is algebraically equivalent to SVE
-    ($L(N) = o(N^2)$).  SCD provides no new proof leverage; it
-    is a dynamical reformulation, not a reduction.  Dead End~\#120. \\
-SMSB $+$ SE per-class escape
-  & SecondMomentSquaredBound gives a global bad-set density bound;
-    combining with SubgroupEscape to get per-class escape requires
-    BadSetEquidistribution (bad steps don't concentrate in one class).
-    BSE is a consequence of CME: going from marginal to conditional
-    bad-density requires joint (position, badness) independence, which
-    IS the orbit-specificity gap.  Pigeonhole gives ``some class'' but
-    not the specific class~$-1$ needed for MC\@.  Dead End~\#121. \\
-Dobrushin coefficient
-  & The Dobrushin coefficient of ergodicity equals~$1$ for every step
-    of the deterministic EM walk (each transition is a point mass;
-    disjoint support gives overlap~$= 0$).  Dobrushin's theorem
-    requires $\sum(1-\alpha) = \infty$, but $\sum 0 = 0$.
-    The weaker MUB hypothesis is genuinely weaker than CME
-    (CME $\Rightarrow$ MUB proved) but useless without Dobrushin.
-    Dead End~\#131. \\
-\midrule
-  $L$-function factorization
-  & The factorization $L(s,\chi) = L_{\mathrm{EM}}(s,\chi)\cdot L_{\mathrm{non\text{-}EM}}(s,\chi)$
-    is circular: proving $L_{\mathrm{non\text{-}EM}} \neq 0$ on $\Re(s) = 1$ requires knowing
-    which primes are non-EM, i.e., requires MC itself. Dead End~\#132. \\
-\midrule
-  Self-similar functional equation
-  & The tail identity gives $L_{\mathrm{EM}} = \text{head} + L_{\mathrm{EM, from } P(M)}$,
-    but the tail orbit starts from $P(M) \neq 2$, so it is \emph{not} a scalar multiple
-    of $L_{\mathrm{EM}}$. The Lapidus--van Frankenhuijsen fractal zeta framework requires
-    scaling ratios $\zeta(s) = \sum r_j^s \zeta(s) + f(s)$; the EM self-similarity
-    does not match this form. Dead End~\#133. \\
-\midrule
-  No Tauberian lever
-  & The super-exponential growth of $P(n)$ makes $\sum \mathrm{prod}(n)^{-s}$ converge
-    for all $\Re(s) > 0$ (proved: \code{accum\_reciprocal\_summable}). The resulting
-    Dirichlet series is entire in $\Re(s) > 0$ --- no pole at $s = 1$ to exploit
-    via Tauberian methods. The standard PNT argument uses the pole of~$\zeta(s)$;
-    $L_{\mathrm{EM}}$ has no such pole because EM primes are too sparse.
-    Dead End~\#134. \\
-\midrule
-  Konyagin--Shparlinski
-  & Character sums $\sum \chi(g^n)$ cancel when $\mathrm{ord}(g)$ is large
-    (Konyagin--Shparlinski~\cite{KonyaginShparlinski1999}).  The EM walk position
-    $\Prod{2}(n) \bmod q = 2 \cdot \seq{2}(1) \cdots \seq{2}(n) \bmod q$
-    looks like $g^n$ when $g = 2$, and $2$ has large order mod most primes
-    (Artin's conjecture).  Fatal gap: the walk is $2 \cdot \prod \seq{2}(k)$,
-    not $2^n$.  The varying multipliers destroy the geometric progression
-    structure that makes the Konyagin--Shparlinski bound work.
-    Dead End~\#136. \\
-\midrule
-  AEP absorption
-  & AccumulatorEquidistPropagation (AEP) is heuristically false at all fixed primes~$q$.
-    At $q = 3$, death ($\Prod{n}(k) \equiv -1 \bmod 3$) deterministically produces
-    $\seq{n}(k) = 3$ (\code{genSeq\_eq\_three\_of\_genProd\_mod3}), sending the orbit
-    to the absorbing state $0 \bmod 3$ forever.  The nonzero-class densities $F_k(a)$
-    decay exponentially; the correct equidistribution limit $r/(r^2{-}1)$ is never
-    reached for $k \geq 1$.  CRTPropagationStep inherits the falsity.
-    The backward dynamics chain ETA+DCTA+SRE $\Rightarrow$ PRSD is vacuously true.
-    Dead End~\#138. \\
-\bottomrule
-\end{longtable}
-\renewcommand{\arraystretch}{1.0}
+\input{dead_ends_table.tex}
+
+\noindent The congruence-obstruction family of dead ends
+(\#142--\#145 and \#149--\#151: the mod-4 Cox--van der Poorten
+extension, the collapse $\mathrm{IC}_{\min} \Leftrightarrow \mathrm{MC}$,
+the reciprocity-transfer assessment, the decoupling of simultaneous
+avoidance, the consumption ledger, and the covering-system and
+confinement-cohomology obstructions) is treated in detail in
+Section~\ref{sec:min-max-dichotomy}; the complete numbered catalogue
+with witnesses and revival scores is the machine-checked registry in
+\code{EM/Meta/DeadEnds.lean}.
+
+\paragraph{The CRT-propagation route to the first moment (Dead
+Ends~\#136--\#139), condensed.}
+The route aimed to prove FirstMomentStep
+(\lean{EM/Ensemble/FirstMoment.lean}{FirstMomentStep}), and hence
+LMG and PositiveDensityRSD, from \textbf{CRTPropagationStep}
+(\archived{EM/Archive/Ensemble/CRTArchive.lean}{CRTPropagationStep}): equidistribution
+of $\Prod{n}(k) \bmod q$ propagating from step~$k$ to step~$k{+}1$,
+seeded by SRE and converted to FMS via the Alladi--Buchstab weights.
+CRTPropagationStep was further reduced to
+\textbf{EnsembleTransitionApprox}~(ETA,
+\archived{EM/Archive/Ensemble/BackwardDynamicsArchive.lean}{EnsembleTransitionApprox}),
+following Tao's backward dynamics for the Collatz
+conjecture~\cite{Tao2019Collatz}: the backward density decomposition
+$F_{k+1}(a) = \sum_c F_k(c) \cdot R(c,a,k,X)$ with
+$R = 1/(q{-}1) + O(1/\log X)$ by CRT-blindness of the multiplier
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}), with the
+reductions \code{eta\_dcta\_implies\_crt\_propagation} (deleted in the
+Session-288 consolidation as pure RED-to-RED plumbing; see git history)
+and
+\archived{EM/Archive/Ensemble/BackwardDynamicsArchive.lean}{eta\_sre\_implies\_prsd}
+machine-verified before archival.  The whole backward-dynamics file ---
+joint counts, transition probabilities, probability axioms, and the
+backward decomposition, all proved --- was retired to
+\code{EM/Archive/Ensemble/BackwardDynamicsArchive.lean} (local archive) in the
+Session-301 reorganization, since its only purpose was to feed this
+chain.  The absorption mechanism kills the route: the correct
+per-coprime-class density is $r/(r^2{-}1)$, not $1/(r{-}1)$, and even
+that limit is never sustained for $k \geq 1$ because death events
+drain nonzero-class mass permanently into the absorbing state
+$0 \bmod q$, so AccumulatorEquidistPropagation---and with it
+CRTPropagationStep and ETA---is false, and the proved chain
+ETA+DCTA+SRE~$\Rightarrow$~PRSD is vacuously true.  The SMLB and
+DeathDensityLB routes to the first moment
+(\S\ref{sec:death-density}) are unaffected.
 
 %% =========================================================================
 \subsection{Methodology: Human--AI Collaboration}
@@ -615,7 +566,7 @@ Dobrushin coefficient
 %% =========================================================================
 
 This work was produced through a sustained collaboration between a
-human author and an AI system (Claude, Anthropic) across 150+~sessions.
+human author and an AI system (Claude, Anthropic) across more than 300~sessions.
 The human author directed the mathematical strategy---proof
 architecture, dead-end identification, and editorial control---while
 the AI system handled Lean~4 formalization, Mathlib API search,
@@ -659,7 +610,7 @@ The division of labor between human and AI was sharp:
   strategies, and drafting of this paper.
 \end{itemize}
 
-The human author guided the proof effort across 150+~sessions, suggesting
+The human author guided the proof effort across more than 300~sessions, suggesting
 attack vectors (algebraic, analytic, combinatorial, sieve-theoretic),
 identifying when an approach had reached a dead end, and pushing toward
 the sharpest possible reductions.  The AI agents wrote all Lean code,
@@ -706,12 +657,12 @@ where each is defined.
     & Every prime appears in the Euclid--Mullin sequence
     & Conj.~\ref{conj:mullin} \\
 \abbr{ANT} & ---
-    & Standard analytic number theory (Dirichlet + sieve $\Rightarrow$ MFRE);
-      assumed, not formalized
+    & Standard analytic number theory (Dirichlet + sieve); its Mertens-form
+      entry point is now proved (Karamata)
     & \S\ref{sec:ant-def} \\
 \abbr{MFRE} & MinFacResidueEquidist
     & $\minFac$ residues equidist.\ mod $q$ among $q$-rough sqfree ints;
-      MFRE $\Rightarrow$ PE (proved)
+      \textbf{false} (head domination, Dead End~\#160); archived
     & \S\ref{sec:ant-def} \\
 \midrule
 
@@ -772,7 +723,8 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & $R(N) = o(N^2)$; $\equiv$ SVE via Lyapunov telescope (Dead End~\#120)
     & \S\ref{sec:ensemble} \\
 \abbr{TWD} & TailWindowDecorrelation
-    & Avg.\ $|$cross term$|$ between windows vanishes; TWD $\Rightarrow$ CCSB $\Rightarrow$ MC
+    & Avg.\ $|$cross term$|$ between windows vanishes; \textbf{false as stated}
+      ($\chi \equiv 1$, Dead End \#156); centered version intended
     & \S\ref{sec:twd} \\
 \abbr{HOD} & HigherOrderDecorrelation
     & Higher-order correlation bounds for walk increments
@@ -799,11 +751,9 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & Joint subquadratic visit energy; JointSVE $\Rightarrow$ MMCSB (proved)
     & \S\ref{sec:weak-mullin} \\
 --- & PopulationEquidist
-    & minFac equidist mod $q$ in shifted squarefree population (provable by sieve)
-    & \S\ref{sec:weak-mullin} \\
---- & PopulationTransfer
-    & PE $\Rightarrow$ EMDirichlet (open = unbiased sampling); PE+PT $\Rightarrow$ MC
-    & \S\ref{sec:weak-mullin} \\
+    & minFac equidist mod $q$ in shifted squarefree population; \textbf{false}
+      (head domination, Dead End~\#160); archived with PopulationTransfer
+    & \S\ref{sec:ant-def} \\
 --- & ExcursionIndependence
     & Excursion char sums approximately independent; EIP + BME $\Rightarrow$ MC
     & App.~\ref{app:routes} \\
@@ -811,11 +761,9 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
 
 \multicolumn{4}{l}{\emph{Ensemble framework (\S\ref{sec:ensemble})}} \\
 \abbr{DSL} & DeterministicStabilityLemma
-    & Ensemble char energy concentrates over sqfree starting points; DSL $\Rightarrow$ MC
-    & \S\ref{sec:ensemble} \\
---- & DSLHitting
-    & Weaker: walk hits $-1$ for positive density of starting points; PE+DSLHitting $\Rightarrow$ MC
-    & \S\ref{sec:ensemble} \\
+    & Retired: $\mathrm{PE} \Rightarrow \mathrm{CME}$, vacuous since PE is false
+      (Dead End~\#160); archived together with DSLHitting
+    & \S\ref{sec:dsl-route} \\
 --- & genProd / genSeq
     & Generalized EM from arbitrary starting point $n$; genProd$(2,k) = \Prod{2}(k)$
     & \S\ref{sec:ensemble} \\
@@ -828,9 +776,6 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
 --- & FiberEnergyBound
     & $\sum_a \|F(a,N)\|^2 \leq \varepsilon N^2$; FEB $\Rightarrow$ CME (proved)
     & \S\ref{sec:fiber-energy} \\
---- & MinFacResidueEquidist
-    & minFac residues equidist for $q$-rough sqfree ints; MFRE $\Rightarrow$ PE (proved)
-    & \S\ref{sec:ensemble} \\
 --- & JointStepEquidist
     & Joint distribution of consecutive genSeq equidist over sqfree $n$ (open)
     & \S\ref{sec:ensemble} \\
@@ -845,6 +790,48 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & \S\ref{sec:telescope} \\
 \midrule
 
+\multicolumn{4}{l}{\emph{The composite floor (\S\ref{sec:cinfty})}} \\
+\abbr{$(\omega 1)$} & PerpetualPrimality$(N)$
+    & $\Prod{2}(n)+1$ prime for every $n \geq N$; the failure branch
+    & Def.~\ref{def:perpetual-primality} \\
+\abbr{(C$\infty$)} & InfinitelyManyComposite
+    & $\Prod{2}(n)+1$ composite for infinitely many $n$; $=\lnot(\omega 1)$;
+      implied by $\MC$, (V), $\mathrm{RD}$, and the obstruction programme; \textbf{open}
+    & \S\ref{sec:cinfty-beneath} \\
+\abbr{(S)} & Growth floor
+    & If $f(n) \leq \seq{2}(n)$ eventually and $\sum 1/f$ converges then
+      $\sum 1/\seq{2}$ converges; strictly stronger than (C$\infty$)
+    & \S\ref{sec:growth-floor} \\
+--- & Defect
+    & $\delta(n) = \log\Prod{2}(n) - \log\seq{2}(n{+}1)$; measures the step
+      against the maximal (doubling) step
+    & \S\ref{sec:defect-telescope} \\
+\abbr{$C$} & Growth constant
+    & $C = \lim_N \log\Prod{2}(N)/2^{N} \geq 0$; a \emph{complete invariant}:
+      $C = 0 \iff (\mathrm{C}\infty)$, $C > 0 \iff (\omega 1)$
+    & Def.~\ref{def:growth-constant} \\
+--- & Sylvester tower
+    & Orbit of $s \mapsto s^2-s+1$ from $\Prod{2}(N)+1$; (C$\infty$) $=$ no
+      such tower is all-prime
+    & Thm.~\ref{thm:sylvester-tower} \\
+\abbr{$q$} & Take-all walk
+    & $q(w) = w^2+w$; simultaneously the branch residue walk, the take-all
+      rule's walk, and (conjugated) the map governing (C$\infty$)
+    & \S\ref{sec:level-tower} \\
+--- & $\mathrm{PreZero}(\ell)$
+    & Backward orbit of $0$ under $\Phi_6$ in $\ZZ/\ell\ZZ$; the (C$\infty$)
+      target.  Level $k$ $=$ death of $q$ after $k$ steps; level $1$ is $\Phi_3$
+    & \S\ref{sec:backward-orbit} \\
+--- & $\Delta(z)$
+    & $\Delta(z) = -3-16z$; the two discriminants one level above $z$ multiply
+      to it.  $\Delta(-1) = 13$, $\Delta(\omega)\Delta(\omega^2) = 217$
+    & \S\ref{sec:level-tower} \\
+--- & Witness prime
+    & Prime dividing $\Psi_k(\Prod{2}(N))$; always exists (Euclid), and
+      (C$\infty$) $=$ some witness is a \emph{proper} factor
+    & \S\ref{sec:arboreal} \\
+\midrule
+
 \multicolumn{4}{l}{\emph{Function field analog (\S\ref{sec:function-field})}} \\
 \abbr{FF-MC} & FFMullinConjecture
     & Every monic irreducible appears in FF-EM sequence
@@ -853,7 +840,8 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & Cofinal $Q \mid F(n){+}1$ for every monic irred.\ $Q$; FFDH $\Rightarrow$ FF-MC (proved)
     & \S\ref{sec:function-field} \\
 --- & SelectionBiasNeutral
-    & Min-degree selection preserves character cancellation (open; $=$ Dead End \#90)
+    & Min-degree selection preserves character cancellation (placeholder proposition,
+      body \code{True}; the question is Dead End \#90 in FF form)
     & \S\ref{sec:function-field} \\
 --- & FFSubgroupEscape
     & SE for $p \geq (d{-}1)^2{+}1$ via Weil contradiction (proved)

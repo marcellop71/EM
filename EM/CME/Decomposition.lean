@@ -1,4 +1,5 @@
 import EM.CME.Reduction
+import EM.CME.FiberAnalysis
 import EM.LargeSieve.WalkAnalysis
 import EM.Group.CRT
 
@@ -8,7 +9,7 @@ import EM.Group.CRT
 This file decomposes CME (Conditional Multiplier Equidistribution) into:
 
 - **Part A (Structural Decorrelation — PROVED)**: the minFac operation is
-  q-blind (`crt_multiplier_invariance` in MullinCRT.lean).
+  q-blind (`crt_multiplier_invariance` in EM/Group/CRT.lean).
 - **Part B (EM-Dirichlet — OPEN)**: EM primes are equidistributed in residue
   classes, identical to `DecorrelationHypothesis`.
 
@@ -48,7 +49,7 @@ open scoped BigOperators
 /-- **EM-Dirichlet**: EM primes are equidistributed in residue classes mod q.
     In character sum form: ∑ χ(em(n) mod q) = o(N) for nontrivial χ.
 
-    Identical to `DecorrelationHypothesis` (EquidistSelfCorrecting.lean).
+    Identical to `DecorrelationHypothesis` (EM/Equidist/SelfCorrecting.lean).
     The name emphasizes the analogy with Dirichlet's theorem on primes in
     arithmetic progressions: EM-Dirichlet asks whether the specific
     subsequence of primes selected by the EM mechanism inherits the
@@ -185,7 +186,7 @@ open Classical in
 theorem emd_vcb_implies_cme (hemd : EMDirichlet) (hvcb : VanishingConditionalBias) :
     ConditionalMultiplierEquidist := by
   intro q inst hq hne χ hχ a ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- C = number of walk positions = φ(q)
   set C := Fintype.card (ZMod q)ˣ with hC_def
   have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos

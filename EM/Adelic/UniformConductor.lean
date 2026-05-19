@@ -1,6 +1,5 @@
-import EM.Population.TransferStrategy
-import EM.Population.AlladiDensity
 import EM.Reduction.Master
+import EM.Population.HeadDomination
 import EM.Transfer.SieveConstraint
 
 /-!
@@ -40,13 +39,20 @@ to orbit-specific behavior remains the fundamental gap (Dead End #90).
 
 ### Proved Theorems
 * `conductorResCount_le`       -- residue count <= rough count
-* `conductorRoughCount_le`     -- rough count <= total multiples
-* `uce_implies_mfre`           -- UCE => MinFacResidueEquidist (M=1 specialization)
-* `uce_implies_pe`             -- UCE => PopulationEquidist
-* `uce_implies_mc_via_dsl`     -- UCE + DSL => MC
-* `uce_cme_implies_mc`         -- UCEImpliesCME => MC
+* `conductorRoughCount_le_card`-- rough count <= total count in [2,X]
+* `uce_implies_mfre_via_crt`   -- Alladi chain + CRT independence => MinFacResidueEquidist
+* `uce_alladi_implies_pe`      -- Alladi chain => PopulationEquidist
+* `uce_dsl_implies_mc`         -- Alladi chain + DSL => MC
+* `uce_cme_implies_mc`         -- UCE + UCEImpliesCME => MC
 * `prod_succ_cong_one_mod_prod`-- prod(n)+1 = 1 mod prod(n) (structural)
 * `uce_landscape`              -- summary conjunction
+
+**Honesty note**: in `uce_implies_mfre_via_crt`, `uce_alladi_implies_pe`, and
+`uce_dsl_implies_mc` the conclusions are actually derived from the Alladi-chain
+hypotheses (`RoughLPFImpliesMFRE`, `PrimesEquidistImpliesRoughLPF`,
+`IK.PrimesEquidistributedInAP`); the UCE argument is unused (or absent), so the
+MFRE/PE/MC routes bypass UCE entirely. Only `uce_cme_implies_mc` genuinely
+consumes UCE, through the open bridge `UCEImpliesCME`.
 -/
 
 noncomputable section
@@ -137,50 +143,48 @@ end UCE
 
 section Bridges
 
-/-- UCE implies MinFacResidueEquidist for every prime q.
-
-    The proof specializes M = 1 (which is squarefree, coprime to q, and
-    positive). The M=1 case of UCE gives density convergence for the
-    unweighted rough count, which is exactly MinFacResidueEquidist
-    (modulo the reformulation from density-limit to ratio-limit form).
-
-    Note: MinFacResidueEquidist uses the shifted-squarefree population
-    (mu^2(m-1) = 1), while UCE uses the arithmetic progression 1 mod M.
-    When M = 1, the UCE population is ALL integers with minFac > q, which
-    is a superset of the shifted-squarefree population. The transfer from
-    the full population to the shifted-squarefree subpopulation requires
-    CRT independence (the same gap as RoughLPFImpliesMFRE).
-
-    Therefore, this bridge uses the CRT independence hypothesis. -/
-theorem uce_implies_mfre_via_crt
-    (_huce : UniformConductorEquidist)
-    (hcrt : RoughLPFImpliesMFRE)
-    (hrlpf : PrimesEquidistImpliesRoughLPF)
-    (hant : IK.PrimesEquidistributedInAP) :
-    ∀ (q : Nat), Nat.Prime q → MinFacResidueEquidist q :=
-  hcrt (hrlpf hant)
-
-/-- UCE combined with the Alladi chain implies PopulationEquidist.
-
-    This follows the standard route: PrimesEquidistInAP -> RoughLPFEquidist
-    -> MinFacResidueEquidist -> PE. UCE provides the uniform version but
-    the non-uniform version suffices for PE. -/
-theorem uce_alladi_implies_pe
-    (hcrt : RoughLPFImpliesMFRE)
-    (hrlpf : PrimesEquidistImpliesRoughLPF)
-    (hant : IK.PrimesEquidistributedInAP) :
-    PopulationEquidist :=
-  pe_of_equidist (hcrt (hrlpf hant))
-
-/-- **UCE + DSL => MC**: UCE (via the Alladi chain) provides PE, and
-    DSL closes the gap PE -> CME -> MC. -/
-theorem uce_dsl_implies_mc
-    (hcrt : RoughLPFImpliesMFRE)
-    (hrlpf : PrimesEquidistImpliesRoughLPF)
-    (hant : IK.PrimesEquidistributedInAP)
-    (hdsl : DeterministicStabilityLemma) :
-    MullinConjecture :=
-  pe_dsl_implies_mc (uce_alladi_implies_pe hcrt hrlpf hant) hdsl
+/-- **UCE at `M = 1` is `RoughLPFEquidist`, which is false (Dead End #160).**  The `M = 1`
+clause of UCE says the class ratio tends to `1/(q−1)`; with the density of the `q`-rough
+integers (`HeadDomination.tendsto_roughCount_div`) this is exactly `RoughLPFEquidist q`, which
+`HeadDomination.roughLPFEquidist_iff` identifies with a false series identity.  So UCE is
+false and `UCEImpliesCME` below is vacuous. -/
+theorem uce_implies_roughLPFEquidist (huce : UniformConductorEquidist) :
+    ∀ q, Nat.Prime q → RoughLPFEquidist q := by
+  intro q hq a ha haq _hcop
+  have hcpos : 0 < HeadDomination.cfun (q + 1) := HeadDomination.cfun_pos _
+  refine ⟨HeadDomination.cfun (q + 1), hcpos, HeadDomination.tendsto_roughCount_div q, ?_⟩
+  -- eventually the rough count is positive: its density is positive
+  have hpos : ∀ᶠ X : Nat in Filter.atTop, 0 < roughCount q X := by
+    have h := (HeadDomination.tendsto_roughCount_div q).eventually
+      (lt_mem_nhds (half_lt_self hcpos))
+    filter_upwards [h] with X hX
+    by_contra h0
+    push Not at h0
+    have : roughCount q X = 0 := by omega
+    rw [this] at hX; simp at hX; linarith
+  -- the class ratio tends to 1/(q−1) by UCE at M = 1
+  have hratio : Filter.Tendsto
+      (fun X : Nat => (((Finset.Icc 2 X).filter
+          (fun m => q < Nat.minFac m ∧ Nat.minFac m % q = a)).card : ℝ) / (roughCount q X : ℝ))
+      Filter.atTop (nhds (1 / ((q : ℝ) - 1))) := by
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    obtain ⟨X₀, hX₀⟩ := huce q hq a ha haq ε hε
+    obtain ⟨X₁, hX₁⟩ := Filter.eventually_atTop.mp hpos
+    refine ⟨max X₀ X₁, fun X hX => ?_⟩
+    have h1 := hX₀ X (le_trans (le_max_left _ _) hX) 1 one_pos squarefree_one
+      (Nat.coprime_one_left q)
+    rw [conductorRoughCount_one, conductorResCount_one] at h1
+    rcases h1 with h1 | h1
+    · exact absurd h1 (hX₁ X (le_trans (le_max_right _ _) hX)).ne'
+    · rw [Real.dist_eq]; exact h1
+  have hmul := hratio.mul (HeadDomination.tendsto_roughCount_div q)
+  rw [show 1 / ((q : ℝ) - 1) * HeadDomination.cfun (q + 1) =
+      HeadDomination.cfun (q + 1) / ((q : ℝ) - 1) by ring] at hmul
+  refine hmul.congr' ?_
+  filter_upwards [hpos] with X hX
+  have hR : (roughCount q X : ℝ) ≠ 0 := by exact_mod_cast hX.ne'
+  field_simp
 
 /-- **UCEImpliesCME**: the orbit-specificity bridge.
 
@@ -277,23 +281,16 @@ end Structure
 
 section Landscape
 
-/-- Summary of the UCE landscape:
-    1. UCE is a well-defined strengthening of MinFacResidueEquidist
-    2. UCE + DSL => MC (via Alladi chain)
-    3. UCEImpliesCME is the orbit-specificity bridge (open)
-    4. UCEImpliesCME => MC (unconditionally from UCE)
-    5. The EM conductor prod(n) satisfies all UCE prerequisites -/
+/-- Summary of the UCE landscape (revised 2026-08-17, Dead End #160):
+    1. UCE at conductor `M = 1` IS `RoughLPFEquidist`, which is FALSE (head domination);
+       hence UCE is false and `UCEImpliesCME` is vacuous.
+    2. The conductor prod(n) satisfies the UCE prerequisites (still true, still irrelevant). -/
 theorem uce_landscape :
-    -- (1) UCE + Alladi chain + DSL => MC
-    (RoughLPFImpliesMFRE → PrimesEquidistImpliesRoughLPF →
-      IK.PrimesEquidistributedInAP → DeterministicStabilityLemma →
-      MullinConjecture) ∧
-    -- (2) UCEImpliesCME short-circuits the chain
-    (UniformConductorEquidist → UCEImpliesCME → MullinConjecture) ∧
-    -- (3) The conductor prod(n) is squarefree and positive
+    -- (1) UCE collapses to the false unconditioned statement
+    (UniformConductorEquidist → ∀ q, Nat.Prime q → RoughLPFEquidist q) ∧
+    -- (2) The conductor prod(n) is squarefree and positive
     (∀ n, Squarefree (Mullin.prod n) ∧ 0 < Mullin.prod n) :=
-  ⟨uce_dsl_implies_mc,
-   uce_cme_implies_mc,
+  ⟨uce_implies_roughLPFEquidist,
    fun n => ⟨prod_squarefree_for_uce n, prod_pos_for_uce n⟩⟩
 
 end Landscape

@@ -139,7 +139,7 @@ private theorem char_val_norm_one {q : Nat} [Fact (Nat.Prime q)]
 theorem decorrelation_implies_ped :
     DecorrelationHypothesis → PositiveEscapeDensity := by
   intro hdec q inst hq hne χ hχ
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Choose δ = 1/4 for PED
   refine ⟨1/4, by norm_num, ?_⟩
   -- Apply DH with ε = 1/4
@@ -340,7 +340,7 @@ theorem escape_count_ge_blocks {q : ℕ} [Fact (Nat.Prime q)]
 theorem noLongRuns_implies_ped (L : Nat) (hL : 0 < L)
     (hnlr : NoLongRuns L) : PositiveEscapeDensity := by
   intro q inst hq hne χ hχ
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Apply NoLongRuns to get the threshold N₀
   obtain ⟨N₀, hN₀⟩ := hnlr q hq hne χ hχ
   -- Choose δ = 1 / (2 * L) > 0
@@ -463,7 +463,7 @@ def BlockRotationEstimate : Prop :=
 theorem block_rotation_implies_ped_csb :
     BlockRotationEstimate → PEDImpliesComplexCSB := by
   intro hbre hped q inst hq hne χ hχ ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- PED gives δ > 0, N₁, and the density lower bound for N ≥ N₁
   obtain ⟨δ, hδ, N₁, hdens⟩ := hped q hq hne χ hχ
   -- BRE converts the density bound into the walk sum bound o(N)
@@ -743,7 +743,7 @@ This section contains three components:
 2. **dirichlet_residues_independent** (proved theorem): For any residue class
    a (mod q) coprime to q, there are infinitely many primes in that class.
    This is Dirichlet's theorem on primes in arithmetic progressions, available
-   in Mathlib as `Nat.infinite_setOf_prime_and_eq_mod`. This formalizes the key
+   in Mathlib as `Nat.infinite_setOfPred_prime_and_eq_mod`. This formalizes the key
    insight that self-avoidance imposes no constraint at the character level.
 
 3. **MultiModularCSB** (open Prop): `ComplexCharSumBound` holds for all but
@@ -791,7 +791,7 @@ def SieveEquidistribution : Prop :=
     coprime to q, there are infinitely many primes p with p ≡ a (mod q).
 
     This is **Dirichlet's theorem on primes in arithmetic progressions**, proved
-    in Mathlib as `Nat.infinite_setOf_prime_and_eq_mod`. The proof is immediate.
+    in Mathlib as `Nat.infinite_setOfPred_prime_and_eq_mod`. The proof is immediate.
 
     **Significance**: The Euclid-Mullin sequence is self-avoiding (no prime
     repeats), but self-avoidance does NOT reduce the supply of primes available
@@ -804,9 +804,9 @@ def SieveEquidistribution : Prop :=
 theorem dirichlet_residues_independent (q : Nat) [hq : Fact (Nat.Prime q)]
     (a : (ZMod q)ˣ) :
     Set.Infinite {p : Nat | Nat.Prime p ∧ (p : ZMod q) = a.val} := by
-  haveI : NeZero q := ⟨Nat.Prime.ne_zero hq.out⟩
+  have : NeZero q := ⟨Nat.Prime.ne_zero hq.out⟩
   have ha : IsUnit (a.val : ZMod q) := a.isUnit
-  exact Nat.infinite_setOf_prime_and_eq_mod ha
+  exact Nat.infinite_setOfPred_prime_and_eq_mod ha
 
 /-- **Self-avoidance independence corollary**: for any prime q and coprime residue
     class a, there exist arbitrarily large primes in that class. This is the
@@ -814,7 +814,7 @@ theorem dirichlet_residues_independent (q : Nat) [hq : Fact (Nat.Prime q)]
 theorem dirichlet_residues_unbounded (q : Nat) [hq : Fact (Nat.Prime q)]
     (a : (ZMod q)ˣ) (M : Nat) :
     ∃ p : Nat, M ≤ p ∧ Nat.Prime p ∧ (p : ZMod q) = a.val := by
-  haveI : NeZero q := ⟨Nat.Prime.ne_zero hq.out⟩
+  have : NeZero q := ⟨Nat.Prime.ne_zero hq.out⟩
   have ha : IsUnit (a.val : ZMod q) := a.isUnit
   obtain ⟨p, hp, hprime, heq⟩ := Nat.forall_exists_prime_gt_and_eq_mod ha M
   exact ⟨p, Nat.le_of_lt hp, hprime, heq⟩
@@ -1006,132 +1006,10 @@ theorem walk_shift_one_correlation (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime 
 
 end WalkTelescope
 
-/-! ## §72. Kernel Confinement and CCSB Failure
+/- §72 (Kernel Confinement and CCSB Failure) moved to
+`EM/LargeSieve/WalkDecomposition.lean` (Session 301 reorg): it is
+LargeSieve-program material and its three results were unused here. -/
 
-This section documents the precise boundary between PED and CCSB by analysing
-what happens when all multipliers eventually lie in ker(χ).
-
-If χ(m(n)) = 1 for all n ≥ N₀ (eventual kernel confinement), then the walk
-character value χ(w(n)) becomes constant for n ≥ N₀.  Consequently the walk
-character sum grows linearly: ‖∑_{n<N} χ(w(n))‖ ≈ N − 2·N₀.  This is
-incompatible with CCSB (which requires ‖∑‖ ≤ ε·N for ε < 1), so CCSB at
-a fixed (q, χ) implies infinitely many escapes from ker(χ).
-
-Key results:
-1. `kernel_confinement_walk_char_constant`: eventual kernel ⇒ walk char constant.
-2. `kernel_confinement_walk_sum`: walk sum has explicit linear growth formula.
-3. `ccsb_at_implies_escape_cofinal`: CCSB ⇒ infinitely many escapes.
--/
-
-section KernelConfinement
-
-/-- **Kernel confinement makes the walk character constant**: if every
-    multiplier from step N₀ onward lies in ker(χ), then the walk character
-    value is frozen at its N₀-th value for all n ≥ N₀. -/
-theorem kernel_confinement_walk_char_constant {q : Nat} [Fact (Nat.Prime q)]
-    (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ)
-    (N₀ : ℕ) (hker : ∀ n, N₀ ≤ n → (χ (emMultUnit q hq hne n) : ℂ) = 1)
-    (n : ℕ) (hn : N₀ ≤ n) :
-    (χ (emWalkUnit q hq hne n) : ℂ) = (χ (emWalkUnit q hq hne N₀) : ℂ) := by
-  obtain ⟨k, rfl⟩ : ∃ k, n = N₀ + k := ⟨n - N₀, by omega⟩
-  induction k with
-  | zero => simp
-  | succ k ih =>
-    rw [Nat.add_succ, char_walk_recurrence q hq hne χ (N₀ + k),
-        hker (N₀ + k) (by omega), mul_one, ih (by omega)]
-
-/-- **Walk sum under kernel confinement**: when all multipliers from step N₀
-    onward are in ker(χ), the walk character sum over `Finset.range N` (for
-    N ≥ N₀) equals the partial sum up to N₀ plus (N − N₀) copies of the
-    frozen value χ(w(N₀)). -/
-theorem kernel_confinement_walk_sum {q : Nat} [Fact (Nat.Prime q)]
-    (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ)
-    (N₀ : ℕ) (hker : ∀ n, N₀ ≤ n → (χ (emMultUnit q hq hne n) : ℂ) = 1)
-    (N : ℕ) (hN : N₀ ≤ N) :
-    ∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ) =
-    ∑ n ∈ Finset.range N₀, (χ (emWalkUnit q hq hne n) : ℂ) +
-      (N - N₀ : ℕ) • (χ (emWalkUnit q hq hne N₀) : ℂ) := by
-  obtain ⟨k, rfl⟩ : ∃ k, N = N₀ + k := ⟨N - N₀, by omega⟩
-  induction k with
-  | zero => simp
-  | succ k ih =>
-    have hN₀k : N₀ ≤ N₀ + k := Nat.le_add_right _ _
-    conv_lhs => rw [show N₀ + (k + 1) = (N₀ + k) + 1 from by omega]
-    rw [Finset.sum_range_succ, ih hN₀k]
-    rw [kernel_confinement_walk_char_constant hq hne χ N₀ hker (N₀ + k) hN₀k]
-    rw [show N₀ + (k + 1) - N₀ = k + 1 from by omega,
-        show N₀ + k - N₀ = k from by omega]
-    rw [add_assoc, succ_nsmul]
-
-/-- **CCSB at a fixed (q, χ) implies infinitely many escapes from ker(χ)**.
-    More precisely, if for some ε < 1 the walk character sum satisfies
-    ‖∑_{n<N} χ(w(n))‖ ≤ ε·N for all sufficiently large N, then for every
-    N₀ there exists n ≥ N₀ with χ(m(n)) ≠ 1.
-
-    **Proof**: by contradiction.  If all multipliers from N₀ onward are in
-    ker(χ), the walk sum grows linearly by `kernel_confinement_walk_sum`.
-    The frozen term has norm 1, so the constant tail contributes norm
-    ≥ (N − N₀) − N₀ = N − 2·N₀ for large N.  But CCSB gives ≤ ε·N with
-    ε < 1, contradicting N − 2·N₀ > ε·N for N large enough. -/
-theorem ccsb_at_implies_escape_cofinal {q : Nat} [Fact (Nat.Prime q)]
-    (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (χ : (ZMod q)ˣ →* ℂˣ)
-    (ε : ℝ) (hε_pos : 0 < ε) (hε_lt : ε < 1)
-    (hccsb : ∃ N₁ : ℕ, ∀ N ≥ N₁,
-      ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ ε * N)
-    (N₀ : ℕ) : ∃ n, N₀ ≤ n ∧ (χ (emMultUnit q hq hne n) : ℂ) ≠ 1 := by
-  by_contra h
-  push Not at h
-  -- h : ∀ n, N₀ ≤ n → (χ (emMultUnit q hq hne n) : ℂ) = 1
-  obtain ⟨N₁, hN₁⟩ := hccsb
-  -- We need N large enough that (1-ε)·N > 2·N₀. Use Archimedean property.
-  have h1ε_pos : 0 < 1 - ε := by linarith
-  obtain ⟨M, hM⟩ := exists_nat_gt ((2 * (N₀ : ℝ) + 1) / (1 - ε))
-  set N := max (max M N₁) N₀ with hN_def
-  have hN_ge_N₁ : N₁ ≤ N := (le_max_right M N₁).trans (le_max_left _ N₀)
-  have hN_ge_N₀ : N₀ ≤ N := le_max_right _ N₀
-  have hM_le_N : M ≤ N := (le_max_left M N₁).trans (le_max_left _ N₀)
-  have hN₁_bound := hN₁ N hN_ge_N₁
-  -- The walk sum splits into a bounded prefix and a constant tail
-  rw [kernel_confinement_walk_sum hq hne χ N₀ h N hN_ge_N₀] at hN₁_bound
-  -- Bound the norm from below using reverse triangle inequality
-  have hnorm_frozen : ‖(χ (emWalkUnit q hq hne N₀) : ℂ)‖ = 1 :=
-    walkTelescope_char_norm_one χ _
-  have hpre_bound : ‖∑ n ∈ Finset.range N₀,
-      (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ N₀ := by
-    calc ‖∑ n ∈ Finset.range N₀, (χ (emWalkUnit q hq hne n) : ℂ)‖
-        ≤ ∑ n ∈ Finset.range N₀, ‖(χ (emWalkUnit q hq hne n) : ℂ)‖ :=
-          norm_sum_le _ _
-      _ = ∑ n ∈ Finset.range N₀, 1 := by
-          congr 1; ext n; exact walkTelescope_char_norm_one χ _
-      _ = N₀ := by simp
-  -- The tail has norm = N - N₀
-  have htail_norm : ‖(N - N₀ : ℕ) • (χ (emWalkUnit q hq hne N₀) : ℂ)‖ =
-      (N - N₀ : ℕ) := by
-    rw [nsmul_eq_mul, norm_mul, Complex.norm_natCast, hnorm_frozen, mul_one]
-  -- ‖prefix + tail‖ ≥ ‖tail‖ - ‖prefix‖ ≥ (N-N₀) - N₀
-  have hrev : (N - N₀ : ℕ) - (N₀ : ℝ) ≤
-      ‖∑ n ∈ Finset.range N₀, (χ (emWalkUnit q hq hne n) : ℂ) +
-        (N - N₀ : ℕ) • (χ (emWalkUnit q hq hne N₀) : ℂ)‖ := by
-    have h1 := norm_sub_norm_le
-      ((N - N₀ : ℕ) • (χ (emWalkUnit q hq hne N₀) : ℂ))
-      (-(∑ n ∈ Finset.range N₀, (χ (emWalkUnit q hq hne n) : ℂ)))
-    rw [norm_neg, sub_neg_eq_add, add_comm] at h1
-    rw [htail_norm] at h1
-    linarith
-  -- Combine: (N - N₀) - N₀ ≤ ‖sum‖ ≤ ε * N
-  have hN_sub : (N - N₀ : ℕ) = (N : ℝ) - (N₀ : ℝ) := by
-    rw [Nat.cast_sub hN_ge_N₀]
-  rw [hN_sub] at hrev
-  -- So: N - 2·N₀ ≤ ε·N, i.e., (1-ε)·N ≤ 2·N₀
-  have h1 : (1 - ε) * N ≤ 2 * N₀ := by linarith [hrev, hN₁_bound]
-  -- But (1-ε)·N ≥ (1-ε)·M > 2·N₀ + 1
-  have h2 : (1 - ε) * N ≥ (1 - ε) * M := by
-    exact mul_le_mul_of_nonneg_left (by exact_mod_cast hM_le_N) (le_of_lt h1ε_pos)
-  have h3 : 2 * (N₀ : ℝ) + 1 < (1 - ε) * M := by
-    rw [div_lt_iff₀ h1ε_pos] at hM; linarith
-  linarith
-
-end KernelConfinement
 
 /-! ## Euclid Number Feedback Loop
 

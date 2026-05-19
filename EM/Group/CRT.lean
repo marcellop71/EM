@@ -82,6 +82,57 @@ theorem crt_multiplier_invariance
   have h2 : m ≤ m' := Nat.minFac_le_of_dvd hm'_prime.two_le hm'_dvd'
   omega
 
+/-- **CRT Multiplier Invariance, finite-set form.**  The multiplier is blind not merely
+to one coordinate but to *any finite set* of coordinates at which death does not occur.
+
+If `P` and `P'` agree modulo every prime outside a finite set `T`, and no prime of `T`
+divides either candidate, then the two candidates have the same least prime factor.
+
+The proof is the same symmetric-minimality argument, and the generalization is free: the
+witness `m = minFac (P+1)` divides `P+1`, so `m ∉ T` by hypothesis, so `P ≡ P' (mod m)`
+and the divisibility transfers.  Nothing in the argument used that the excluded set was a
+singleton.
+
+Read as a statement about the Euclid–Mullin dynamics: the next prime is determined by the
+CRT coordinates of the accumulator *outside any death-free finite set*.  It is the
+strongest proved form of the claim that the new multiplier "forgets" the accumulator —
+sharper than the one-prime version, and correspondingly further from what any invariant
+tracking finitely many coordinates could exploit. -/
+theorem crt_multiplier_invariance_finset
+    {P P' : Nat} (T : Finset Nat)
+    (hP : 2 ≤ P + 1) (hP' : 2 ≤ P' + 1)
+    (hcrt : ∀ r, Nat.Prime r → r ∉ T → P % r = P' % r)
+    (hT : ∀ r ∈ T, ¬ (r ∣ P + 1))
+    (hT' : ∀ r ∈ T, ¬ (r ∣ P' + 1)) :
+    Nat.minFac (P + 1) = Nat.minFac (P' + 1) := by
+  set m := Nat.minFac (P + 1)
+  set m' := Nat.minFac (P' + 1)
+  have hm_prime : Nat.Prime m := Nat.minFac_prime (by omega)
+  have hm_dvd : m ∣ P + 1 := Nat.minFac_dvd (P + 1)
+  have hm'_prime : Nat.Prime m' := Nat.minFac_prime (by omega)
+  have hm'_dvd : m' ∣ P' + 1 := Nat.minFac_dvd (P' + 1)
+  -- the two witnesses avoid `T`, because they *do* divide their candidates
+  have hm_notT : m ∉ T := fun hmem => hT m hmem hm_dvd
+  have hm'_notT : m' ∉ T := fun hmem => hT' m' hmem hm'_dvd
+  have hmod_m : P % m = P' % m := hcrt m hm_prime hm_notT
+  have hmod_m' : P % m' = P' % m' := hcrt m' hm'_prime hm'_notT
+  have hm_dvd' : m ∣ P' + 1 := (dvd_succ_iff_of_mod_eq hmod_m).mp hm_dvd
+  have hm'_dvd' : m' ∣ P + 1 := (dvd_succ_iff_of_mod_eq hmod_m').mpr hm'_dvd
+  have h1 : m' ≤ m := Nat.minFac_le_of_dvd hm_prime.two_le hm_dvd'
+  have h2 : m ≤ m' := Nat.minFac_le_of_dvd hm'_prime.two_le hm'_dvd'
+  omega
+
+/-- The one-prime version is the singleton case. -/
+theorem crt_multiplier_invariance_of_finset
+    {P P' q : Nat} (hP : 2 ≤ P + 1) (hP' : 2 ≤ P' + 1)
+    (hcrt : ∀ r, Nat.Prime r → r ≠ q → P % r = P' % r)
+    (hq_ndvd : ¬ (q ∣ P + 1)) (hq_ndvd' : ¬ (q ∣ P' + 1)) :
+    Nat.minFac (P + 1) = Nat.minFac (P' + 1) :=
+  crt_multiplier_invariance_finset {q} hP hP'
+    (fun r hr hrT => hcrt r hr (by simpa using hrT))
+    (fun r hr => by simpa [Finset.mem_singleton.mp hr] using hq_ndvd)
+    (fun r hr => by simpa [Finset.mem_singleton.mp hr] using hq_ndvd')
+
 /-! ## Walk Translation Corollary
 
 When two products P, P' satisfy the CRT alignment condition and neither

@@ -82,7 +82,7 @@ theorem threshold_finite_implies_mullin (B : Nat)
         by_contra hnotexists
         have hne : ∀ m, seq m ≠ q := fun m heq => hnotexists ⟨m, heq⟩
         have hmc : MCBelow q := fun r hr hrq => ih r (by omega) hr.toIsPrime
-        haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+        have : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
         have hse := mcBelow_pre_implies_se hpre hq hne hmc
         obtain ⟨N, hN⟩ := exists_bound q (fun p hpq hp => ih p (by omega) hp)
         obtain ⟨n, hn_ge, hn_dvd⟩ := hth q hq hne hge_B hse N
@@ -194,16 +194,65 @@ theorem mcBelow_hit_is_lethal {q : Nat} [Fact (Nat.Prime q)]
     obtain ⟨m, hm, hseqm⟩ := hN₀ p hpq hp.toIsPrime
     exact ⟨m, by omega, hseqm⟩)
 
+/-- **Guardian bound (no MC(<q) needed)**: if a missing prime `q` divides
+    `prod n + 1`, the captured factor `seq (n+1) = minFac (prod n + 1)` is a prime
+    strictly below `q`.  Indeed `minFac` is minimal, so `seq (n+1) ≤ q`, and equality
+    is excluded because `q` never occurs in the sequence.
+
+    This is the **min-specific** step: for a `maxFac` selection rule the analogous
+    bound is false. -/
+theorem missing_hit_guardian {q : Nat} (hq : IsPrime q) (hmiss : ∀ k, seq k ≠ q)
+    {n : Nat} (hdvd : q ∣ prod n + 1) : seq (n + 1) < q := by
+  have h2 : 2 ≤ prod n + 1 := by have := prod_ge_two n; omega
+  have hle : seq (n + 1) ≤ q := by
+    rw [seq_succ]; exact minFac_min' _ _ h2 hq.1 hdvd
+  have := hmiss (n + 1)
+  omega
+
+/-- **Finite Hitting (no MC(<q) needed)**: for a missing prime `q`, the set of steps
+    at which `q ∣ prod n + 1` is finite.  Each such step has a guardian
+    `seq (n+1) < q`, and `seq_injective` makes `n ↦ seq (n+1)` injective, so the
+    hitting set injects into `Set.Iio q`.
+
+    This is the local, self-contained copy of `CvdP.hittingSet_finite`
+    (`EM/Population/HittingSetStructure.lean`, Part 2b), which sits *above* this file
+    in the import graph and hence cannot be used here. -/
+theorem missing_hittingSet_finite {q : Nat} (hq : IsPrime q) (hmiss : ∀ k, seq k ≠ q) :
+    {n : Nat | q ∣ prod n + 1}.Finite := by
+  apply Set.Finite.of_finite_image (f := fun n => seq (n + 1))
+  · apply Set.Finite.subset (Set.finite_Iio q)
+    rintro x ⟨n, hn, rfl⟩
+    exact missing_hit_guardian hq hmiss hn
+  · intro a _ b _ hab
+    have := seq_injective (a + 1) (b + 1) hab
+    omega
+
+/-- **Walk avoids -1 eventually, for ANY missing prime.**  No `MCBelow q` hypothesis:
+    the hitting set `{n | walkZ q n = -1} = {n | q ∣ prod n + 1}` is finite by
+    `missing_hittingSet_finite`, hence bounded, so past its supremum the walk never
+    returns to `-1`.
+
+    This strictly strengthens `mcBelow_missing_walk_ne_neg_one`, which is now a
+    corollary. -/
+theorem missing_walk_ne_neg_one {q : Nat} [Fact (Nat.Prime q)]
+    (hq : IsPrime q) (hmiss : ∀ k, seq k ≠ q) :
+    ∃ N₀, ∀ n, N₀ ≤ n → walkZ q n ≠ -1 := by
+  obtain ⟨b, hb⟩ := (missing_hittingSet_finite hq hmiss).bddAbove
+  refine ⟨b + 1, fun n hn hwalk => ?_⟩
+  have hmem : n ∈ {m : Nat | q ∣ prod m + 1} := (walkZ_eq_neg_one_iff n).mp hwalk
+  have := hb hmem
+  omega
+
 /-- **Walk avoids -1 past sieve gap for a missing prime**: MC(<q) + q missing
     implies walkZ(q,n) ≠ -1 for all n past the sieve gap.
-    Immediate from `mcBelow_hit_is_lethal`: any hit would give seq(n+1) = q,
-    contradicting q missing. -/
+
+    The `MCBelow q` hypothesis is **redundant**: `missing_walk_ne_neg_one` gives the
+    same conclusion from missingness alone, via Finite Hitting.  Kept (and re-proved
+    as a corollary) so that nothing downstream breaks. -/
 theorem mcBelow_missing_walk_ne_neg_one {q : Nat} [Fact (Nat.Prime q)]
-    (hq : IsPrime q) (hmc : MCBelow q) (hmiss : ∀ k, seq k ≠ q) :
-    ∃ N₀, ∀ n, N₀ ≤ n → walkZ q n ≠ -1 := by
-  obtain ⟨N₀, hN₀⟩ := exists_bound q (fun p hpq hp => hmc p (IsPrime.toNatPrime hp) hpq)
-  exact ⟨N₀, fun n hn hwalk =>
-    hmiss (n + 1) (mcBelow_hit_is_lethal hq hN₀ hn hwalk)⟩
+    (hq : IsPrime q) (_hmc : MCBelow q) (hmiss : ∀ k, seq k ≠ q) :
+    ∃ N₀, ∀ n, N₀ ≤ n → walkZ q n ≠ -1 :=
+  missing_walk_ne_neg_one hq hmiss
 
 /-- **The one-prime gap theorem**: MC(<q) + cofinal q-hitting → MC(q).
     The sieve at level q−1 is free from MC(<q). Extending by one prime
@@ -229,7 +278,7 @@ theorem mcBelow_dh_implies_mc_at {q : Nat} (hq : IsPrime q) (hmc : MCBelow q)
     ∃ k, seq k = q := by
   by_contra hnotexists
   have hne : ∀ m, seq m ≠ q := fun m heq => hnotexists ⟨m, heq⟩
-  haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+  have : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
   have hse := mcBelow_pre_implies_se prime_residue_escape hq hne hmc
   exact hnotexists (mcBelow_cofinal_hit_implies_mc_at hq hmc (hdh_q hne hse))
 

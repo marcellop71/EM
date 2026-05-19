@@ -295,7 +295,7 @@ theorem ff_capture_degree_grows_of_finiteness
     apply Set.Finite.subset (Set.Finite.biUnion (Set.finite_Iic D)
       (fun e _ => hfin e))
     intro Q ⟨hQm, hQi, hQd⟩
-    simp only [Set.mem_iUnion, Set.mem_setOf_eq, Set.mem_Iic]
+    simp only [Set.mem_iUnion, Set.mem_ofPred_eq, Set.mem_Iic]
     exact ⟨Q.natDegree, hQd, hQm, hQi, rfl⟩
   -- The set of indices where sel has degree <= D is finite
   -- because sel is injective and its image lands in the finite set
@@ -304,7 +304,7 @@ theorem ff_capture_degree_grows_of_finiteness
     apply Set.Finite.subset (hfin_le.preimage
       ((ffMixedSel_injective hv).injOn.mono (Set.preimage_mono (fun Q hQ => hQ))))
     intro n hn
-    simp only [Set.mem_preimage, Set.mem_setOf_eq]
+    simp only [Set.mem_preimage, Set.mem_ofPred_eq]
     exact ⟨ffMixedSel_monic hv n, ffMixedSel_irreducible hv n, hn⟩
   -- A finite subset of ℕ has a maximum
   by_cases hempty : {n : ℕ | (σ.sel n).natDegree ≤ D} = ∅
@@ -314,7 +314,7 @@ theorem ff_capture_degree_grows_of_finiteness
     by_contra hlt
     push Not at hlt
     have : n ∈ ({n : ℕ | (σ.sel n).natDegree ≤ D} : Set ℕ) := by
-      simp only [Set.mem_setOf_eq]; omega
+      simp only [Set.mem_ofPred_eq]; omega
     rw [hempty] at this
     exact this
   · -- The finite nonempty set has a maximum
@@ -326,7 +326,7 @@ theorem ff_capture_degree_grows_of_finiteness
     by_contra hlt
     push Not at hlt
     have hmem : n ∈ {n : ℕ | (σ.sel n).natDegree ≤ D} := by
-      simp only [Set.mem_setOf_eq]; omega
+      simp only [Set.mem_ofPred_eq]; omega
     have hmem_fs : n ∈ hfin_idx.toFinset := hfin_idx.mem_toFinset.mpr hmem
     have hle : n ≤ hfin_idx.toFinset.sup id :=
       Finset.le_sup (f := id) hmem_fs
@@ -345,12 +345,12 @@ theorem ff_finitely_many_small_selections
     apply Set.Finite.subset (Set.Finite.biUnion (Set.finite_Iic D)
       (fun e _ => hfin e))
     intro Q ⟨hQm, hQi, hQd⟩
-    simp only [Set.mem_iUnion, Set.mem_setOf_eq, Set.mem_Iic]
+    simp only [Set.mem_iUnion, Set.mem_ofPred_eq, Set.mem_Iic]
     exact ⟨Q.natDegree, hQd, hQm, hQi, rfl⟩
   apply Set.Finite.subset (hfin_le.preimage
     ((ffMixedSel_injective hv).injOn.mono (Set.preimage_mono (fun Q hQ => hQ))))
   intro n hn
-  simp only [Set.mem_preimage, Set.mem_setOf_eq]
+  simp only [Set.mem_preimage, Set.mem_ofPred_eq]
   exact ⟨ffMixedSel_monic hv n, ffMixedSel_irreducible hv n, hn⟩
 
 /-! ## Part 6: Comparison with Integer Case -/

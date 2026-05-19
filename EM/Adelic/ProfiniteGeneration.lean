@@ -22,8 +22,8 @@ open Classical
 /-- The ZMod.val of a unit of ZMod N is positive (for N > 1). -/
 private theorem val_unit_pos' {N : Nat} (hN : 1 < N) (u : (ZMod N)ˣ) :
     0 < ZMod.val (u : ZMod N) := by
-  haveI : NeZero N := ⟨by omega⟩
-  haveI : Fact (1 < N) := ⟨hN⟩
+  have : NeZero N := ⟨by omega⟩
+  have : Fact (1 < N) := ⟨hN⟩
   rw [Nat.pos_iff_ne_zero]
   intro h
   exact u.ne_zero ((ZMod.val_eq_zero (u : ZMod N)).mp h)
@@ -91,7 +91,7 @@ private theorem unit_mem_of_all_coprime_primes_mem {N : Nat}
     factors as a product of primes, all of which are coprime to N. -/
 theorem primeUnitsBelow_generate (N : Nat) (hN : 1 < N) :
     Subgroup.closure (primeUnitsBelow N) = ⊤ := by
-  haveI : NeZero N := ⟨by omega⟩
+  have : NeZero N := ⟨by omega⟩
   rw [Subgroup.eq_top_iff']
   intro u
   -- The natural representative

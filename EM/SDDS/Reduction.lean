@@ -17,7 +17,7 @@ SDDS implies Mullin's Conjecture. The main results are:
 
 ## Design
 
-The basic `SieveMapEquidistribution` from `SieveDefinedDynamics.lean`
+The basic `SieveMapEquidistribution` from `EM/SDDS/Dynamics.lean`
 guarantees that the walk hits every unit at least once. This suffices
 to show q divides some prod(n) + 1, but does NOT guarantee the hit
 occurs past the sieve gap (where all primes < q have been absorbed
@@ -80,7 +80,7 @@ theorem strong_sme_implies_hh (hstrong : StrongSME) :
     Mullin.HittingHypothesis := by
   intro q hq _hne N
   have hqp : Nat.Prime q := IsPrime.toNatPrime hq
-  haveI : Fact (Nat.Prime q) := ⟨hqp⟩
+  have : Fact (Nat.Prime q) := ⟨hqp⟩
   -- -1 is a unit in ZMod q
   let u : (ZMod q)ˣ := Units.mkOfMulEqOne (-1) (-1) (by ring)
   -- StrongSME gives n >= N with walk(n) = -1
@@ -120,7 +120,7 @@ theorem sme_for_all_implies_euclid_divisibility
     ∀ q, Nat.Prime q → (∀ k, Mullin.seq k ≠ q) →
       ∃ n, q ∣ (Mullin.prod n + 1) := by
   intro q hq _hne
-  haveI : Fact (Nat.Prime q) := ⟨hq⟩
+  have : Fact (Nat.Prime q) := ⟨hq⟩
   exact sme_implies_dvd_euclid q hq (hsme q hq)
 
 end

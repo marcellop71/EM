@@ -168,6 +168,7 @@ We state this as an open Prop because its proof requires algebraic geometry
     proper subgroup H of index at least 2 in the unit group of the
     quotient ring F_p[t]/(Q), the character induced by H has bounded
     sum. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def WeilCharSumBoundFF : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q →
   ∀ (d : ℕ), Q.natDegree = d → d ≥ 1 →
@@ -536,7 +537,7 @@ the same fundamental difficulty in both the integer and function field settings.
 
     This theorem witnesses the conjunction of SE (for large p) and
     coprimality (for all p), showing what is proved and what is open. -/
-theorem ff_se_coprimality_conjunction (d : ℕ) (hd : d ≥ 1)
+theorem ff_se_coprimality_conjunction {n : ℕ} (d : ℕ) (hd : d ≥ 1)
     (hweil : WeilCharSumBoundFF p) (hp_large : p ≥ FFSEThreshold d) :
     -- SE holds
     FFSubgroupEscape p d ∧

@@ -360,7 +360,7 @@ theorem scd_implies_ve (hscd : SelfCorrectingDrift) : VisitEquidistribution := b
   -- Use Q₀ = 3 (any prime q ≥ 3 has q-1 ≥ 2)
   use 3
   intro q inst hq_ge hq hne ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Get Lyapunov bound: L(N) ≤ ε^2 * N^2 for large N
   have hε2 : (0 : ℝ) < ε ^ 2 := by positivity
   obtain ⟨N₁, hN₁⟩ := scd_implies_lyapunov_subquadratic hq hne hscd (ε ^ 2) hε2
@@ -435,7 +435,7 @@ theorem scd_implies_sve (hscd : SelfCorrectingDrift) : SubquadraticVisitEnergy :
   -- SCD gives L(N) = o(N^2), so this works for any fixed q.
   use 3
   intro q inst hq_ge hq hne ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   have hq1_pos : (0 : ℝ) < (q : ℝ) - 1 := by
     have : (1 : ℝ) < (q : ℝ) := by exact_mod_cast (Fact.out : Nat.Prime q).one_lt
     linarith
@@ -493,7 +493,7 @@ theorem sve_implies_scd_above_threshold (hsve : SubquadraticVisitEnergy) :
   obtain ⟨Q₀, hQ₀⟩ := hsve
   use Q₀
   intro q inst hq_ge hq hne ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Use SVE with ε' = 2ε
   have hε2 : (0 : ℝ) < 2 * ε := by linarith
   obtain ⟨N₁, hN₁⟩ := hQ₀ q hq_ge hq hne (2 * ε) hε2

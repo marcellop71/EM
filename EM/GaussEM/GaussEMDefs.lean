@@ -41,7 +41,7 @@ def onePlusI : GaussianInt := ⟨1, 1⟩
 
 /-- The norm of 1 + i is 2. -/
 theorem norm_onePlusI : Zsqrtd.norm onePlusI = 2 := by
-  native_decide
+  decide
 
 /-- The natural number norm of 1 + i is 2. -/
 theorem gaussNorm_onePlusI : gaussNorm onePlusI = 2 := by
@@ -270,6 +270,7 @@ def WeakGaussMullinConjecture : Prop :=
 
     Stated as True since the relationship between the two greedy
     constructions is nontrivial and not needed for the abstract theory. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def IntegerGaussianBridge : Prop := True
 
 /-! ## Section 8: Landscape -/

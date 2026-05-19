@@ -40,8 +40,12 @@ orbit barrier.
 ## Main definitions
 
 * `FFSieveProductVanishing` -- necklace upper bound: n * pi(n) <= p^n
-* `FFPSCD` -- irred density bound: pi(n) <= p^n / n
-* `FFAlmostAllGenMixedMC` -- PNT + necklace conjunction for almost-all MC
+* `FFPSCD` -- irred density bound: pi(n) <= p^n / n (COUNTING PROXY; the
+  genuine per-subset confined-density decay is `ff_density_pscd` in
+  `EM/FunctionField/DensityMC.lean`)
+* `FFAlmostAllGenMixedMC` -- PNT + necklace conjunction (COUNTING PROXY; the
+  genuine trapped-density statement is `FFAlmostAllGenMixedDensity` in
+  `EM/FunctionField/DensityMC.lean`)
 
 ## Main results
 
@@ -97,17 +101,17 @@ theorem ff_spv_proved : FFSieveProductVanishing p :=
 
     For every n >= 1, ffIrredCount(p,n) <= p^n / n.
 
-    This bounds the "density" of irreducibles at each degree level:
-    the proportion of monic polynomials that are irreducible is at most 1/n.
-    As n grows, this density decays, which is the key to confined
-    density decay.
+    **COUNTING PROXY.** Despite the name, this is NOT the FF analogue of the
+    integer-side density statement `PSCD` from `MixedEnsemble.lean` (which says
+    each confined density tends to 0); it is only the elementary counting bound
+    on the irreducible density at each degree level, which follows
+    unconditionally from the necklace identity (n * pi(n) <= p^n implies
+    pi(n) <= p^n / n).
 
-    Over F_p[t], PSCD follows from the necklace identity:
-    n * pi(n) <= p^n implies pi(n) <= p^n / n.
-
-    This is the FF analog of `PSCD` from MixedEnsemble.lean.
-    Over Z, the same chain requires PrimesEquidistInAP (Siegel-Walfisz).
-    Over F_p[t], it is unconditional. -/
+    The GENUINE function-field analogue of `PSCD` — for every proper residue
+    subset, the density of sieve-confined starting points tends to 0 — is
+    `ff_density_pscd` in `EM/FunctionField/DensityMC.lean`, proved there
+    conditional on the Kornblum divergence hypothesis `FFDirichletDensity`. -/
 def FFPSCD : Prop :=
   ∀ n : ℕ, 0 < n → ffIrredCount p n ≤ p ^ n / n
 
@@ -121,25 +125,19 @@ theorem ff_pscd_proved : FFPSCD p :=
     (every degree has irreducibles) and the necklace upper bound
     (irred count times degree bounded by p^n).
 
-    Together, these two facts ensure:
-    1. The sieve always has fresh irreducibles to work with (PNT-in-APs)
-    2. The sieve weights are bounded, so the confined density decays (necklace)
+    **COUNTING PROXY.** Despite the name, this Prop is NOT a density statement
+    about starting points: it is only the conjunction of two unconditional
+    counting bounds (irreducible-count positivity and the necklace upper
+    bound), the two facts that the sieve argument consumes. It does NOT assert
+    that the factor tree reaches Q from density-1 starting points.
 
-    Equivalently: for density-1 monic squarefree starting points,
-    the factor tree reaches every monic irreducible.
-
-    This is the FF analog of `pscd_implies_almost_all_mixed_hitting`
-    from MixedEnsemble.lean.
-
-    The proof follows from FFPSCD: if Q is not reachable from m,
-    then the walk from m stays trapped in a proper subset of residue
-    classes mod Q. By the pigeonhole principle (finitely many proper
-    subsets of a finite set), the trapped set is contained in the
-    union of confined sets. FFPSCD gives each confined density -> 0,
-    so the total trapped density -> 0.
-
-    Over Z, the same argument requires PSCD (which requires
-    PrimesEquidistInAP). Over F_p[t], it is unconditional. -/
+    The GENUINE density statement — among monic squarefree starting points of
+    degree 1..n, the proportion with Q ∤ m from which Q is NOT ffTreeReachable
+    tends to 0 — is `FFAlmostAllGenMixedDensity` in
+    `EM/FunctionField/DensityMC.lean`, proved there
+    (`ff_almost_all_genmixed_density`) by the trapped/confined pigeonhole and
+    the exact congruence sieve, conditional on the SINGLE hypothesis
+    `FFDirichletDensity` (Kornblum's theorem, the FF Dirichlet analogue). -/
 def FFAlmostAllGenMixedMC : Prop :=
   (∀ d : ℕ, 0 < d → 0 < ffIrredCount p d) ∧
   (∀ n : ℕ, 0 < n → n * ffIrredCount p n ≤ p ^ n)

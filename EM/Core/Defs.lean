@@ -1,5 +1,5 @@
 -- Import our Euclid module for IsPrime, minFac, and the supporting lemmas.
--- See EM/Euclid.lean for the fully constructive proof of Euclid's theorem.
+-- See EM/Core/Euclid.lean for the fully constructive proof of Euclid's theorem.
 import EM.Core.Euclid
 
 /-!
@@ -31,7 +31,7 @@ This file contains:
 4. A formal statement of Mullin's Conjecture (`MullinConjecture`).
 
 **How to read this file if you're not a Lean expert:**
-- See `EM/Euclid.lean` for a full guide to Lean notation (`∣`, `∧`, `∃`, etc.).
+- See `EM/Core/Euclid.lean` for a full guide to Lean notation (`∣`, `∧`, `∃`, etc.).
 - `private theorem` is a helper lemma only visible inside this file.
 - `rfl` means "true by definition" — both sides compute to the same thing.
 - `obtain ⟨k, rfl⟩ := ...` extracts a witness `k` from an existential proof
@@ -232,7 +232,7 @@ theorem seq_isPrime : ∀ n, IsPrime (seq n) := by
     -- Rewrite: seq (n + 1) = minFac (prod n + 1)
     rw [seq_succ]
     -- prod n ≥ 2 (by prod_ge_two), so prod n + 1 ≥ 3 ≥ 2.
-    -- By `minFac_isPrime` from Euclid.lean: minFac of any number ≥ 2 is prime.
+    -- By `minFac_isPrime` from EM/Core/Euclid.lean: minFac of any number ≥ 2 is prime.
     exact minFac_isPrime (prod n + 1) (by have := prod_ge_two n; omega)
 
 /-- The second term is 3: minFac(2 + 1) = minFac(3) = 3. -/
@@ -349,18 +349,9 @@ theorem seq_six : seq 6 = 5 := by
   rcases h with h | h | h | h <;>
     first | exact h | (rw [h] at hc; omega)
 
-/-- The seventh term: seq 7 = 6221671.
-    prod 6 + 1 = 6221671, which is prime.
-    Uses `native_decide` for the primality check (trial division
-    up to √6221671 ≈ 2494 is infeasible in the kernel but fast
-    in compiled code). -/
-theorem seq_seven : seq 7 = 6221671 := by
-  have hprod6 : prod 6 = 6221670 := by
-    rw [prod_succ, prod_succ, prod_succ, prod_succ, prod_succ, prod_succ, prod_zero,
-        seq_one, seq_two, seq_three, seq_four, seq_five, seq_six]
-  -- seq 7 = minFac(6221671), and 6221671 is prime so minFac = self
-  rw [seq_succ, hprod6]
-  native_decide
+/-! `seq_seven : seq 7 = 6221671` (the seventh term; `prod 6 + 1 = 6221671` is prime) lives in
+`EM/Group/Core.lean`, where Mathlib's primality certificate (`norm_num`) is available; it was
+previously proved here by `native_decide`, which is no longer used anywhere in the live tree. -/
 
 /-- If m ≤ n, then `seq m` divides the running product `prod n`.
 
@@ -437,7 +428,7 @@ private theorem seq_ne_of_lt {m n : Nat} (hlt : m < n) : seq m ≠ seq n := by
 
   -- ── Step 2: seq (k+1) divides prod k + 1 ──
   -- By definition, seq (k+1) = minFac(prod k + 1), and minFac always
-  -- divides its argument (proved in Euclid.lean as `minFac_dvd`).
+  -- divides its argument (proved in EM/Core/Euclid.lean as `minFac_dvd`).
   -- We need prod k + 1 ≥ 2 for minFac_dvd, which follows from prod k ≥ 2.
   have h2 : seq (k + 1) ∣ prod k + 1 := by
     rw [seq_succ]                  -- unfold seq (k+1) = minFac (prod k + 1)

@@ -185,7 +185,7 @@ open Classical
     implies at least one hit. -/
 theorem hh_implies_deathChannelHit : HittingHypothesis → DeathChannelHit := by
   intro hH q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- HH gives q | prod n + 1 for some n ≥ 0
   obtain ⟨n, _, hdvd⟩ := hH q hq hne 0
   -- This means walkZ q n = -1, which is what DCH needs
@@ -409,7 +409,7 @@ def WeakHittingPrinciple : Prop :=
     cofinally. Since the second conjunct implies the first, both hold. -/
 theorem pe_implies_whp (hpe : PairEquidistribution) : WeakHittingPrinciple := by
   intro q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   refine ⟨1, ?_, ?_⟩
   · intro N
     obtain ⟨n, hn, hw, _⟩ := hpe q hq hne 1 (-(1 : (ZMod q)ˣ)⁻¹) N
@@ -424,7 +424,7 @@ theorem pe_implies_whp (hpe : PairEquidistribution) : WeakHittingPrinciple := by
     By `death_value_eq`, this gives walkZ(n+1) = −1, hence q ∣ prod(n+1) + 1. -/
 theorem whp_implies_hh (hwhp : WeakHittingPrinciple) : HittingHypothesis := by
   intro q hq hne N
-  haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+  have : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
   obtain ⟨x, _, hcof⟩ := hwhp q hq hne
   obtain ⟨n, hn, hwalk, hmult⟩ := hcof N
   rw [← hwalk] at hmult
@@ -446,7 +446,7 @@ theorem whp_implies_mullin (hwhp : WeakHittingPrinciple) : MullinConjecture :=
     concentrates these at a single position x — giving WHP. -/
 theorem hh_implies_whp (hH : HittingHypothesis) : WeakHittingPrinciple := by
   intro q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Cofinally many predecessors satisfy the death value relation
   have hcof_death : ∀ M, ∃ m, M ≤ m ∧
       emMultUnit q hq hne m = -(emWalkUnit q hq hne m)⁻¹ := by

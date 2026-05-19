@@ -1,4 +1,5 @@
 import EM.Group.Escape
+import Mathlib.Tactic.Simproc.Factors
 
 /-!
 # Concrete SE Instances and Walk Properties
@@ -19,175 +20,175 @@ open Mullin Euclid
 theorem se_at_11 (hq : IsPrime 11) (hne : ∀ k, seq k ≠ 11) :
     ∀ H : Subgroup (ZMod 11)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 11 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 17: mult 0 = 3 is a primitive root. -/
 theorem se_at_17 (hq : IsPrime 17) (hne : ∀ k, seq k ≠ 17) :
     ∀ H : Subgroup (ZMod 17)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 17 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 19: mult 0 = 3 is a primitive root. -/
 theorem se_at_19 (hq : IsPrime 19) (hne : ∀ k, seq k ≠ 19) :
     ∀ H : Subgroup (ZMod 19)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 19 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 23: mult 1 = 7 is a primitive root. -/
 theorem se_at_23 (hq : IsPrime 23) (hne : ∀ k, seq k ≠ 23) :
     ∀ H : Subgroup (ZMod 23)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 23 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 29: mult 0 = 3 is a primitive root. -/
 theorem se_at_29 (hq : IsPrime 29) (hne : ∀ k, seq k ≠ 29) :
     ∀ H : Subgroup (ZMod 29)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 29 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 31: mult 0 = 3 is a primitive root. -/
 theorem se_at_31 (hq : IsPrime 31) (hne : ∀ k, seq k ≠ 31) :
     ∀ H : Subgroup (ZMod 31)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 31 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 37: mult 3 = 13 is a primitive root. -/
 theorem se_at_37 (hq : IsPrime 37) (hne : ∀ k, seq k ≠ 37) :
     ∀ H : Subgroup (ZMod 37)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 37 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 3 13 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 3 13 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 41: mult 1 = 7 is a primitive root. -/
 theorem se_at_41 (hq : IsPrime 41) (hne : ∀ k, seq k ≠ 41) :
     ∀ H : Subgroup (ZMod 41)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 41 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 47: mult 2 = 43 is a primitive root. -/
 theorem se_at_47 (hq : IsPrime 47) (hne : ∀ k, seq k ≠ 47) :
     ∀ H : Subgroup (ZMod 47)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 47 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 2 43 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 2 43 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 59: mult 2 = 43 is a primitive root. -/
 theorem se_at_59 (hq : IsPrime 59) (hne : ∀ k, seq k ≠ 59) :
     ∀ H : Subgroup (ZMod 59)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 59 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 2 43 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 2 43 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 61: mult 1 = 7 is a primitive root. -/
 theorem se_at_61 (hq : IsPrime 61) (hne : ∀ k, seq k ≠ 61) :
     ∀ H : Subgroup (ZMod 61)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 61 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 67: mult 1 = 7 is a primitive root. -/
 theorem se_at_67 (hq : IsPrime 67) (hne : ∀ k, seq k ≠ 67) :
     ∀ H : Subgroup (ZMod 67)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 67 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 71: mult 1 = 7 is a primitive root. -/
 theorem se_at_71 (hq : IsPrime 71) (hne : ∀ k, seq k ≠ 71) :
     ∀ H : Subgroup (ZMod 71)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 71 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 73: mult 3 = 13 is a primitive root. -/
 theorem se_at_73 (hq : IsPrime 73) (hne : ∀ k, seq k ≠ 73) :
     ∀ H : Subgroup (ZMod 73)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 73 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 3 13 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 3 13 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 79: mult 0 = 3 is a primitive root. -/
 theorem se_at_79 (hq : IsPrime 79) (hne : ∀ k, seq k ≠ 79) :
     ∀ H : Subgroup (ZMod 79)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 79 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 83: mult 2 = 43 is a primitive root. -/
 theorem se_at_83 (hq : IsPrime 83) (hne : ∀ k, seq k ≠ 83) :
     ∀ H : Subgroup (ZMod 83)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 83 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 2 43 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 2 43 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 89: mult 0 = 3 is a primitive root. -/
 theorem se_at_89 (hq : IsPrime 89) (hne : ∀ k, seq k ≠ 89) :
     ∀ H : Subgroup (ZMod 89)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 89 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 97: mult 1 = 7 is a primitive root. -/
 theorem se_at_97 (hq : IsPrime 97) (hne : ∀ k, seq k ≠ 97) :
     ∀ H : Subgroup (ZMod 97)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 97 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 101: mult 0 = 3 is a primitive root. -/
 theorem se_at_101 (hq : IsPrime 101) (hne : ∀ k, seq k ≠ 101) :
     ∀ H : Subgroup (ZMod 101)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 101 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 103: mult 2 = 43 is a primitive root. -/
 theorem se_at_103 (hq : IsPrime 103) (hne : ∀ k, seq k ≠ 103) :
     ∀ H : Subgroup (ZMod 103)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 103 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 2 43 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 2 43 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 107: mult 1 = 7 is a primitive root. -/
 theorem se_at_107 (hq : IsPrime 107) (hne : ∀ k, seq k ≠ 107) :
     ∀ H : Subgroup (ZMod 107)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 107 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 109: mult 3 = 13 is a primitive root. -/
 theorem se_at_109 (hq : IsPrime 109) (hne : ∀ k, seq k ≠ 109) :
     ∀ H : Subgroup (ZMod 109)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 109 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 3 13 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 3 13 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 113: mult 0 = 3 is a primitive root. -/
 theorem se_at_113 (hq : IsPrime 113) (hne : ∀ k, seq k ≠ 113) :
     ∀ H : Subgroup (ZMod 113)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 113 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 127: mult 0 = 3 is a primitive root. -/
 theorem se_at_127 (hq : IsPrime 127) (hne : ∀ k, seq k ≠ 127) :
     ∀ H : Subgroup (ZMod 127)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 127 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 137: mult 0 = 3 is a primitive root. -/
 theorem se_at_137 (hq : IsPrime 137) (hne : ∀ k, seq k ≠ 137) :
     ∀ H : Subgroup (ZMod 137)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 137 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 139: mult 0 = 3 is a primitive root. -/
 theorem se_at_139 (hq : IsPrime 139) (hne : ∀ k, seq k ≠ 139) :
     ∀ H : Subgroup (ZMod 139)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 139 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 149: mult 0 = 3 is a primitive root. -/
 theorem se_at_149 (hq : IsPrime 149) (hne : ∀ k, seq k ≠ 149) :
     ∀ H : Subgroup (ZMod 149)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 149 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 0 3 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 0 3 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 151: mult 1 = 7 is a primitive root. -/
 theorem se_at_151 (hq : IsPrime 151) (hne : ∀ k, seq k ≠ 151) :
     ∀ H : Subgroup (ZMod 151)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 151 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 1 7 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 1 7 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-- SE at q = 157: mult 2 = 43 is a primitive root. -/
 theorem se_at_157 (hq : IsPrime 157) (hne : ∀ k, seq k ≠ 157) :
     ∀ H : Subgroup (ZMod 157)ˣ, H ≠ ⊤ →
       ∃ m, (Units.mk0 (multZ 157 m) (multZ_ne_zero hq hne m)) ∉ H :=
-  se_at_of_pow_checks hq hne 2 43 (by decide) (by native_decide) (by native_decide)
+  se_at_of_pow_checks hq hne 2 43 (by decide) (by decide +kernel) (by simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide +kernel)
 
 /-! ## Concrete mixing: the walk hits -1 mod 5
 

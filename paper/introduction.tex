@@ -3,6 +3,17 @@
 \label{sec:intro}
 %% =========================================================================
 
+\noindent\emph{Status of this document.}  This is the \textbf{technical
+report} of the project: it contains everything the formalization does,
+including the variants, the spectral and variance routes, the obstruction
+calculus, the function-field analogue (with placeholders marked), the
+complete catalogue of dead ends, and the methodology.  The mathematical
+results are collected, with proofs, in a short companion paper
+(\code{paper/short/main.pdf} in the repository); nothing there depends on
+this report.  Where the two differ in framing, the short paper is the
+later and more careful statement.
+
+
 Euclid's proposition IX.20 of the \emph{Elements} shows that for any
 finite set of (distinct) primes, each prime factor of their product plus one is outside the
 set~\cite{Hardy2009}: to grow your set of primes, you can pick any factor of their product plus one
@@ -52,13 +63,16 @@ Shanks~\cite{Shanks1991} offered a compelling heuristic: projecting the
 running product onto $(\ZZ/q\ZZ)^\times$ yields a multiplicative walk,
 and if the walk behaves pseudo-randomly it must eventually hit $-1
 \bmod q$, making $q$ a candidate for selection.  Our formalization
-makes this heuristic precise---CME, CCSB, and DSL
+makes this heuristic precise---CME and CCSB
 (Sections~\ref{sec:character}--\ref{sec:ensemble}) are rigorous
 formulations of ``the walk behaves pseudo-randomly.''
 
-That the rule matters is not idle speculation: Cox and van der
-Poorten~\cite{CoxVdP1968} showed that replacing $\minFac$ with the
-\emph{largest} prime factor provably misses infinitely many primes.
+That the rule matters is not idle speculation: for the variant that takes
+the \emph{largest} prime factor, Cox and van der
+Poorten~\cite{CoxVdP1968} showed that specific primes ($5, 11, 13, \dots$)
+are omitted and conjectured that infinitely many are; Booker~\cite{Booker2012}
+proved the infinitude (an elementary proof is in
+Pollack--Trevi\~no~\cite{PollackTrevino2014}).
 
 Each step couples the next prime to the full factorization history, creating a recursive dependency that
 defeats both probabilistic heuristics and standard sieve methods.
@@ -121,64 +135,214 @@ Equidistribution (CME)---needed to convert ``the factoring channel destroys
 correlation'' into a proof of MC, and show it implies the conjecture
 through a verified chain of reductions.
 
-\
+\subsection*{The story, told from above}
+\label{sec:story}
 
+Before the technical development, here is the whole paper in one
+telling; the sections then follow it in order.
+
+\paragraph{One map, one orbit: the Euclid step.}
+Everything in this paper is about the dynamics of a single map.  Read
+the recursion~\eqref{eq:em-def} not term by term but through the running
+product $\Prod{2}(n) = a(0)\cdots a(n)$: the product records the whole
+history (the ``bag'' of primes collected so far), and one step of the
+recursion does two things---it forms the Euclid number $\Prod{2}(n)+1$,
+which is coprime to every prime in the bag, and it multiplies the bag by
+that number's least prime factor.  So the running product evolves by a
+map that depends on nothing but its current value:
+\[
+  T(n) \;=\; n \cdot \minFac(n+1),
+  \qquad\text{so that}\qquad
+  \Prod{2}(n{+}1) = T\bigl(\Prod{2}(n)\bigr),
+  \quad \Prod{2}(n) = T^{n}(2).
+\]
+We call $T$ the \emph{Euclid step}.  Its natural domain is the set $X$ of
+squarefree integers: if $n$ is squarefree then $\minFac(n+1)$ is a prime
+not dividing~$n$, so $T(n)$ is squarefree again, has exactly one more
+prime factor than~$n$, and $T(n)\ge 2n$.  A squarefree $n$ \emph{is} a
+finite set of primes, and $T$ is ``add the least prime factor of the
+product plus one'': Euclid's construction with Mullin's choice, iterated.
+The Euclid--Mullin sequence is the sequence of primes appended along the
+orbit of~$2$ (equivalently of~$1$, since $T(1) = 2$), and $a(n{+}1)$ is
+the multiplier $T(\Prod{2}(n))/\Prod{2}(n)$.  The \emph{ensemble} of
+generalized EM sequences (Section~\ref{sec:ensemble}) is the family of
+all orbits, $\mathrm{genProd}(m,k) = T^{k}(m)$; the tail identity says
+that the shift along the orbit is~$T$; the factor tree
+(Section~\ref{sec:variants}) is the multivalued relative
+$n \mapsto n\cdot p$ for $p \mid n+1$; the variants are other selection
+rules; the function-field analogue is $T$ over~$\FF_p[t]$.  Mullin's
+conjecture asks whether the orbit of~$2$ meets every prime, and the
+question underneath most of what follows is: \emph{what structure does
+$(X,T)$ have, and how much of it does one orbit inherit?}
+
+\paragraph{Two exact projections.}
+The method rests on two ways of seeing the orbit through a small window,
+both exact.
+\begin{itemize}[nosep]
+\item \textbf{The residue walk.}  Modulo a prime~$q$, $T^{n}(2) \bmod q$
+  is a multiplicative walk on $(\ZZ/q\ZZ)^\times$ with multiplier
+  $\minFac(\Prod{2}(n)+1) \bmod q$, and $q$ appears in the sequence iff the
+  walk hits~$-1$ past the stage where the smaller primes are exhausted
+  (Section~\ref{sec:walk}; the algebraic precondition, that the
+  multipliers generate the group, is \emph{free}).  This makes MC a
+  hitting statement, exactly.
+\item \textbf{The growth constant.}  $C = \lim_N \log T^{N}(2)/2^{N}$
+  exists, satisfies $C(Tm) = 2\,C(m)$ on all of~$X$, and
+  $C = 0$ iff infinitely many Euclid numbers are composite~$(\mathrm{C}\infty)$
+  iff the sequence is not eventually a tower of primes
+  (Section~\ref{sec:cinfty}).  So $C$ semiconjugates $(X,T)$ to doubling
+  on $[0,\infty)$.  (There is no invariant probability measure for
+  $(X,T)$ at all---trivially, since $T(m) > m$ on a countable set---so
+  ``a generic orbit'' has no ergodic-theoretic meaning; the semiconjugacy
+  adds nothing to that remark, and MC is invisible from $C$.)
+\end{itemize}
+
+\paragraph{The map.}
+Told from above, the paper is a map of what one orbit of~$T$ provably
+inherits from the structure of~$T$: a sufficient condition at the top,
+a hard floor at the bottom, obstruction theorems on both sides, and a
+comparison class isolating what makes the problem hard.
+\begin{enumerate}[nosep,leftmargin=*]
+\item \textbf{The top: CME.}  Character sums on the walk give the
+  machine-verified chain
+  $\mathrm{CME} \Rightarrow \mathrm{CCSB} \Rightarrow \text{hits} \Rightarrow \MC$
+  (Section~\ref{sec:character}).  \emph{Conditional multiplier
+  equidistribution}---along the orbit, for a missing~$q$, the multiplier
+  residues are equidistributed on each fiber of the walk position---is
+  where the story stops.  It is important to say what kind of statement
+  it is: CME, CCSB, DH and their relatives are all quantified over primes
+  that never appear, so MC implies each of them vacuously and each is
+  \emph{equivalent} to MC (\lean{EM/CME/Equivalences.lean}{cme\_iff\_mc},
+  \lean{EM/CME/Equivalences.lean}{walk\_layer\_equivalences}).  They are
+  reformulations of MC in the language of the walk, not sufficient
+  conditions strictly weaker than it; their value is that they turn a
+  hitting problem into an equidistribution problem, which is the shape
+  analytic number theory knows how to attack.
+\item \textbf{Nothing sits under CME.}  Every attempt to place a weaker
+  hypothesis beneath it met one of three fates: it was CME by definition
+  (several ``different'' hypotheses collapse by \code{rfl}); it was
+  walled by orbit-specificity (two multiplier sequences with identical
+  statistics, one of whose walks hits $-1$ and one of whose never does,
+  Section~\ref{sec:hard}); or it was \emph{false}.  The population layer
+  that earlier drafts placed under CME---equidistribution of $\minFac
+  \bmod q$ over a fixed-modulus population---asserts that a
+  \emph{convergent} series splits evenly among residue classes; we prove
+  the population hypothesis \emph{equivalent} to that identity, which
+  Dirichlet's theorem does not touch and which fails by head domination
+  (Section~\ref{sec:ensemble}, Dead End~\#160).
+\item \textbf{The floor: $(\mathrm{C}\infty)$.}  Below MC sits weak MC,
+  below that reciprocal divergence, below that ``the least factor is
+  sometimes small relative to size'', below that $(\mathrm{C}\infty)$; all
+  the implications are proved.  The ladder bottoms out at Sylvester-tower
+  primality, a statement of the shape of the Fermat question, and the
+  arboreal input a Chebotarev argument would supply is free---the residual
+  gap is a size condition on one integer's factorization
+  (Section~\ref{sec:cinfty}).  \textbf{MC implies this open,
+  Fermat-shaped statement.}
+\item \textbf{Obstructions.}  No propagating congruence invariant can
+  block a prime under $\minFac$, while the same class of invariants is
+  inhabited under $\mathrm{maxFac}$ and machine-checks Cox--van der
+  Poorten's omission of~$5$; reciprocity-built invariants and smoothness
+  guards fail the same way (Section~\ref{sec:min-max-dichotomy}).  A
+  disproof would have to be anatomical, not congruential---and,
+  symmetrically, no congruence model can predict the multiplier.
+\item \textbf{The comparison class.}  Ensemble, factor tree, two-point,
+  $\varepsilon$-random and function-field variants each change one
+  thing: almost-all tree hitting is unconditional, the perturbed rule
+  captures almost surely yet its $\varepsilon \to 0$ limit is a faithful
+  reformulation of MC, Booker's steered variant hits everything,
+  $\mathrm{maxFac}$ provably misses (Sections~\ref{sec:variants},
+  \ref{sec:function-field}).  The lesson, said once: \emph{selection} is
+  where the difficulty lives---access to the factor bag is not the
+  problem, the deterministic choice of its least element is.
+\item \textbf{Dead ends as the coastline.}  150 documented dead ends
+  (Appendix~\ref{app:dead-ends}, the complete numbered catalogue), 29 of them
+  witnessed in Lean, trace the
+  boundary of what one orbit inherits.  Two recurring themes---population
+  statistics do not determine one orbit, and multiplier cancellation does
+  not force walk cancellation---are illustrated by finite examples in
+  $(\ZZ/5\ZZ)^\times$; most entries are instances of these two, of head
+  domination, or of a tool needing structure the walk lacks.
+\end{enumerate}
+
+\noindent What the telling changes is the framing.  The project is not
+``a reduction of MC to a hypothesis''---that framing died with the
+population layer.  It is a complete map of what one orbit of~$T$
+provably inherits from the structure of~$T$: exact projections (walk,
+growth), a sufficient condition at the top (CME), a Fermat-shaped floor
+at the bottom ($(\mathrm{C}\infty)$), obstruction theorems on both sides,
+and a comparison class isolating selection as the culprit.  Late
+additions sharpen the projections: the growth constant is defined for
+every seed and \defname{MixedDiversity} (``$(\mathrm{C}\infty)$ from every
+seed'') is exactly the emptiness of the $T$-invariant set $\{C>0\}$,
+which is null threshold by threshold (\S\ref{sec:seeded-growth},
+\S\ref{sec:growth-density}); the two projections are coupled through
+one bit only---at composite stages position, residue and size are jointly
+free in the ensemble (\S\ref{sec:size-residue}); a second, unscaled
+invariant, the relative size $\rho(m)$ of the multiplier, inserts the rung
+$\MC \Rightarrow \mathrm{RD} \Rightarrow \rho(2)=0 \Rightarrow
+(\mathrm{C}\infty)$ (\S\ref{sec:relative-size}); and on the progression
+$m \equiv 1 \pmod{P}$ that actually contains the Euclid numbers, the least
+prime outside the bag is selected with relative density exactly
+$1/q$---Shanks' heuristic with its correct, biased law, at the population
+level (\S\ref{sec:bag-law}).
+
+\paragraph{The main theorem.}
 Our main result is the machine-verified reduction of MC to a single
 open hypothesis:
 
-\begin{theorem}[\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}]
+\begin{theorem}[\lean{EM/CME/Reduction.lean}{cme\_implies\_mc}]
 \label{thm:main-chain}
-$\mathrm{DSL} \;\Longrightarrow\;
- \mathrm{CME} \;\Longrightarrow\;
- \mathrm{CCSB} \;\Longrightarrow\; \MC$.
+$\mathrm{CME} \;\Longrightarrow\;
+ \mathrm{CCSB} \;\Longrightarrow\; \MC$,
+where CME (Conditional Multiplier Equidistribution) says: along the EM
+orbit, for a prime~$q$ that never appears, the multiplier residues
+$\seq{2}(n{+}1) \bmod q$ are equidistributed on the fibers of the walk
+position.  Because CME is quantified over missing primes, MC implies it
+vacuously; hence $\mathrm{CME} \Leftrightarrow \mathrm{CCSB}
+\Leftrightarrow \mathrm{DH} \Leftrightarrow \mathrm{SHH} \Leftrightarrow
+\MC$ (\lean{EM/CME/Equivalences.lean}{walk\_layer\_equivalences}).
 \end{theorem}
 
-\noindent The Deterministic Stability Lemma~(DSL) is the sole
-remaining hypothesis.  It asserts that \emph{population
-equidistribution} of least prime factors among shifted squarefree
-integers---a standard consequence of Alladi's
-theorem~\cite{Alladi1977} and Dirichlet's theorem on primes in
-arithmetic progressions---implies \emph{conditional multiplier
-equidistribution} (CME) for the specific EM orbit.  In symbols,
-$\mathrm{DSL} = (\mathrm{PE} \Rightarrow \mathrm{CME})$, where PE is
-the population equidistribution that follows from analytic number theory.
-The entire mathematical content of this paper is the gap between PE
-(known) and CME (sufficient for MC): does generic equidistribution
-transfer to one deterministic orbit?
+\noindent So the theorem is a \emph{reformulation}: MC is equivalent to
+conditional equidistribution of the multiplier along the walk of any
+missing prime.  Its content is the direction $\mathrm{CME} \Rightarrow
+\MC$---a hitting problem becomes an equidistribution problem---and the
+mathematical content of this paper is the gap between what is proved
+about the orbit and that equidistribution\@.  A hypothesis with content
+independent of MC would have to speak about the residues of $\seq{2}(n)$
+without conditioning on missingness, uniformly in~$q$; the population
+layer that tried to supply one was refuted (Dead End~\#160).  (An earlier draft interposed a
+population layer beneath CME---population equidistribution of least
+prime factors and a transfer lemma to the orbit; it is retired, since
+the population statement is equivalent to a false identity between
+convergent series, Dead End~\#160 in Appendix~\ref{app:dead-ends} and
+\S\ref{sec:ant-formalization}.)
 
-The strategy proceeds in three stages:
-
-\
-
-\begin{enumerate}[nosep]
-\item \textbf{Reformulation and bootstrap.}  We recast ``does prime~$q$ appear?'' as
-  ``does a multiplicative walk on the cyclic group $(\ZZ/q\ZZ)^\times$
-  hit the element~$-1$?''  This translation is exact.
-  We then show that the algebraic precondition for
-  the walk to reach~$-1$---that the multipliers generate the full
-  group---is \emph{free}, following from the inductive hypothesis
-  that all primes below~$p$ have already appeared.
-  A single hit on~$-1$ past the
-  stage where all smaller primes are excluded suffices for MC
-  (Section~\ref{sec:walk}).
-\item \textbf{Reduction to DSL.}  We develop the character-analytic
-  infrastructure to show CME~$\Rightarrow$~CCSB~$\Rightarrow$~MC
-  (Section~\ref{sec:character}), then an ensemble averaging framework
-  that collapses the full landscape to DSL
-  (Section~\ref{sec:ensemble}).  Section~\ref{sec:hard} explains
-  why the remaining hypothesis is hard and identifies the open problems
-  whose resolution would close the conjecture.
-\end{enumerate}
-
-\
+Alongside the conditional reduction, the formalization contains a
+fully \emph{unconditional} density theorem
+(\lean{EM/Ensemble/UnconditionalPSCD.lean}{almost\_all\_mixed\_hitting\_unconditional}):
+for each prime~$q$, a density-$1$ set of squarefree starting
+points~$m$ reaches~$q$ in the factor tree of~$m$; a diagonal argument
+(\lean{EM/Ensemble/UnconditionalPSCD.lean}{almost\_all\_mixed\_hitting\_diagonal})
+extends this to every prime up to a bound $B(X) \to \infty$
+simultaneously (Section~\ref{sec:almost-all-mixed}).  Its analytic input ---
+divergence of $\sum_{p \equiv a \ (q)} 1/p$ for every invertible
+class~$a$ --- is itself machine-checked from Mathlib's Dirichlet
+$L$-function machinery
+(\lean{EM/IK/DirichletDensity.lean}{prime\_reciprocal\_class\_divergent}),
+so the chain carries no hypothesis at all.
 
 The formalization serves two purposes:
 (i)~it guarantees that every reduction is logically sound, and (ii)~it
 precisely delineates the boundary between what is proved and what
 remains open, preventing the kind of subtle gap that plagues pencil-and-paper
-reductions involving multiple interacting hypotheses.
-
-\
+reductions involving multiple interacting hypotheses.  Today's
+version of that boundary is drawn after an audit of every hypothesis
+in the reduction network against three known failure patterns
+(fixed-modulus population equidistribution, uncentered character sums
+at the trivial character, placeholder propositions); what survives is
+listed in \S\ref{sec:verified-results}.
 
 The intermediate reductions are:
 
@@ -211,29 +375,15 @@ ComplexCharSumBound (CCSB: character sums of the walk are $o(N)$)
 $\;\Longrightarrow\; \MC$.
 \end{theorem}
 
-\begin{theorem}[\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_mc}]
-$\mathrm{CME} \;\Longrightarrow\; \MC$ \emph{(sharpest sufficient condition)}.
-\end{theorem}
-
 \noindent An independent route bypasses CME entirely:
 Visit Equidistribution~(VE)---the walk visits every
 residue class with equal frequency---also implies MC through a
 separate machine-verified chain
 (\code{sve\_implies\_mc}, \code{cancel\_weyl\_implies\_mc}).
-VE and CME are genuinely different conditions (neither implies
-the other), but both reach MC\@.
-
-All reductions are fully machine-verified with zero \code{sorry}.
-The ensemble averaging framework
-(Section~\ref{sec:ensemble}) uses generalized EM sequences parametrized
-by arbitrary squarefree starting points, CRT-based decorrelation, and a
-first-moment/variance argument to collapse
-all routes to DSL\@.  The formalization thus
-provides a precise ``roadmap'': prove DSL (the sole remaining
-hypothesis), or equivalently any of DH, CCSB, CME, VE, or the
-equivalent formulations catalogued in \S\ref{sec:character},
-\S\ref{sec:open}, and the glossary (Appendix~\ref{sec:glossary}),
-and the rest follows by machine-checked deduction.
+VE is stated with a threshold ($q \ge Q_0$) and reaches MC only together
+with a finite check below the threshold; like CME it is implied by MC
+vacuously.  The two are different \emph{routes}, not independent
+hypotheses.
 
 \paragraph{Visual conventions.}
 Throughout the paper, the status of each statement is indicated by
@@ -261,33 +411,51 @@ its left-border color and environment type:
 Every blue-bordered statement has been verified with zero
 \code{sorry} in the formalization.  Pink-bordered ``Property''
 statements are the sole open content; each reduction arrow between
-them is machine-checked.  The \lean{EM/file.lean}{identifier}
+them is machine-checked.  The {\color{leanink}\sffamily\footnotesize\scalerel*{\checkmark}{X}\kern0.12em identifier}
 links point to the corresponding Lean source.
 
 \paragraph{Organization.}
-Section~\ref{app:bag} analyzes the bag-theoretic and
-information-theoretic structure of the EM dynamics.
-The technical development begins in Section~\ref{sec:walk}, which
-reformulates MC as a walk-hitting problem,
-establishes the algebraic prerequisites, derives the first missing prime's death channel avoidance,
-and proves the Single Hit
-Theorem via the inductive bootstrap (SubgroupEscape is free),
-reducing MC to producing one hit at each prime.
-Section~\ref{sec:character} develops the character-analytic reduction
-(CCSB~$\Rightarrow$~MC), including the large sieve infrastructure, the
-spectral energy bridge, and the van der Corput--autocorrelation route.
-Section~\ref{sec:ensemble} develops the ensemble averaging framework,
-reducing MC to a single Deterministic Stability Lemma~(DSL).
+The order follows the map above.
+Section~\ref{sec:bag} analyzes the bag-theoretic and
+information-theoretic structure of the dynamics of~$T$.
+Section~\ref{sec:walk} is the first exact projection: MC as
+walk-hitting, the algebraic prerequisites, the first missing prime's
+death channel avoidance, and the Single Hit Theorem via the inductive
+bootstrap (SubgroupEscape is free).
+Section~\ref{sec:cinfty} is the second projection and the floor: the
+growth constant~$C$, its vanishing as a complete invariant for
+$(\mathrm{C}\infty)$, Sylvester-tower primality, the level ladder of
+which the classical $\Phi_3$ death equation is the first rung, the free
+arboreal input, and the resulting Fermat-shaped consequence of MC\@.
+Section~\ref{sec:character} develops the top: the character-analytic
+reduction CME~$\Rightarrow$~CCSB~$\Rightarrow$~MC, the large sieve
+infrastructure and the walk telescoping identities.
+Section~\ref{sec:ensemble} develops the ensemble of all orbits of~$T$
+and shows why nothing sits under CME: the population lens is not weak but
+the wrong object (head domination), and the orbit hypothesis stands on
+its own.
+Section~\ref{sec:spectral-routes} collects the spectral and variance
+routes: the Weyl hitting bridge, the SVE~$\leftrightarrow$~VE spectral
+identity, the Lyapunov drift analysis, and temporal window
+decorrelation.
+Section~\ref{sec:receptacle} reads the formalization against the
+two-arrow receptacle template.
+Section~\ref{sec:min-max-dichotomy} gives the obstructions: no
+propagating congruence invariant blocks a prime for the $\minFac$ rule
+while the same class is inhabited for $\mathrm{maxFac}$; the
+obstruction calculus; and the lift from invariants to proofs, which
+stays empty along stage-dependence, size, factor count, smoothness and
+reciprocity data.
+Section~\ref{sec:variants} is the comparison class: the take-all rule,
+the target ladder and smallness family, the random-factor, factor-tree,
+mixed and two-point variants, and the ensemble and weak-Mullin variants;
+Section~\ref{sec:function-field} the function-field analogue over
+$\FF_p[t]$, with an explicit account of what is and is not
+machine-checked there.
 Section~\ref{sec:hard} explains \emph{why} the remaining hypothesis is
 difficult by analyzing dead ends and structural barriers, identifies
 the open problems whose resolution would close the conjecture, and
 assesses the evidence for and against.
-Section~\ref{sec:variants} studies variants of the conjecture:
-the random-factor variant (easy by mixing), the
-$\{\minFac, \operatorname{secondMinFac}\}$ two-point variant
-(almost closed under UFDStrong, \S\ref{sec:minfac-secondminfac}),
-and the function field analog over~$\FF_p[t]$
-(\S\ref{sec:function-field}).
 Section~\ref{sec:lean} describes the Lean formalization and
 catalogues all verified results (\S\ref{sec:verified-results}).
 Appendix~\ref{app:history} collects the historical background;
@@ -295,6 +463,7 @@ Appendix~\ref{app:analogies} discusses analogies with
 Artin's conjecture, multiplicative walks, Sarnak's program, and
 sieve theory;
 Appendix~\ref{app:routes} presents additional sieve and spectral routes to MC;
+Appendix~\ref{app:dead-ends} catalogues the dead ends;
 Appendix~\ref{app:agents} describes the human--AI methodology;
 and Appendix~\ref{sec:glossary} provides a glossary of all definitions and hypotheses.
 

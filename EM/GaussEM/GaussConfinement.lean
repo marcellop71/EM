@@ -290,6 +290,7 @@ theorem confinement_landscape :
 
     This is a fundamental obstruction: the orbit-specificity barrier cannot
     be circumvented by passing to a number field extension. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def NormOneCharTrivialOnIntegerWalk : Prop := True
 
 /-- The norm-1 character triviality is a structural observation. -/
@@ -314,6 +315,7 @@ theorem norm_one_char_trivial_on_integer_walk : NormOneCharTrivialOnIntegerWalk 
     strategies for the integer EM sequence. The only way to get new
     character content is to change the SEQUENCE (e.g., the Gaussian EM
     sequence over Z[i], which genuinely uses non-real Gaussian primes). -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def GeneralConfinementPrinciple : Prop := True
 
 /-- The general confinement principle is a structural observation. -/

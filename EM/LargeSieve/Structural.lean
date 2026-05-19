@@ -1,12 +1,31 @@
 import EM.LargeSieve.Basic
 
+/-!
+# Structural Arithmetic and the BV Decomposition
+
+Two layers, reflecting the file's history:
+
+* **Structural arithmetic of the EM sequence** (S49–S51): elementary
+  divisibility, coprimality, and congruence facts about `seq`/`prod` —
+  `prod_strictly_increasing`, `euclid_number_coprime_seq`, pairwise
+  distinctness, running-product divisibility, and congruence of sequence
+  terms. All proved.
+* **The BV decomposition and sieve–harmonic bridge** (S52, S79): the
+  `BVImpliesMMCSB` decomposition of the multiplier character sum bound
+  through Bombieri–Vinogradov-style inputs, sieve equidistribution implies
+  MMCSB, and the sieve-to-harmonic bridge theorems connecting the sieve
+  formulation to the harmonic-analysis formulation of the large sieve.
+
+Each numbered block ends with a `Summary` docstring recording its status.
+-/
+
 open Mullin Euclid MullinGroup RotorRouter
 
 section StructuralLemmas
 
 /-- **The running product is strictly increasing**: `prod m < prod n` for `m < n`.
 
-    This is immediate from `prod_strictMono` (proved in EquidistSelfAvoidance.lean
+    This is immediate from `prod_strictMono` (proved in EM/Equidist/SelfAvoidance.lean
     by induction: each `seq(n+1)` is prime hence ≥ 2, so multiplying by it
     strictly increases the product). -/
 theorem prod_strictly_increasing {m n : ℕ} (h : m < n) : prod m < prod n :=
@@ -437,7 +456,7 @@ open Classical in
 theorem strongSieveEquidist_implies_sieveEquidist (hsse : StrongSieveEquidist) :
     SieveEquidistribution := by
   intro q inst hq hne a ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   set φ := (Finset.univ (α := (ZMod q)ˣ)).card with hφ_def
   -- Apply SSE with ε' = ε/2, L₀ = 1
   set ε' := ε / 2 with hε'_def
@@ -766,7 +785,7 @@ section SieveHarmonicBridge
 theorem sieve_equidist_implies_decorrelation :
     SieveEquidistribution → DecorrelationHypothesis := by
   intro hsieve q inst hq hne χ hχ ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Prove the Weyl bound directly from hsieve for this specific q.
   -- This applies the same Fourier decomposition as sieve_equidist_implies_mult_csb
   -- but targets DecorrelationHypothesis directly (avoiding the ∃ Q₀ wrapper of

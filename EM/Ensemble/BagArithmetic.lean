@@ -173,7 +173,7 @@ theorem genFactorsInClass_card_sum {s k q : ℕ} (hq : 1 ≤ q) :
     haveI : NeZero q := ⟨by omega⟩
     ∑ a : ZMod q,
       (genFactorsInClass q a s k).card = genEuclidOmega s k := by
-  haveI : NeZero q := ⟨by omega⟩
+  have : NeZero q := ⟨by omega⟩
   simp only [genEuclidOmega, genFactorsInClass]
   exact (Finset.card_eq_sum_card_fiberwise
     (f := fun (p : ℕ) => (p : ZMod q))

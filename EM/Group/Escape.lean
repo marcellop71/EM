@@ -17,11 +17,6 @@ subgroups of (ZMod q)×, giving concrete SE instances:
 * Fact instances for primes 11-157
 -/
 
--- In Mathlib v4.29, CompleteLattice → BoundedOrder → OrderTop TC chain is
--- broken for Subgroup. Provide the instance manually.
-instance subgroupOrderTop {G : Type*} [Group G] : OrderTop (Subgroup G) :=
-  CompleteLattice.toBoundedOrder.toOrderTop
-
 namespace MullinGroup
 
 open Mullin Euclid Classical
@@ -61,7 +56,7 @@ The subgroup {1, -1} ≤ (ZMod q)× has order 2 and index (q-1)/2.
 We prove that for q ≥ 5 prime, the first multiplier seq(1) = 3 has
 residue ≢ ±1 (mod q), so it escapes this subgroup.
 
-This uses `seq_one : seq 1 = 3` from Mullin.lean and the fact that
+This uses `seq_one : seq 1 = 3` from EM/Core/Defs.lean and the fact that
 q ≥ 5 implies q ∤ 2 (so 3 ≢ 1) and q ∤ 4 (so 3 ≢ -1). -/
 
 /-- 3 ≢ 1 (mod q) for q ≥ 5: the first multiplier is not 1. -/
@@ -473,7 +468,7 @@ theorem eight_elts_escape_order_le_seven {q : Nat} [Fact (Nat.Prime q)]
   have hp_ne_mk : ∀ i, i < 6 → mk 0 * mk 1 ≠ mk i := by
     intro i hi heq
     have hv : multZ q 0 * multZ q 1 = multZ q i := by
-      have := congrArg Units.val heq; simpa [Units.val_mul] using this
+      have := congrArg Units.val heq; simpa [mk, Units.val_mul] using this
     rcases show i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 ∨ i = 4 ∨ i = 5 by omega with
       rfl | rfl | rfl | rfl | rfl | rfl
     exacts [dp0 hv, dp1 hv, dp2 hv, dp3 hv, dp4 hv, dp5 hv]
@@ -520,7 +515,7 @@ theorem se_of_maximal_escape {q : Nat} [Fact (Nat.Prime q)]
       ∃ n, (Units.mk0 (multZ q n) (multZ_ne_zero hq hne n)) ∉ H := by
   intro H hH
   -- Subgroup lattice is finite → coatomic
-  haveI : Finite (Subgroup (ZMod q)ˣ) :=
+  have : Finite (Subgroup (ZMod q)ˣ) :=
     Finite.of_injective (fun H : Subgroup (ZMod q)ˣ => (H : Set (ZMod q)ˣ))
       (fun _ _ h => SetLike.ext' h)
   have hcoatomic : IsCoatomic (Subgroup (ZMod q)ˣ) := Finite.to_isCoatomic
@@ -542,7 +537,7 @@ and conclude SE holds at q. -/
 /-- An element of full order in a finite group cannot belong to any proper subgroup.
     If `orderOf g = |G|`, then `g` generates the whole group, so `g ∉ H` for
     any proper `H < G`. -/
-theorem not_mem_proper_subgroup_of_full_order [Group G] [Fintype G]
+theorem not_mem_proper_subgroup_of_full_order {G : Type*} [Group G] [Fintype G]
     {g : G} (hord : orderOf g = Fintype.card G)
     {H : Subgroup G} (hH : H ≠ ⊤) : g ∉ H := by
   intro hg
@@ -575,7 +570,7 @@ theorem se_at_of_prim_root {q : Nat} [inst : Fact (Nat.Prime q)]
 
 /-- **Concrete SE helper**: verify SubgroupEscape at prime q by finding a multiplier
     that is a primitive root. The primitive root property is verified via power checks:
-    `v^((q-1)/p) ≠ 1` for each prime p | (q-1). Uses `native_decide`. -/
+    `v^((q-1)/p) ≠ 1` for each prime p | (q-1). Uses `decide` (kernel). -/
 theorem se_at_of_pow_checks {q : Nat} [inst : Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q) (n : Nat)
     (v : ZMod q) (hv : v ≠ 0)
@@ -598,7 +593,7 @@ theorem se_at_of_pow_checks {q : Nat} [inst : Fact (Nat.Prime q)]
 
 For each prime q not in the sequence, SubgroupEscape is verified by finding
 a multiplier index n such that multZ q n is a primitive root (has full order
-q - 1 in (ZMod q)ˣ). The computational checks use `native_decide`. -/
+q - 1 in (ZMod q)ˣ). The computational checks use `decide`. -/
 
 instance : Fact (Nat.Prime 11) := ⟨by decide⟩
 instance : Fact (Nat.Prime 17) := ⟨by decide⟩

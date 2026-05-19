@@ -101,7 +101,7 @@ private theorem card_primes_lt_five (x : ℕ) :
         intro p hp
         rw [Finset.mem_filter] at hp ⊢
         exact ⟨Finset.mem_range.mpr (by omega), hp.2⟩
-    _ ≤ 2 := by native_decide
+    _ ≤ 2 := by decide
 
 /-- **Theorem 7.16 proved**: `LargeSieveAsSieve → LinnikSmallQNR`.
 
@@ -310,7 +310,7 @@ theorem lemma715_aux (hcrt : CRTCoprimeSumEq) :
         a n * eAN ((↑(n : ℕ) : ℝ) * ↑(0 : ℕ) / ↑(1 : ℕ)) = a n := by
       intro n
       have : (↑(n : ℕ) : ℝ) * ↑(0 : ℕ) / ↑(1 : ℕ) = 0 := by push_cast; ring
-      rw [this, eAN_eq_root_eAN, _root_.eAN_zero, mul_one]
+      rw [this, _root_.eAN_zero, mul_one]
     simp_rw [heq]; exact le_refl _
   · -- q > 1
     have hq_gt1 : 1 < q := by omega
@@ -429,8 +429,7 @@ theorem lemma715_aux (hcrt : CRTCoprimeSumEq) :
         congr 1; congr 1
         apply Finset.sum_congr rfl; intro n _
         rw [mul_assoc]; congr 1
-        -- IK.eAN X * IK.eAN Y = IK.eAN (X + Y) via root eAN
-        simp only [eAN_eq_root_eAN]
+        -- eAN X * eAN Y = eAN (X + Y)
         rw [show (↑(n : ℕ) : ℝ) * ((b1 : ℝ) / (p : ℝ) + (b2 : ℝ) / (q' : ℝ))
           = (↑(n : ℕ) : ℝ) * ((b2 : ℝ) / (q' : ℝ))
           + (↑(n : ℕ) : ℝ) * (b1 : ℝ) / (p : ℝ) from by ring]
@@ -560,14 +559,13 @@ theorem crt_coprime_sum_eq_proved : CRTCoprimeSumEq := by
   -- Step 4: Value equality (eAN identity via div/mod decomposition)
   have hf_val : ∀ x ∈ S1 ×ˢ S2,
       ‖∑ n : Fin N, a n *
-        IK.eAN ((↑(n : ℕ) : ℝ) * ((x.1 : ℝ) / (p : ℝ) + (x.2 : ℝ) / (q' : ℝ)))‖ ^ 2 =
+        eAN ((↑(n : ℕ) : ℝ) * ((x.1 : ℝ) / (p : ℝ) + (x.2 : ℝ) / (q' : ℝ)))‖ ^ 2 =
       ‖∑ n : Fin N, a n *
-        IK.eAN ((↑(n : ℕ) : ℝ) * (f x : ℝ) / ((p : ℝ) * (q' : ℝ)))‖ ^ 2 := by
+        eAN ((↑(n : ℕ) : ℝ) * (f x : ℝ) / ((p : ℝ) * (q' : ℝ)))‖ ^ 2 := by
     intro ⟨b1, b2⟩ _
     congr 1; congr 1
     apply Finset.sum_congr rfl; intro nn _
     congr 1
-    simp only [eAN_eq_root_eAN]
     -- Clean variables for div/mod to avoid cast explosion
     set c := b1 * q' + b2 * p
     set pq := p * q'

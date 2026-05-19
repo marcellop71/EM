@@ -13,8 +13,9 @@ Character-analytic program for the Euclid-Mullin walk:
 * §26: Multi-modulus sieve and GlobalTailSE decomposition
 * §27: Decorrelation principle and multiplier equidistribution
 * §28: Cofinal cycle multiplier product (algebraic)
-* §29: Character orthogonality counting formula
-* §30: Complex character sum bound and Fourier reduction
+
+§29 (character orthogonality counting formula) and §30 (complex character
+sum bound and Fourier reduction) live in `EM/Equidist/FourierB.lean`.
 -/
 
 open Mullin Euclid MullinGroup RotorRouter
@@ -72,9 +73,7 @@ exponentially self-limiting.
 The irreducible gap is **ensemble-to-specific**: transferring generic
 decorrelation (a theorem) to the specific EM orbit. No marginal statement
 about multiplier distribution can force the joint death-pair event.
-
-See docs/pair_correlation.md and docs/variance_bound.md for the full
-derivation. -/
+ -/
 
 section CharacterSumFramework
 open MullinGroup
@@ -173,8 +172,7 @@ application, EMFE provides TailSE globally, giving the chain:
     EMFE →[proved]→ TailSE →[TailSEImpliesDH, open]→ DH →[proved]→ MC
 
 Three open Props suffice: MertensEscape + SieveAmplification + TailSEImpliesDH → MC.
-
-See docs/variance_bound.md and docs/pair_correlation.md for the full derivation. -/
+ -/
 
 section TailSECharacterChain
 open MullinGroup
@@ -269,8 +267,7 @@ TailSE failures are very rare.
 Since primes 2, 3, 5, 7 = seq(0), seq(1), seq(6), seq(2), the hypothesis
 hne : ∀ k, seq k ≠ q is FALSE for all primes q < 11. So TailSE at q < 11
 follows from exfalso. Combined with TailSEImpliesDH, this gives MC.
-
-See docs/multi_modulus_sieve.md for the full sieve analysis. -/
+ -/
 
 section GlobalTailSEDecomposition
 open MullinGroup
@@ -449,20 +446,13 @@ MultiplierEquidistribution is the "right" analytic target because:
 - It gives the strongest possible marginal distribution statement
 -/
 
-/-- **MultiplierEquidistribution**: the EM multiplier residues are
-    equidistributed mod q — every unit class in (ZMod q)ˣ is hit cofinally.
-
-    This is the analogue of Chebotarev's density theorem for the specific
-    EM prime sequence. It follows from character sum cancellation
-    (∑ χ(emMultUnit n) = o(N) for all non-trivial χ) via orthogonality.
-
-    The decorrelation estimate |Cov(1[emMultUnit k ∈ H], 1[emMultUnit k' ∈ H])|
-    → 0 for |k'-k| → ∞ implies the character sum bound via the second moment
-    method, which in turn implies this equidistribution statement. -/
-def MultiplierEquidistribution : Prop :=
-  ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
-    (u : (ZMod q)ˣ) (N : Nat),
-    ∃ n, N ≤ n ∧ emMultUnit q hq hne n = u
+/- The Prop `MultiplierEquidistribution` itself is defined upstream in
+`EM/Equidist/Preamble.lean` (canonical definition; this section develops its
+analytic side). It is the analogue of Chebotarev's density theorem for the
+specific EM prime sequence: it follows from character sum cancellation
+(∑ χ(emMultUnit n) = o(N) for all non-trivial χ) via orthogonality, and the
+decorrelation estimate |Cov(1[emMultUnit k ∈ H], 1[emMultUnit k' ∈ H])| → 0
+for |k'-k| → ∞ implies the character sum bound via the second moment method. -/
 
 /-- **MultiplierEquidistribution → GlobalTailSE**: if every unit class is hit
     cofinally, then in particular units outside any proper H are hit cofinally,

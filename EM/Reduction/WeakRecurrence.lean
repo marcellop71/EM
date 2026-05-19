@@ -77,7 +77,7 @@ section LDiffSL
 /-- LinearDrift → SublinearLyapunov via L = 2R + N(q-2)/(q-1) ≤ 2CN + N. -/
 theorem linearDrift_implies_sublinearLyapunov : LinearDrift → SublinearLyapunov := by
   intro hld q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   obtain ⟨C, hC_pos, hC⟩ := hld q hq hne
   refine ⟨2 * C + 1, by linarith, fun N => ?_⟩
   rw [lyapunov_telescope hq hne N]
@@ -102,7 +102,7 @@ theorem linearDrift_implies_sublinearLyapunov : LinearDrift → SublinearLyapuno
     Lower: 2R = L - linear ≥ 0 - N ≥ -N. -/
 theorem sublinearLyapunov_implies_linearDrift : SublinearLyapunov → LinearDrift := by
   intro hsl q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   obtain ⟨C, hC_pos, hC⟩ := hsl q hq hne
   refine ⟨(C + 1) / 2, by linarith, fun N => ?_⟩
   have htel := lyapunov_telescope hq hne N
@@ -163,7 +163,7 @@ section SLtoWVE
     L(N) ≤ CN, so N² ≤ 4C(q-1)²·N, contradicting N > 4C(q-1)². -/
 theorem sublinearLyapunov_implies_weakVE : SublinearLyapunov → WeakVisitEquidist := by
   intro hsl q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   obtain ⟨C, hC_pos, hC⟩ := hsl q hq hne
   have hq1_pos : (0 : ℝ) < (q : ℝ) - 1 := by
     have : (1 : ℝ) < (q : ℝ) := by exact_mod_cast (Fact.out : Nat.Prime q).one_lt
@@ -228,7 +228,7 @@ section VGtoMC
 /-- WeakVE → VisitGrowth: linear lower bound trivially implies divergence. -/
 theorem weakVE_implies_visitGrowth : WeakVisitEquidist → VisitGrowth := by
   intro hwve q inst hq hne a
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   obtain ⟨c, hc_pos, hev⟩ := hwve q hq hne
   rw [Filter.tendsto_atTop_atTop]
   intro b
@@ -291,7 +291,7 @@ private theorem emWalkUnit_neg_one_dvd {q : Nat} [Fact (Nat.Prime q)]
     V(-1, N) → ∞ gives cofinal hits. -/
 theorem visitGrowth_implies_hh : VisitGrowth → HittingHypothesis := by
   intro hvg q hq hne N₀
-  haveI : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
+  have : Fact (Nat.Prime q) := ⟨IsPrime.toNatPrime hq⟩
   have htend := hvg q hq hne (-1 : (ZMod q)ˣ)
   rw [Filter.tendsto_atTop_atTop] at htend
   obtain ⟨N₁, hN₁⟩ := htend ((N₀ + 1 : ℕ) : ℝ)
@@ -372,7 +372,7 @@ theorem upper_drift_bound_implies_mc
     MullinConjecture := by
   apply linearDrift_implies_mc
   intro q inst hq hne
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   obtain ⟨C, hC_pos, hC⟩ := hupper q hq hne
   have hq1_pos : (0 : ℝ) < (q : ℝ) - 1 := by
     have : (1 : ℝ) < (q : ℝ) := by exact_mod_cast (Fact.out : Nat.Prime q).one_lt

@@ -1,4 +1,4 @@
-import EM.Advanced.VanishingNoiseVariantB
+import EM.Stochastic.VanishingNoiseVariantB
 import EM.Ensemble.CRT
 import EM.Ensemble.FirstMoment
 
@@ -37,7 +37,7 @@ density of starting points have cumulative escape count at least proportional to
 
 ### Open Hypotheses
 * `PopulationRatioEscapeDensity`      -- positive escape density per step (from MFRE)
-* `MFREImpliesPopulationRatioEscape`  -- MFRE -> population ratio escape
+* `MFREImpliesPopulationRatioEscape`  -- ARCHIVED (Dead End #160: MFRE is false)
 
 ### Proved Theorems
 * `ratioEscapeCount_le_sqfreeCount`        -- escape count bounded by total
@@ -161,18 +161,6 @@ def PopulationRatioEscapeDensity (q : ℕ) [Fact (Nat.Prime q)]
   chi ≠ 1 → ∃ δ : ℝ, 0 < δ ∧ ∀ k : ℕ, 1 ≤ k → ∀ᶠ X in Filter.atTop,
     δ ≤ ratioEscapeDensity q chi k X
 
-/-- **MFREImpliesPopulationRatioEscape**: MFRE implies population-level ratio escape density.
-
-    Proof sketch: apply MFRE to minFac and secondMinFac independently (the latter is
-    minFac of the cofactor genProd(n,k)+1 / minFac(...)), then use CRT independence to
-    argue that the ratio minFac/secondMinFac is approximately uniform on (ZMod q)^*.
-    For ker(chi) a proper subgroup of index >= 2, the escape density is at least
-    (index - 1)/index >= 1/2 minus error terms from MFRE.
-
-    **Status**: open hypothesis. -- OPEN -/
-def MFREImpliesPopulationRatioEscape (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
-  MinFacResidueEquidist q →
-    ∀ (chi : (ZMod q)ˣ →* ℂˣ), PopulationRatioEscapeDensity q chi
 
 end PopulationEscape
 
@@ -521,7 +509,7 @@ theorem pred_implies_almost_all_infinite
 
     ALL internal reductions PROVED (no sorry). Open hypotheses:
     A. PopulationRatioEscapeDensity (from MFRE)
-    B. MFREImpliesPopulationRatioEscape (MFRE -> PRED)
+    B. MFREImpliesPopulationRatioEscape (MFRE -> PRED) — ARCHIVED, MFRE is false (#160)
 
     PROVED results:
     1. ratioEscapeCount_le_sqfreeCount (counting bound)

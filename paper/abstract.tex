@@ -1,67 +1,59 @@
 \begin{abstract}
-The Euclid--Mullin sequence is defined by $a(0)=2$,
-$a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, where $\text{lpf}$ is
-the least prime factor.
-Mullin's Conjecture (MC, 1963) asserts that every prime eventually
-appears.  We present a Lean~4 formalization
-(${\sim}78{,}000$~lines, 148~files, zero~\texttt{sorry}) that reduces MC
-to a single open hypothesis and explores five variant selection rules.
-
-The main result is the machine-verified chain
-\[
-  \mathrm{DSL}
-  \;\Longrightarrow\;
-  \mathrm{CME}
-  \;\Longrightarrow\;
-  \mathrm{CCSB}
-  \;\Longrightarrow\;
-  \mathrm{MC},
-\]
-where \textbf{CME} (Conditional Multiplier Equidistribution) states
-that $\minFac$ destroys correlation between consecutive multiplier
-residues mod~$q$, and \textbf{DSL} (Deterministic Stability Lemma)
-asserts that population-level equidistribution of least prime
-factors transfers to the specific EM orbit.
-An inductive bootstrap recasts MC as walk-hitting on
-$(\ZZ/q\ZZ)^\times$ with SubgroupEscape proved free;
-a character-analytic bridge handles all character orders;
-ensemble averaging over squarefree starting points collapses
-the landscape to DSL\@.
-
-The \emph{factor tree} $\mathcal{T}(m)$---rooted at~$m$, branching at
-every prime factor of~$P{+}1$---provides a unifying framework for
-variants: the standard walk is the leftmost path, and
-$\mathrm{GenMixedMC}(m)$ asks that every prime appear somewhere
-in~$\mathcal{T}(m)$.  Under PSCD (Population Sieve Confinement
-Decay), a density-$1$ set of squarefree starting points satisfies
-GenMixedMC; the full chain PEAP $\Rightarrow$ PSCD is
-machine-checked with no residual open hypothesis:
-a weak unconditional CRT bound (sqfreeCount $\geq X/4$)
-absorbs the sieve constant since $\prod(1-1/p)\to 0$.
-The $\{\minFac, \operatorname{secondMinFac}\}$ two-point variant
-reduces to a single spectral hypothesis~(UFDStrong); for $q = 3$,
-faithful character escape closes this unconditionally.
-The function field analog over~$\FF_p[t]$, where the Weil bound gives
-population equidistribution for free, confirms that the residual
-difficulty is orbit-specificity transfer, not analytic number theory.
-Over 138~dead ends are documented.
+The Euclid--Mullin sequence is $a(0)=2$,
+$a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, with $\text{lpf}$ the least
+prime factor; Mullin's Conjecture (MC, 1963) says every prime appears.
+The running product $a(0)\cdots a(n)$ evolves by the \emph{Euclid step}
+$T(n) = n\cdot\text{lpf}(n{+}1)$ on squarefree integers (multiply the bag of
+primes collected so far by the least prime factor of the product plus
+one), so the sequence is the orbit of~$2$ under~$T$, and MC asks whether
+that orbit meets every prime.
+We present a Lean~4 formalization ($\EMLineCount$~lines,
+\EMFileCount~files, zero~\texttt{sorry}) that maps what one orbit of~$T$
+provably inherits from the structure of~$T$.
+Two exact projections frame the map, and they are not on a par: the
+\emph{residue walk} $T^n(2) \bmod q$ carries MC itself, turning it into a
+hitting statement on $(\ZZ/q\ZZ)^\times$ (its algebraic precondition
+proved free), and is where all the upper structure lives; the
+\emph{growth constant} $C = \lim_N \log T^N(2)/2^N$, a semiconjugacy
+$C(Tm) = 2C(m)$ to doubling, carries only the floor---its vanishing is a
+complete invariant for $(\mathrm{C}\infty)$, ``infinitely many Euclid
+numbers are composite''---and MC is invisible from it.
+At the top of the map is the machine-verified chain
+$\mathrm{CME} \Rightarrow \mathrm{CCSB} \Rightarrow \mathrm{MC}$, where
+CME (conditional multiplier equidistribution along the orbit, for a
+missing prime) is a \emph{reformulation} of MC in the language of the
+walk: since it is quantified over missing primes, MC implies it
+vacuously and $\mathrm{CME} \Leftrightarrow \mathrm{CCSB} \Leftrightarrow
+\mathrm{DH} \Leftrightarrow \mathrm{MC}$ (all machine-checked); its
+content is the direction that turns a hitting problem into an
+equidistribution problem.  Nothing sits under it: weaker-looking
+hypotheses collapse to CME, are
+walled by orbit-specificity (finite counterexamples in
+$(\ZZ/5\ZZ)^\times$), or are false---fixed-modulus population
+equidistribution of least prime factors is proved equivalent to a series
+identity that fails by head domination.  At the bottom, weak forms of MC
+bottom out at $(\mathrm{C}\infty)$, Sylvester-tower primality: MC implies
+a no-infinite-prime-tower statement for a doubly exponential sequence,
+which is open.  Around the map: no propagating congruence
+invariant blocks a prime under $\text{lpf}$, while the same class
+machine-checks Cox--van der Poorten's omission of~$5$ under the largest
+prime factor; a comparison class (ensemble, factor tree, two-point,
+$\varepsilon$-random, function field) isolates \emph{selection} as the
+difficulty, with almost-all factor-tree hitting unconditional; and
+Karamata's Tauberian theorem with Mertens' theorem in progressions is
+formalized along the way.  150 dead ends are catalogued with the reason each fails; every
+result and open hypothesis is tagged and registered in the public
+repository.
 
 \medskip\noindent\textbf{Statements and proofs.}
 Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
-are formally verified in Lean~4; clicking the identifier links to the
-source code.
-Most proofs are sketched rather than fully reported;
-correctness is guaranteed by the type-checker.
-Some misalignment may exist between what is stated here and what is
-proved in the formalization; the Lean source is the authoritative reference.
-To mitigate this risk, we used
-LeanArchitect~\cite{LeanArchitect2026} to cross-check the 20~key
-declarations against the paper's theorem statements;
-this process uncovered one missing precondition, now corrected.
-All published results and open hypotheses are tagged with
-\texttt{@[publish]} and \texttt{@[open\_point]} annotations in the
-GitHub repository (\url{https://github.com/marcellop71/EM}), using the CA
-content-addressing framework for Lean~4; a machine-readable registry
-is available in the \texttt{registry/} folder.
+are formally verified in Lean~4; the identifier links to the source.  Most
+proofs are sketched; correctness is guaranteed by the type-checker, and
+the Lean source is the authoritative reference for every statement (the
+20~key declarations were cross-checked against the paper's statements
+with LeanArchitect~\cite{LeanArchitect2026}, which found one missing
+precondition, since corrected).  Published results and open hypotheses
+carry \texttt{@[publish]}/\texttt{@[open\_point]} tags in the repository
+(\url{https://github.com/marcellop71/EM}); a machine-readable registry is
+in \texttt{registry/}.
 \end{abstract}
-

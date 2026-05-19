@@ -16,7 +16,7 @@ consequences for irreducible polynomial counts.
 - `card_monic_of_degree` : there are exactly p^n monic polys of degree n over F_p
 - `ffIrredCount` : number of monic irreducible polys of degree d over F_p
 - `ffIrredCount_pos` : pi_p(d) >= 1 for all d >= 1
-- `NecklaceIdentity` : sum_{d|n} d * pi_p(d) = p^n (open hypothesis)
+- `NecklaceIdentity` : sum_{d|n} d * pi_p(d) = p^n (PROVED: `necklaceIdentity_holds`)
 - `necklace_implies_irred_lower_bound` : necklace identity rearrangement
 - `necklace_formula_landscape` : summary conjunction
 
@@ -51,7 +51,7 @@ noncomputable instance monicDegreeFintype (n : ℕ) :
 /-- There are exactly p^n monic polynomials of degree n over F_p. -/
 theorem card_monic_of_degree (n : ℕ) :
     Fintype.card {f : Polynomial (ZMod p) // f.Monic ∧ f.natDegree = n} = p ^ n := by
-  haveI : Nontrivial (ZMod p) := inferInstance
+  have : Nontrivial (ZMod p) := inferInstance
   -- Step 1: monic degree-n equiv degreeLT n
   have h1 := Fintype.card_congr (monicEquivDegreeLT (R := ZMod p) n)
   -- Step 2: degreeLT n equiv (Fin n -> ZMod p)
@@ -142,7 +142,7 @@ private theorem irred_degree_dvd_of_dvd_X_pow_sub_X {n : ℕ} (hn : 0 < n)
     (hdvd : Q ∣ (X ^ p ^ n - X : Polynomial (ZMod p))) :
     Q.natDegree ∣ n := by
   -- GaloisField p n is the splitting field
-  haveI : Fintype (GaloisField p n) := Fintype.ofFinite _
+  have : Fintype (GaloisField p n) := Fintype.ofFinite _
   -- X^(p^n) - X splits in GaloisField p n
   have hsplits : Splits (map (algebraMap (ZMod p) (GaloisField p n)) (X ^ p ^ n - X)) :=
     (FiniteField.isSplittingField_of_card_eq p n
@@ -306,7 +306,7 @@ theorem necklace_identity_proved :
   suffices h_ge : p ^ n ≤ ∑ d ∈ n.divisors, d * ffIrredCount p d from le_antisymm hP_deg_le h_ge
   -- We show: p^n = |GF(p,n)| ≤ |roots of P in GF(p,n)| ≤ deg(P) = ∑ d * π(d)
   -- For this, every element of GF(p,n) is a root of P.
-  haveI : Fintype (GaloisField p n) := Fintype.ofFinite _
+  have : Fintype (GaloisField p n) := Fintype.ofFinite _
   have hcard_gf : Fintype.card (GaloisField p n) = p ^ n := by
     rw [← Nat.card_eq_fintype_card, GaloisField.card p n hn.ne']
   -- Show every element of GF(p,n) is a root of P

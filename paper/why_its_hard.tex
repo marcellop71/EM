@@ -1,23 +1,257 @@
 %% =========================================================================
-\section{Open Problems and Paths Forward}
+\section{Why It Is Hard, and What Would Close It}
 \label{sec:hard}
 \label{sec:open}
 %% =========================================================================
 
 \noindent\textbf{Original contribution.}\enspace
-The selectability analysis, oracle barrier, and CCSB-as-frontier
-argument below are new.  They explain \emph{why} the remaining
-hypothesis resists both computation and existing analytic tools.
+The four-way blocker, the selectability analysis, the oracle barrier, and
+the CCSB-as-frontier argument below are new.  Together they explain
+\emph{why} the remaining hypothesis resists both computation and existing
+analytic tools, and what a proof would have to supply instead.
 
 \begin{roadmap}
+The section runs from the general to the specific, and then forward.
 \begin{description}[nosep,leftmargin=2em,font=\normalfont]
+\item[\S\ref{sec:four-way}] \textbf{The barriers.}  What must be proved; the four-way blocker that kills every classical tool at once; the telescoping identity as the complete algebraic content of the walk; and the two barriers that carry the argument, both with finite machine-checked witnesses.
+\item[\S\ref{sec:walk-features}] \textbf{What the walk has} that no failed approach exploits --- four structural features, all formalized.
 \item[\S\ref{sec:selectability}] Selectability --- fresh primes exist but $\minFac$ may not select them; marginal/joint barrier.
-\item[\S5.2] BRE impossibility --- block rotation fails for character order $d \geq 3$.
-\item[\S5.3] Independence heuristic --- factorization destroys correlation (heuristic, not proved); dead ends as roadmap.
-\item[\S5.4] NAAD conjecture --- non-algebraic arithmetic dynamics; relation to Collatz.
-\item[\S5.5] The precise frontier --- CCSB, Bombieri--Vinogradov, Chebotarev, sieve approaches; DSL as sole hypothesis; adelic/profinite view; what would close the conjecture.
+\item[\S\ref{sec:bre-impossibility}] BRE impossibility --- block rotation fails for character order $d \geq 3$.
+\item[\S\ref{sec:hash-heuristic}] The independence heuristic --- factorization destroys correlation (heuristic, not proved).
+\item[\S\ref{sec:naad}] NAAD --- non-algebraic arithmetic dynamics; relation to Collatz.
+\item[\S\ref{sec:precise-frontier}] The precise frontier --- CCSB, Bombieri--Vinogradov, Chebotarev, sieve routes; CME as sole hypothesis; the adelic and profinite views; what would close the conjecture.
+\item[\S\ref{sec:does-it-hit}] Does the walk hit $-1$?  Evidence for and against, and an assessment.
+\item[\S\ref{sec:four-questions}] Four questions.
 \end{description}
 \end{roadmap}
+
+%% =========================================================================
+\subsection{The Barriers}
+\label{sec:four-way}
+%% =========================================================================
+
+Before cataloguing what fails, it is worth stating precisely what has to
+succeed.  For every missing prime~$q$ we need one of these equivalent
+statements:
+\begin{itemize}[nosep]
+\item \textbf{DH}: If the multipliers generate $(\ZZ/q\ZZ)^\times$,
+  the walk $\walkZ{2}{q}{n} = \Prod{2}(n) \bmod q$ hits $-1$ cofinally.
+\item \textbf{CCSB}: For every non-trivial character
+  $\chi \colon (\ZZ/q\ZZ)^\times \to \mathbb{C}^\times$, the sum
+  $\sum_{n < N} \chi(\walkZ{2}{q}{n}) = o(N)$.
+\item \textbf{$d{=}2$ special case} (as a stepping stone): For every
+  quadratic character~$\chi$, the $\pm 1$-valued walk character sum is
+  $o(N)$.
+\end{itemize}
+
+
+\paragraph{The Four-Way Blocker.}
+The majority of the \DEentries~dead ends reduce to a single meta-obstacle:
+every known technique for proving equidistribution of sequences on
+finite groups requires at least \emph{one} of (1)~independence of
+steps, (2)~multiplicativity of the generating function,
+(3)~algebraic-geometric structure (parameter families, monodromy),
+or (4)~ergodic stationarity.  The EM walk satisfies \emph{none} of
+these: the steps are deterministic and mutually dependent, the walk
+is not a multiplicative function, the multipliers have no known
+algebraic-geometric parametrization, and the non-autonomous dynamics
+(a different multiplier at each step) rule out stationarity.  This
+explains why classical tools---random-walk mixing, Hal\'asz's theorem,
+Katz monodromy, Birkhoff averages---all fail.
+
+
+\paragraph{The telescope exhausts the algebra (a taxonomy, not a theorem).}
+The telescoping identity $\chi(w(n{+}1)) = \chi(w(n)) \cdot
+\chi(m(n))$ is the algebraic content of the walk we know how to use.
+The two decomposition strategies for the character sum $S_N =
+\sum_{n<N} \chi(w(n))$ that we have found productive are grouping by
+\emph{value} (fiber decomposition $\to$ CME) and grouping by \emph{lag}
+(autocorrelation $\to$ HOD).  Every other rearrangement we tried---Abel
+summation, M\"obius inversion, Dirichlet series, block
+decomposition---either reduced to one of these two or failed outright
+(Abel gives $O(N^2)$ remainder in the wrong direction; M\"obius/Dirichlet
+require multiplicativity; Dead Ends~\#28, \#38, \#103).  We record this as
+an empirical taxonomy; it is not a theorem that no third route exists.
+
+\smallskip\noindent
+The pattern: every approach that avoids the specific EM orbit's
+joint distribution either reduces to CCSB or fails.  Since CME
+implies CCSB (proved), and CME decomposes as VCB~$+$~Dec
+(\S\ref{sec:vcb}), the sharpest targets are now VCB~$+$~PED or CME:
+conditional equidistribution of multipliers given walk position, or
+the weaker proportionality condition combined with escape density.
+CME implies CCSB, and both are equivalent to MC as propositions (they
+are quantified over missing primes; \lean{EM/CME/Equivalences.lean}{cme\_iff\_mc}):
+CME is the \emph{irreducible analytic reformulation}, not a weaker
+hypothesis.
+
+
+\paragraph{The two fundamental barriers, witnessed.}
+\label{sec:barriers-witnessed}
+Dead Ends~\#90 and~\#117 are the two entries of this section that admit
+finite counterexamples rather than surveyed failures.  We should be
+candid about their weight: they are \emph{illustrations} that first-order
+multiplier statistics do not determine hitting and that multiplier
+cancellation does not force walk cancellation---elementary facts about
+ordering, which is exactly why every live hypothesis is
+\emph{conditional} on the walk position---not theorems that block any
+technique.  Both are machine-checked, by two periodic multiplier
+sequences in $(\ZZ/5\ZZ)^\times$---cyclic of order~$4$, generated
+by~$2$---that differ only by a rearrangement:
+\[
+  A = (2,2,3,3)^\infty,
+  \qquad
+  B = (2,3,2,3)^\infty .
+\]
+Their walks are $1,2,4,2,1,\dots$ and $1,2,1,2,\dots$ respectively, so
+$A$ reaches the death class $-1 = 4$ and $B$ provably never does.  But
+in \emph{every} window of four consecutive steps both sequences use the
+multiplier~$2$ exactly twice and~$3$ exactly twice: they have identical
+empirical multiplier distributions.
+
+\begin{keyresult}
+\textbf{Population statistics do not determine orbit hitting}
+(\lean{EM/Meta/OrbitBarrier.lean}{population\_does\_not\_determine\_hitting}).
+Two prime-valued multiplier sequences with the same empirical
+distribution in every window, one of whose walks hits the death class
+and one of whose walks provably never does.  Since
+$\walkZ{2}{q}{n} = -1 \iff q \mid \Prod{2}(n)+1$ and cofinal hitting
+of~$-1$ is equivalent to MC at~$q$, this is Dead End~\#90 as a theorem:
+\emph{no statistic of the multiplier population carries information
+about whether the orbit hits}.  It is precisely the gap that every
+population-to-orbit transfer hypothesis has to cross---and, since
+the population statements themselves turned out to be false (Dead
+End~\#160), the gap now stands undisguised as CME\@.
+
+\smallskip
+\textbf{Multiplier cancellation does not force walk cancellation}
+(\lean{EM/Meta/OrbitBarrier.lean}{mult\_cancel\_not\_walk\_cancel}).
+For the same sequence~$B$ and the order-4 character with
+$\chi(2) = i$---so $\chi(3) = i^3 = -i$---the multiplier sums alternate
+$i, -i$ and stay bounded by~$1$ for all~$K$, while the walk alternates
+$1,2$ and its character sums are $M(1+i)$ after $2M$ steps, hence
+$\Theta(K)$.  This is Dead End~\#117.  The character carries exactly the
+side conditions the formalization's own MultCancelToWalkCancel
+hypothesis imposes ($\|\chi\| \leq 1$, $\chi(0) = 0$, orthogonality), so
+the counterexample is not an artifact of a weak statement.
+\end{keyresult}
+
+\noindent
+The same sequence witnesses a third entry.  Its multipliers $\{2,3\}$
+\emph{generate} $(\ZZ/5\ZZ)^\times$
+(\lean{EM/Meta/OrbitBarrier.lean}{multipliers\_generate}) while the walk
+visits only $\{1,2\}$: generation is not coverage, so SubgroupEscape---
+proved and free (\S\ref{sec:walk})---cannot close the gap.  This is
+Dead Ends~\#20 and~\#130 in multiplicative form.
+
+All of it is assembled, together with the proved sufficient reductions
+($\mathrm{HH} \Rightarrow \MC$, $\mathrm{DH} \Rightarrow \MC$,
+$\mathrm{CME} \Rightarrow \MC$) and the two proved structural inputs one
+gets for free (the death-class characterization and PrimeResidueEscape),
+as \lean{EM/Meta/OrbitBarrier.lean}{integer\_orbit\_barrier\_thesis}---the
+integer analogue of the function-field
+\lean{EM/FunctionField/OrbitBarrier.lean}{orbit\_barrier\_thesis}
+of~\S\ref{sec:function-field}.  The gap between what is free and what is
+witnessed to be unreachable \emph{is} the orbit-specificity barrier, and
+every open hypothesis in the reduction network lives inside it.
+
+
+\paragraph{Dead Ends as a Roadmap.}
+\DEentries~approaches were explored and found to be dead ends
+(numbered up to \#\DEnumbers; ten numbers were never assigned), grouped
+by failure mode: orbit specificity~(OS), decorrelation gap~(DG),
+aggregate gap~(AG), collapse~(CO), circularity~(CI), structurally
+false~(SF), technique mismatch~(TM), scale mismatch~(SM), and three
+methodological rules~(MR).  Of these, \DEwitnessed~have genuine formal
+Lean witnesses and \DErevivable~have weak-MC revival score~$\geq
+2$---meaning they contribute to weaker forms of the conjecture despite
+being dead for full MC\@.
+The full catalogue is in \code{EM/Meta/DeadEnds.lean} and
+Appendix~\ref{app:dead-ends}.
+
+
+
+\smallskip\noindent
+What is machine-checked is much narrower than the four-way blocker: two
+periodic multiplier sequences in $(\ZZ/5\ZZ)^\times$ with equal
+first-order statistics and different hitting behaviour
+(\S\ref{sec:barriers-witnessed}).  The blocker itself is a taxonomy of
+what the tools we tried require and the walk lacks---independence,
+classical multiplicativity, ergodic stationarity---not a theorem.  Ensemble averaging over squarefree starting points
+(\S\ref{sec:ensemble}) bypasses this, but introduces a new gap:
+MultCancelToWalkCancel (Dead End~\#117).  What is needed instead is an idea
+that exploits what the EM walk specifically \emph{has}---which is the
+subject of the next subsection.
+
+%% =========================================================================
+\subsection{What the Walk Has That Nothing Exploits}
+\label{sec:walk-features}
+%% =========================================================================
+
+\paragraph{Structural Features of the EM Walk}
+
+The dead ends above show what does not work.  Complementarily, the EM
+walk has four structural features---all proved or formalized---that no
+dead-end approach has successfully exploited.  Any proof of MC will
+almost certainly use at least one.
+
+\medskip\noindent\textbf{Feature~1: Super-exponential growth.}\enspace
+$\Prod{2}(n) \geq 2^n$
+(\lean{EM/LargeSieve/Structural.lean}{prod\_lower\_bound\_for\_sieve}).  The
+Euclid numbers $\Prod{2}(n)+1$ grow absurdly fast.  This means the
+\emph{sieve level}---the threshold below which all prime factors have
+been excluded---grows super-exponentially.  By step~$n$, the Euclid
+number $\Prod{2}(n)+1$ is coprime to each of $\seq{2}(0), \ldots, \seq{2}(n)$,
+a growing set of distinct primes.  The pool of ``available'' small
+primes as factors of $\Prod{2}(n)+1$ shrinks, but the size of
+$\Prod{2}(n)+1$ grows so fast that it must have enormous prime factors
+most of the time.
+
+\medskip\noindent\textbf{Feature~2: Mutual coprimality of Euclid
+numbers.}\enspace For $m > n$, $\Prod{2}(m)$ is divisible by
+$\seq{2}(n+1)$, which divides $\Prod{2}(n)+1$.  So
+$\Prod{2}(m)+1 \equiv 1 \pmod{\seq{2}(n+1)}$: successive Euclid numbers
+live in different residue classes modulo earlier sequence terms.  This
+coprimality structure means the Euclid numbers cannot all ``avoid'' a
+residue class in a coordinated way---their residues are forced apart
+by the construction.
+
+\medskip\noindent\textbf{Feature~3: The multiplier is the smallest
+prime factor.}\enspace  This is the key constraint that everyone
+mentions but nobody has quantified.  If $\walkZ{2}{q}{n} \neq -1$ (so
+that $q$ does not divide $\Prod{2}(n)+1$ as the smallest factor), then
+the multiplier $\multZ{2}{q}{n} = \minFac(\Prod{2}(n)+1)$ satisfies
+$\multZ{2}{q}{n} \leq (\Prod{2}(n)+1)^{1/2}$.  For a number of size
+${\sim}2^n$, this smallest factor could be as small as~$3$ or as
+large as~${\sim}2^{n/2}$.  The $\minFac$ rule creates a deterministic
+coupling between walk position and multiplier: the multiplier at
+step~$n$ depends on the full value of~$\Prod{2}(n)+1$, not just its
+residue.
+
+\medskip\noindent\textbf{Feature~4: Self-correcting feedback.}\enspace
+If the walk concentrates on certain residues mod~$q$---say
+$\walkZ{2}{q}{n} \equiv a \pmod{q}$ for many~$n$---then
+$\Prod{2}(n)+1 \equiv a+1 \pmod{q}$ for many~$n$.  The smallest prime
+factor of numbers $\equiv a+1 \pmod{q}$ depends on~$a+1$, creating a
+feedback loop: concentration in one residue class biases the
+multiplier distribution, which in turn pushes the walk away from that
+class.  This mechanism is formalized as the Lyapunov drift analysis
+of \S\ref{sec:self-correcting}: the visit-count Lyapunov function
+telescopes to the cumulative drift, sub-quadratic drift (SCD) implies
+VE and hence MC, and even a one-sided linear drift bound (LinearDrift)
+suffices via a threshold-free route.  The zero-bias property under
+uniform multipliers is proved; the orbit-specificity gap---does the
+EM orbit satisfy the drift bound?---remains open
+(Section~\ref{sec:spectral-routes}).
+
+\medskip
+These four features---growth, coprimality, the $\minFac$ selection
+rule, and self-correcting feedback---are the raw material that any
+successful approach must engage with.  The dead ends above fail
+precisely because they treat the walk generically (as a random walk,
+or as an arbitrary multiplicative walk) rather than exploiting the
+specific arithmetic of the EM construction.
+
 
 \subsection{The Selectability Perspective}
 \label{sec:selectability}
@@ -110,7 +344,9 @@ cycle until it covers $-1$.  This is the ``specific-orbit problem'':
 transferring generic equidistribution of $\minFac$ residues to the
 particular EM orbit.
 
+
 \subsection{The BRE Impossibility for $d \geq 3$}
+\label{sec:bre-impossibility}
 
 \begin{deadend}[title={Dead End: PED $\not\Rightarrow$ CCSB for $d \geq 3$}]
 \begin{remark}\label{rem:bre-impossible}
@@ -132,7 +368,7 @@ rotations.  The $\mathrm{PED} \Rightarrow \mathrm{BRE} \Rightarrow
 \mathrm{CCSB}$ factorization is invalid for $d \geq 3$.
 
 This barrier is specific to the PED route.  The CME $\to$ CCSB
-reduction (\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb})
+reduction (\lean{EM/CME/Reduction.lean}{cme\_implies\_ccsb})
 bypasses PED and BRE entirely, working for all character orders $d$
 via the telescoping identity.  The $d \geq 3$ problem is therefore
 not a barrier for the \emph{reduction}---only for the particular
@@ -162,7 +398,7 @@ The BV route decomposes into two stages: sieve transfer
 and the walk bridge (EMMultCSB~$\Rightarrow$~MMCSB, converting multiplier
 bounds to \emph{walk} bounds).  The walk bridge
 \textbf{MultCSBImpliesMMCSB}
-(\lean{EM/LargeSieve/Basic.lean\#L1226}{MultCSBImpliesMMCSB})
+(\lean{EM/LargeSieve/Structural.lean}{MultCSBImpliesMMCSB})
 is stated as an open \code{Prop} and is \textbf{false in general}.
 
 The obstruction is structural: the walk character sum is a
@@ -179,6 +415,7 @@ This negative result explains why the CME bypass
 decomposition and telescoping to go directly from conditional
 multiplier equidistribution to CCSB, circumventing the walk bridge
 entirely.
+
 
 \subsection{The Factorization Independence Heuristic}
 \label{sec:hash-heuristic}
@@ -242,6 +479,7 @@ do not.
   modulus.  The conjecture is that this compression ensures coverage.
 \end{itemize}
 
+
 \paragraph{What the formalization adds.}
 The formalization identifies three equivalent formulations of the
 factoring channel's decorrelation:
@@ -265,146 +503,6 @@ Each implies MC through the verified reduction chain.  The irreducible
 mathematical content is: does the factoring operation destroy enough
 correlation for character sums to cancel?
 
-\paragraph{Dead Ends as a Roadmap.}
-Over 138~potential approaches were explored and found to be dead ends,
-grouped into eight categories: orbit specificity~(OS),
-technique mismatch~(TM), scale mismatch~(SM), circularity~(CI),
-structurally false~(SF), collapse~(CO), decorrelation gap~(DG),
-and aggregate gap~(AG).
-Of these, 13~have formal Lean witnesses and 8~have weak-MC revival
-score~$\geq 2$---meaning they contribute to weaker forms of the
-conjecture despite being dead for full MC\@.
-The full catalogue is in \code{Meta/DeadEnds.lean} and
-Appendix~\ref{app:dead-ends}.
-
-\paragraph{The Four-Way Blocker.}
-The majority of the 138~dead ends reduce to a single meta-obstacle:
-every known technique for proving equidistribution of sequences on
-finite groups requires at least \emph{one} of (1)~independence of
-steps, (2)~multiplicativity of the generating function,
-(3)~algebraic-geometric structure (parameter families, monodromy),
-or (4)~ergodic stationarity.  The EM walk satisfies \emph{none} of
-these: the steps are deterministic and mutually dependent, the walk
-is not a multiplicative function, the multipliers have no known
-algebraic-geometric parametrization, and the non-autonomous dynamics
-(a different multiplier at each step) rule out stationarity.  This
-explains why classical tools---random-walk mixing, Hal\'asz's theorem,
-Katz monodromy, Birkhoff averages---all fail.
-
-\paragraph{The telescope exhausts the algebra.}
-The telescoping identity $\chi(w(n{+}1)) = \chi(w(n)) \cdot
-\chi(m(n))$ is the \emph{complete} algebraic content of the walk.
-Only two decomposition strategies for the character sum $S_N =
-\sum_{n<N} \chi(w(n))$ exist: grouping by \emph{value} (fiber
-decomposition $\to$ CME) and grouping by \emph{lag} (autocorrelation
-$\to$ HOD).  Every other rearrangement---Abel summation, M\"obius
-inversion, Dirichlet series, block decomposition---either reduces to
-one of these two or fails outright (Abel gives $O(N^2)$ remainder in
-the wrong direction; M\"obius/Dirichlet require multiplicativity).
-There is no third algebraic route to CCSB\@.
-
-\smallskip\noindent
-The pattern: every approach that avoids the specific EM orbit's
-joint distribution either reduces to CCSB or fails.  Since CME
-implies CCSB (proved), and CME decomposes as VCB~$+$~Dec
-(\S\ref{sec:vcb}), the sharpest targets are now VCB~$+$~PED or CME:
-conditional equidistribution of multipliers given walk position, or
-the weaker proportionality condition combined with escape density.
-CME is strictly weaker than CCSB and is the \emph{irreducible
-analytic content}.
-
-\paragraph{The Mathematical Landscape}
-
-We need to prove one of these equivalent statements for every missing
-prime~$q$:
-\begin{itemize}[nosep]
-\item \textbf{DH}: If the multipliers generate $(\ZZ/q\ZZ)^\times$,
-  the walk $\walkZ{2}{q}{n} = \Prod{2}(n) \bmod q$ hits $-1$ cofinally.
-\item \textbf{CCSB}: For every non-trivial character
-  $\chi \colon (\ZZ/q\ZZ)^\times \to \mathbb{C}^\times$, the sum
-  $\sum_{n < N} \chi(\walkZ{2}{q}{n}) = o(N)$.
-\item \textbf{$d{=}2$ special case} (as a stepping stone): For every
-  quadratic character~$\chi$, the $\pm 1$-valued walk character sum is
-  $o(N)$.
-\end{itemize}
-The formalization has conclusively shown that every tool requiring
-independence, classical multiplicativity, or ergodic stationarity
-fails for a \emph{single} orbit.  Ensemble averaging over squarefree
-starting points (Section~\ref{sec:ensemble}) bypasses this, but
-introduces a new gap: MultCancelToWalkCancel (Dead End~\#117).
-We need ideas that exploit what the EM walk specifically has.
-
-\paragraph{Structural Features of the EM Walk}
-
-The dead ends above show what does not work.  Complementarily, the EM
-walk has four structural features---all proved or formalized---that no
-dead-end approach has successfully exploited.  Any proof of MC will
-almost certainly use at least one.
-
-\medskip\noindent\textbf{Feature~1: Super-exponential growth.}\enspace
-$\Prod{2}(n) \geq 2^n$
-(\lean{EM/LargeSieve/Basic.lean}{prod\_lower\_bound\_for\_sieve}).  The
-Euclid numbers $\Prod{2}(n)+1$ grow absurdly fast.  This means the
-\emph{sieve level}---the threshold below which all prime factors have
-been excluded---grows super-exponentially.  By step~$n$, the Euclid
-number $\Prod{2}(n)+1$ is coprime to each of $\seq{2}(0), \ldots, \seq{2}(n)$,
-a growing set of distinct primes.  The pool of ``available'' small
-primes as factors of $\Prod{2}(n)+1$ shrinks, but the size of
-$\Prod{2}(n)+1$ grows so fast that it must have enormous prime factors
-most of the time.
-
-\medskip\noindent\textbf{Feature~2: Mutual coprimality of Euclid
-numbers.}\enspace For $m > n$, $\Prod{2}(m)$ is divisible by
-$\seq{2}(n+1)$, which divides $\Prod{2}(n)+1$.  So
-$\Prod{2}(m)+1 \equiv 1 \pmod{\seq{2}(n+1)}$: successive Euclid numbers
-live in different residue classes modulo earlier sequence terms.  This
-coprimality structure means the Euclid numbers cannot all ``avoid'' a
-residue class in a coordinated way---their residues are forced apart
-by the construction.
-
-\medskip\noindent\textbf{Feature~3: The multiplier is the smallest
-prime factor.}\enspace  This is the key constraint that everyone
-mentions but nobody has quantified.  If $\walkZ{2}{q}{n} \neq -1$ (so
-that $q$ does not divide $\Prod{2}(n)+1$ as the smallest factor), then
-the multiplier $\multZ{2}{q}{n} = \minFac(\Prod{2}(n)+1)$ satisfies
-$\multZ{2}{q}{n} \leq (\Prod{2}(n)+1)^{1/2}$.  For a number of size
-${\sim}2^n$, this smallest factor could be as small as~$3$ or as
-large as~${\sim}2^{n/2}$.  The $\minFac$ rule creates a deterministic
-coupling between walk position and multiplier: the multiplier at
-step~$n$ depends on the full value of~$\Prod{2}(n)+1$, not just its
-residue.
-
-\medskip\noindent\textbf{Feature~4: Self-correcting feedback.}\enspace
-If the walk concentrates on certain residues mod~$q$---say
-$\walkZ{2}{q}{n} \equiv a \pmod{q}$ for many~$n$---then
-$\Prod{2}(n)+1 \equiv a+1 \pmod{q}$ for many~$n$.  The smallest prime
-factor of numbers $\equiv a+1 \pmod{q}$ depends on~$a+1$, creating a
-feedback loop: concentration in one residue class biases the
-multiplier distribution, which in turn pushes the walk away from that
-class.  This self-correcting mechanism has been formalized via a Lyapunov
-function (\code{Reduction/SelfCorrecting.lean}): the one-step identity
-$L(N{+}1) = L(N) + 2d_{w(N)}(N) + (q{-}2)/(q{-}1)$ telescopes to
-$L(N) = 2R(N) + O(N)$, and $R(N) = o(N^2)$ (SCD) implies VE and
-hence MC\@.  The zero-bias property under uniform multipliers is
-proved; the orbit-specificity gap---does SCD hold for the EM
-orbit?---remains open (\S\ref{sec:open}).  A weaker variant
-\emph{LinearDrift} ($|R(N)| \leq CN$) also implies MC
-(\lean{EM/Reduction/WeakRecurrence.lean}{linearDrift\_implies\_mc})
-via a threshold-free route: LinearDrift~$\Rightarrow$~VisitGrowth%
-~$\Rightarrow$~HH~$\Rightarrow$~MC, where VisitGrowth ($V(a,N) \to
-\infty$ for all~$a$) bypasses the $\mathrm{FiniteMCBelow}$ threshold
-entirely.  A free unconditional lower bound
-$R(N) \geq -N(q{-}2)/(2(q{-}1))$ is proved
-(\code{cumulativeDrift\_lower\_bound}), so only the one-sided
-upper bound $R(N) \leq CN$ is needed.
-
-\medskip
-These four features---growth, coprimality, the $\minFac$ selection
-rule, and self-correcting feedback---are the raw material that any
-successful approach must engage with.  The dead ends above fail
-precisely because they treat the walk generically (as a random walk,
-or as an arbitrary multiplicative walk) rather than exploiting the
-specific arithmetic of the EM construction.
 
 %% =========================================================================
 \subsection{The NAAD Conjecture}
@@ -491,7 +589,7 @@ follows from standard ANT).
 
 \item \textbf{Super-exponential growth}: $T^n(x_0) \geq 2^{2^n}$ for
   $n \geq n_0$.  For EM, $\Prod{2}(n) \geq 2^{n+1}$
-  (\lean{EM/LargeSieve/Basic.lean}{prod\_lower\_bound\_for\_sieve}).
+  (\lean{EM/LargeSieve/Structural.lean}{prod\_lower\_bound\_for\_sieve}).
   This creates the information bottleneck: the walk position uses
   $O(\log q)$ bits to describe a state with $\Omega(2^n)$ bits.
 
@@ -501,9 +599,10 @@ follows from standard ANT).
   (Theorem~\ref{thm:pre}).
 
 \item \textbf{Population equidistribution}: $m(x) \bmod q$ is
-  equidistributed over $(\ZZ/q\ZZ)^\times$ in the population.  For EM,
-  this follows from Alladi's formula combined with Dirichlet's theorem
-  (scaffolded in \code{AlladiDensity.lean}).
+  equidistributed over $(\ZZ/q\ZZ)^\times$ in the population.  For EM
+  at a fixed modulus this is \emph{false} (head domination, Dead
+  End~\#160, \S\ref{sec:ant-def}); it holds only in the double limit
+  $z \to \infty$ over $z$-rough integers.
 \end{enumerate}
 
 \begin{conjecture}[\defname{NAAD Equidistribution}]
@@ -558,7 +657,7 @@ arithmetic iteration map: Properties~1--4 explicitly exclude
 independence, multiplicativity, algebraic-geometric structure, and
 ergodic stationarity.  NAAD Equidistribution asks whether these four
 properties \emph{collectively} substitute for any single classical
-assumption.  The 138~dead ends documented in the formalization
+assumption.  The \DEentries~dead ends documented in the formalization
 (Appendix~\ref{app:dead-ends}) confirm that no existing technique
 closes this gap.
 
@@ -570,7 +669,7 @@ independently interesting:
 \item \textbf{Weak NAAD} (almost-all starting points): prove that for
   almost all squarefree~$x_0$, the walk equidistributes.  Partially
   achieved: SD~$\Rightarrow$~cancellation for a.a.\ starting points
-  (\lean{EM/Ensemble/EnsemblePT.lean}{sd\_implies\_cancellation}).
+  (\lean{EM/Ensemble/PT.lean}{sd\_implies\_cancellation}).
 
 \item \textbf{Quantitative NAAD} (correlation decay): prove
   $|\mathrm{Cov}(\chi(w_n), \chi(w_{n+k}))| \leq C \alpha^{-k}$
@@ -590,7 +689,9 @@ independently interesting:
   provable failure.
 \end{enumerate}
 
+
 \subsection{The Precise Frontier}
+\label{sec:precise-frontier}
 
 The formalization certifies the reductions above and pinpoints the
 frontier.  We now identify the open problems whose resolution
@@ -718,27 +819,24 @@ formally proved.
 StrongSieveEquidist asserts that EM multipliers are equidistributed
 within sliding windows; NoLongRunsAt and PEDAt are per-prime variants
 proved by pigeonhole and block-counting respectively
-(\lean{EM/Equidist/SieveTransfer.lean\#L185}{strongSieveEquidist\_noLongRunsAt},
-\lean{EM/Equidist/SieveTransfer.lean\#L254}{noLongRunsAt\_ped}).
+(\lean{EM/Equidist/SieveTransfer.lean}{strongSieveEquidist\_noLongRunsAt},
+\lean{EM/Equidist/SieveTransfer.lean}{noLongRunsAt\_ped}).
 
 \paragraph{The genuine frontier.}
 
-\textbf{SieveTransfer} is the critical open hypothesis: does the
+An earlier draft placed it at \textbf{SieveTransfer}: ``does the
 equidistribution of $\minFac$ residues for generic integers transfer
-to the specific EM orbit?  Everything above SieveTransfer is known
-mathematics; everything below it is proved.  SieveTransfer is where
-``known but not formalized'' meets ``genuinely open.''
-
-The difficulty: for \emph{generic} $q$-rough integers,
-$\minFac$ residues are equidistributed (by CRT + Mertens)---the
-death channel gets its fair share of multipliers.  But the EM
-Euclid numbers are not generic: each is determined by the entire
-walk history.  Transferring the generic equidistribution to this
-specific orbit is the open step.
+to the specific EM orbit?''  There is no such generic
+equidistribution to transfer: for $q$-rough integers the class
+densities of $\minFac \bmod q$ are head-dominated convergent series
+(Dead End~\#160), and SieveTransfer holds vacuously.  The frontier is
+the orbit statement itself---StrongSieveEquidist / CME: the EM Euclid
+numbers are determined by the entire walk history, and no population
+fact supplies the residue of their least prime factor.
 
 \paragraph{Sieve-to-harmonic convergence.}
 
-The sieve hierarchy (\S36--\S39 of \code{Equidist/SelfCorrecting.lean})
+The sieve hierarchy (\S36--\S39 of \code{EM/Equidist/SelfCorrecting.lean})
 and the harmonic hierarchy (\S30--\S35) converge: both produce
 DecorrelationHypothesis as output.  The full chain
 \[
@@ -753,45 +851,32 @@ DecorrelationHypothesis as output.  The full chain
 \mathrm{MC}
 \]
 is formalized, with the first two arrows machine-verified
-(\lean{EM/LargeSieve/Basic.lean\#L1617}{sieve\_equidist\_implies\_decorrelation},
-\lean{EM/Equidist/SelfCorrecting.lean\#L139}{decorrelation\_implies\_ped}).
+(\lean{EM/LargeSieve/Structural.lean}{sieve\_equidist\_implies\_decorrelation},
+\lean{EM/Equidist/SelfCorrecting.lean}{decorrelation\_implies\_ped}).
 The sieve route achieves SieveEquidist~$\Rightarrow$~Dec via a
 counting-to-character-sum bridge: SieveEquidistribution produces
 \code{EMMultCharSumBound} with $Q_0 = 0$, meaning multiplier character
 sums cancel for \emph{all} primes~$q$, which is exactly
 DecorrelationHypothesis.  The sole remaining gap on this route is
 \textbf{PEDImpliesComplexCSB}
-(\lean{EM/Equidist/SelfCorrecting.lean\#L109}{PEDImpliesComplexCSB}):
+(\lean{EM/Equidist/SelfCorrecting.lean}{PEDImpliesComplexCSB}):
 does positive escape density for all primes imply walk character sum
 cancellation?  Any proof of SieveEquidistribution (e.g., from PNT
 in APs $+$ Alladi's theorem) would immediately yield Dec and PED
 for free, isolating this single bridge as the only open step.
 
-\paragraph{DSL: The Sole Remaining Hypothesis}
+\paragraph{CME: The Sole Remaining Hypothesis}
 
-The ensemble averaging framework (Section~\ref{sec:ensemble}) collapses
-the entire reduction landscape to a single open statement:
-the \textbf{Deterministic Stability Lemma}~(DSL,
-Property~\ref{def:dsl}).  DSL asserts that population
-equidistribution of multiplier residues (a consequence of standard
-ANT) implies conditional multiplier equidistribution for the
-standard EM orbit ($n = 2$).  The assembly
-$\mathrm{DSL} \Rightarrow \mathrm{CME} \Rightarrow \mathrm{CCSB}
-\Rightarrow \mathrm{MC}$
-is fully machine-verified
-(\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}).
-DSL is the orbit-transfer principle: it bridges from population-level
-statistics (which hold for almost all starting points) to the specific
-orbit.
-
-A weaker variant also suffices:
-
-\begin{theorem}[\lean{EM/Ensemble/Structure.lean}{pe\_dsl\_hitting\_implies\_mc}]
-$\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \MC$,
-\end{theorem}
-
-\noindent where DSLHitting only requires that the walk hits~$-1$ for a
-positive density of starting points, rather than full equidistribution.
+The reduction landscape (Section~\ref{sec:ensemble}) collapses to a
+single open statement: \textbf{Conditional Multiplier
+Equidistribution}~(CME, Property~\ref{def:cme}).  The assembly
+$\mathrm{CME} \Rightarrow \mathrm{CCSB} \Rightarrow \mathrm{MC}$ is
+fully machine-verified
+(\lean{EM/CME/Reduction.lean}{cme\_implies\_mc}).  An earlier draft
+placed a further hypothesis beneath it, a transfer lemma from
+population-level equidistribution to the orbit; the population
+statement is false (Dead End~\#160, \S\ref{sec:ant-def}), so CME is
+where the orbit-specificity barrier now sits, undisguised.
 
 \paragraph{The Adelic Decomposition of CME}
 
@@ -812,9 +897,9 @@ The decomposition is proved in both directions
 (\code{cme\_implies\_mme}, \code{crt\_fiber\_mme\_implies\_cme}).
 MWI is the core difficulty: it is the formal statement that the
 factoring channel destroys the correlation between walk position and
-multiplier residue.  MME is morally a consequence of the population
-equidistribution (PE), but the transfer from population to orbit
-multipliers requires DSL\@.
+multiplier residue.  MME is the orbit-level equidistribution of the multiplier
+residues themselves---a statement about the specific orbit that no
+population result supplies (Dead End~\#160).
 
 \noindent The CRT fiber structure provides a further decomposition:
 \[
@@ -847,7 +932,7 @@ $\prod_i (\ZZ/q_i\ZZ)^\times$.  UPE is the profinite analog of
 equidistribution: it asks for uniform distribution modulo all finite
 sets of primes simultaneously.
 
-\begin{theorem}[\lean{EM/Adelic/ProfiniteEquidist.lean}{uniform\_profinite\_implies\_mc}]
+\begin{theorem}[\lean{EM/Adelic/Profinite.lean}{uniform\_profinite\_implies\_mc}]
 $\mathrm{UPE} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
@@ -893,19 +978,11 @@ MC directly.
 \begin{frontierbox}[title={\sffamily\bfseries Paths to MC}]
 The cleanest paths to MC:
 \begin{enumerate}
-\item \textbf{Prove DSL} (sole remaining hypothesis): show that the
-  character energy of generalized EM sequences concentrates when averaged
-  over squarefree starting points.  This is the weakest known hypothesis
-  that implies MC, and the only one that does so without additional
-  conditions.  The assembly
-  DSL~$\Rightarrow$~CME~$\Rightarrow$~CCSB~$\Rightarrow$~MC is fully
-  machine-verified (\lean{EM/Reduction/Master.lean}{full\_chain\_dsl}).
-
-\item \textbf{Prove CME}: show that the multiplier
-  character sum $\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ is
-  $o(N)$ for each walk position~$c$.  CME is strictly weaker than
-  CCSB, and $\mathrm{CME} \Rightarrow \mathrm{CCSB}$ is proved
-  (\lean{EM/LargeSieve/Spectral.lean}{cme\_implies\_ccsb}).
+\item \textbf{Prove CME} (the reformulation of MC in walk language): show that the
+  multiplier character sum $\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ is
+  $o(N)$ for each walk position~$c$, for every missing~$q$.  CME implies
+  CCSB (\lean{EM/CME/Reduction.lean}{cme\_implies\_ccsb}) and is equivalent
+  to MC (\lean{EM/CME/Equivalences.lean}{cme\_iff\_mc}).
   CME asks only about the \emph{conditional} distribution of
   multipliers given walk state---it does not require controlling the
   walk character sum itself.  This bypasses the $d \geq 3$ barrier
@@ -916,6 +993,21 @@ The cleanest paths to MC:
   avoidance of~$-1$ would require.  The self-correcting sieve
   (concentration of EM primes in a residue class is exponentially
   self-limiting) is the strongest heuristic argument.
+
+\item \textbf{Exhibit one horizon} (the weakest form of the previous
+  item).  Fix the least missing prime~$q$ and find a \emph{single}
+  window past the sieve gap with
+  \[
+    \sum_{\chi \neq 1}
+      \Bigl\lvert \sum_{n < N} \chi(\walkZ{2}{q}{n}) \Bigr\rvert < N .
+  \]
+  Fourier inversion then forces the walk to visit \emph{every} unit
+  before~$N$, in particular~$-1$
+  (\lean{EM/Equidist/OneHorizon.lean}{covers\_of\_charSum\_lt}), and one
+  such window at each prime gives MC
+  (\lean{EM/Equidist/OneHorizon.lean}{windowFourierGain\_implies\_mc}).
+  This asks for one finite-horizon gain rather than $o(N)$ cancellation
+  at every large~$N$.
 
 \item \textbf{Prove a BV-type estimate}: even an averaged bound
   over~$q$ would suffice---for $q \geq Q_0$ it rules out permanent
@@ -931,12 +1023,11 @@ The cleanest paths to MC:
   every element cofinally.  This is a combinatorial question about
   deterministic walks.
 
-\item \textbf{Prove SieveTransfer}: show that the EM orbit's $\minFac$
-  distribution matches that of generic integers, at least on average.
-  The cumulative sieve route (\S38) reduces this to known number theory
-  (PNT in APs + Alladi's theorem); closing SieveTransfer gives CME
-  (and hence CCSB) via the conditional multiplier equidistribution
-  framework.
+\item \textbf{Prove StrongSieveEquidist}: show that the EM orbit's
+  $\minFac$ residues equidistribute within sliding windows; the window
+  route (\S38) then gives PED and, with the CCSB bridge, MC\@.  (The
+  former ``SieveTransfer'' item is retired: its generic-integer input is
+  false, Dead End~\#160.)
 
 \item \textbf{Prove BVImpliesMMCSB or PrimeArithLSImpliesMMCSB}: the
   large sieve route (\S41--\S65) reduces MC to a transfer hypothesis.
@@ -944,10 +1035,47 @@ The cleanest paths to MC:
   open step is showing that the EM orbit's multipliers receive their
   fair share of each residue class---in particular, that the death
   channel is not systematically avoided.  This is the same
-  orbit-specificity gap as SieveTransfer, approached from a different
+  orbit-specificity gap as CME, approached from a different
   mathematical toolkit.
 \end{enumerate}
 \end{frontierbox}
+
+\paragraph{A caveat on the one-horizon route.}
+It is weaker as a \emph{global} statement---one window rather than every
+large one---but \emph{stronger per character} at that window.  With
+$q-2$ nontrivial characters the hypothesis needs an average
+$\lvert S_\chi \rvert < N/(q-2)$, a saving by a factor of order~$q$,
+not merely ``some cancellation''.  For a walk with square-root
+cancellation it bites once $N \gtrsim q^2$, so the honest reading is a
+quantitative target: \emph{past the sieve gap, the walk covers
+$(\ZZ/q\ZZ)^\times$ within $O(q^2)$ steps}.  That is a better-posed open
+problem than $o(N)$---finite, quantitative, partial progress
+measurable---but it is not an easier one.  No technique bounds walk
+character sums for the actual orbit at \emph{any} horizon; the entire
+difficulty lies between the trivial bound~$N$ and anything below it, and
+that gap is indifferent to the quantifier over~$N$.
+
+\paragraph{The one unconditional constraint at a missing prime.}
+Every item above is a hypothesis.  There is exactly one hard fact the
+least missing prime hands over for free, and it is combinatorial rather
+than distributional.  Past the stage at which all primes below~$q$ have
+appeared, injectivity forbids any of them from being selected again and
+$q$~itself is excluded, so \emph{every subsequent multiplier is a prime
+strictly greater than~$q$}
+(\lean{EM/Equidist/OneHorizon.lean}{multipliers\_exceed}); equivalently
+$\Prod{2}(n)+1$ is $q$-rough for all large~$n$
+(\lean{EM/Equidist/OneHorizon.lean}{rough\_at\_missing}).
+
+This survives whatever the character sums do.  It is also, so far,
+unexploitable: distinctness is a statement about the primes, while the
+walk sees only residues mod~$q$, and the projection
+$p \mapsto p \bmod q$ destroys exactly the information the constraint
+carries---Dead End~\#152 in a specific instance.  What it does say is
+that a missing prime confines the orbit forever to the $q$-rough set, of
+density $\prod_{p<q}(1-1/p) \approx e^{-\gamma}/\log q$: small, but
+positive, and nothing forbids a single trajectory from remaining in a
+positive-density set forever.  That sentence is the whole difficulty in
+miniature.
 
 \paragraph{The vanishing noise route.}
 A complementary perspective recasts the walk as a product of random
@@ -955,21 +1083,21 @@ and deterministic steps.  At each step, $\Prod{2}(n)+1$ has a set~$F$
 of prime factors; $\minFac$ selects the smallest, but the
 \emph{factor set} $F \bmod q$ acts as a ``noisy generating set'' in
 $(\ZZ/q\ZZ)^\times$.  The spectral gap lemma
-(\lean{EM/Advanced/VanishingNoise.lean}{spectral\_gap\_with\_identity})
+(\lean{EM/Stochastic/VanishingNoise.lean}{spectral\_gap\_with\_identity})
 proves: for any generating set $S \ni 1$ in a finite abelian group
 and any nontrivial character~$\chi$,
 $\|\sum_{s \in S} \chi(s)\| < |S|$
 (strict inequality, using strict convexity of~$\mathbb{C}$).
 Deterministic walk steps---multiplying by a fixed element---preserve
 this contraction
-(\lean{EM/Advanced/VanishingNoise.lean}{char\_sum\_mul\_right\_norm}).
+(\lean{EM/Stochastic/VanishingNoise.lean}{char\_sum\_mul\_right\_norm}).
 If the factor set has $|F| \geq 2$ elements in $(\ZZ/q\ZZ)^\times$
 infinitely often (with non-summable spectral gap), the product
 $\prod(1 - \gamma_k) \to 0$
-(\lean{EM/Advanced/VanishingNoise.lean}{product\_contraction\_tendsto}),
+(\lean{EM/Stochastic/VanishingNoise.lean}{product\_contraction\_tendsto}),
 which would give CCSB---but only if the walk actually \emph{averages}
 over~$F$.  A proved counterexample
-(\lean{EM/Advanced/VanishingNoise.lean}{selection\_vs\_average\_gap})
+(\lean{EM/Stochastic/VanishingNoise.lean}{selection\_vs\_average\_gap})
 shows the gap cleanly: for any fixed selection $s \in S$, the
 pointwise norm $\|\chi(s)\| = 1$ (zero contraction), even when the
 average over~$S$ contracts strictly below~$1$.
@@ -977,21 +1105,21 @@ Since $\minFac$ selects \emph{one specific element} of the factor set,
 the spectral gap alone does not imply CCSB\@.
 
 The formalization defines the factor set residues
-(\lean{EM/Advanced/VanishingNoise.lean}{factorSetResidues})
+(\lean{EM/Stochastic/VanishingNoise.lean}{factorSetResidues})
 and proves that the walk multiplier lies in it
-(\lean{EM/Advanced/VanishingNoise.lean}{multZ\_in\_factorSetResidues}).
-Two open hypotheses remain:
-\textbf{InfinitelyManyLargeFactorSets} (that the Euclid numbers
-$\Prod{2}(n)+1$ have at least two prime factors $\geq q$ for
-infinitely many~$n$) and
-\textbf{MinFacUnbiased} (that $\minFac$ selection is asymptotically
-unbiased over the squarefree ensemble).
+(\lean{EM/Stochastic/VanishingNoise.lean}{multZ\_in\_factorSetResidues}).
+Two questions remain, recorded in Lean only as placeholder
+propositions (\code{InfinitelyManyLargeFactorSets},
+\code{MinFacUnbiased}; bodies \code{True}):
+that the Euclid numbers $\Prod{2}(n)+1$ have at least two prime factors
+$\geq q$ for infinitely many~$n$, and that $\minFac$ selection is
+asymptotically unbiased over the squarefree ensemble.
 The latter is the orbit-specificity barrier
 restated in spectral language.
 
 The formalization makes the gap precise via a \emph{phase transition}
 at~$\varepsilon = 0$
-(\lean{EM/Advanced/VanishingNoise.lean}{phase\_transition\_landscape}).
+(\lean{EM/Stochastic/VanishingNoiseC.lean}{phase\_transition\_landscape}).
 For any constant~$\varepsilon \in (0,1)$, the two-point character
 product $\prod_k[(1{-}\varepsilon)\chi(a_k) + \varepsilon\chi(b_k)]$
 decays to~$0$ in norm whenever infinitely many steps have distinct
@@ -1016,11 +1144,12 @@ Section~\ref{sec:variants}; the function field analog
 (Section~\ref{sec:function-field}) confirms that the difficulty is
 orbit-specificity, not analytic number theory.
 
+
 \paragraph{Function Field Analog}
 
 Over $\FF_p[t]$, the FF-EM sequence has additional structural
 advantages.  The formalization proves
-(\code{FunctionField/WeakMC.lean}, 471~lines, zero \code{sorry}):
+(\code{EM/FunctionField/WeakMC.lean}, 471~lines, zero \code{sorry}):
 \begin{itemize}[nosep]
 \item \textbf{Degree escape}
 (\lean{EM/FunctionField/WeakMC.lean}{ffSeq\_degree\_tendsto\_atTop}):
@@ -1041,7 +1170,11 @@ Dead End~\#129 (FFLM structurally false---cyclotomic Galois groups)
 is sidestepped entirely: degree escape uses only finiteness and
 injectivity, not monodromy.
 
-\paragraph{Does the Walk Hit $-1$?}
+
+%% =========================================================================
+\subsection{Does the Walk Hit $-1$?}
+\label{sec:does-it-hit}
+%% =========================================================================
 
 The irreducible open question is not whether DH holds (cofinal
 hitting is a convenient sufficient condition) but whether the walk
@@ -1059,11 +1192,12 @@ The smallest prime factor of $\Prod{2}(n)+1$ depends on the full
 value, not on its residue mod~$q$, so conditioning on walk position
 constrains almost nothing about the factoring outcome---the
 conditional and unconditional $\minFac$ distributions should agree.
-(2)~\emph{Ensemble evidence}: for almost all squarefree starting
-points, CME holds (the proved SD~$\Rightarrow$~cancellation chain).
-The standard orbit $n = 2$ has no special arithmetic property that
-would make it an outlier.  DSL is a typicality assertion, not a
-structural miracle.
+(2)~\emph{Ensemble structure}: earlier drafts cited here a proved
+``SD~$\Rightarrow$~cancellation'' chain as evidence that CME holds for
+almost all starting points; SD is false as stated (Dead End~\#156), so
+that evidence is withdrawn.  What remains is structural: the multiplier
+is CRT-blind to the walk position, and $2$ is one squarefree seed among
+many---a typicality \emph{heuristic}.
 (3)~\emph{Analogy with Artin's conjecture}: Artin's conjecture
 (that every non-square integer is a primitive root for infinitely
 many primes) has the same orbit-specificity structure and is believed
@@ -1072,7 +1206,104 @@ walk-hitting question is the analogous statement for the EM walk
 and would follow from an analogous uniformity hypothesis.
 
 \paragraph{Evidence against.}
-Two features of the EM sequence give pause.
+Three features of the EM sequence give pause.
+(0)~\emph{The autonomous branch}: there is an explicit, unconditional
+mechanism by which MC fails.  If $\Prod{2}(n)+1$ is prime for all
+large~$n$, then $\minFac(\Prod{2}(n)+1) = \Prod{2}(n)+1$, the accumulator
+update closes up into the autonomous quadratic map
+$w \mapsto w^2 + w$ on $(\ZZ/q\ZZ)^\times$, and MC is \emph{false}---by
+Bertrand, some prime in $(\Prod{2}(T)+1,\, 2(\Prod{2}(T)+1)]$ is skipped
+forever
+(\lean{EM/Population/AutonomousBranch.lean}{eventually\_prime\_implies\_not\_mullin};
+no congruence condition and no witness are needed).  On that branch the
+death equation $w^2+w+1 = 0$ has no solution in $\FF_q$ whenever
+$q \equiv 2 \pmod 3$, so the walk is not merely unlucky---it is
+\emph{structurally} barred from the death class, on a density-$1/2$ set
+of primes.
+
+This is the sharpest answer to the natural objection that an erratic
+walk on a finite cyclic group must be killed sooner or later.  The
+erraticness is not a permanent feature of the dynamics: it is a
+consequence of the Euclid numbers being \emph{composite}, which is what
+supplies a fresh, unconstrained multiplier at each step.  Perpetual
+primality would end the erraticness outright.  Every heuristic for MC
+therefore silently assumes (C$\infty$)---that infinitely many
+$\Prod{2}(n)+1$ are composite (Dead End~\#146)---and (C$\infty$) is
+itself open.
+\smallskip\noindent
+\textbf{The branch is not exotic---the sequence has been on it.}  Both
+$\Prod{2}(6)+1 = 6221671$ and $\Prod{2}(7)+1 = 38709183810571$ are prime,
+so at stages~$6$ and~$7$ the least factor \emph{was} the whole Euclid
+number and the accumulator took the autonomous step
+$P \mapsto P(P+1)$ twice in a row
+(\lean{EM/Population/SylvesterTower.lean}{euclid\_prime\_at\_six},
+\lean{EM/Population/SylvesterTower.lean}{autonomous\_step\_at\_six}).
+The branch is a regime the sequence visits, not a fantasy.  It broke out
+at the next stage:
+\[
+  \Prod{2}(8)+1 = 1498400911280533294827535471 = 139 \cdot 10779862671083836653435507 .
+\]
+
+\begin{theorem}[The branch cannot begin at or before stage~$7$ ---
+\lean{EM/Population/SylvesterTower.lean}{not\_perpetualPrimality\_of\_le\_seven}]
+\label{thm:no-perpetual-le-seven}
+For every $N \leq 7$, perpetual primality from~$N$ is false.
+\end{theorem}
+
+\noindent
+The proof needs no primality certificate for the fourteen-digit
+$\Prod{2}(7)+1$, because the hypothesis supplies what would otherwise
+have to be proved: perpetual primality from $N \leq 7$ gives primality at
+stage~$7$, hence forces $\Prod{2}(8) = \Prod{2}(7)\bigl(\Prod{2}(7)+1\bigr)$,
+and then demands that $\Prod{2}(8)+1$ be prime---which the factor~$139$
+refutes.
+
+\smallskip\noindent
+\textbf{The branch to be excluded is exactly this one---nothing wider.}
+Everything above attacks the extreme point $\seq{2}(n+1) = \Prod{2}(n)+1$,
+where the dynamics degenerates to an autonomous map and can therefore be
+analysed; it is fair to ask whether the true failure set is larger, with
+the analysable branch a corner of it.  It is not:
+\S\ref{sec:defect-telescope} shows the growth constant
+$C = \lim_N \log\Prod{2}(N)/2^N$ is a \emph{complete invariant}, with
+$C = 0 \iff (\mathrm{C}\infty)$ and $C > 0 \iff$ perpetual primality from
+some stage.  So the failure set of $(\mathrm{C}\infty)$ is precisely the
+autonomous branch, and every mechanism in this section bears on the whole
+of it.
+
+\paragraph{How the sequence escapes, quantified.}
+The escape mechanism is sharper than ``large numbers are rarely prime''.
+On the branch $q_{n+1} = \Phi_6(q_n) = q_n^2 - q_n + 1$, so a prime
+$\ell$ divides $q_{n+1}$ exactly when $q_n$ is a root of $\Phi_6$
+modulo~$\ell$---which requires $\ell \equiv 1 \pmod 6$.  The map $\Phi_6$
+has the unique fixed point~$1$, with $0 \mapsto 1$, and the only
+preimages of~$1$ are $0$ and~$1$; so an orbit not starting at~$1$ either
+passes through~$0$---meaning $\ell$ divides some tower term and the
+branch dies---or is trapped in some other cycle forever.
+
+Write $\rho(\ell)$ for the proportion of residues whose $\Phi_6$-orbit
+reaches~$0$.  Over the $207$ primes $\ell \equiv 1 \pmod 6$ below $3000$
+the mean of $\rho$ is $\approx 0.072$, with $\rho(7) = 0.857$ and
+$\rho(13) = 0.615$; the partial sums of $\rho$ grow without apparent
+bound.  Perpetual primality therefore requires the tower to dodge
+\emph{every} prime $\ell \equiv 1 \pmod 6$ outside the bag,
+simultaneously and forever, an event of heuristic probability
+$\prod_\ell (1-\rho(\ell)) = 0$.  Note also that $\rho$ is defined
+purely by the autonomous map, so unlike the rest of this paper the
+heuristic here involves no non-autonomous dynamics at all.
+
+\smallskip\noindent
+That this does not become a proof is instructive.  It would suffice to
+find many primes~$\ell$ for which \emph{every} orbit reaches~$0$, since
+each such $\ell$ would then have to lie in the finite bag at the
+branching stage; but a search over all $330$ primes $\ell \equiv 1
+\pmod 6$ below~$5000$ finds exactly one, namely $\ell = 7$.  The
+condition ``$\{1\}$ is the only cycle'' is rare, so the counting argument
+is unavailable and one is left needing to control the specific orbit of
+$\Prod{2}(N)+1$ modulo infinitely many primes.  That is the
+orbit-specificity barrier again, in the one setting where the dynamics is
+autonomous.
+
 (1)~\emph{Cox--van der Poorten}~\cite{CoxVdP1968}: the ``largest factor'' variant of
 the Euclid--Mullin sequence provably misses primes.  The EM
 sequence's completeness is not a soft consequence of the Euclid
@@ -1098,10 +1329,10 @@ hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
 The formalization has exhaustively explored all known proof strategies
-across 138~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
+across \DEentries~dead ends: the $d \geq 3$ barrier, the MultCancelToWalkCancel
 counterexample (Dead End~\#117), the cofactor identity's failure to
 escape the Marginal/Joint Barrier (Dead End~\#115), and the exhaustion
-of all four DSL proof directions (algebraic identities, cofactor
+of all four CME proof directions (algebraic identities, cofactor
 completeness, exponential sums, sum-product theory) collectively show
 that the proof, when found, will require genuinely new mathematical
 techniques---likely exploiting the specific arithmetic of the
@@ -1123,3 +1354,113 @@ found to convert Artin-type information about $\mathrm{ord}_q(2)$
 into walk equidistribution through a route that avoids Fourier
 analysis and Cauchy--Schwarz (Dead End~\#136).  Whether such a
 mechanism exists is, in our view, the most promising open question.
+
+%% =========================================================================
+\subsection{Four Questions}
+\label{sec:four-questions}
+%% =========================================================================
+
+It is worth stating plainly what we take the formalization to say about
+belief in the conjecture, since the negative results of this paper bear
+on the question in a way that is easy to misread.
+
+\paragraph{What if MC is false?}
+Everything proved here is evidence against falsity, and
+\emph{one-directionally}.  Every no-go theorem in
+\S\ref{sec:min-max-dichotomy} rules out a proof that some prime is
+\emph{omitted}: congruence invariants at every modulus, reciprocity
+invariants, guarded fragments, anatomy carried as state.  None of them
+rules out a proof that MC is \emph{true}.  The programme has been
+accumulating a catalogue of ways one cannot show a prime is missed.
+
+Moreover there is exactly one concrete mechanism by which MC could fail:
+the autonomous branch.  It is consistent---nothing rules it out---but by
+Theorem~\ref{thm:no-perpetual-le-seven} it cannot begin before stage~$8$,
+and the escape estimate above puts its heuristic probability at zero by a
+mechanism internal to the autonomous map.  The alternative failure mode,
+``some~$q$ is simply never hit'', has no known mechanism at all, and a
+\emph{proof} of it would have to be an omission proof---one of the shapes
+this paper eliminates.  So if MC is false, we are unlikely ever to know.
+
+The honest caution is that Euclid-type sequences genuinely can miss
+primes: the $\mathrm{maxFac}$ sequence provably does.  What makes
+$\minFac$ different is quantitative---slowest growth, most trials per
+prime---not qualitative.
+
+\paragraph{If MC is provable, what follows?}
+As a statement MC is close to terminal; nothing famous hangs on it.  But
+it has genuine open consequences, and this paper sharpens the strongest.
+$\MC \Rightarrow (\mathrm{C}\infty)$, which
+\S\ref{sec:sylvester-tower} identifies with a Sylvester-tower primality
+question that is itself open; likewise
+$\MC \Rightarrow \mathrm{WM} \Rightarrow \mathrm{RD}$ and
+$\MC \Rightarrow (\mathrm{V})$, all open.  MC also says something clean
+in its own right: the recursion $\seq{2}$ is a \emph{bijection}
+$\NN \to \{\text{primes}\}$---a two-line recursion enumerating every
+prime exactly once.
+
+The more important point is that the machinery would be worth more than
+the theorem.  Any proof must control $\Prod{2}(n) \bmod q$ for one
+specific orbit.  Current technology---sieve, large sieve, Fourier,
+Dirichlet---works over families and averages.  A proof of MC would be a
+breakthrough in \emph{single-orbit} equidistribution, and that capability
+would apply well beyond this sequence.
+
+\paragraph{Does the Riemann Hypothesis imply MC?}
+No such implication is known, and this development supplies a structural
+reason to doubt one.  RH and GRH are population statements; MC needs the
+residue of one specific integer at each stage, and the orbit-specificity
+barrier is precisely the statement that population facts do not transfer
+to this orbit---witnessed formally by
+\lean{EM/Meta/OrbitBarrier.lean}{population\_does\_not\_determine\_hitting},
+two walks with identical multiplier statistics, one of which hits the
+death class and one of which misses it forever.
+
+The decisive evidence is the function field model of
+\S\ref{sec:function-field}.  Over $\FF_p[t]$ the Riemann Hypothesis
+\emph{is} a theorem, and there the results of this paper become
+unconditional---but still only for \emph{almost all} starting points.  In
+the world where RH is proved, the specific-orbit statement remains open.
+That is about as direct a demonstration as one could ask that RH is not
+the missing ingredient.  Where RH-type input does matter here is
+narrower: upgrading Dirichlet density to natural density needs a
+prime-number theorem in progressions.  That is bookkeeping about density
+notions, not a route to MC.
+
+\paragraph{Why believe it true---and provable?}
+\emph{True}: the case is strong.  Past the sieve gap, $\Prod{2}(n)+1$ is
+automatically $q$-rough for every prime below~$q$---those all divide
+$\Prod{2}(n)$---so the only remaining constraint is the single congruence
+$\Prod{2}(n) \not\equiv -1 \pmod q$.  Heuristically that fails with
+probability $1/q$ at each of infinitely many steps, and $\sum 1/q$
+diverges.  And past the gap a hit \emph{forces} capture: that is
+$\minFac$'s $0$-accessibility.  So the heuristic does not merely predict
+hitting, it predicts selection.  The growth ordering of
+\S\ref{sec:variants} reinforces it: order the selection rules by how fast
+they grow the accumulator and one gets the same order as by how badly
+they fail.
+
+\emph{Provable}: the case is much weaker, and we will not pretend
+otherwise.  Every technique that has ever worked on a Euclid-type
+sequence is now proved unavailable for this one.  Even the weakest
+consequences---(V), WM, RD, (C$\infty$)---are open.  On the other side,
+the problem is plain $\Pi_2$ arithmetic with no whiff of independence,
+the reduction chain is tight rather than foggy, and the one-horizon
+criterion narrows the requirement to a single Fourier window per prime.
+If a breakthrough comes we would guess expansion-type machinery---a
+spectral gap in $(\ZZ/q\ZZ)^\times$---since that is the one family of
+methods that has produced equidistribution for individual orbits rather
+than averages.
+
+\begin{frontierbox}
+\textbf{The thesis, in one sentence.}
+Mullin's conjecture is true \emph{because} $\minFac$ is structureless,
+and hard for exactly the same reason.  The slow growth that gives every
+prime infinitely many chances is the same fact that makes the selection
+condition $\minFac(N) = q$ pure congruence data
+(\S\ref{sec:anatomy-axis})---and pure congruence data is provably
+insufficient.  $\mathrm{maxFac}$ is provably incomplete because
+$\mathrm{maxFac}(N) = q$ hands you smoothness; $\minFac$ hands you
+nothing at all.  The rule most likely to be true is the rule that gives
+the least to work with.
+\end{frontierbox}

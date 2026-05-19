@@ -1,10 +1,6 @@
 import EM.Equidist.Threshold
 import Mathlib.Algebra.Group.Subgroup.Lattice
 
--- In Mathlib v4.29, CompleteLattice → BoundedOrder TC chain is broken for Subgroup.
-instance subgroupBoundedOrder {G : Type*} [Group G] : BoundedOrder (Subgroup G) :=
-  CompleteLattice.toBoundedOrder
-
 /-!
 # Cofinal Orbit Expansion and Quotient Walk Decomposition
 
@@ -272,7 +268,7 @@ theorem se_quotient_walk_nonconstant {q : Nat} [Fact (Nat.Prime q)]
         rw [← hrec]; exact h
       rw [map_mul] at hprod
       -- In a CommGroup, all subgroups are normal
-      haveI : H.Normal := inferInstance
+      have : H.Normal := inferInstance
       have : QuotientGroup.mk' H (emMultUnit q hq hne k) = 1 :=
         mul_left_cancel (hprod.trans (mul_one _).symm)
       rw [← QuotientGroup.ker_mk' H, MonoidHom.mem_ker]
@@ -371,7 +367,7 @@ theorem quotient_walk_product {q : Nat} [Fact (Nat.Prime q)]
     QuotientGroup.mk' H (emWalkUnit q hq hne n) =
       QuotientGroup.mk' H (emWalkUnit q hq hne 0) *
       (Finset.range n).prod (fun k => QuotientGroup.mk' H (emMultUnit q hq hne k)) := by
-  haveI : H.Normal := inferInstance
+  have : H.Normal := inferInstance
   induction n with
   | zero => simp [Finset.range_zero, Finset.prod_empty]
   | succ n ih =>
@@ -392,7 +388,7 @@ theorem cofinal_pair_quotient_distinct {q : Nat} [Fact (Nat.Prime q)]
     QuotientGroup.mk' H (Units.mk0 w₀ hw₀) ≠
     QuotientGroup.mk' H (Units.mk0 (w₀ * s₀) (cofinal_successor_ne_zero hq hne hcof)) := by
   intro heq
-  haveI : H.Normal := inferInstance
+  have : H.Normal := inferInstance
   have hws : QuotientGroup.mk' H (Units.mk0 (w₀ * s₀)
       (cofinal_successor_ne_zero hq hne hcof)) =
       QuotientGroup.mk' H (Units.mk0 w₀ hw₀) *
@@ -501,7 +497,7 @@ theorem cofinal_mult_escapes_some_subgroup {q : Nat} [Fact (Nat.Prime q)]
     ∃ H : Subgroup (ZMod q)ˣ, H ≠ ⊤ ∧
       Units.mk0 s₀ (cofinal_mult_ne_zero hq hne hcof) ∉ H := by
   -- s₀ ≠ 1 gives two distinct elements, so the group is nontrivial
-  haveI : Nontrivial (ZMod q)ˣ :=
+  have : Nontrivial (ZMod q)ˣ :=
     ⟨⟨Units.mk0 s₀ (cofinal_mult_ne_zero hq hne hcof), 1, hs_ne_one⟩⟩
   exact ⟨⊥, bot_ne_top, fun h => hs_ne_one (Subgroup.mem_bot.mp h)⟩
 

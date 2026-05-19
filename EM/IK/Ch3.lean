@@ -17,6 +17,11 @@ import Mathlib.Data.Nat.Squarefree
 Formalization of Chapter 3 of H. Iwaniec and E. Kowalski,
 *Analytic Number Theory*, AMS Colloquium Publications vol. 53, 2004.
 
+**Reference tier**: this file is a statement catalog transcribed from
+Iwaniec–Kowalski for orientation; its declarations are definitions/statements
+(with a handful of proofs) that the reduction network does NOT depend on.
+Only the root `EM.lean` imports it.
+
 ## Contents
 - §3.1: Characters of finite abelian groups (bridges to Mathlib)
 - §3.2: Dirichlet characters (bridges to Mathlib)

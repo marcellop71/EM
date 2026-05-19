@@ -151,7 +151,7 @@ theorem ff_weak_mc_landscape_unconditional :
 theorem ffExistsIrreducibleOfDegree (d : ℕ) (hd : 0 < d) :
     ∃ Q : Polynomial (ZMod p), Q.Monic ∧ Irreducible Q ∧ Q.natDegree = d := by
   -- GaloisField p d is a finite field with p^d elements, degree d over ZMod p
-  haveI : Fact (Nat.Prime p) := hp
+  have : Fact (Nat.Prime p) := hp
   -- Get a primitive element alpha such that (ZMod p)(alpha) = GaloisField p d
   obtain ⟨α, hα⟩ := Field.exists_primitive_element_of_finite_top (ZMod p) (GaloisField p d)
   -- The minimal polynomial of alpha over ZMod p

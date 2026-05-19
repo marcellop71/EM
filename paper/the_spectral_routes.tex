@@ -1,0 +1,588 @@
+%% =========================================================================
+\section{Spectral and Variance Routes}
+\label{sec:spectral-routes}
+%% =========================================================================
+
+The ensemble framework of Section~\ref{sec:ensemble} located the orbit
+hypothesis CME within the reduction landscape.  This section collects the routes that
+operate in the \emph{character spectrum} of the walk itself: the Weyl
+hitting bridge, which converts walk character cancellation into
+cofinal hitting for arbitrary squarefree starting points; the spectral
+identity, which equates subquadratic visit energy~(SVE) with visit
+equidistribution~(VE); the Lyapunov reformulation of the walk's
+self-correcting feedback; and the tail window decomposition, which
+attacks the standard orbit through temporal decorrelation of
+character-sum windows.  Alongside these spectral routes we develop the
+\emph{variance} routes---the per-chi cancellation bridge and the JSE
+chain---which share the same energy bookkeeping.
+
+\begin{roadmap}
+\begin{enumerate}[nosep,leftmargin=*]
+\item[\S\ref{sec:weyl-bridge}] Generalized MC and the Weyl hitting bridge --- character cancel $\Rightarrow$ walk hitting via strong induction; per-chi, JSE, and variance routes.
+\item[\S\ref{sec:visit-eqd}] Visit equidistribution and the spectral identity --- SVE $\leftrightarrow$ VE via Parseval.
+\item[\S\ref{sec:self-correcting}] Self-correcting feedback --- the Lyapunov telescope, SCD, and drift bounds.
+\item[\S\ref{sec:twd}] Tail window decorrelation --- temporal windows of the standard orbit.
+\end{enumerate}
+\end{roadmap}
+
+\subsection{Generalized MC and the Weyl Hitting Bridge}
+\label{sec:gen-mc}
+\label{sec:weyl-bridge}
+
+The ensemble framework of Section~\ref{sec:ensemble} requires proving
+MC not just for $n = 2$ but for arbitrary squarefree starting points.
+This motivates two key results.
+
+\begin{definition}[\defname{GenMullinConjecture}$(n)$]
+Every prime appears in the generalized EM sequence from starting
+point~$n$: $\forall\, q$ prime, $\exists\, k$,
+$\seq{n}(k) = q$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/Ensemble/WeylChain.lean}{gen\_hitting\_implies\_gen\_mc\_proved}]
+\label{thm:gen-mc}
+For squarefree $n \geq 1$: if the generalized walk hits~$-1$
+cofinally for every prime~$q$,
+then $\mathrm{GenMullinConjecture}(n)$ holds.
+\end{theorem}
+
+\begin{proof}
+Strong induction on~$q$.  Assume every prime $p < q$ appears as
+$\seq{n}(k_p)$ for some~$k_p$.  Collect all witnesses into
+a uniform bound~$N$.  Cofinal hitting at~$q$ provides $k \geq N$ with
+$q \mid \Prod{n}(k) + 1$.  Since all primes $p < q$ already appeared
+at steps $< k$, they divide $\Prod{n}(k)$ and hence cannot divide
+$\Prod{n}(k) + 1$.  So $q = \minFac(\Prod{n}(k) + 1) =
+\seq{n}(k)$.
+
+The argument is a generalized \code{captures\_target} lemma
+(\lean{EM/Ensemble/WeylChain.lean}{gen\_captures\_target}), paralleling the
+standard version from \S\ref{sec:bootstrap}.
+\end{proof}
+
+The connection between character cancellation and hitting uses the Weyl
+equidistribution criterion, adapted to the multiplicative setting:
+
+\begin{theorem}[\defname{WeylHittingBridge} ---
+  \lean{EM/Ensemble/WeylChain.lean}{weyl\_hitting\_bridge\_proved}]
+\label{thm:weyl-bridge}
+If all non-trivial walk character sums satisfy
+$\|\sum_{k<K} \chi(\walkZ{n}{q}{k})\|^2 \leq (\varepsilon K)^2$
+for large~$K$, then either $q$ appears in $\seq{n}(\cdot)$
+or the walk hits~$-1$ cofinally.
+\end{theorem}
+
+\begin{proof}
+By contradiction using a \emph{Weyl test function}.  Suppose $q$ never
+appears and the walk stops hitting~$-1$ past some step~$N_0$.  Then the
+hit count $H(K) = |\{k < K : \Prod{n}(k) \equiv -1 \pmod{q}\}|$ is
+bounded by the constant $C = H(N_0)$ for all~$K$.
+
+Define a centered test function $\chi_{\mathrm{test}} : \NN \to \mathbb{C}$:
+\[
+  \chi_{\mathrm{test}}(x) \;=\;
+  \begin{cases}
+    0 & \text{if } x \equiv 0 \pmod{q}, \\
+    (q{-}2)/(q{-}1) & \text{if } x \equiv -1 \pmod{q}, \\
+    -1/(q{-}1) & \text{otherwise.}
+  \end{cases}
+\]
+The test function satisfies $\|\chi_{\mathrm{test}}\|^2 \leq 1$,
+$\chi_{\mathrm{test}}(0) = 0$, and
+$\sum_{a \in \ZZ/q\ZZ} \chi_{\mathrm{test}}(a) = 0$ (the sum of
+$(q{-}2)/(q{-}1)$ from $a = q{-}1$ and $(q{-}2) \cdot (-1/(q{-}1))$
+from the remaining units is zero).
+
+The partial sum of the test function along the walk telescopes to
+$\sum_{k<K} \chi_{\mathrm{test}}(\Prod{n}(k)) = H(K) \cdot
+(q{-}2)/(q{-}1) + (K - H(K)) \cdot (-1/(q{-}1))
+= H(K) - K/(q{-}1)$.
+So the walk character energy equals
+\[
+  E_{\mathrm{test}}(K) \;=\; \bigl(H(K) - K/(q{-}1)\bigr)^2.
+\]
+Since $H(K) \leq C$ while $K/(q{-}1) \to \infty$, for large~$K$ we have
+$E_{\mathrm{test}}(K) \geq (K/(q{-}1) - C)^2$.  Setting
+$\varepsilon = 1/(2(q{-}1))$, the hypothesis gives
+$E_{\mathrm{test}}(K) \leq (K/(2(q{-}1)))^2$.  Taking square roots:
+$K/(q{-}1) - C \leq K/(2(q{-}1))$, hence $K/(2(q{-}1)) \leq C$,
+so $K \leq 2C(q{-}1)$.  But $K$ was chosen larger than $2Cq + 1$:
+contradiction.
+\end{proof}
+
+\begin{theorem}[\lean{EM/Ensemble/WeylChain.lean}{cancel\_weyl\_implies\_mc}]
+\label{thm:cancel-weyl-mc}
+Walk character cancellation at $n = 2$ implies MC.
+\end{theorem}
+
+\begin{proof}
+For $q = 2$: $\seq{2}(0) = 2$.  For $q \geq 3$: $q$ does not divide~$2$,
+so the Weyl Hitting Bridge gives either $q \in \seq{2}(\cdot)$
+(hence $q \in \{\seq{2}(k)\}$) or cofinal hitting.  Cofinal hitting gives
+$q \in \seq{2}(\cdot)$ by Theorem~\ref{thm:gen-mc}, noting
+that all generalized primes from $n = 2$ are odd (since $2 \mid \Prod{2}(k)$
+implies $\Prod{2}(k) + 1$ is odd), so the induction only requires
+odd primes $< q$, all of which have already appeared by the
+inductive hypothesis.
+\end{proof}
+
+\paragraph{The Per-Chi Cancellation Bridge}
+\label{sec:per-chi}
+
+The decorrelation chain of \S\ref{sec:decorr-chain} works with
+\emph{universal} StepDecorrelation (quantified over all characters).
+For the JSE route, only \emph{per-chi} decorrelation is available (for
+each individual non-trivial character).  The PerChiCancellationBridge
+shows the same three-step chain works per-chi:
+
+\begin{theorem}[\lean{EM/Ensemble/WeylChain.lean}{per\_chi\_cancellation\_bridge\_proved}]
+\label{thm:per-chi}
+\defname{PerChiCancellationBridge}: for each prime~$q$ and
+character~$\chi$ with $\|\chi\|^2 \leq 1$, if the cross-terms
+$\mathbb{E}^{\mathrm{sqf}}[\mathrm{Re}(\chi(m_j) \cdot
+\overline{\chi(m_k)})] \to 0$ for all $j < k$, then the density of
+squarefree~$n$ with $E(n, K) > (\varepsilon K)^2$ for all~$K$ tends
+to zero.
+\end{theorem}
+
+\begin{proof}
+The proof is identical to the universal chain (Theorem~\ref{thm:variance-bound}
+$\to$ concentration $\to$ cancellation), with the StepDecorrelation
+hypothesis restricted to the fixed character~$\chi$.  Each step
+(variance with $C = 2$, Markov concentration, squeeze to zero) goes
+through unchanged because none requires decorrelation of \emph{other}
+characters.
+\end{proof}
+
+\paragraph{The Ensemble Chain in Detail}
+\label{sec:ensemble-chain}
+
+The original ensemble assembly used the following master theorem, now
+archived --- two of its four hypotheses (SRE and CRTPropagationStep)
+are RED-false by the absorption mechanism (Dead End~\#137), so the
+theorem is a valid conditional whose antecedents fail; the \emph{live}
+assembly is the orbit hypothesis CME of Section~\ref{sec:ensemble}:
+
+\begin{theorem}[\archived{EM/Archive/Ensemble/PTArchive.lean}{ensemble\_pt\_master\_simplified} \superseded]
+Under four hypotheses (SRE, CRTPropagationStep,
+AccumEquidistImpliesMultEquidist, EnsembleEquidistImpliesDecorrelation),
+character sums cancel for almost all squarefree starting points.
+\end{theorem}
+
+\noindent The chain:
+\[
+  \underbrace{\mathrm{SRE} + \mathrm{CRT} + \mathrm{Bridge}}_{\text{ANT + CRT structure}}
+  \;\xrightarrow{\text{proved}}\;
+  \mathrm{EME}
+  \;\xrightarrow{\text{open}}\;
+  \mathrm{SD}
+  \;\xrightarrow{\text{proved}}\;
+  \text{cancellation for a.a.~}n.
+\]
+The first arrow composes three proved reductions.  The second arrow
+(EME~$\Rightarrow$~SD) is the sole remaining open hypothesis.  The
+third arrow is Theorem~\ref{thm:sd-cancel}.
+
+\paragraph{The JSE route.}
+An alternative chain uses \emph{JointStepEquidist}~(JSE): the joint
+distribution of $(\seq{n}(j), \seq{n}(k))$
+is asymptotically uniform over non-zero pairs.  The JSE base case
+($j = 0, k = 1$) is proved via the tower rule
+(\lean{EM/Ensemble/BaseCase.lean}{jse\_base\_case}):
+$P(A, B) = P(A \mid B) \cdot P(B)$, decomposing the joint density
+into conditional and marginal equidistribution.
+
+\begin{theorem}[\lean{EM/Ensemble/WeylChain.lean}{jse\_transfer\_implies\_mc}]
+$\mathrm{JSE} + \mathrm{MultCancelToWalkCancel}
+\;\Longrightarrow\; \MC$.
+\end{theorem}
+
+\noindent The composition:
+\begin{enumerate}[nosep]
+\item JSE gives per-chi decorrelation for non-trivial~$\chi$
+  (\lean{EM/Ensemble/PT.lean}{joint\_step\_equidist\_implies\_step\_decorrelation}).
+\item PerChiCancellationBridge (Theorem~\ref{thm:per-chi}) gives
+  multiplier character cancellation for almost all squarefree~$n$.
+\item \textbf{MultCancelToWalkCancel} (open): multiplier energy
+  $o(K^2)$ implies walk energy $o(K^2)$.
+\item WeylHittingBridge (Theorem~\ref{thm:weyl-bridge}) converts walk
+  character cancellation into cofinal hitting.
+\item Generalized MC (Theorem~\ref{thm:gen-mc}) and standard-EM
+  bridge (Theorem~\ref{thm:cancel-weyl-mc}) give MC\@.
+\end{enumerate}
+
+The two remaining open hypotheses are:
+\begin{itemize}[nosep]
+\item \textbf{JointStepEquidist}: requires analytic number theory
+  (Siegel--Walfisz or Bombieri--Vinogradov type estimates).
+\item \textbf{MultCancelToWalkCancel}: multiplier character cancellation
+  implies walk character cancellation.  Dead End~\#117 shows this is
+  equivalent to CCSB/CME in difficulty: an explicit counterexample
+  (alternating multipliers $\{2, 3\} \bmod 5$ with $\chi(2) = i$) gives
+  multiplier cancellation yet $|W_K| = \Theta(K)$, and this
+  counterexample is compatible with all EM structural properties
+  (squarefree accumulator, coprime cascade, CRT invariance).
+\end{itemize}
+
+\noindent MultCancelToWalkCancel is the Marginal/Joint Barrier
+(\S\ref{sec:oracle}) in ensemble form: the multiplier character sum is a
+\emph{marginal} statistic (it depends on the individual multiplier
+values), while the walk character sum is a \emph{joint} statistic (it
+depends on all previous multipliers through the partial product).
+Cancellation of individual terms does not imply cancellation of their
+cumulative products.  This is why the orbit hypothesis is stated as
+CME (Section~\ref{sec:dsl-route}): CME implies walk character
+cancellation directly, without ever needing the multiplier-to-walk
+transfer.
+
+\paragraph{The variance route (retired).}
+\label{sec:variance-route}
+An earlier draft developed a second-moment route
+$\mathrm{PCV} \Rightarrow \mathrm{SMB} \Rightarrow \text{concentration}
+\Rightarrow \mathrm{DSL}$ (population character energy, cross-term pairs,
+SD~$\Rightarrow$~PCV, CSVB~$\Rightarrow$~SMB).  Its endpoint DSL is
+vacuous (Dead End~\#160), and its uncentered second-moment hypotheses
+are false at the trivial character (Dead End~\#156); the framework is
+archived in \code{EM/Archive/Reduction/DSLVarianceArchive.lean} (local archive).  What
+survives of it is the observation that concentration gives cancellation
+for \emph{almost all} squarefree starting points
+(Theorem~\ref{thm:sd-cancel}) while CME asks for it at $n = 2$: a
+density-one set of good starting points can exclude any particular~$n$,
+the orbit-specificity barrier in its sharpest form.
+
+\subsection{Visit Equidistribution and the Spectral Identity}
+\label{sec:visit-eqd}
+
+The ensemble framework connects to the spectral route via a
+fundamental identity relating character energy to the geometry of the
+walk.  For a walk of length~$N$ on $(\ZZ/q\ZZ)^\times$, define the
+\emph{visit count} $V_N(a) = |\{n < N : \walkZ{2}{q}{n} = a\}|$.
+
+\begin{theorem}[\lean{EM/Reduction/VisitEquidist.lean}{excessEnergy\_eq\_visit\_deviation}]
+\label{thm:excess-energy}
+The excess energy $E_\chi(N) - N$ equals $(q{-}1)$ times the
+squared deviation of visit counts from the uniform distribution:
+\[
+  \sum_{\chi \neq \chi_0} \bigl\|S_\chi(N)\bigr\|^2
+  \;=\; (q{-}1) \sum_{a \in (\ZZ/q\ZZ)^\times}
+  \Bigl(V_N(a) - \frac{N}{q{-}1}\Bigr)^2.
+\]
+\end{theorem}
+
+This establishes the equivalence
+\defname{SVE}~$\Leftrightarrow$~\defname{VE}, via the identity
+$\mathrm{excessEnergy} = (p{-}1)\sum_a (V_a - N/(p{-}1))^2$
+(\lean{EM/Reduction/Master.lean}{sve\_controls\_visit\_deviation}): subquadratic visit
+energy (the total non-trivial character energy is $o(N^2)$) is the same
+as visit equidistribution (the visit counts are approximately uniform).
+The identity connects the Fourier-analytic perspective (character sums)
+with the geometric perspective (visit counts) on the walk:
+\begin{itemize}[nosep]
+\item \textbf{SVE} says the walk has no sustained spectral bias:
+  projecting onto any non-trivial character gives cancellation.
+\item \textbf{VE} says the walk has no sustained spatial bias:
+  it visits every position approximately equally often.
+\end{itemize}
+These are dual formulations of the same condition, connected by
+Parseval's identity on the finite group $(\ZZ/q\ZZ)^\times$.
+
+The fiber decomposition (\S\ref{sec:fiber-energy}) refines this further:
+
+\begin{theorem}[\lean{EM/Reduction/VisitEquidist.lean}{fiberMultCharSum\_step}]
+The fiber character sum $F(a, N) = \sum_{\substack{n < N \\ w(n) = a}}
+\chi(m(n))$ satisfies the recurrence:
+$F(a, N{+}1) = F(a, N) + \chi(m(N)) \cdot \mathbf{1}_{w(N) = a}$.
+\end{theorem}
+
+\noindent This step-by-step evolution of fiber sums provides the
+infrastructure for the CME~$\Rightarrow$~CCSB proof via energy
+tracking: the total character energy decomposes into active-fiber
+contributions at each step, and CME bounds each fiber's contribution.
+
+\begin{remark}[Almost-all MC and the multiplier/walk gap]
+\label{rem:almost-all-mc}
+A natural question: since SD gives character sum cancellation for
+\emph{almost all} squarefree starting points
+(Theorem~\ref{thm:sd-cancel}), does this yield
+$\mathrm{GenMullinConjecture}(n)$ for almost all~$n$?
+
+It does not.  The cancellation that SD produces is for the
+\textbf{multiplier} character energy
+$\|\sum_{k<K} \chi(\seq{n}(k) \bmod q)\|^2 = o(K^2)$---the
+individual multiplier residues have cancelling character sums.  But
+the Weyl Hitting Bridge (Theorem~\ref{thm:weyl-bridge}), which
+converts character cancellation into cofinal hitting, requires
+\textbf{walk} character cancellation:
+$\|\sum_{k<K} \chi(\walkZ{n}{q}{k})\|^2 = o(K^2)$.  The walk is a
+partial product of the multipliers---$\walkZ{n}{q}{k} = \prod_{j<k}
+\multZ{n}{q}{j}$---and cancellation of a sum $\sum \chi(m_k)$ does not
+imply cancellation of $\sum \prod_{j<k} \chi(m_j)$.
+
+This is Dead End~\#117 (MultCancelToWalkCancel, \S\ref{sec:oracle}):
+an explicit counterexample (alternating multipliers $\{2,3\} \bmod 5$
+with $\chi(2) = i$) achieves multiplier cancellation yet
+$|W_K| = \Theta(K)$, and is compatible with all EM structural
+properties.  The chain therefore breaks as:
+\[
+  \mathrm{SD}
+  \;\xrightarrow{\text{proved}}\;
+  \text{a.a.\ multiplier cancellation}
+  \;\xrightarrow{\text{\#117}}\;
+  \text{a.a.\ walk cancellation}
+  \;\xrightarrow{\text{proved}}\;
+  \text{a.a.\ GenMC}.
+\]
+The last arrow composes the Weyl bridge with
+Theorem~\ref{thm:gen-mc}; the first arrow is
+Theorem~\ref{thm:sd-cancel}; the middle arrow is the
+marginal/joint barrier, which persists orbit by orbit.
+Ensemble averaging helps with multiplier statistics but cannot cross
+this barrier: the walk character sum is a \emph{joint} statistic
+(depending on all previous multipliers through the partial product),
+while the multiplier character sum is a \emph{marginal} one.
+
+This is why the orbit hypothesis is CME rather than multiplier cancellation:
+CME goes directly from conditional multiplier equidistribution to
+walk cancellation (via the fiber decomposition and telescoping),
+bypassing MultCancelToWalkCancel entirely.
+\end{remark}
+
+\subsection{Self-Correcting Feedback and the Lyapunov Route}
+\label{sec:self-correcting}
+
+The routes of Sections~\ref{sec:ensemble}
+and~\ref{sec:character} target CME (conditional multiplier
+equidistribution) or its equivalents.  A structurally different route
+bypasses CME entirely: prove \textbf{visit equidistribution}~(VE)
+directly, and let the spectral identity of \S\ref{sec:visit-eqd} do
+the rest.
+
+Define the empirical frequency vector
+\[
+  f_c(N) \;=\; \frac{1}{N}\,\bigl|\{n < N : \walkZ{2}{q}{n} = c\}\bigr|,
+  \qquad c \in (\ZZ/q\ZZ)^\times,
+\]
+so that $f_c(N) = V_N(c)/N$ in the notation of the spectral identity
+(Theorem~\ref{thm:excess-energy}).
+VE asserts $f_c(N) \to 1/\varphi(q)$ for every~$c$.  By the
+Weyl criterion this is equivalent to walk character cancellation
+$\|\sum_{n<N} \chi(\walkZ{2}{q}{n})\|^2 = o(N^2)$, and the chain
+\[
+  \text{VE}
+  \;\xleftrightarrow[\text{proved}]{\text{Weyl}}\;
+  \text{WalkCharCancel}
+  \;\xrightarrow[\text{proved}]{\text{WeylHittingBridge}}\;
+  \text{MC}
+\]
+is fully machine-verified
+(\code{sve\_controls\_visit\_deviation}, \code{cancel\_weyl\_implies\_mc}).
+
+\medskip
+\noindent\textbf{VE is strictly different from CME.}\enspace
+CME controls the \emph{conditional} distribution of multipliers given
+walk position; VE controls the \emph{marginal} distribution of walk
+positions.  Neither implies the other: equidistributed walk positions
+do not force equidistributed conditional multipliers, and vice versa.
+This is not an equivalence collapse.
+
+\medskip
+\noindent\textbf{The self-correcting feedback mechanism.}\enspace
+The EM walk has a built-in negative feedback loop.  Suppose $f_c(N)$
+is anomalously large: the walk visits position~$c$ too often.
+At each such visit, $\Prod{2}(n) \equiv c \pmod{q}$, so
+$\Prod{2}(n) + 1 \equiv c + 1 \pmod{q}$.  The next multiplier is
+$\seq{}{n{+}1} = \minFac(\Prod{2}(n) + 1)$, an integer whose residue
+class mod~$q$ is determined by $\Prod{2}(n) + 1$.  Since $\Prod{2}(n)+1$
+is coprime to the bag, its least prime factor is a prime outside the
+bag, and once the bag has swallowed the small primes those factors are
+large and their residues mod~$q$ have no reason to prefer a class.
+(An earlier draft invoked ``Alladi's theorem'' here as unweighted
+equidistribution of the least prime factor of generic integers; that
+statement is false---Dead End~\#160---and the heuristic is the
+orbit-level one just given.)  If the multiplier at position~$c$ is
+approximately equidistributed, the transition $c \mapsto c \cdot m(n)$ scatters the
+walk away from~$c$ toward all other positions---a negative feedback
+that opposes further concentration at~$c$.
+
+This has been formalized via a Lyapunov function
+(\code{EM/Reduction/SelfCorrecting.lean}).  Define
+\[
+  L(N) \;=\; \sum_{c \in (\ZZ/q\ZZ)^\times}
+  \Bigl(V_c(N) - \frac{N}{\varphi(q)}\Bigr)^{\!2},
+\]
+where $V_c(N) = |\{n < N : \walkZ{2}{q}{n} = c\}|$ is the visit count.
+The one-step algebraic identity
+(\lean{EM/Reduction/SelfCorrecting.lean}{lyapunov\_one\_step})
+\[
+  L(N{+}1) = L(N) + 2\,d_{\walkZ{2}{q}{N}}(N) + \frac{q-2}{q-1},
+\]
+where $d_c(N) = V_c(N) - N/(q{-}1)$ is the visit deviation at
+position~$c$, telescopes to
+(\lean{EM/Reduction/SelfCorrecting.lean}{lyapunov\_telescope})
+\[
+  L(N) = 2\,R(N) + N\,\frac{q-2}{q-1},
+  \qquad R(N) = \sum_{n<N} d_{\walkZ{2}{q}{n}}(n).
+\]
+The cumulative drift $R(N)$ records how often the walk visits
+positions that are already over-represented.  Under a uniform
+multiplier measure, $\mathbb{E}[d_c] = 0$ for every position
+(\lean{EM/Reduction/SelfCorrecting.lean}{uniform\_multiplier\_zero\_drift}),
+and the transition matrix is doubly stochastic
+(\lean{EM/Reduction/SelfCorrecting.lean}{group\_walk\_doubly\_stochastic}),
+so the drift has zero bias.
+\textbf{SelfCorrectingDrift}~(SCD) asserts $R(N) = o(N^2)$, which
+gives $L(N) = o(N^2)$, hence VE, and therefore MC via the proved
+chain (\lean{EM/Reduction/SelfCorrecting.lean}{scd\_implies\_mc}).
+
+\medskip
+\noindent\textbf{SCD $\equiv$ SVE (Dead End~\#120).}\enspace
+The Lyapunov telescope $L(N) = 2R(N) + O(N)$ shows that SCD
+($R(N) = o(N^2)$) is algebraically equivalent to SVE ($L(N) = o(N^2)$)
+for each fixed prime~$q$ above the threshold.  The converse is also
+proved: SVE implies SCD above the SVE threshold
+(\lean{EM/Reduction/SelfCorrecting.lean}{sve\_implies\_scd\_above\_threshold}).
+Therefore SCD provides no new proof leverage beyond SVE; it is a
+Lyapunov reformulation that clarifies the dynamical mechanism
+(self-correcting feedback) but does not reduce the mathematical
+difficulty.
+
+\medskip
+\noindent\textbf{What remains.}\enspace
+The residual difficulty is orbit-specificity: $\Prod{2}(n) + 1$ is a
+specific value, not a random draw from its residue class, and no
+population statement supplies its least prime factor's residue.  The Lyapunov analysis shows that proving
+$R(N) = o(N^2)$ requires controlling how often the walk visits
+positions that are already over-represented---and this control depends
+on the specific EM orbit, not just generic multiplier statistics.
+This is the same orbit-specificity barrier
+from~\S\ref{sec:landscape}, now expressed at the level of single-step
+drift rather than long-range character cancellation.
+
+\medskip
+\noindent\textbf{Per-class bad-set escape (Dead End~\#121).}\enspace
+A natural attempt: use SMSB (SecondMomentSquaredBound) to bound the
+\emph{global} density of ``bad'' steps (those whose tail has large
+character energy), then argue that each walk-position class has
+proportionally few bad steps, then use SubgroupEscape to get escape
+from each class.  The per-class bad sets partition the total bad set
+(\lean{EM/Reduction/SMSB.lean}{badVisitsInClass\_card\_sum\_eq}),
+and pigeonhole guarantees \emph{some} class with small bad density
+(\lean{EM/Reduction/SMSB.lean}{exists\_class\_small\_bad\_set}).
+But MC requires the specific class~$-1$, not an existential over
+classes.  Targeting~$-1$ requires that bad steps do not concentrate
+in one class---a per-fiber density statement
+(BadSetEquidistribution) that is a consequence of CME\@.  Going from
+the marginal bad-density bound (what SMSB provides) to the conditional
+bound (what per-class escape requires) is blocked by the
+Marginal/Joint Barrier: the joint distribution of (walk position,
+badness) is controlled by CME, not by SMSB alone.
+
+\medskip
+\noindent\textbf{The LinearDrift weakening.}\enspace
+A weaker variant of SCD also suffices: \emph{LinearDrift}
+($|R(N)| \leq CN$) implies MC
+(\lean{EM/Reduction/WeakRecurrence.lean}{linearDrift\_implies\_mc})
+via a threshold-free route:
+LinearDrift~$\Rightarrow$~VisitGrowth~$\Rightarrow$~HH%
+~$\Rightarrow$~MC, where VisitGrowth ($V(a,N) \to \infty$ for
+all~$a$) bypasses the $\mathrm{FiniteMCBelow}$ threshold entirely.
+A free unconditional lower bound
+$R(N) \geq -N(q{-}2)/(2(q{-}1))$ is proved
+(\code{cumulativeDrift\_lower\_bound}), so only the one-sided upper
+bound $R(N) \leq CN$ is needed.
+
+\subsection{Tail Window Decorrelation}
+\label{sec:twd}
+
+The tail identity (Theorem~\ref{thm:tail-id}) connects temporal
+blocks of the standard EM orbit to the ensemble framework: the
+character sum over steps $jK{+}1, \ldots, (j{+}1)K$ of the standard
+orbit equals the generalized partial sum starting from $\Prod{2}(jK)$.
+This motivates decomposing the full character sum into non-overlapping
+\emph{windows}.
+
+\begin{definition}[\defname{WindowCharSum}]
+The character sum over the $j$-th window of length~$K$:
+$S_j = \sum_{k < K} \chi(\seq{2}(jK{+}k{+}1) \bmod q)$.
+\end{definition}
+
+\begin{theorem}[\lean{EM/Reduction/TailWindow.lean}{windowCharSum\_eq\_genSeqCharPartialSum}]
+$S_j$ equals the generalized character partial sum
+starting from $\Prod{2}(jK)$:
+$S_j = \sum_{k<K} \chi(\text{genSeq}(\Prod{2}(jK), k) \bmod q)$.
+\end{theorem}
+
+\begin{theorem}[\lean{EM/Reduction/TailWindow.lean}{charSum\_eq\_window\_sum}]
+\label{thm:window-decomp}
+The total character sum decomposes:
+$\sum_{k < JK} \chi(\seq{2}(k{+}1) \bmod q) = \sum_{j<J} S_j$.
+\end{theorem}
+
+Applying the variance identity
+(\lean{EM/Reduction/TailWindow.lean}{norm\_sq\_sum\_eq\_diag\_plus\_cross}),
+the total character energy decomposes as
+\[
+  \Bigl\|\sum_{j<J} S_j\Bigr\|^2
+  = \sum_{j<J} |S_j|^2
+  + 2 \sum_{j < l < J} \mathrm{Re}(S_j \cdot \overline{S_l}).
+\]
+The diagonal terms are bounded by $J \cdot K^2$
+(\lean{EM/Reduction/TailWindow.lean}{diag\_energy\_le}).
+The \emph{cross terms}---the off-diagonal correlations between
+windows at different temporal positions---are the new quantity of
+interest.
+
+\begin{property}[\defname{TailWindowDecorrelation} (\abbr{TWD})]
+The average absolute cross term between non-overlapping windows
+vanishes as the window size~$K$ grows:
+\[
+  \frac{1}{J^2} \sum_{j < l < J}
+  |\mathrm{Re}(S_j \cdot \overline{S_l})| \to 0.
+\]
+\end{property}
+
+\noindent\emph{As stated, TWD is false} (Dead End~\#156,
+\lean{EM/Ensemble/UncenteredRefutations.lean}{not\_tailWindowDecorrelation}):
+it quantifies over all $\chi$ with $\|\chi\| \le 1$, and for
+$\chi \equiv 1$ two windows of length~$K$ have cross term~$K^2$; the
+bridge \code{TWDImpliesCCSB} therefore holds vacuously
+(\code{twdImpliesCCSB\_vacuous}) and is retired as an open point.  The
+centered version---nontrivial Dirichlet characters---is the intended
+temporal statement, and the discussion below is about it.
+
+\begin{theorem}[\lean{EM/Reduction/TailWindow.lean}{twd\_implies\_mc\_from\_bridge}]
+$\mathrm{TWDImpliesCCSB} + \mathrm{TWD}
+\;\Longrightarrow\; \MC$.
+\end{theorem}
+
+\noindent The proof composes the open bridge TWDImpliesCCSB with the
+proved chain CCSB~$\Rightarrow$~MC\@.  The bridge TWDImpliesCCSB
+would follow from TWD by choosing $K = \lceil 1/\varepsilon\rceil$:
+the diagonal contributes $N \cdot K = O(\varepsilon^{-1} N)$ while the
+cross terms contribute $O(\varepsilon N^2)$, giving
+$\|S(N)\|^2 = O(\varepsilon N^2)$ for all~$\varepsilon > 0$, hence CCSB\@.
+
+\begin{remark}[TWD vs.\ ensemble decorrelation]
+\label{rem:twd-vs-ensemble}
+TWD is a \emph{temporal} decorrelation statement about the standard EM
+orbit: windows far apart in the sequence should have nearly
+independent character sums.  The physical intuition is that the
+accumulator $\Prod{2}(jK)$ grows super-exponentially, so the starting
+points of consecutive windows are extremely different in magnitude,
+making it hard for any fixed modulus~$q$ to see systematic correlation
+between them.
+
+This contrasts with the \emph{fiber} decorrelation used in the
+variance route (\S\ref{sec:variance-route}): there, one averages over
+squarefree starting points at two fixed time steps $j, k$.  TWD
+averages over time windows at the single starting point $n = 2$.  The
+two approaches face different barriers: the variance route faces the
+orbit-specificity barrier (density-one results cannot pin down $n=2$),
+while TWD faces the temporal-correlation barrier (consecutive windows
+share the accumulator prefix $\Prod{2}(jK)$).
+
+The file \code{EM/Reduction/TailWindow.lean} (477~lines, zero
+\code{sorry}) formalizes the window definitions, the tail identity
+connection, the variance identity, the diagonal and cross-term bounds,
+and the conditional chain TWD~$\Rightarrow$~CCSB~$\Rightarrow$~MC\@.
+\end{remark}

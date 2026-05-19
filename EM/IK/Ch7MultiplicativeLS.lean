@@ -418,7 +418,6 @@ theorem als_reindex (N : ℕ) (a : Fin N → ℂ)
   congr 1; congr 1
   apply Finset.sum_congr rfl; intro n _
   congr 1
-  rw [eAN_eq_root_eAN]
   congr 1; push_cast; ring
 
 set_option maxHeartbeats 800000 in
@@ -428,8 +427,8 @@ set_option maxHeartbeats 800000 in
     Proof: Gauss expansion + Parseval orthogonality + ALS at evaluation points b/p. -/
 theorem als_implies_mls_prime : AdditiveLargeSieve → MultiplicativeLargeSievePrime := by
   intro hals p hp_prime N hN a
-  haveI : Fact (Nat.Prime p) := ⟨hp_prime⟩
-  haveI : NeZero p := ⟨hp_prime.ne_zero⟩
+  have : Fact (Nat.Prime p) := ⟨hp_prime⟩
+  have : NeZero p := ⟨hp_prime.ne_zero⟩
   have hp_pos : (0 : ℝ) < (p : ℝ) := Nat.cast_pos.mpr hp_prime.pos
   -- Define exponential sums
   set S : (ZMod p)ˣ → ℂ := fun (b : (ZMod p)ˣ) =>

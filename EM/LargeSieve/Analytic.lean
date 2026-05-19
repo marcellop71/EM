@@ -219,7 +219,7 @@ theorem isPrimitive_of_prime_nontrivial {p : ℕ} [hp : Fact (Nat.Prime p)]
   have hcond_dvd := conductor_dvd_level χ
   rcases hp'.eq_one_or_self_of_dvd (conductor χ) hcond_dvd with h1 | hp_eq
   · -- conductor χ = 1 implies χ = 1, contradicting hχ
-    exact absurd ((eq_one_iff_conductor_eq_one hp0).mpr h1) hχ
+    exact absurd (eq_one_iff_conductor_eq_one.mpr h1) hχ
   · exact hp_eq
 
 /-- The standard additive character on ZMod q evaluated at k equals eAN(k.val / q). -/

@@ -73,7 +73,7 @@ instance [Finite G] : Finite (RotorState G k) :=
 
 /-! ## Eventually periodic -/
 
-theorem exists_lt_map_eq [Finite α] (f : ℕ → α) :
+theorem exists_lt_map_eq {α : Type*} [Finite α] (f : ℕ → α) :
     ∃ m n, m < n ∧ f m = f n := by
   have h := not_injective_infinite_finite f
   simp only [Injective] at h
@@ -85,7 +85,7 @@ theorem exists_lt_map_eq [Finite α] (f : ℕ → α) :
 
 /-- Any iteration of a function on a finite type is eventually periodic:
     there exist a tail length `μ` and period `T > 0` such that `f^[μ + T] x = f^[μ] x`. -/
-theorem eventually_periodic [Finite α] (f : α → α) (x : α) :
+theorem eventually_periodic {α : Type*} [Finite α] (f : α → α) (x : α) :
     ∃ μ T, 0 < T ∧ f^[μ + T] x = f^[μ] x := by
   obtain ⟨m, n, hmn, heq⟩ := exists_lt_map_eq (fun i => f^[i] x)
   refine ⟨m, n - m, Nat.sub_pos_of_lt hmn, ?_⟩

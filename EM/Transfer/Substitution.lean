@@ -218,17 +218,14 @@ theorem substitution_principle_implies_ccsb (hsp : SubstitutionPrinciple) :
 /-- **All routes to MC — augmented**: adding the SP route to the existing
     landscape of CME-based reductions.
 
-    - DSL:  PE → CME → MC
     - CRT:  PCE + Bridge → OCE = CME → MC
     - EMD:  EMD + EMDImpliesCME → CME → MC
     - SP:   SubstitutionPrinciple = CME → MC  (new) -/
 theorem all_routes_to_mc_with_sp :
     (SubstitutionPrinciple → MullinConjecture) ∧
-    (DeterministicStabilityLemma → PopulationEquidist → MullinConjecture) ∧
     (CRTPointwiseTransferBridge → PopulationConditionalEquidist → MullinConjecture) ∧
     (EMDImpliesCME → EMDirichlet → MullinConjecture) :=
   ⟨substitution_principle_implies_mc,
-   fun hdsl hpe => pe_dsl_implies_mc hpe hdsl,
    fun hbridge hpce => pce_bridge_implies_mc hpce hbridge,
    fun hcme hemd => emd_cme_implies_mc hcme hemd⟩
 

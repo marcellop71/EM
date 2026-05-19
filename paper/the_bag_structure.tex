@@ -1,0 +1,516 @@
+%% =========================================================================
+\section{The Bag-Theoretic Structure of the EM Dynamics}
+\label{sec:bag}
+%% =========================================================================
+It is interesting to view the EM sequence as a dynamical system on bags of primes.
+The state of the Euclid--Mullin construction at step~$n$ is fully captured
+by the \emph{bag} (finite set) of primes collected so far:
+$S_n = \{\seq{2}(0), \seq{2}(1), \ldots, \seq{2}(n)\}$.
+The dynamics is a deterministic map on finite subsets of primes:
+\[
+S_{n+1} = S_n \cup \{\min \mathcal{F}(S_n)\},
+\]
+where $\mathcal{F}(S) = \text{PrimeFactors}(\prod S + 1)$ produces the
+\emph{factor bag} of the Euclid number $E_n = \Prod{2}(n) + 1$.
+
+The trajectory is entirely determined by $S_0 = \{2\}$.  The Markov
+property holds: the future depends only on the current bag, not on the
+order in which its elements were assembled.  The product
+$\Prod{2}(n) = \prod S_n$ is a \emph{lossless encoding} of the bag (by
+unique factorization of the squarefree integer~$\Prod{2}(n)$), and the
+order of insertion is forgotten.
+
+\paragraph{The pipeline: from bag to next prime.}
+The selection of the next prime passes through a pipeline of operations,
+each with distinct information-theoretic character:
+\[
+S_n \;\xrightarrow[\text{lossless}]{\prod(\cdot)}\;
+\Prod{2}(n) \;\xrightarrow[+1]{\text{shift}}\;
+\Prod{2}(n)+1 \;\xrightarrow[\text{factor}]{}\;
+\mathcal{F}(S_n) \;\xrightarrow[\text{compress}]{\min}\;
+\seq{2}(n+1).
+\]
+
+\emph{Stage~1: Product (lossless).}  The map $S_n \mapsto \Prod{2}(n)$ is
+an injection (on sets of distinct primes), encoding ${\sim}\, n \log n$
+bits of bag information into a single integer of ${\sim}\, 2^n$ digits.
+This stage \emph{expands} the representation while preserving all
+information.
+
+\emph{Stage~2: The $+1$ shift (multiplicative $\to$ additive).}  The map
+$\Prod{2}(n) \mapsto \Prod{2}(n)+1$ is the critical bridge between two worlds.
+The integer~$\Prod{2}(n)$ lives in the multiplicative world: its structure
+(as a product of known primes) is completely understood.  The
+integer~$\Prod{2}(n)+1$ lives in the additive world: its factorization
+bears no algebraic relationship to that of~$\Prod{2}(n)$, beyond the
+guaranteed coprimality $\gcd(\Prod{2}(n),\, \Prod{2}(n)+1) = 1$.  This shift
+is the \emph{source of mixing} in the dynamics.
+
+\emph{Stage~3: Factorization (revealing the new bag).}  The factorization
+$\Prod{2}(n)+1 = p_1^{a_1} \cdots p_k^{a_k}$ reveals the factor bag
+$\mathcal{F}(S_n) = \{p_1, \ldots, p_k\}$.  This step is formally
+lossless, but computationally opaque: predicting $\mathcal{F}(S_n)$ from
+$S_n$ requires factoring a number of ${\sim}\, 2^n$ digits.
+
+\emph{Stage~4: Minimum (catastrophic compression).}  The map
+$\mathcal{F}(S_n) \mapsto \min \mathcal{F}(S_n)$ discards all but the
+smallest element of the factor bag.  The compression ratio is
+exponential: the input has ${\sim}\, 2^n$ bits; the output has $O(n)$
+bits.  The composition of stages~2--4 is the \emph{minFac bottleneck}:
+an information-destroying channel that maps ${\sim}\, 2^n$ bits to
+$O(n)$ bits through arithmetically chaotic operations.
+
+\paragraph{The orthogonal bag property.}
+A fundamental structural fact distinguishes the factor bag
+$\mathcal{F}(S_n)$ from the current bag~$S_n$:
+
+\begin{proposition}[Orthogonal bags]
+$\mathcal{F}(S_n) \cap S_n = \emptyset$.
+That is, the primes dividing $\Prod{2}(n)+1$ are entirely disjoint from
+the primes in the current bag.
+\end{proposition}
+
+\begin{proof}
+For any $p \in S_n$: $p \mid \Prod{2}(n)$, hence
+$\Prod{2}(n)+1 \equiv 1 \pmod{p}$, so $p \nmid \Prod{2}(n)+1$, i.e.\
+$p \notin \mathcal{F}(S_n)$.
+\end{proof}
+
+This is the Euclidean coprimality at the heart of the construction, but
+its bag-theoretic formulation reveals its dynamical significance: at each
+step, the factorization produces a \emph{fresh sample} from the
+complementary set $\mathbb{P} \setminus S_n$.  The new bag
+$\mathcal{F}(S_n)$ contains no ``recycled'' primes---every element is
+drawn from the universe of primes not yet seen.
+
+Moreover, $\Prod{2}(n)$ is \emph{squarefree} (a product of distinct primes),
+so $S_n$ is genuinely an unordered set with no multiplicities.  The
+accumulator~$\Prod{2}(n)$ is the unique squarefree integer with prime
+support exactly~$S_n$.
+
+\paragraph{The CRT perspective.}
+The Chinese Remainder Theorem provides the natural coordinate system for
+the bag dynamics.  The integer $\Prod{2}(n)$ is determined by its CRT
+vector:
+\[
+\mathbf{c}(n) = (\Prod{2}(n) \bmod 2,\;
+\Prod{2}(n) \bmod 3,\; \Prod{2}(n) \bmod 5,\; \ldots)
+\]
+indexed by all primes.  For primes $p \in S_n$:
+$\Prod{2}(n) \bmod p = 0$ (since $p \mid \Prod{2}(n)$).  For primes
+$r \notin S_n$: $\Prod{2}(n) \bmod r = \prod_{p \in S_n} (p \bmod r)
+\in (\ZZ/r\ZZ)^\times$.
+
+The $+1$ shift maps $\mathbf{c}(n) \mapsto \mathbf{c}(n) + \mathbf{1}$
+componentwise.  The factorization of $\Prod{2}(n)+1$ is determined by which
+components satisfy $c_r(n) + 1 \equiv 0 \pmod{r}$, i.e., $c_r(n) = -1$.
+The minFac is the \emph{winner of a race} across CRT coordinates: the
+smallest prime $r \notin S_n$ for which $c_r(n) = -1$.  This race
+depends on all coordinates simultaneously, but each coordinate is
+determined independently (by CRT) from every other.
+
+\paragraph{Fiber structure and non-reconstructibility.}
+A natural question is whether the output of minFac carries information
+about the bag that produced it.  The answer is: almost none.
+
+\begin{proposition}[Massive many-to-one]
+For any prime~$q$ and any set size~$k$, the number of bags $T$ of $k$
+distinct primes satisfying $\minFac(\prod T + 1) = q$ grows
+exponentially in~$k$.
+\end{proposition}
+
+The constraints on such a bag~$T$ are purely modular:
+$\prod T \equiv -1 \pmod{q}$ (one congruence condition), plus
+$\prod T \not\equiv -1 \pmod{p}$ for each prime $p < q$ with
+$p \notin T$ (at most $\pi(q)$ non-congruence conditions).  The total
+information content of the output is $O(q)$~bits, while the bag carries
+${\sim}\, 2^k$~bits.  The fraction of information preserved is
+$O(q / 2^k) \to 0$ super-exponentially.  Consequently, the map
+$S \mapsto \minFac(\prod S + 1)$ is an \emph{exponentially lossy
+summarization} of the bag.
+
+\paragraph{Deterministic pseudorandomness.}
+The EM sequence is fully deterministic, yet exhibits pseudorandom
+behavior.  The pseudorandomness arises from the composition of two
+sources of arithmetic opacity:
+\begin{enumerate}[nosep]
+\item \emph{The $+1$ shift} moves from the multiplicative world (where
+  $\Prod{2}(n)$ is fully understood) to the additive world (where
+  $\Prod{2}(n)+1$ is arithmetically opaque).  The relationship between the
+  multiplicative structures of consecutive integers is the central
+  mystery of analytic number theory.
+\item \emph{The factoring step} reveals the prime structure of
+  $\Prod{2}(n)+1$, but this structure is computationally hard to predict
+  from~$\Prod{2}(n)$.  The computational difficulty of factoring is, in a
+  precise sense, the \emph{source of pseudorandomness} for the EM
+  sequence.
+\end{enumerate}
+Small changes to the bag (adding one prime~$p$) transform $\Prod{2}(n)$ to
+$\Prod{2}(n) \cdot p$ and hence $\Prod{2}(n)+1$ to $\Prod{2}(n) \cdot p + 1$, a
+completely different integer with a completely different factorization.
+The dynamics is \emph{sensitive to the bag contents}, analogous to
+sensitive dependence on initial conditions in chaotic systems, but
+operating through number-theoretic rather than geometric mechanisms.
+
+The orthogonal bag property reinforces this pseudorandomness: at each
+step, the factor bag is drawn from $\mathbb{P} \setminus S_n$, a set
+that has never been ``used'' in the construction.  Each step provides a
+genuinely fresh arithmetic input, preventing the buildup of systematic
+correlations.
+
+%% =========================================================================
+\subsection{What It Means to Be the Least Prime Factor}
+\label{sec:minfac}
+%% =========================================================================
+
+Every difficulty in this paper is a difficulty about $\minFac$.  It is
+worth analysing the operation directly rather than treating it as a
+black box that emits primes, because almost every structural fact in
+later sections---why congruence invariants have something to bite on
+(\S\ref{sec:min-max-dichotomy}), why the analytic toolkit is
+unavailable (\S\ref{sec:hard}), why the ensemble multiplier fails to
+equidistribute (\S\ref{sec:ensemble})---is a consequence of one of the
+six properties below.
+
+\paragraph{1.\ Algebraically, $\minFac$ is a minimum.}
+For $n, m > 1$,
+\[
+  \minFac(nm) \;=\; \min\bigl(\minFac(n),\, \minFac(m)\bigr),
+\]
+with \emph{no coprimality hypothesis}
+(\lean{EM/Meta/MarkovSieve.lean}{minFac\_mul\_eq\_min}).  So $\minFac$
+is a homomorphism from $(\NN_{>1}, \cdot)$ onto the idempotent,
+totally ordered semigroup $(\mathbb{P}, \min)$.  Three consequences.
+It is blind to multiplicity: $\minFac$ depends only on the \emph{set} of
+prime divisors, which is why the bag formalism of this section loses
+nothing.  It is monotone under divisibility in the wrong direction---
+$m \mid n$ gives $\minFac(n) \leq \minFac(m)$---so accumulating primes
+can only push the least factor \emph{down}.  And it is
+\emph{idempotent}: multiplication becomes minimum, so the multiplicative
+structure of the accumulator is visible to $\minFac$ in the crudest
+possible way.
+
+It is worth resisting the word \emph{tropical} here, because the
+resemblance is a coincidence of notation.  The genuine tropicalization
+of~$\ZZ$ is the valuation vector $n \mapsto (v_p(n))_p$, which sends
+multiplication to \emph{addition}---tropical multiplication---while the
+minimum is tropical \emph{addition}, arising from the ultrametric
+inequality.  $\minFac$ sends multiplication to the minimum, so it sits
+in the wrong slot; and its minimum is taken over the index
+set~$\mathbb{P}$ ordered by archimedean size, not over valuation values.
+$\minFac$ is a homomorphism of idempotent semilattices, not a valuation.
+Remark~\ref{rem:tropical} records what happens if one tries to run
+valuation-theoretic machinery on the EM step anyway.
+
+The dynamics does not live in that homomorphism.  The EM step applies
+$\minFac$ to $\Prod{2}(n) + 1$, and the $+1$ is precisely what destroys
+the compatibility: $\minFac$ of a product is controlled, $\minFac$ of a
+successor is not.  All the arithmetic content sits in that one shift.
+
+\begin{remark}[Why tropicalization sees only Euclid]
+\label{rem:tropical}
+The only general tool relating $v(a+b)$ to $v(a)$ and $v(b)$ is the
+ultrametric inequality together with its equality case:
+$v(a+b) \geq \min(v(a), v(b))$, with equality when $v(a) \neq v(b)$.
+Apply it to the EM step, with $a = \Prod{2}(n)$ and $b = 1$.
+
+For $r \in S_n$ we have $v_r(\Prod{2}(n)) \geq 1 \neq 0 = v_r(1)$, the
+equality case fires, and $v_r(\Prod{2}(n)+1) = 0$.  This is exactly the
+orthogonal bag property---Euclid's argument, recovered.
+
+For $r \notin S_n$ we have $v_r(\Prod{2}(n)) = 0 = v_r(1)$.  The equality
+case does not fire, and the inequality yields only
+$v_r(\Prod{2}(n)+1) \geq 0$, which is vacuous.  But $r \notin S_n$ is
+precisely the set of candidate \emph{new} primes.  So the valuation
+calculus reproduces Euclid's theorem exactly and is silent exactly where
+the conjecture lives; the degenerate case of the ultrametric inequality
+is not a corner case here but the whole of the interesting range.
+
+The function field analogue shows this is structural rather than an
+artifact of~$\ZZ$.  Over $\FF_p[t]$ the degree valuation is as
+well-behaved as one could ask, $\deg(fg) = \deg f + \deg g$, and the
+tropicalization of the EM step is the \emph{identity} on the only
+tropical coordinate:
+$\deg(\mathrm{ffProd}(n)+1) = \deg \mathrm{ffProd}(n)$
+(\lean{EM/FunctionField/Analog.lean}{ffProdPlusOne\_natDegree}).
+Finally, tropical geometry proper---Kapranov's theorem, balancing,
+amoebas---tropicalizes a \emph{family} over a valued field into a
+polyhedral complex, and MC concerns a single orbit of a non-algebraic
+map.  Passing to a family to obtain a polyhedral object is
+orbit-specificity (Dead End~\#90) once more.  Compare Dead End~\#128,
+which rules out p-adic \emph{geometry} (perfectoid spaces, diamonds,
+Hecke orbits) on the different ground that those frameworks require a
+fixed algebraic correspondence.
+\end{remark}
+
+\paragraph{2.\ As a condition, $\minFac$ is roughness---an open
+congruence condition.}
+By definition $\minFac(N) > y$ says exactly that $N$ is
+\defname{$y$-rough}: no prime below~$y$ divides it.  Hence
+\[
+  \minFac(N) = q
+  \quad\Longleftrightarrow\quad
+  q \mid N \ \text{ and }\ N \text{ is } q\text{-rough},
+\]
+a nonempty union of residue classes modulo
+$q \prod_{p<q,\ p \text{ odd}} p$
+(\lean{EM/Obstruction/NoInvariant.lean}{forcingModulus}) of density
+$\tfrac{1}{q}\prod_{p<q}(1 - 1/p) \sim e^{-\gamma}/(q\log q)$ by
+Mertens.  Two things follow, and they run in opposite directions.
+
+\emph{Positively}: the event ``$\minFac(N) \leq y$'' is decided by
+$N \bmod \prod_{p \leq y} p$.  Membership conditions for $\minFac$ are
+therefore \emph{visible to congruences}, at a modulus depending only on
+the threshold and not on~$N$.  This is why forcing states exist at all
+(\lean{EM/Obstruction/NoInvariant.lean}{ForcingState}), and hence why the
+No-Invariant Theorem has any bite: $\mathrm{Blocks}$ is a genuine
+constraint on a certificate precisely because capture by $\minFac$ is a
+congruence condition.
+
+\emph{Negatively}: an open congruence condition of positive density is
+exactly what a congruence invariant \emph{cannot} block.  The same
+visibility that makes forcing states exist makes them unavoidable
+(\S\ref{sec:no-invariant}).  For $\mathrm{maxFac}$ the appearance
+condition is $q$-smoothness, which is not a congruence condition at any
+modulus---and there the omission proofs exist.  The visibility of
+$\minFac$ to congruences is thus simultaneously the reason the min-side
+no-go holds and the reason it is only a no-go.
+
+\paragraph{3.\ What $\minFac$ throws away is the large part.}
+Write $N = \minFac(N) \cdot N'$.  The rule keeps the smallest prime and
+discards~$N'$, whose prime factors are all at least $\minFac(N)$.  In
+the EM dynamics this asymmetry becomes acute.  If a prime~$q$ never
+appears, then by injectivity only finitely many steps can select a prime
+below~$q$, so for all large~$n$ the Euclid number $\Prod{2}(n)+1$ is
+$q$-rough and the discarded cofactor is composed entirely of primes
+exceeding~$q$: a \emph{cofinite} set of admissible primes, on which no
+congruence datum is pinned.  Under $\mathrm{maxFac}$ the discarded part
+is the \emph{small} part, which coprimality has already confined to the
+finite set of omitted primes.
+
+Finite versus cofinite is the whole min/max asymmetry, and it is a
+theorem: a nontrivial real character is constant on suitable finite sets
+of primes but never on the primes above any bound
+(\lean{EM/Reciprocity/SymbolAlgebra.lean}{char\_non\_constancy}).  That
+single dichotomy explains why Cox--van der Poorten's reciprocity
+argument closes on the max side and why it cannot transfer
+(\S\ref{sec:reciprocity-frontier}).  It also locates what the
+obstruction programme leaves open: not congruence data at any modulus,
+fixed or growing, and not the size or factor count of the candidate, but
+invariants whose state is \emph{anatomical}---built from the largest
+prime factor rather than from residues (\S\ref{sec:proof-fragment}).
+
+\paragraph{4.\ Distributionally, $\minFac$ is dominated by the smallest
+primes---and still heavy-tailed.}
+On a population of shifted integers the law of $\minFac$ is of
+Buchstab--Dickman type.  The formalization carries the local densities
+for the shifted squarefree population as
+$g(r) = r/(r^2-1)$ (\lean{EM/Reduction/ShiftedDensity.lean}{sieveDensity})
+and assembles them into
+\lean{EM/Ensemble/FirstMoment.lean}{buchstabWeight}, with
+$g(2) \cdot 1 = 2/3$ at the first prime
+(\lean{EM/Ensemble/FirstMoment.lean}{buchstabWeight\_two}).
+
+For the EM shape the relevant population is the one with the correct
+parity---the accumulator is always even, so the candidate is always
+odd---and there the constants change.  On the family $\{2p : p$ prime$\}$
+the least factor of $2p+1$ equals~$\ell$ exactly when $p$ lies in one
+prescribed unit class mod~$\ell$ and avoids one mod each smaller odd
+prime, giving Dirichlet densities
+\[
+  w_\ell \;=\; \frac{1}{\ell-1}\prod_{3 \leq \ell' < \ell}
+    \frac{\ell'-2}{\ell'-1},
+  \qquad
+  w_3 = \tfrac12,\quad w_5 = \tfrac18,\quad w_7 = \tfrac1{16},\ \dots
+\]
+The value $w_3 = 1/2$ is proved
+(\lean{EM/Ensemble/MinFacShifted.lean}{tendsto\_minFacThree\_density});
+the general formula is the same computation and agrees with numerics to
+three digits for $\ell \leq 13$.  Half of this ensemble therefore has
+first multiplier exactly~$3$---so the multiplier does \emph{not}
+equidistribute over invertible classes, for any prime modulus
+$Q \geq 5$
+(\lean{EM/Ensemble/MinFacShifted.lean}{first\_multiplier\_not\_equidistributed}),
+and half of it is absorbed modulo~$3$ at the very first step.
+
+The tail runs the other way.  Since
+$\prod_{\ell' < y}(1 - 1/(\ell'-1)) \asymp 1/\log y$, the probability
+that $\minFac$ exceeds~$y$ decays only \emph{logarithmically}, so
+$\mathbb{E}[\log \minFac]$ diverges.  The two facts together are the
+signature of the sequence: overwhelmingly small in the bulk, with a tail
+heavy enough that enormous primes appear early---$a(7) = 6221671$ and
+$a(8) = 38709183810571$, while $41$ has not appeared in $51$ terms.
+$\minFac$ is small-biased and erratic at the same time, and any
+heuristic that models the multiplier as uniform on
+$(\ZZ/q\ZZ)^\times$ is wrong in both directions at once.
+
+\paragraph{5.\ Analytically, $\minFac$ has no Euler product.}
+$\minFac$ is neither multiplicative nor additive, and the Dirichlet
+series $\sum_n \minFac(n) n^{-s}$ admits no factorization.  The entire
+machinery of mean values of multiplicative functions---Hal\'asz's
+theorem, Landau--Selberg--Delange, Wirsing-type estimates---is therefore
+unavailable, not by scale mismatch but by type mismatch; the
+corresponding entries in the catalogue are Dead Ends~\#109 and~\#154.
+What remains is the sieve, and by property~2 the sieve sees $\minFac$
+exactly through roughness.  This is why the analytic content of the
+formalization is Dirichlet-density and sieve-theoretic rather than
+mean-value-theoretic, and why the one classical input the reduction
+chain needs is divergence of $\sum_{p \equiv a} 1/p$ in an invertible
+class rather than any statement about multiplicative averages.
+
+\paragraph{6.\ Dynamically, $\minFac$ is the greedy rule---and the
+generous one.}
+The minimum operation in Stage~4 admits a natural optimization
+interpretation.  Among all prime factors of $\Prod{2}(n)+1$, the minFac
+rule selects the one that increases $\log \Prod{2}$ by the least amount:
+\[
+\seq{2}(n+1) = \arg\min_{p \in \mathcal{F}(S_n)} \log p.
+\]
+This is a \emph{greedy algorithm for slow growth}: at each step, the
+accumulator grows as slowly as possible (given the constraint of
+selecting a prime factor of $\Prod{2}(n)+1$).
+
+Slow growth has a dynamical consequence.  Since $\Prod{2}(n)$ grows slowly
+(relative to the maxFac alternative), each target prime~$q$ receives
+\emph{more trials}---more steps during which $\Prod{2}(n)+1$ might be
+divisible by~$q$---before the accumulator becomes so large that the
+probability of $q$-divisibility becomes negligible.  The minFac rule
+maximizes the number of opportunities each prime has to enter the
+sequence.
+
+By contrast, the maxFac rule (selecting the largest prime factor) causes
+$\Prod{2}(n)$ to grow so rapidly that small primes quickly lose any chance
+of being selected, which is why the second Euclid--Mullin sequence
+misses specific primes (Cox--van der Poorten~\cite{CoxVdP1968}) and in
+fact infinitely many (Booker~\cite{Booker2012}).
+
+\paragraph{7.\ $\minFac$ is $0$-accessible.}
+We formalize the advantage of minFac over other selection rules.  Define
+a selection rule $\sigma\colon 2^{\mathbb{P}} \to \mathbb{P}$ mapping a
+nonempty set of primes to one of its elements.  Say $\sigma$ is
+\emph{$0$-accessible} for a prime~$q$ past the sieve gap if: whenever
+$q \in F$ and all primes $p < q$ have been screened, $\sigma(F) = q$.
+
+MinFac is $0$-accessible for every~$q$: past the sieve gap, all primes
+below~$q$ are excluded from $\mathcal{F}(S_n)$, so if
+$q \in \mathcal{F}(S_n)$, then $q = \min \mathcal{F}(S_n)$.  The event
+``$q$ divides $\Prod{2}(n)+1$'' is \emph{sufficient} for~$q$ to enter the
+sequence.
+
+MaxFac is not $0$-accessible: even if $q \mid \Prod{2}(n)+1$, a larger
+factor is selected instead, and the probability that~$q$ is the largest
+factor of a number of size ${\sim}\, 2^{2^n}$ decays faster than any
+polynomial.
+
+The $0$-accessibility of minFac ensures that the walk mod~$q$ hitting
+$-1$ is both necessary and sufficient for~$q$ to enter the sequence
+(past the sieve gap).  This reduces the question of whether~$q$ appears
+to a question about the walk alone, with no additional selection barrier.
+
+\paragraph{The seven properties, against $\mathrm{maxFac}$.}
+Collecting the contrast in one place; the entries in the right-hand
+column are what makes omission proofs possible for the second sequence.
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+ & $\boldsymbol{\minFac}$ & $\mathbf{maxFac}$ \\
+\midrule
+1.\ Algebra on products
+  & $\min$ & $\max$ \\
+2.\ Appearance condition
+  & open congruence & $q$-smooth: no modulus sees it \\
+3.\ Discarded cofactor
+  & large part, cofinite support & small part, finite support \\
+4.\ Typical value
+  & small-biased, heavy-tailed & near-maximal \\
+5.\ Analytic handle
+  & sieve only & sieve only \\
+6.\ Growth of accumulator
+  & slowest possible & fastest possible \\
+7.\ $0$-accessibility
+  & yes & no \\
+\midrule
+\textbf{Omission provable?}
+  & \textbf{no invariant can} & \textbf{yes, for infinitely many primes} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+Rows~2 and~3 are the load-bearing ones, and they pull in opposite
+directions.  Row~2 says $\minFac$ is the \emph{more visible} rule: its
+capture condition is congruential, which is what gives the min-side
+no-go theorems their content.  Row~3 says it is the \emph{less
+constrained} rule: what it discards is unbounded and arithmetically
+free.  A rule that is easy to see and impossible to pin is exactly the
+combination that yields a conjecture which is elementary to state,
+resistant to every classical technique, and---so far---provably immune
+to the one mechanism that settles its sibling.
+
+%% =========================================================================
+\subsection{What the Bag Determines About the Next Prime}
+\label{sec:bag-information}
+%% =========================================================================
+
+A recurring intuition about this dynamics is that the new prime has
+\emph{nothing to do} with the old ones: the $+1$ destroys the
+multiplicative structure of $\Prod{2}(n)$, and taking the least factor
+forgets what produced it.  The intuition is nearly right, and it is
+worth recording exactly how far---because it is correct in three precise
+senses, false in two, and the two failures are the entire content of the
+problem.
+
+\paragraph{Three senses in which it holds.}
+\emph{The multiplier ignores coordinates.}  The least factor of
+$\Prod{2}(n)+1$ is unchanged if the accumulator is altered at \emph{any}
+finite set of coordinates at which death does not occur
+(\lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance\_finset}): those
+residues are invisible to the selection.  \emph{Congruence data does not
+constrain it.}  From a free state, every unit of $\ZZ/m\ZZ$ is reachable
+in one transition
+(\lean{EM/Obstruction/NoInvariant.lean}{free\_transition}), so no residue
+datum mod~$m$ predicts the next multiplier's class.  \emph{No invariant
+of the killed classes blocks a prime.}  Congruence invariants at a fixed
+modulus, at the growing symbol modulus, stage-dependent ones, and ones
+weakened by size, $\omega$ or smoothness guards all fail
+(\S\ref{sec:min-max-dichotomy}).
+
+\paragraph{Two senses in which it fails---and these are the problem.}
+\emph{The new prime is not in the bag}
+(\lean{EM/Meta/BagInformation.lean}{seq\_not\_dvd\_prod\_succ}): no prime
+already collected divides the next Euclid number.  That is Euclid's
+argument, and it is a strong, permanent dependence of the new prime on
+the old ones.  \emph{At a missing prime it is bounded below}: past the
+stage at which all primes under~$q$ have appeared, injectivity forces
+every subsequent multiplier to exceed~$q$
+(\lean{EM/Equidist/OneHorizon.lean}{multipliers\_exceed}).
+
+So the honest statement is not ``nothing to do with'' but
+\emph{nothing beyond the exclusion and the roughness it forces}---and
+that conditional independence, stated distributionally, is precisely
+$\mathrm{CME}$ (Definition~\ref{def:cme}): open, and the sharpest
+sufficient condition known for MC\@.  The intuition, sharpened, is not
+adjacent to the conjecture; it is the conjecture.
+
+\begin{aside}
+\textbf{Independence is not uniformity.}  It is tempting to read the
+three positive senses as ``the next prime is random''.  It is not:
+on the correct-parity ensemble the first multiplier equals~$3$ for
+exactly half the starting points, and $5$ for an eighth
+(\S\ref{sec:minfac}).  The multiplier is wildly non-uniform while being
+(plausibly) independent of the bag, and any formalization asserting
+uniformity is refuted rather than merely unproved.  The assembled
+statement
+(\lean{EM/Meta/BagInformation.lean}{bag\_information\_landscape})
+carries this clause for exactly that reason.
+\end{aside}
+
+\noindent
+One scope warning.  The no-go results concern invariants whose
+\emph{state} is congruence data and proofs whose \emph{obligations} are
+weakened by guards.  An invariant whose state records \emph{anatomy}---
+$\omega$, the largest prime factor, smoothness---is a different object
+and is covered by none of them.  That is where the $\mathrm{maxFac}$
+omission proofs live, and it is what the programme leaves open.

@@ -47,7 +47,7 @@ open Classical in
 /-- MC implies MissingPrimes = ∅. -/
 theorem mc_implies_missing_empty (hmc : MullinConjecture) : MissingPrimes = ∅ := by
   ext p
-  simp only [MissingPrimes, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and]
+  simp only [MissingPrimes, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
   intro hp; push Not
   exact hmc p ((isPrime_iff_natPrime p).mpr hp)
 
@@ -78,8 +78,8 @@ open Classical in
 private theorem primes_eq_appeared_union_missing :
     {p : Nat | Nat.Prime p} = AppearedPrimes ∪ MissingPrimes := by
   ext p
-  simp only [Set.mem_setOf_eq, AppearedPrimes, Set.mem_union, Set.mem_range,
-    MissingPrimes, Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq, AppearedPrimes, Set.mem_union, Set.mem_range,
+    MissingPrimes, Set.mem_ofPred_eq]
   constructor
   · intro hp
     by_cases h : ∃ k, seq k = p
@@ -312,7 +312,7 @@ theorem jointSVE_implies_mmcsb (hjsve : JointSVE) : MultiModularCSB := by
   have hsve : SubquadraticVisitEnergy := by
     use 0
     intro q inst hge hq hne ε hε
-    haveI : Fact (Nat.Prime q) := inst
+    have : Fact (Nat.Prime q) := inst
     have hqp : Nat.Prime q := (isPrime_iff_natPrime q).mp hq
     have hQ : ∀ r ∈ ({q} : Finset ℕ), Nat.Prime r ∧ ∀ k, seq k ≠ r := by
       simp only [Finset.mem_singleton]; rintro r rfl; exact ⟨hqp, hne⟩

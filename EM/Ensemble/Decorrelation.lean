@@ -423,7 +423,7 @@ PE + CRT → FirstMomentStep (E[1/genSeq] → κ)
 ```
 
 Both chains ultimately reduce to:
-1. PE (provable from Dirichlet + sieve, proved in PopulationEquidistProof.lean)
+1. PE (provable from Dirichlet + sieve, proved in EM/Population/Proof.lean)
 2. CRT decorrelation (proved: `crt_multiplier_invariance`)
 3. A variance/concentration hypothesis bridging population to individual
 -/

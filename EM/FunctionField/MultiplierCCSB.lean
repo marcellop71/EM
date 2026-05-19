@@ -100,11 +100,12 @@ variable (p : ℕ) [hp : Fact (Nat.Prime p)]
     this as a Prop whose mathematical content is documented here.
 
     This is the function field analog of `ComplexCharSumBound` from
-    `LargeSieveSpectral.lean`.
+    `EM/Equidist/FourierB.lean`.
 
     Key difference from the integer case: over F_p[t], the POPULATION-level
     character cancellation is FREE from the Weil bound. The open content is
     whether the greedy SELECTION preserves this cancellation. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFMultiplierCCSB : Prop :=
   ∀ (d : FFEMData p) (Q : Polynomial (ZMod p)),
     Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -134,6 +135,7 @@ def FFMultiplierCCSB : Prop :=
     This is the function field analog of the fact that primes are
     equidistributed in residue classes (Dirichlet/PNT in APs). Over F_p[t],
     this is FREE; over Z, it requires WPNT. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def PopulationMultCCSB : Prop :=
   ∀ (Q : Polynomial (ZMod p)),
     Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -169,6 +171,7 @@ def PopulationMultCCSB : Prop :=
 
     Maps to Dead End #90 (orbit specificity). Does NOT map directly to
     Dead End #129 (cyclotomic/abelian monodromy is a different issue). -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def SelectionBiasNeutral : Prop :=
   ∀ (d : FFEMData p) (Q : Polynomial (ZMod p)),
     Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -201,6 +204,7 @@ def SelectionBiasNeutral : Prop :=
     Obstacle: even Weil II controls AVERAGE behavior over f, not the
     specific f = ffProd(n) + 1. This is the sequential gap from Section 11
     of FunctionFieldAnalog.lean. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def ConditionalCharEquidist : Prop :=
   ∀ (_d : FFEMData p) (Q : Polynomial (ZMod p)),
     Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -227,6 +231,7 @@ def ConditionalCharEquidist : Prop :=
     - Over F_p[t]: PE (free) + ConditionalEquidist (open) => FF-MC
     The function field gap is NARROWER (PE is free) but not CLOSED
     (ConditionalEquidist = FF-DSL remains). -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFDSLAnalog : Prop :=
   ∀ (_d : FFEMData p) (Q : Polynomial (ZMod p)),
     Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -265,7 +270,7 @@ def FFMCForLargeP (p₀ : ℕ) : Prop :=
     of every element, including -1.
 
     This is the function field analog of the CCSB => DH chain from
-    EquidistSelfCorrecting.lean + EquidistBootstrap.lean.
+    EM/Equidist/SelfCorrecting.lean + EM/Equidist/Bootstrap.lean.
 
     The chain: MultiplierCCSB => WalkCharCancel => WalkEquidist => DH.
 
@@ -627,7 +632,7 @@ FFMultiplierCCSB is a STEP-level hypothesis (character sums of individual
 multipliers cancel), while walk coverage needs WALK-level cancellation
 (character sums of walk positions cancel). The transfer requires the
 Weyl-to-walk bridge, which is the function field analog of the chain
-CCSB => walk equidist proved in EquidistSelfCorrecting.lean for the integer case.
+CCSB => walk equidist proved in EM/Equidist/SelfCorrecting.lean for the integer case.
 -/
 
 /-- Connection between FFMultiplierCCSB and the abstract walk coverage

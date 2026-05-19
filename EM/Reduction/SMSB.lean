@@ -399,7 +399,7 @@ section DeadEndCertificate
     **The attack**:
     1. Use SMSB to bound density of "bad" starting points globally
        (from `second_moment_squared_implies_chebyshev`, proved in
-       TailIdentityAttack.lean).
+       EM/Reduction/TailIdentity.lean).
     2. Argue each walk-position class has proportionally few bad steps.
     3. Use SubgroupEscape (proved) to get escape from each class.
 

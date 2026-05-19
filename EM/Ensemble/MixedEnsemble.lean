@@ -1,23 +1,24 @@
-import EM.Advanced.EpsilonRandomMC
+import EM.Stochastic.ReachableSets
 import EM.Ensemble.FirstMoment
 import EM.IK.Ch2
 
 /-!
-# Mixed Ensemble: Population Sieve Implies Almost All Mixed Hitting
+# Mixed Ensemble: PEAP Implies Almost All Mixed Hitting (Weak-FMCD Chain)
 
 ## Overview
 
-This file proves that under a population sieve hypothesis (PSCD),
-almost all squarefree starting points m coprime to q have
-`(-1 : ZMod q) ∈ reachableEver q m` for the mixed walk. This gives
+This file proves that under PEAP (`IK.PrimesEquidistributedInAP`, standard
+analytic number theory), almost all squarefree starting points m coprime to q
+have `(-1 : ZMod q) ∈ reachableEver q m` for the mixed walk. This gives
 almost-all MixedHitting -- bypassing Dead End #117 (MultCancelToWalkCancel).
 
 The key idea: if -1 is NOT reachable from m (with m coprime to q), then
 -1 ∉ reachableEver(q, m), and since -1 ≠ 0 in ZMod q (for q ≥ 2),
 the set R_inf misses a nonzero element. At step 0, all prime factors of
 m+1 are confined to the allowed factor set for this proper R_inf.
-The Population Sieve Confinement Decay (PSCD) hypothesis says confinement
-to any finset missing a nonzero element has density 0.
+The Population Sieve Confinement Decay (PSCD) property says confinement
+to any finset missing a nonzero element has density 0 -- and PSCD is
+PROVED from PEAP via the weak-FMCD chain (Parts 18-19).
 
 ### Correction Note (Session 247)
 The original PSCD required decay for ALL proper R (R ≠ Set.univ). This
@@ -27,36 +28,56 @@ to R that miss at least one NONZERO element, which suffices for the
 pigeonhole because hitting-failure m coprime to q have R_inf missing
 the nonzero element -1.
 
+## Structure
+
+* Parts 1-9: base infrastructure -- bridge to the generalized EM walk,
+  counting definitions, step-0 confinement, the PSCD definition, the
+  pigeonhole over proper finsets, and PSCD ⇒ trapped density → 0.
+* Part 10: `ForbiddenClassDivergent` and the PROVED bridge
+  `peap_implies_fcd_proved` (PEAP ⇒ every unit class has divergent ∑ 1/p).
+* Parts 11, 15: sieve infrastructure used by the weak-FMCD chain
+  (`excludedPrimesUpTo`, `excluded_sieve_product_vanishes`, per-class
+  counting lemmas).
+* Parts 18-19: the PROVED weak-FMCD chain. `weak_fmcd_proved` is an
+  unconditional elementary sieve bound; composed with FCD it gives
+  PSCD with NO sieve hypothesis: PEAP ⇒ PSCD ⇒ a.a. mixed hitting.
+
+The retired SieveUpperBound chain (Parts 12-14: `SieveUpperBound`,
+`sieve_product_vanishing_proved`, `peap_chain_implies_pscd`, ...) and the
+FMCD-conditional chain (Parts 15-17: `FixedModulusCoprimeDensity`,
+`fmcd_fcd_implies_pscd`, ...) are superseded by the weak-FMCD chain and
+archived in `EM/Archive/Ensemble/MixedEnsembleArchive.lean`. Part 14c
+(`sqfreeCount_ge_quarter_real/_nat`) moved to `EM/Ensemble/FirstMoment.lean`.
+
 ## Main Results
 
 ### Definitions
-* `PSCD q`                   -- Population Sieve Confinement Decay hypothesis
-* `sqfreeTrappedCount q X`   -- count of coprime-to-q squarefree m with -1 not reachable
+* `PSCD q`                    -- Population Sieve Confinement Decay
+* `sqfreeTrappedCount q X`    -- count of coprime-to-q squarefree m with -1 not reachable
 * `sqfreeConfinedCount q X R` -- count of squarefree m confined to factor set R
+* `ForbiddenClassDivergent q` -- every unit class mod q has divergent ∑ 1/p
+* `sqfreeSievedCount S X`     -- squarefree m in [1,X] with m+1 avoiding primes in S
+* `excludedPrimesUpTo c R Y`  -- primes ≤ Y in excluded factor residues
 
 ### Proved Theorems
 * `mixedWalkProd_minFac_eq_genProd` -- bridge: mixed walk = generalized EM walk
-* `allowedFactors_mono`             -- monotonicity of allowed factor sets
 * `step_zero_confinement`           -- trapped m has factors confined at step 0
-* `sqfreeConfinedCount_le`          -- confined count <= sqfreeCount
 * `trapped_le_sum_confined`         -- trapped count <= sum over finsets of confined
+* `zero_not_reachable_of_coprime_trapped` -- 0 ∉ R_∞ for trapped m
 * `pscd_implies_trapped_density_zero` -- PSCD implies trapped density -> 0
 * `pscd_implies_almost_all_mixed_hitting` -- PSCD implies almost all coprime-to-q hitting
 * `mixed_ensemble_landscape`        -- summary conjunction
+* `peap_implies_fcd_proved`         -- PEAP ⇒ ForbiddenClassDivergent
+* `excluded_sieve_product_vanishes` -- FCD ⇒ excluded sieve product → 0
+* `weak_fmcd_proved`                -- unconditional weak fixed-modulus sieve bound
+* `weak_fmcd_fcd_implies_pscd`      -- FCD alone ⇒ PSCD
+* `weak_fmcd_chain_implies_pscd`    -- PEAP alone ⇒ PSCD
+* `weak_fmcd_chain_implies_almost_all` -- PEAP ⇒ a.a. mixed hitting
+* `weak_fmcd_landscape`             -- summary of the unconditional reduction
 
 ### Open Hypotheses
-* `PSCD q` -- Population Sieve Confinement Decay
-
-## PSCD Reduction Chain (Session 249)
-
-The chain PEAP -> PSCD now has only 1 open hypothesis (SieveUpperBound):
-
-- PEAPImpliesForbiddenClassDivergent: PROVED (peap_implies_fcd_proved)
-- SieveUpperBound: OPEN (fundamental lemma of sieve theory)
-- SieveProductVanishing: PROVED (sieve_product_vanishing_proved)
-
-Composition: PEAP + SieveUpperBound ==> PSCD ==> a.a. mixed hitting.
-This is the strongest density result in the formalization.
+* `IK.PrimesEquidistributedInAP` (PEAP, = standard ANT) -- the SOLE remaining
+  hypothesis of the chain; everything downstream of it here is PROVED.
 -/
 
 noncomputable section
@@ -199,7 +220,7 @@ theorem walk_position_isUnit_of_coprime_trapped
     (hm1 : 1 ≤ m) (hneg : (-1 : ZMod q) ∉ reachableEver q m)
     (σ : MixedSelection) (hv : ValidMixedSelection m σ) (n : ℕ) :
     IsUnit (mixedWalkProd m σ n : ZMod q) := by
-  haveI : NeZero q := ⟨hq.ne_zero⟩
+  have : NeZero q := ⟨hq.ne_zero⟩
   -- Also show the accumulator is ≥ 1 at each step
   suffices h : IsUnit (mixedWalkProd m σ n : ZMod q) ∧ 1 ≤ mixedWalkProd m σ n from h.1
   induction n with
@@ -240,7 +261,7 @@ theorem zero_not_reachable_of_coprime_trapped
     {q m : ℕ} (hq : q.Prime) (hcop : Nat.Coprime m q)
     (hm1 : 1 ≤ m) (hneg : (-1 : ZMod q) ∉ reachableEver q m) :
     (0 : ZMod q) ∉ reachableEver q m := by
-  haveI : Fact (1 < q) := ⟨hq.one_lt⟩
+  have : Fact (1 < q) := ⟨hq.one_lt⟩
   intro h0
   rw [reachableEver, Set.mem_iUnion] at h0
   obtain ⟨n, hn⟩ := h0
@@ -311,7 +332,7 @@ omit [NeZero q] in
 /-- In ZMod q with q ≥ 2, (-1 : ZMod q) ≠ 0. -/
 private theorem neg_one_ne_zero_of_ge_two (hq2 : 2 ≤ q) :
     (-1 : ZMod q) ≠ (0 : ZMod q) := by
-  haveI : Fact (1 < q) := ⟨by omega⟩
+  have : Fact (1 < q) := ⟨by omega⟩
   exact neg_ne_zero.mpr one_ne_zero
 
 /-- Each trapped m (coprime to q, hitting failure) satisfies the confinement
@@ -398,7 +419,7 @@ theorem trapped_density_le_sum (q X : ℕ) [NeZero q] (hq : q.Prime)
 
     Proof: The trapped density is at most the sum of confined densities
     (pigeonhole). PSCD says each confined density tends to 0. The sum is
-    over finitely many terms, so it tends to 0 by `tendsto_finset_sum`.
+    over finitely many terms, so it tends to 0 by `tendsto_finsetSum`.
     Squeeze gives the conclusion. -/
 theorem pscd_implies_trapped_density_zero (q : ℕ) [NeZero q] (hq : q.Prime)
     (hPSCD : PSCD q) :
@@ -413,7 +434,7 @@ theorem pscd_implies_trapped_density_zero (q : ℕ) [NeZero q] (hq : q.Prime)
     have h0 : (0 : ℝ) = ∑ _ ∈ properFinsets q, (0 : ℝ) := by simp
     rw [h0]
     apply Filter.Tendsto.congr (fun _ => rfl)
-    apply tendsto_finset_sum
+    apply tendsto_finsetSum
     intro R hR
     obtain ⟨hR_nonzero, hR_zero⟩ := (Finset.mem_filter.mp hR).2
     exact hPSCD R hR_nonzero hR_zero
@@ -571,7 +592,7 @@ private theorem indicator_sum_ge_peap_sum (q N : ℕ) (a : ZMod q) [NeZero q] :
 theorem peap_implies_fcd_proved :
     IK.PrimesEquidistributedInAP → ∀ (q : ℕ), 2 ≤ q → ForbiddenClassDivergent q := by
   intro hPEAP q hq2 a ha_unit
-  haveI : NeZero q := ⟨by omega⟩
+  have : NeZero q := ⟨by omega⟩
   -- Get natural number representative and coprimality
   have ha_cop : Nat.Coprime a.val q := by
     rwa [← ZMod.isUnit_iff_coprime, ZMod.natCast_zmod_val]
@@ -635,502 +656,46 @@ def PEAPImpliesForbiddenClassDivergent : Prop :=
 
 end ForbiddenClassDivergence
 
-/-! ## Part 11: Sieve Product Definition and Bounds -/
+/-! ## Part 11: Sieve Factor Bounds
+
+`sieveProduct`, `sieveProduct_nonneg`, `sieveProduct_le_one` (used only by
+the retired SieveUpperBound chain) are archived in
+`EM/Archive/Ensemble/MixedEnsembleArchive.lean`. The two elementary factor
+bounds below are kept: Parts 15 and 18-19 use them. -/
 
 section SieveProduct
 
-/-- The "sieve product" for a finset R: the product over primes p ≤ X
-    with (p : ZMod q) not in R of (1 - 1/p). When the excluded primes
-    have divergent reciprocal sum, this product tends to 0. -/
-def sieveProduct (q X : ℕ) (R : Finset (ZMod q)) : ℝ :=
-  ∏ p ∈ (Finset.range (X + 1)).filter
-    (fun p => Nat.Prime p ∧ (p : ZMod q) ∉ (↑R : Set (ZMod q))),
-    (1 - (1 : ℝ) / p)
-
-/-- Each factor in the sieve product is nonneg (since p ≥ 2 for primes). -/
+/-- Each sieve factor (1 - 1/p) is nonneg (since p ≥ 2 for primes). -/
 private theorem one_sub_inv_nonneg_of_prime {p : ℕ} (hp : p.Prime) :
     0 ≤ 1 - (1 : ℝ) / p := by
   have : (2 : ℝ) ≤ p := by exact_mod_cast hp.two_le
   linarith [show (1 : ℝ) / p ≤ 1 / 2 from div_le_div_of_nonneg_left (by linarith) (by linarith) this]
 
-/-- Each factor in the sieve product is at most 1. -/
+/-- Each sieve factor (1 - 1/p) is at most 1. -/
 private theorem one_sub_inv_le_one_of_prime {p : ℕ} (hp : p.Prime) :
     1 - (1 : ℝ) / p ≤ 1 := by
   linarith [show 0 < (1 : ℝ) / p from div_pos one_pos (by exact_mod_cast hp.pos)]
 
-/-- The sieve product is nonneg. -/
-theorem sieveProduct_nonneg (q X : ℕ) (R : Finset (ZMod q)) :
-    0 ≤ sieveProduct q X R := by
-  apply Finset.prod_nonneg
-  intro p hp
-  exact one_sub_inv_nonneg_of_prime (Finset.mem_filter.mp hp).2.1
-
-/-- The sieve product is at most 1. -/
-theorem sieveProduct_le_one (q X : ℕ) (R : Finset (ZMod q)) :
-    sieveProduct q X R ≤ 1 := by
-  apply Finset.prod_le_one
-  · intro p hp; exact one_sub_inv_nonneg_of_prime (Finset.mem_filter.mp hp).2.1
-  · intro p hp; exact one_sub_inv_le_one_of_prime (Finset.mem_filter.mp hp).2.1
-
 end SieveProduct
 
-/-! ## Part 12: Sieve Upper Bound and Sieve Vanishing (Open Hypotheses) -/
+-- Parts 12-13 (SieveUpperBound, sieve_product_vanishing_proved, SieveProductVanishing,
+-- fcd_sub_spv_implies_pscd, peap_chain_implies_pscd,
+-- peap_chain_implies_almost_all_mixed_hitting) archived to
+-- EM/Archive/Ensemble/MixedEnsembleArchive.lean (superseded by the weak-FMCD chain).
 
-section SieveHypotheses
 
-/-- **Sieve Upper Bound**: The count of squarefree m in [1,X] whose
-    prime factors of m+1 are all confined to `allowedFactors(m mod q, R)`
-    is bounded by C * sqfreeCount(X) * sieveProduct(q, X, R).
+-- Part 14 (extended_mixed_ensemble_landscape) archived to
+-- EM/Archive/Ensemble/MixedEnsembleArchive.lean (superseded by weak_fmcd_landscape).
 
-    This is a consequence of the fundamental lemma of sieve theory
-    (Legendre/Brun sieve upper bound): the count of integers n ≤ X
-    all of whose prime factors avoid a residue class mod q is at most
-    C * X * prod_{excluded p ≤ X}(1 - 1/p), with C uniform in X.
+-- Part 14c (sqfreeCount_ge_quarter_real, sqfreeCount_ge_quarter_nat) moved to
+-- EM/Ensemble/FirstMoment.lean (lower-bound facts about sqfreeCount).
 
-    The constant C depends on q but not on X or R. -/
-def SieveUpperBound (q : ℕ) : Prop :=
-  ∀ (R : Finset (ZMod q)),
-    (∃ a : ZMod q, a ≠ 0 ∧ a ∉ (↑R : Set (ZMod q))) →
-    (0 : ZMod q) ∉ (↑R : Set (ZMod q)) →
-    ∃ C : ℝ, 0 < C ∧ ∀ X : ℕ,
-      (sqfreeConfinedCount q X R : ℝ) ≤ C * sqfreeCount X * sieveProduct q X R
+/-! ## Part 15: Per-Class Sieve Infrastructure
 
-/-- The sieve product equals a product over range with indicator factors. -/
-private theorem sieveProduct_eq_range_prod (q X : ℕ) (R : Finset (ZMod q)) :
-    sieveProduct q X R = ∏ n ∈ Finset.range (X + 1),
-      if (Nat.Prime n ∧ (n : ZMod q) ∉ (↑R : Set (ZMod q)))
-      then (1 - (1 : ℝ) / n) else 1 := by
-  rw [sieveProduct, ← Finset.prod_filter]
-
-/-- The indicator factor function is in [0, 1]. -/
-private theorem sieve_factor_nonneg (q : ℕ) (R : Finset (ZMod q)) (n : ℕ) :
-    0 ≤ (if (Nat.Prime n ∧ (n : ZMod q) ∉ (↑R : Set (ZMod q)))
-      then (1 - (1 : ℝ) / n) else 1) := by
-  split_ifs with h
-  · exact one_sub_inv_nonneg_of_prime h.1
-  · linarith
-
-private theorem sieve_factor_le_one (q : ℕ) (R : Finset (ZMod q)) (n : ℕ) :
-    (if (Nat.Prime n ∧ (n : ZMod q) ∉ (↑R : Set (ZMod q)))
-      then (1 - (1 : ℝ) / n) else 1) ≤ 1 := by
-  split_ifs with h
-  · exact one_sub_inv_le_one_of_prime h.1
-  · exact le_rfl
-
-/-- The gap `1 - sieve_factor(n)` dominates the class indicator `1/n`
-    for the missing class a: if a ∉ R and p is prime with p ≡ a mod q,
-    then p ∉ R, so the sieve factor at p is (1-1/p), giving gap 1/p. -/
-private theorem sieve_gap_dominates_class (q : ℕ) (R : Finset (ZMod q))
-    (a : ZMod q) (ha : a ∉ (↑R : Set (ZMod q))) (n : ℕ) :
-    (if (Nat.Prime n ∧ (n : ZMod q) = a) then (1 : ℝ) / n else 0) ≤
-    1 - (if (Nat.Prime n ∧ (n : ZMod q) ∉ (↑R : Set (ZMod q)))
-      then (1 - (1 : ℝ) / n) else 1) := by
-  by_cases hA : Nat.Prime n ∧ (n : ZMod q) = a
-  · -- n prime and n ≡ a mod q. Since a ∉ R, n ∉ R.
-    have hB : Nat.Prime n ∧ (n : ZMod q) ∉ (↑R : Set (ZMod q)) :=
-      ⟨hA.1, by rw [hA.2]; exact ha⟩
-    rw [if_pos hA, if_pos hB]
-    -- Goal: 1/n ≤ 1 - (1 - 1/n) = 1/n
-    linarith
-  · -- n not (prime and ≡ a): indicator = 0
-    rw [if_neg hA]
-    by_cases hB : Nat.Prime n ∧ (n : ZMod q) ∉ (↑R : Set (ZMod q))
-    · -- n ∉ R: gap = 1/n ≥ 0
-      rw [if_pos hB]
-      linarith [show 0 < (1 : ℝ) / n from div_pos one_pos (by exact_mod_cast hB.1.pos)]
-    · -- n ∈ R or not prime: gap = 0
-      rw [if_neg hB]; linarith
-
-/-- **Sieve product vanishing**: ForbiddenClassDivergent implies
-    the sieve product tends to 0 for any R missing a nonzero unit.
-
-    PROVED via `sparse_product_contraction`: the sieve product
-    ∏(1-1/p) over excluded primes has factors in [0,1] with
-    divergent gap sum (dominated by the divergent class-a reciprocal sum).
-    Reindexing: sieveProduct q X R = (∏ range(X+1) g)(X) where g
-    is the indicator factor function. -/
-theorem sieve_product_vanishing_proved (q : ℕ) :
-    ForbiddenClassDivergent q →
-    ∀ (R : Finset (ZMod q)),
-      (∃ a : ZMod q, a ≠ 0 ∧ IsUnit a ∧ a ∉ (↑R : Set (ZMod q))) →
-      Filter.Tendsto (fun X => sieveProduct q X R) Filter.atTop (nhds 0) := by
-  intro hFCD R ⟨a, _, ha_unit, ha_notR⟩
-  -- Define the sequential factor function
-  set g := fun n => if (Nat.Prime n ∧ (n : ZMod q) ∉ (↑R : Set (ZMod q)))
-    then (1 - (1 : ℝ) / n) else 1 with hg_def
-  -- g(n) ∈ [0, 1]
-  have hg_nonneg : ∀ k, 0 ≤ g k := fun k => sieve_factor_nonneg q R k
-  have hg_le_one : ∀ k, g k ≤ 1 := fun k => sieve_factor_le_one q R k
-  -- The gap 1 - g(n) is not summable (dominated by class-a indicator)
-  have hgap_not_summable : ¬Summable (fun k => 1 - g k) := by
-    intro hsummable
-    -- Class indicator
-    set f := fun n => if (Nat.Prime n ∧ (n : ZMod q) = a) then (1 : ℝ) / n else 0 with hf_def
-    have hf_nonneg : ∀ n, 0 ≤ f n := fun n => by simp only [hf_def]; split_ifs <;> positivity
-    -- f ≤ 1 - g pointwise
-    have hf_le : ∀ n, f n ≤ (1 - g n) := fun n =>
-      sieve_gap_dominates_class q R a ha_notR n
-    -- So f is also summable
-    have hf_summable : Summable f :=
-      Summable.of_nonneg_of_le hf_nonneg hf_le hsummable
-    -- But FCD says f is NOT summable
-    exact (hFCD a ha_unit) hf_summable
-  -- Apply sparse_product_contraction: ∏_{k < N} g(k) → 0
-  have hprod_vanish : Filter.Tendsto (fun N => ∏ k ∈ Finset.range N, g k)
-      Filter.atTop (nhds 0) :=
-    sparse_product_contraction g hg_nonneg hg_le_one hgap_not_summable
-  -- sieveProduct q X R = ∏_{k < X+1} g(k)
-  have heq : ∀ X, sieveProduct q X R = ∏ k ∈ Finset.range (X + 1), g k :=
-    fun X => sieveProduct_eq_range_prod q X R
-  -- Tendsto (fun X => sieveProduct q X R) = Tendsto (fun X => ∏ range(X+1) g)
-  -- = Tendsto ((fun N => ∏ range N g) ∘ (· + 1))
-  -- Since (· + 1) : ℕ → ℕ tends to atTop, composition gives the result
-  rw [show (fun X => sieveProduct q X R) = (fun N => ∏ k ∈ Finset.range N, g k) ∘ (· + 1)
-    from by ext X; simp [heq]]
-  exact hprod_vanish.comp (Filter.tendsto_atTop_atTop.mpr fun b => ⟨b, by omega⟩)
-
-/-- Backward-compatible alias: SieveProductVanishing as a Prop (now proved). -/
-def SieveProductVanishing (q : ℕ) : Prop :=
-  ForbiddenClassDivergent q →
-    ∀ (R : Finset (ZMod q)),
-      (∃ a : ZMod q, a ≠ 0 ∧ IsUnit a ∧ a ∉ (↑R : Set (ZMod q))) →
-      Filter.Tendsto (fun X => sieveProduct q X R) Filter.atTop (nhds 0)
-
-end SieveHypotheses
-
-/-! ## Part 13: Composition -- FCD + SUB + SPV implies PSCD -/
-
-section Composition
-
-variable {q : ℕ}
-
-/-- In ZMod p for p prime, every nonzero element is a unit. -/
-private theorem isUnit_of_ne_zero_prime (hq : q.Prime) (a : ZMod q)
-    (ha : a ≠ 0) : IsUnit a := by
-  haveI : Fact q.Prime := ⟨hq⟩
-  exact IsUnit.mk0 a ha
-
-/-- **Main composition**: FCD + SieveUpperBound + SieveProductVanishing
-    together imply PSCD.
-
-    For each proper R (misses nonzero a, does not contain 0):
-    1. a is a unit (q prime, a ≠ 0). By FCD, primes in class a have
-       divergent ∑ 1/p.
-    2. By SPV, sieveProduct(q, X, R) → 0.
-    3. By SUB, sqfreeConfinedCount ≤ C * sqfreeCount * sieveProduct.
-    4. Dividing: confined density ≤ C * sieveProduct → 0. -/
-theorem fcd_sub_spv_implies_pscd (hq : q.Prime)
-    (hFCD : ForbiddenClassDivergent q)
-    (hSUB : SieveUpperBound q)
-    (hSPV : SieveProductVanishing q) :
-    PSCD q := by
-  intro R hR h0R
-  obtain ⟨a, ha_ne, ha_notR⟩ := hR
-  have ha_unit : IsUnit a := isUnit_of_ne_zero_prime hq a ha_ne
-  -- Get the sieve upper bound constant C
-  obtain ⟨C, hC, hbound⟩ := hSUB R ⟨a, ha_ne, ha_notR⟩ h0R
-  -- Get sieve product vanishing
-  have hvanish : Filter.Tendsto (fun X => sieveProduct q X R)
-      Filter.atTop (nhds 0) :=
-    hSPV hFCD R ⟨a, ha_ne, ha_unit, ha_notR⟩
-  -- The target: C * sieveProduct → 0
-  have hCvanish : Filter.Tendsto (fun X => C * sieveProduct q X R)
-      Filter.atTop (nhds 0) := by
-    have h0 : (0 : ℝ) = C * 0 := by ring
-    rw [h0]
-    exact hvanish.const_mul C
-  -- Squeeze: 0 ≤ confined_density ≤ C * sieveProduct → 0
-  apply squeeze_zero
-  · -- Lower bound: density ≥ 0
-    intro X; exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
-  · -- Upper bound: density ≤ C * sieveProduct
-    intro X
-    by_cases hsc : sqfreeCount X = 0
-    · -- When sqfreeCount = 0, confined count is also 0
-      have hconf : sqfreeConfinedCount q X R = 0 := by
-        have := sqfreeConfinedCount_le q X R; omega
-      simp [hconf, hsc]
-      exact mul_nonneg (le_of_lt hC) (sieveProduct_nonneg q X R)
-    · -- When sqfreeCount > 0, divide the SUB bound
-      have hpos : (0 : ℝ) < sqfreeCount X := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hsc)
-      have h1 := hbound X
-      -- confined / sqfreeCount ≤ C * sqfreeCount * sieveProduct / sqfreeCount
-      --                       = C * sieveProduct
-      calc (sqfreeConfinedCount q X R : ℝ) / sqfreeCount X
-          ≤ (C * sqfreeCount X * sieveProduct q X R) / sqfreeCount X :=
-            div_le_div_of_nonneg_right h1 (le_of_lt hpos)
-        _ = C * sieveProduct q X R := by field_simp
-  · -- Limit: C * sieveProduct → 0
-    exact hCvanish
-
-/-- **PEAP chain (reduced)**: IK.PrimesEquidistributedInAP + SieveUpperBound
-    imply PSCD for all primes q.
-
-    PEAPImpliesForbiddenClassDivergent and SieveProductVanishing are now
-    PROVED, reducing the open hypotheses to just SieveUpperBound. -/
-theorem peap_chain_implies_pscd (hq : q.Prime)
-    (hPEAP : IK.PrimesEquidistributedInAP)
-    (hSUB : SieveUpperBound q) :
-    PSCD q :=
-  fcd_sub_spv_implies_pscd hq (peap_implies_fcd_proved hPEAP q hq.two_le)
-    hSUB (sieve_product_vanishing_proved q)
-
-/-- **PSCD then implies almost all mixed hitting** (already proved above).
-    The full chain: PEAP + SUB → PSCD → almost all mixed hitting. -/
-theorem peap_chain_implies_almost_all_mixed_hitting (hq : q.Prime)
-    (hPEAP : IK.PrimesEquidistributedInAP)
-    (hSUB : SieveUpperBound q) :
-    Filter.Tendsto
-      (fun X => (sqfreeTrappedCount q X : ℝ) / sqfreeCount X)
-      Filter.atTop (nhds 0) := by
-  haveI : NeZero q := ⟨hq.ne_zero⟩
-  exact pscd_implies_trapped_density_zero q hq (peap_chain_implies_pscd hq hPEAP hSUB)
-
-end Composition
-
-/-! ## Part 14: Extended Landscape -/
-
-section ExtendedLandscape
-
-/-- **Extended Mixed Ensemble Landscape**: Summary including the PEAP chain.
-
-    The reduction chain:
-    * IK.PrimesEquidistributedInAP (standard ANT = Wiener-Ikehara)
-      + SieveUpperBound (fundamental lemma of sieve theory, sole open hyp)
-      → PSCD
-      → almost all mixed hitting (trapped density → 0)
-
-    Proved bridges: PEAPImpliesForbiddenClassDivergent (PROVED),
-    SieveProductVanishing (PROVED). Sole open hypothesis: SieveUpperBound. -/
-theorem extended_mixed_ensemble_landscape (q : ℕ) [NeZero q] (hq : q.Prime)
-    (hPSCD : PSCD q) :
-    -- 1. PSCD implies trapped density → 0
-    (Filter.Tendsto
-      (fun X => (sqfreeTrappedCount q X : ℝ) / sqfreeCount X)
-      Filter.atTop (nhds 0))
-    ∧
-    -- 2. Sieve product is bounded in [0, 1]
-    (∀ X R, 0 ≤ sieveProduct q X R ∧ sieveProduct q X R ≤ 1)
-    ∧
-    -- 3. FCD + SUB → PSCD (SPV now proved, applied internally)
-    (ForbiddenClassDivergent q → SieveUpperBound q → PSCD q)
-    ∧
-    -- 4. PEAP + SUB → PSCD (FCD bridge + SPV now proved)
-    (IK.PrimesEquidistributedInAP → SieveUpperBound q → PSCD q) :=
-  ⟨pscd_implies_trapped_density_zero q hq hPSCD,
-   fun X R => ⟨sieveProduct_nonneg q X R, sieveProduct_le_one q X R⟩,
-   fun hFCD hSUB => fcd_sub_spv_implies_pscd hq hFCD hSUB (sieve_product_vanishing_proved q),
-   fun hPEAP hSUB => peap_chain_implies_pscd hq hPEAP hSUB⟩
-
-end ExtendedLandscape
-
-/-! ## Part 14c: Squarefree Count Lower Bound -/
-
-section SqfreeCountLower
-
-/-- The count of non-squarefree numbers in [1,X]. -/
-private def nonsqfreeCount (X : ℕ) : ℕ :=
-  ((Finset.Icc 1 X).filter (fun m => ¬Squarefree m)).card
-
-/-- Partition: sqfreeCount + nonsqfreeCount = X. -/
-private theorem sqfree_nonsqfree_partition (X : ℕ) :
-    sqfreeCount X + nonsqfreeCount X = X := by
-  unfold sqfreeCount nonsqfreeCount
-  rw [← Finset.card_union_of_disjoint (Finset.disjoint_filter_filter_not _ _ _),
-      Finset.filter_union_filter_not_eq]
-  simp [Nat.card_Icc]
-
-/-- Every non-squarefree number has a prime p with p^2 | m. -/
-private theorem exists_prime_sq_dvd_of_not_squarefree {m : ℕ} (hm : ¬Squarefree m) :
-    ∃ p, p.Prime ∧ p ^ 2 ∣ m := by
-  rw [Nat.squarefree_iff_prime_squarefree] at hm
-  push Not at hm
-  obtain ⟨p, hp, hdvd⟩ := hm
-  exact ⟨p, hp, by rwa [sq]⟩
-
-/-- Every non-squarefree m in [1,X] is a multiple of d^2 for some d in [2, sqrt X]. -/
-private theorem nonsqfree_subset_union_multiples (X : ℕ) :
-    (Finset.Icc 1 X).filter (fun m => ¬Squarefree m) ⊆
-      (Finset.Icc 2 (Nat.sqrt X)).biUnion (fun d =>
-        (Finset.Icc 1 X).filter (fun m => d ^ 2 ∣ m)) := by
-  intro m hm
-  simp only [Finset.mem_filter, Finset.mem_Icc] at hm
-  obtain ⟨⟨hm1, hmX⟩, hnsf⟩ := hm
-  obtain ⟨p, hp, hdvd⟩ := exists_prime_sq_dvd_of_not_squarefree hnsf
-  simp only [Finset.mem_biUnion, Finset.mem_Icc, Finset.mem_filter]
-  refine ⟨p, ⟨hp.two_le, ?_⟩, ⟨hm1, hmX⟩, hdvd⟩
-  rw [Nat.le_sqrt]
-  have hmul : p * p ∣ m := sq p ▸ hdvd
-  exact le_trans (Nat.le_of_dvd (by omega) hmul) hmX
-
-/-- The count of multiples of d^2 in [1,X] is at most X/d^2. -/
-private theorem multiples_of_sq_count_le (d X : ℕ) (_hd : 2 ≤ d) :
-    ((Finset.Icc 1 X).filter (fun m => d ^ 2 ∣ m)).card ≤ X / d ^ 2 := by
-  set d2 := d ^ 2
-  have hd2_pos : 0 < d2 := by positivity
-  -- Multiples of d2 in [1,X] are: d2, 2*d2, ..., (X/d2)*d2
-  -- Map m ↦ m/d2 gives injection into Finset.Icc 1 (X/d2)
-  have hle : ((Finset.Icc 1 X).filter (fun m => d2 ∣ m)).card ≤ (Finset.Icc 1 (X / d2)).card := by
-    apply Finset.card_le_card_of_injOn (· / d2)
-    · intro m hm
-      have hm' := Finset.mem_filter.mp (Finset.mem_coe.mp hm)
-      have hm_icc := Finset.mem_Icc.mp hm'.1
-      have hdvd := hm'.2
-      exact Finset.mem_coe.mpr (Finset.mem_Icc.mpr
-        ⟨Nat.div_pos (Nat.le_of_dvd (by omega) hdvd) hd2_pos,
-         Nat.div_le_div_right hm_icc.2⟩)
-    · intro a ha b hb hab
-      have ha_dvd := (Finset.mem_filter.mp (Finset.mem_coe.mp ha)).2
-      have hb_dvd := (Finset.mem_filter.mp (Finset.mem_coe.mp hb)).2
-      calc a = a / d2 * d2 := (Nat.div_mul_cancel ha_dvd).symm
-        _ = b / d2 * d2 := by congr 1
-        _ = b := Nat.div_mul_cancel hb_dvd
-  simp [Nat.card_Icc] at hle; omega
-
-/-- nonsqfreeCount X <= sum_{d=2}^{sqrt X} X/d^2 -/
-private theorem nonsqfreeCount_le_sum (X : ℕ) :
-    nonsqfreeCount X ≤
-      ∑ d ∈ Finset.Icc 2 (Nat.sqrt X), X / d ^ 2 := by
-  unfold nonsqfreeCount
-  calc ((Finset.Icc 1 X).filter (fun m => ¬Squarefree m)).card
-      ≤ ((Finset.Icc 2 (Nat.sqrt X)).biUnion (fun d =>
-          (Finset.Icc 1 X).filter (fun m => d ^ 2 ∣ m))).card :=
-        Finset.card_le_card (nonsqfree_subset_union_multiples X)
-    _ ≤ ∑ d ∈ Finset.Icc 2 (Nat.sqrt X),
-          ((Finset.Icc 1 X).filter (fun m => d ^ 2 ∣ m)).card :=
-        Finset.card_biUnion_le
-    _ ≤ ∑ d ∈ Finset.Icc 2 (Nat.sqrt X), X / d ^ 2 :=
-        Finset.sum_le_sum (fun d hd => multiples_of_sq_count_le d X (Finset.mem_Icc.mp hd).1)
-
-/-- Telescoping: sum_{d=3}^n (1/(d-1) - 1/d) = 1/2 - 1/n for n >= 3. -/
-private theorem telescope_sum_eq (n : ℕ) (hn : 3 ≤ n) :
-    ∑ d ∈ Finset.Icc 3 n, (1 / ((d : ℝ) - 1) - 1 / d) = 1 / 2 - 1 / n := by
-  induction n with
-  | zero => omega
-  | succ n ih =>
-    by_cases hn3 : n + 1 = 3
-    · -- Base case: n = 2, n+1 = 3
-      have hn2 : n = 2 := by omega
-      subst hn2
-      simp only [Finset.Icc_self, Finset.sum_singleton]
-      norm_num
-    · have hn_ge3 : 3 ≤ n := by omega
-      rw [show Finset.Icc 3 (n + 1) = Finset.Icc 3 n ∪ {n + 1} from by
-        ext d; simp only [Finset.mem_union, Finset.mem_Icc, Finset.mem_singleton]; omega]
-      rw [Finset.sum_union (by
-        simp only [Finset.disjoint_left, Finset.mem_Icc, Finset.mem_singleton]; omega)]
-      rw [Finset.sum_singleton, ih hn_ge3]
-      have hn_pos : (0 : ℝ) < (n : ℝ) := by exact_mod_cast show 0 < n by omega
-      have hn1_pos : (0 : ℝ) < ((n : ℝ) + 1) := by linarith
-      -- Goal: 1/2 - 1/n + (1/(↑(n+1) - 1) - 1/↑(n+1)) = 1/2 - 1/↑(n+1)
-      -- Simplify ↑(n+1) to ↑n + 1 and ↑(n+1) - 1 to ↑n
-      have hcast1 : ((n + 1 : ℕ) : ℝ) = (n : ℝ) + 1 := by push_cast; ring
-      rw [hcast1]
-      have hsimp : (↑n + 1 : ℝ) - 1 = (↑n : ℝ) := by ring
-      rw [hsimp]
-      field_simp
-      ring
-
-/-- Key real bound: sum_{d=2}^D 1/d^2 < 3/4 for all D >= 2.
-    Proof: for d >= 3, 1/d^2 <= 1/(d*(d-1)) = 1/(d-1) - 1/d.
-    Telescoping gives sum_{d=3}^D = 1/2 - 1/D < 1/2.
-    Add 1/4 for d=2: total < 3/4. -/
-private theorem inv_sq_sum_lt_three_quarter (D : ℕ) (hD : 2 ≤ D) :
-    ∑ d ∈ Finset.Icc 2 D, (1 : ℝ) / (d : ℝ) ^ 2 < 3 / 4 := by
-  by_cases hD3 : D < 3
-  · -- D = 2: just the term 1/4
-    have : Finset.Icc 2 D = {2} := by
-      ext d; simp only [Finset.mem_Icc, Finset.mem_singleton]; omega
-    rw [this, Finset.sum_singleton]; norm_num
-  · push Not at hD3
-    -- Split off d=2
-    rw [show Finset.Icc 2 D = {2} ∪ Finset.Icc 3 D from by
-      ext d; simp only [Finset.mem_union, Finset.mem_singleton, Finset.mem_Icc]; omega]
-    rw [Finset.sum_union (by
-      simp only [Finset.disjoint_left, Finset.mem_singleton, Finset.mem_Icc]; intro a ha; omega)]
-    simp only [Finset.sum_singleton]
-    -- For d >= 3: 1/d^2 <= 1/(d*(d-1)) = 1/(d-1) - 1/d
-    have hbd : ∀ d ∈ Finset.Icc 3 D, (1 : ℝ) / d ^ 2 ≤ 1 / ((d : ℝ) - 1) - 1 / d := by
-      intro d hd
-      have hd3 : (3 : ℕ) ≤ d := (Finset.mem_Icc.mp hd).1
-      have hd_pos : (0 : ℝ) < (d : ℝ) := by positivity
-      have hd1_pos : (0 : ℝ) < (d : ℝ) - 1 := by
-        have : (1 : ℝ) ≤ (d : ℝ) - 1 := by
-          have : (2 : ℝ) ≤ (d : ℝ) := by exact_mod_cast show 2 ≤ d by omega
-          linarith
-        linarith
-      rw [div_sub_div _ _ (ne_of_gt hd1_pos) (ne_of_gt hd_pos)]
-      rw [div_le_div_iff₀ (pow_pos hd_pos 2) (mul_pos hd1_pos hd_pos)]
-      nlinarith [sq_nonneg ((d : ℝ) - 1)]
-    calc (1 : ℝ) / 2 ^ 2 + ∑ d ∈ Finset.Icc 3 D, 1 / (↑d) ^ 2
-        ≤ 1 / 2 ^ 2 + ∑ d ∈ Finset.Icc 3 D, (1 / ((↑d : ℝ) - 1) - 1 / ↑d) := by
-          linarith [Finset.sum_le_sum hbd]
-      _ = 1 / 4 + (1 / 2 - 1 / (D : ℝ)) := by
-          rw [telescope_sum_eq D hD3]; norm_num
-      _ < 3 / 4 := by
-          have hD_pos : (0 : ℝ) < D := by exact_mod_cast show 0 < D by omega
-          linarith [div_pos one_pos hD_pos]
-
-/-- Cast version: sum_{d=2}^D (X:R)/d^2 < 3/4 * X for D >= 2. -/
-private theorem sum_div_sq_lt (X D : ℕ) (hD : 2 ≤ D) (hX : 0 < X) :
-    ∑ d ∈ Finset.Icc 2 D, (X : ℝ) / (d : ℝ) ^ 2 < 3 / 4 * X := by
-  simp_rw [show ∀ d : ℕ, (X : ℝ) / (d : ℝ) ^ 2 = (X : ℝ) * (1 / (d : ℝ) ^ 2) from
-    fun d => by ring]
-  rw [← Finset.mul_sum]
-  have hX_pos : (0 : ℝ) < X := Nat.cast_pos.mpr hX
-  calc (X : ℝ) * ∑ d ∈ Finset.Icc 2 D, 1 / (↑d) ^ 2
-      < X * (3 / 4) := by nlinarith [inv_sq_sum_lt_three_quarter D hD]
-    _ = 3 / 4 * X := by ring
-
-/-- The squarefree count lower bound: sqfreeCount X >= X/4.
-
-    More precisely: (X : R) / 4 <= (sqfreeCount X : R).
-
-    Proof: non-squarefree numbers in [1,X] are covered by multiples of d^2
-    for d in [2, sqrt X]. Union bound + the fact that sum 1/d^2 < 3/4 gives
-    #{non-sf} < 3X/4, hence #{sf} > X/4. -/
-theorem sqfreeCount_ge_quarter_real (X : ℕ) (hX : 4 ≤ X) :
-    (X : ℝ) / 4 ≤ (sqfreeCount X : ℝ) := by
-  -- From the partition: sqfreeCount + nonsqfreeCount = X
-  have hpart := sqfree_nonsqfree_partition X
-  -- nonsqfreeCount <= sum X/d^2
-  have hnsf := nonsqfreeCount_le_sum X
-  -- Cast to R
-  have hnsf_real : (nonsqfreeCount X : ℝ) ≤
-      ∑ d ∈ Finset.Icc 2 (Nat.sqrt X), ((X / d ^ 2 : ℕ) : ℝ) := by exact_mod_cast hnsf
-  -- Each term: (X / d^2 : N) <= (X : R) / d^2
-  have hterm_le : ∑ d ∈ Finset.Icc 2 (Nat.sqrt X), ((X / d ^ 2 : ℕ) : ℝ) ≤
-      ∑ d ∈ Finset.Icc 2 (Nat.sqrt X), (X : ℝ) / (d : ℝ) ^ 2 := by
-    apply Finset.sum_le_sum; intro d _
-    have : ((X / d ^ 2 : ℕ) : ℝ) ≤ (X : ℝ) / (d ^ 2 : ℕ) := Nat.cast_div_le
-    rwa [Nat.cast_pow] at this
-  -- sqrt X >= 2
-  have hsqrt2 : 2 ≤ Nat.sqrt X := by rw [Nat.le_sqrt]; omega
-  -- The sum < 3X/4
-  have hsum_lt : ∑ d ∈ Finset.Icc 2 (Nat.sqrt X), (X : ℝ) / (d : ℝ) ^ 2 < 3 / 4 * X :=
-    sum_div_sq_lt X (Nat.sqrt X) hsqrt2 (by omega)
-  -- nonsqfreeCount < 3X/4
-  have hnsf_lt : (nonsqfreeCount X : ℝ) < 3 / 4 * X :=
-    lt_of_le_of_lt (le_trans hnsf_real hterm_le) hsum_lt
-  -- sqfreeCount = X - nonsqfreeCount (in R)
-  have hsf_eq : (sqfreeCount X : ℝ) = X - nonsqfreeCount X := by
-    have h := hpart
-    have : (sqfreeCount X + nonsqfreeCount X : ℝ) = (X : ℝ) := by exact_mod_cast h
-    linarith
-  linarith
-
-/-- Nat version: 4 * sqfreeCount X + 3 >= X for X >= 4. -/
-theorem sqfreeCount_ge_quarter_nat (X : ℕ) (hX : 4 ≤ X) :
-    X ≤ 4 * sqfreeCount X + 3 := by
-  by_contra h; push Not at h
-  have h1 : (X : ℝ) / 4 ≤ (sqfreeCount X : ℝ) := sqfreeCount_ge_quarter_real X hX
-  have h2 : (4 * sqfreeCount X + 3 : ℕ) < X := h
-  have h3 : (4 * (sqfreeCount X : ℝ) + 3 : ℝ) < (X : ℝ) := by exact_mod_cast h2
-  linarith
-
-end SqfreeCountLower
-
-/-! ## Part 15: Fixed-Modulus Coprime Density (Replacing SieveUpperBound) -/
+The FMCD-conditional theorems that lived here (`FixedModulusCoprimeDensity`,
+`sqfreeSievedCount_le`, `fmcd_fcd_implies_pscd`) are archived in
+`EM/Archive/Ensemble/MixedEnsembleArchive.lean`; the counting definitions
+and per-class lemmas below feed the weak-FMCD chain (Parts 18-19). -/
 
 section FMCD
 
@@ -1139,31 +704,11 @@ def sqfreeSievedCount (S : Finset ℕ) (X : ℕ) : ℕ :=
   ((Finset.Icc 1 X).filter (fun m => Squarefree m ∧
     ∀ p ∈ S, ¬(p ∣ (m + 1)))).card
 
-/-- **Fixed-Modulus Coprime Density**: For any FIXED finite set of primes S,
-    the fraction of squarefree m in [1,X] with gcd(m+1, ∏S) = 1
-    is eventually at most (∏_{p∈S}(1-1/p) + ε) * sqfreeCount(X).
+-- FixedModulusCoprimeDensity archived to EM/Archive/Ensemble/MixedEnsembleArchive.lean
+-- (superseded: weak_fmcd_proved eliminates the hypothesis).
 
-    This is MUCH simpler than SieveUpperBound:
-    - FMCD: fixed product ∏S, CRT + inclusion-exclusion
-    - SUB: growing sieve level, fundamental lemma (Brun/Selberg)
-
-    The proof is elementary: m+1 avoids all primes in S iff m+1 is coprime
-    to ∏S. By CRT (since ∏S is fixed), the integers coprime to ∏S have
-    density ∏(1-1/p) in any arithmetic progression. The squarefree
-    restriction preserves this ratio up to o(1) error. -/
-def FixedModulusCoprimeDensity : Prop :=
-  ∀ (S : Finset ℕ), (∀ p ∈ S, p.Prime) →
-    ∀ ε > 0, ∃ X₀ : ℕ, ∀ X ≥ X₀,
-      (sqfreeSievedCount S X : ℝ) ≤
-        (∏ p ∈ S, (1 - 1 / (p : ℝ)) + ε) * sqfreeCount X
-
-/-- sqfreeSievedCount ≤ sqfreeCount (dropping the coprimality condition). -/
-theorem sqfreeSievedCount_le (S : Finset ℕ) (X : ℕ) :
-    sqfreeSievedCount S X ≤ sqfreeCount X := by
-  apply Finset.card_le_card
-  intro m hm
-  simp only [Finset.mem_filter] at hm ⊢
-  exact ⟨hm.1, hm.2.1⟩
+-- sqfreeSievedCount_le archived to EM/Archive/Ensemble/MixedEnsembleArchive.lean
+-- (only consumer was the archived fmcd_landscape).
 
 /-- Count of squarefree m in [1,X] in a FIXED residue class c mod q
     where no prime in S divides m+1. All arithmetic on ℕ. -/
@@ -1252,7 +797,7 @@ theorem excluded_contains_unit_class {q : ℕ} [NeZero q] (hq : q.Prime)
     (_ha_ne : a ≠ 0) (ha_notR : a ∉ (↑R : Set (ZMod q)))
     {c : ZMod q} (hc_ne : c ≠ 0) :
     c⁻¹ * a ∈ excludedFactorResidues c R := by
-  haveI : Fact q.Prime := ⟨hq⟩
+  have : Fact q.Prime := ⟨hq⟩
   simp only [excludedFactorResidues, Finset.mem_filter, Finset.mem_univ, true_and]
   rw [show c * (c⁻¹ * a) = a from by rw [← mul_assoc, mul_inv_cancel₀ hc_ne, one_mul]]
   exact ha_notR
@@ -1262,7 +807,7 @@ theorem excluded_unit_isUnit {q : ℕ} [NeZero q] (hq : q.Prime)
     {a : ZMod q} (ha_ne : a ≠ 0)
     {c : ZMod q} (hc_ne : c ≠ 0) :
     IsUnit (c⁻¹ * a : ZMod q) := by
-  haveI : Fact q.Prime := ⟨hq⟩
+  have : Fact q.Prime := ⟨hq⟩
   exact IsUnit.mk0 _ (mul_ne_zero (inv_ne_zero hc_ne) ha_ne)
 
 /-- The excluded class reciprocal sum diverges. -/
@@ -1292,7 +837,7 @@ private theorem excluded_gap_not_summable {q : ℕ} [NeZero q] (hq : q.Prime)
 
 set_option linter.unusedSectionVars false in
 /-- The sieve product over excluded primes vanishes as Y → ∞. -/
-private theorem excluded_sieve_product_vanishes {q : ℕ} [NeZero q] (hq : q.Prime)
+theorem excluded_sieve_product_vanishes {q : ℕ} [NeZero q] (hq : q.Prime)
     {R : Finset (ZMod q)} {a : ZMod q}
     (ha_ne : a ≠ 0) (ha_notR : a ∉ (↑R : Set (ZMod q)))
     (_h0R : (0 : ZMod q) ∉ (↑R : Set (ZMod q)))
@@ -1326,235 +871,14 @@ private theorem excluded_sieve_product_vanishes {q : ℕ} [NeZero q] (hq : q.Pri
       (fun N => ∏ k ∈ Finset.range N, g k) ∘ (· + 1) from by ext Y; exact heq Y]
   exact hprod_vanish.comp (Filter.tendsto_atTop_atTop.mpr fun b => ⟨b, by omega⟩)
 
-/-- **Main theorem**: FMCD + FCD imply PSCD.
-
-    For each proper R (misses nonzero a, does not contain 0):
-    1. Decompose sqfreeConfinedCount over residue classes mod q.
-    2. For each class c != 0: confinement implies coprimality with
-       excluded primes (per-class monotonicity).
-    3. By FMCD, the sieved count is bounded.
-    4. The excluded sieve product vanishes (FCD gives divergent sum 1/p).
-    5. Sum over classes gives the conclusion. -/
-theorem fmcd_fcd_implies_pscd {q : ℕ} (hq : q.Prime)
-    (hFMCD : FixedModulusCoprimeDensity)
-    (hFCD : ForbiddenClassDivergent q) :
-    PSCD q := by
-  haveI : NeZero q := ⟨hq.ne_zero⟩
-  haveI : Fact q.Prime := ⟨hq⟩
-  intro R hR h0R
-  obtain ⟨a, ha_ne, ha_notR⟩ := hR
-  -- Use squeeze_zero: 0 ≤ density ≤ bound → 0 if bound → 0
-  -- We'll show: for each ε > 0, eventually density ≤ ε
-  -- First prove the density is nonneg
-  have hdensity_nonneg : ∀ X, 0 ≤ (sqfreeConfinedCount q X R : ℝ) / sqfreeCount X :=
-    fun X => div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
-  -- Setup
-  have hq_pos : (0 : ℝ) < q := by exact_mod_cast hq.pos
-  set nzc := (Finset.univ : Finset (ZMod q)).filter (· ≠ (0 : ZMod q))
-  have hnzc_ne : ∀ c ∈ nzc, c ≠ (0 : ZMod q) := fun c hc => (Finset.mem_filter.mp hc).2
-  -- Class 0: confined count is always 0
-  have hclass0 : ∀ X, sqfreeConfinedClassCount (0 : ZMod q) X R = 0 := by
-    intro X; apply Finset.card_eq_zero.mpr
-    apply Finset.filter_eq_empty_iff.mpr
-    intro m hmIcc
-    push Not; intro hsf hm0 hconf
-    have hempty : allowedFactors q (0 : ZMod q) (↑R : Set (ZMod q)) = ∅ := by
-      ext b; simp only [allowedFactors, Set.mem_setOf_eq, zero_mul,
-        Set.mem_empty_iff_false, iff_false]; exact h0R
-    have hm_ge : 1 ≤ m := (Finset.mem_Icc.mp hmIcc).1
-    obtain ⟨p, hp, hpdvd⟩ := Nat.exists_prime_and_dvd (show (m + 1 : ℕ) ≠ 1 by omega)
-    have hmem := hconf p hp (show p ∣ m.succ from hpdvd)
-    simp [hempty] at hmem
-  -- Use Metric.tendsto_atTop (need < ε, will get via (q-1)/q < 1)
-  rw [Metric.tendsto_atTop]
-  intro ε hε
-  have hε' : (0 : ℝ) < ε / (2 * q) := div_pos hε (mul_pos two_pos hq_pos)
-  -- Step 1: For each nonzero class c, sieve product vanishes
-  have hvanish : ∀ c : ZMod q, c ≠ 0 → ∃ Y₀ : ℕ, ∀ Y ≥ Y₀,
-      ∏ p ∈ excludedPrimesUpTo c R Y, (1 - 1 / (p : ℝ)) < ε / (2 * q) := by
-    intro c hc
-    have htend := excluded_sieve_product_vanishes hq ha_ne ha_notR h0R hc hFCD
-    rw [Metric.tendsto_atTop] at htend
-    obtain ⟨Y₀, hY₀⟩ := htend (ε / (2 * q)) hε'
-    refine ⟨Y₀, fun Y hY => ?_⟩
-    have h := hY₀ Y hY
-    rw [Real.dist_eq] at h
-    have hnn : 0 ≤ ∏ p ∈ excludedPrimesUpTo c R Y, (1 - 1 / (p : ℝ)) :=
-      Finset.prod_nonneg fun p hp => one_sub_inv_nonneg_of_prime (excludedPrimesUpTo_prime c R Y p hp)
-    rw [sub_zero] at h
-    rwa [abs_of_nonneg hnn] at h
-  -- Extract uniform Y for all nonzero classes
-  have hchoice : ∀ c ∈ nzc, ∃ Y₀, ∀ Y ≥ Y₀,
-      ∏ p ∈ excludedPrimesUpTo c R Y, (1 - 1 / (p : ℝ)) < ε / (2 * q) :=
-    fun c hc => hvanish c (hnzc_ne c hc)
-  set Yfun : ZMod q → ℕ := fun c =>
-    if hc : c ∈ nzc then (hchoice c hc).choose else 0
-  set Y := nzc.sup Yfun ⊔ 0
-  have hprod_small : ∀ c ∈ nzc,
-      ∏ p ∈ excludedPrimesUpTo c R Y, (1 - 1 / (p : ℝ)) < ε / (2 * q) := by
-    intro c hc
-    apply (hchoice c hc).choose_spec
-    have hYfun : Yfun c = (hchoice c hc).choose := dif_pos hc
-    calc (hchoice c hc).choose = Yfun c := hYfun.symm
-      _ ≤ nzc.sup Yfun := Finset.le_sup hc
-      _ ≤ Y := le_sup_left
-  -- Step 2: Apply FMCD to get X₀ for each class
-  have hfmcd_applied : ∀ c ∈ nzc, ∃ X₀, ∀ X ≥ X₀,
-      (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ) ≤
-        (∏ p ∈ excludedPrimesUpTo c R Y, (1 - 1 / (p : ℝ)) + ε / (2 * q)) *
-          sqfreeCount X :=
-    fun c hc => hFMCD _ (excludedPrimesUpTo_prime c R Y) (ε / (2 * q)) hε'
-  set Xfun : ZMod q → ℕ := fun c =>
-    if hc : c ∈ nzc then (hfmcd_applied c hc).choose else 0
-  set X₀ := nzc.sup Xfun ⊔ 1
-  refine ⟨X₀, fun X hX => ?_⟩
-  -- Each nonzero class: sievedCount ≤ ε/q * sqfreeCount
-  have hbound : ∀ c ∈ nzc,
-      (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ) ≤ ε / ↑q * sqfreeCount X := by
-    intro c hc
-    have hXge : X ≥ (hfmcd_applied c hc).choose := by
-      have : Xfun c = (hfmcd_applied c hc).choose := dif_pos hc
-      calc (hfmcd_applied c hc).choose = Xfun c := this.symm
-        _ ≤ nzc.sup Xfun := Finset.le_sup hc
-        _ ≤ X₀ := le_sup_left
-        _ ≤ X := hX
-    calc (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ)
-        ≤ (∏ p ∈ excludedPrimesUpTo c R Y, (1 - 1 / (p : ℝ)) + ε / (2 * q)) * sqfreeCount X :=
-          (hfmcd_applied c hc).choose_spec X hXge
-      _ ≤ (ε / (2 * q) + ε / (2 * q)) * sqfreeCount X := by
-          apply mul_le_mul_of_nonneg_right _ (Nat.cast_nonneg _)
-          linarith [hprod_small c hc]
-      _ = ε / ↑q * sqfreeCount X := by ring
-  -- Assembly: confined density < ε
-  simp only [Real.dist_eq, sub_zero]
-  rw [abs_of_nonneg (hdensity_nonneg X)]
-  by_cases hsc : sqfreeCount X = 0
-  · have := sqfreeConfinedCount_le q X R
-    have hconf0 : sqfreeConfinedCount q X R = 0 := by omega
-    simp [hconf0, hε]
-  · have hsc_pos : (0 : ℝ) < sqfreeCount X := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hsc)
-    -- Density ≤ sum of class densities
-    have hdensity_bound : (sqfreeConfinedCount q X R : ℝ) / sqfreeCount X ≤
-        ∑ c ∈ nzc, (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ) / sqfreeCount X := by
-      calc (sqfreeConfinedCount q X R : ℝ) / sqfreeCount X
-          ≤ ∑ c : ZMod q, (sqfreeConfinedClassCount c X R : ℝ) / sqfreeCount X := by
-            rw [← Finset.sum_div]
-            exact div_le_div_of_nonneg_right (by exact_mod_cast confinedCount_le_sum_classes R X) hsc_pos.le
-        _ = (sqfreeConfinedClassCount (0 : ZMod q) X R : ℝ) / sqfreeCount X +
-            ∑ c ∈ nzc, (sqfreeConfinedClassCount c X R : ℝ) / sqfreeCount X := by
-          rw [show (Finset.univ : Finset (ZMod q)) = {(0 : ZMod q)} ∪ nzc from by
-              ext c; simp only [nzc, Finset.mem_union, Finset.mem_singleton, Finset.mem_univ,
-                Finset.mem_filter, true_and, true_iff]; exact eq_or_ne c 0]
-          rw [Finset.sum_union (by
-            rw [Finset.disjoint_left]
-            intro c hc hc'; exact (hnzc_ne c hc') (Finset.mem_singleton.mp hc))]
-          simp only [Finset.sum_singleton]
-        _ = ∑ c ∈ nzc, (sqfreeConfinedClassCount c X R : ℝ) / sqfreeCount X := by
-            simp [hclass0 X]
-        _ ≤ ∑ c ∈ nzc, (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ) / sqfreeCount X := by
-            apply Finset.sum_le_sum; intro c hc
-            apply div_le_div_of_nonneg_right _ hsc_pos.le
-            exact_mod_cast le_trans (confinedClass_le_sievedClass c R Y X) (sievedClass_le_sieved c _ X)
-    -- Each class density ≤ ε/q
-    have hclass_bound : ∀ c ∈ nzc,
-        (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ) / sqfreeCount X ≤ ε / ↑q := by
-      intro c hc
-      calc (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ) / sqfreeCount X
-          ≤ (ε / ↑q * sqfreeCount X) / sqfreeCount X :=
-            div_le_div_of_nonneg_right (hbound c hc) hsc_pos.le
-        _ = ε / ↑q := by field_simp
-    -- Sum over nzc: nzc has at most q-1 elements, and q ≥ 2
-    have hnzc_card : nzc.card ≤ q - 1 := by
-      have h1 : nzc.card < q := by
-        calc nzc.card < (Finset.univ : Finset (ZMod q)).card :=
-              Finset.card_lt_card (Finset.filter_ssubset.mpr ⟨0, Finset.mem_univ _, by simp⟩)
-          _ = q := ZMod.card q
-      omega
-    calc (sqfreeConfinedCount q X R : ℝ) / sqfreeCount X
-        ≤ ∑ c ∈ nzc, (sqfreeSievedCount (excludedPrimesUpTo c R Y) X : ℝ) / sqfreeCount X :=
-          hdensity_bound
-      _ ≤ ∑ _ ∈ nzc, ε / ↑q := Finset.sum_le_sum hclass_bound
-      _ = nzc.card • (ε / ↑q) := Finset.sum_const _
-      _ ≤ (q - 1) • (ε / ↑q) := by
-          apply smul_le_smul_of_nonneg_right hnzc_card
-          exact div_nonneg hε.le (Nat.cast_nonneg _)
-      _ < q • (ε / ↑q) := by
-          rw [nsmul_eq_mul, nsmul_eq_mul]
-          have hεq_pos : (0 : ℝ) < ε / ↑q := div_pos hε hq_pos
-          have hcast_lt : (↑(q - 1) : ℝ) < (↑q : ℝ) := by
-            exact_mod_cast show q - 1 < q from Nat.sub_lt hq.pos Nat.one_pos
-          nlinarith
-      _ = ε := by rw [nsmul_eq_mul]; field_simp
+-- fmcd_fcd_implies_pscd archived to EM/Archive/Ensemble/MixedEnsembleArchive.lean
+-- (superseded by weak_fmcd_fcd_implies_pscd, which needs no FMCD hypothesis).
 
 end FMCD
 
-/-! ## Part 16: FMCD Chain Composition -/
-
-section FMCDChain
-
-variable {q : ℕ}
-
-/-- **FMCD chain**: PEAP + FMCD imply PSCD for all primes q.
-
-    Composes peap_implies_fcd_proved with fmcd_fcd_implies_pscd.
-    This replaces SieveUpperBound with FixedModulusCoprimeDensity
-    as the sole open hypothesis (alongside PEAP = standard ANT). -/
-theorem fmcd_chain_implies_pscd (hq : q.Prime)
-    (hPEAP : IK.PrimesEquidistributedInAP)
-    (hFMCD : FixedModulusCoprimeDensity) :
-    PSCD q :=
-  fmcd_fcd_implies_pscd hq hFMCD (peap_implies_fcd_proved hPEAP q hq.two_le)
-
-/-- **FMCD chain implies almost all mixed hitting**: composition. -/
-theorem fmcd_chain_implies_almost_all_mixed_hitting (hq : q.Prime)
-    (hPEAP : IK.PrimesEquidistributedInAP)
-    (hFMCD : FixedModulusCoprimeDensity) :
-    Filter.Tendsto
-      (fun X => (sqfreeTrappedCount q X : ℝ) / sqfreeCount X)
-      Filter.atTop (nhds 0) := by
-  haveI : NeZero q := ⟨hq.ne_zero⟩
-  exact pscd_implies_trapped_density_zero q hq (fmcd_chain_implies_pscd hq hPEAP hFMCD)
-
-end FMCDChain
-
-/-! ## Part 17: FMCD Landscape -/
-
-section FMCDLandscape
-
-/-- **FMCD Landscape**: Summary of the FMCD-based reduction.
-
-    The reduction chain:
-    * IK.PrimesEquidistributedInAP (standard ANT = Wiener-Ikehara)
-      + FixedModulusCoprimeDensity (elementary CRT, replaces SieveUpperBound)
-      -> PSCD
-      -> almost all mixed hitting (trapped density -> 0)
-
-    FixedModulusCoprimeDensity is MUCH simpler than SieveUpperBound:
-    - FMCD: for FIXED finite product of primes, density is prod(1-1/p) + eps
-    - SUB: for GROWING sieve level, density bounded by C * prod(1-1/p)
-    FMCD follows from CRT + inclusion-exclusion for a fixed modulus.
-    SUB requires the fundamental lemma of sieve theory (Brun/Selberg). -/
-theorem fmcd_landscape (q : ℕ) [NeZero q] (hq : q.Prime) :
-    -- 1. FMCD + FCD -> PSCD
-    (FixedModulusCoprimeDensity → ForbiddenClassDivergent q → PSCD q)
-    ∧
-    -- 2. PEAP + FMCD -> PSCD (via proved PEAP->FCD bridge)
-    (IK.PrimesEquidistributedInAP → FixedModulusCoprimeDensity → PSCD q)
-    ∧
-    -- 3. PEAP + FMCD -> almost all mixed hitting
-    (IK.PrimesEquidistributedInAP → FixedModulusCoprimeDensity →
-      Filter.Tendsto
-        (fun X => (sqfreeTrappedCount q X : ℝ) / sqfreeCount X)
-        Filter.atTop (nhds 0))
-    ∧
-    -- 4. sqfreeSievedCount <= sqfreeCount (trivial bound)
-    (∀ S X, sqfreeSievedCount S X ≤ sqfreeCount X) :=
-  ⟨fun hFMCD hFCD => fmcd_fcd_implies_pscd hq hFMCD hFCD,
-   fun hPEAP hFMCD => fmcd_chain_implies_pscd hq hPEAP hFMCD,
-   fun hPEAP hFMCD => fmcd_chain_implies_almost_all_mixed_hitting hq hPEAP hFMCD,
-   fun S X => sqfreeSievedCount_le S X⟩
-
-end FMCDLandscape
+-- Parts 16-17 (fmcd_chain_implies_pscd, fmcd_chain_implies_almost_all_mixed_hitting,
+-- fmcd_landscape) archived to EM/Archive/Ensemble/MixedEnsembleArchive.lean
+-- (superseded by the weak-FMCD chain below).
 
 /-! ## Part 18: Weak FMCD (Unconditional) -/
 
@@ -1586,7 +910,7 @@ private theorem residue_class_count_le' (N : ℕ) (hN : 0 < N) (r : ℕ) (X : �
   set f := fun (m : ℕ) => (m + 1) / N
   have hinj : Set.InjOn f ↑T := by
     intro a ha b hb hab
-    simp only [T, Finset.coe_filter, Set.mem_setOf_eq,
+    simp only [T, Finset.coe_filter, Set.mem_ofPred_eq,
       Finset.mem_Icc] at ha hb
     simp only [f] at hab
     have ha_eq := Nat.div_add_mod (a + 1) N
@@ -1596,7 +920,7 @@ private theorem residue_class_count_le' (N : ℕ) (hN : 0 < N) (r : ℕ) (X : �
     omega
   have hmaps : Set.MapsTo f ↑T ↑(Finset.range (X / N + 2)) := by
     intro m hm
-    simp only [T, Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe,
+    simp only [T, Finset.coe_filter, Set.mem_ofPred_eq, Finset.mem_coe,
       Finset.mem_Icc, Finset.mem_range, f] at hm ⊢
     have hle : (m + 1) / N ≤ (X + 1) / N :=
       Nat.div_le_div_right (Nat.succ_le_succ hm.1.2)
@@ -1771,8 +1095,8 @@ section WeakFMCDChain
 theorem weak_fmcd_fcd_implies_pscd {q : ℕ} (hq : q.Prime)
     (hFCD : ForbiddenClassDivergent q) :
     PSCD q := by
-  haveI : NeZero q := ⟨hq.ne_zero⟩
-  haveI : Fact q.Prime := ⟨hq⟩
+  have : NeZero q := ⟨hq.ne_zero⟩
+  have : Fact q.Prime := ⟨hq⟩
   intro R hR h0R
   obtain ⟨a, ha_ne, ha_notR⟩ := hR
   have hdensity_nonneg : ∀ X, 0 ≤ (sqfreeConfinedCount q X R : ℝ) / sqfreeCount X :=
@@ -1787,7 +1111,7 @@ theorem weak_fmcd_fcd_implies_pscd {q : ℕ} (hq : q.Prime)
     intro m hmIcc
     push Not; intro hsf hm0 hconf
     have hempty : allowedFactors q (0 : ZMod q) (↑R : Set (ZMod q)) = ∅ := by
-      ext b; simp only [allowedFactors, Set.mem_setOf_eq, zero_mul,
+      ext b; simp only [allowedFactors, Set.mem_ofPred_eq, zero_mul,
         Set.mem_empty_iff_false, iff_false]; exact h0R
     have hm_ge : 1 ≤ m := (Finset.mem_Icc.mp hmIcc).1
     obtain ⟨p, hp, hpdvd⟩ := Nat.exists_prime_and_dvd (show (m + 1 : ℕ) ≠ 1 by omega)
@@ -1921,12 +1245,12 @@ theorem weak_fmcd_chain_implies_pscd {q : ℕ} (hq : q.Prime)
   weak_fmcd_fcd_implies_pscd hq (peap_implies_fcd_proved hPEAP q hq.two_le)
 
 /-- **Weak FMCD chain implies almost all mixed hitting**: composition. -/
-theorem weak_fmcd_chain_implies_almost_all (hq : q.Prime)
+theorem weak_fmcd_chain_implies_almost_all {q : ℕ} (hq : q.Prime)
     (hPEAP : IK.PrimesEquidistributedInAP) :
     Filter.Tendsto
       (fun X => (sqfreeTrappedCount q X : ℝ) / sqfreeCount X)
       Filter.atTop (nhds 0) := by
-  haveI : NeZero q := ⟨hq.ne_zero⟩
+  have : NeZero q := ⟨hq.ne_zero⟩
   exact pscd_implies_trapped_density_zero q hq (weak_fmcd_chain_implies_pscd hq hPEAP)
 
 /-- **Weak FMCD Landscape**: Summary of the unconditional reduction.

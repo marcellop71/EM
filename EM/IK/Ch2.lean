@@ -171,7 +171,7 @@ Dirichlet's theorem on primes in arithmetic progressions.
 section PrimesInAP
 
 /-- Dirichlet's theorem: infinitely many primes in any coprime residue class — IK §2.3.
-    Bridges to Mathlib's `Nat.infinite_setOf_prime_and_eq_mod` /
+    Bridges to Mathlib's `Nat.infinite_setOfPred_prime_and_eq_mod` /
     `Nat.forall_exists_prime_gt_and_eq_mod`. -/
 def DirichletPrimesInAP : Prop :=
   ∀ (q : ℕ) (a : ℕ), 0 < q → Nat.Coprime a q →

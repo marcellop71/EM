@@ -13,6 +13,11 @@ import Mathlib.Topology.Order.Basic
 Formalization of Chapter 1 of H. Iwaniec and E. Kowalski,
 *Analytic Number Theory*, AMS Colloquium Publications vol. 53, 2004.
 
+**Reference tier**: this file is a statement catalog transcribed from
+Iwaniec–Kowalski for orientation; its declarations are definitions/statements
+(with a handful of proofs) that the reduction network does NOT depend on.
+Only the root `EM.lean` imports it.
+
 ## Contents
 - §1.1: Additive and multiplicative functions
 - §1.2–1.3: Dirichlet convolution identities (bridges to Mathlib)

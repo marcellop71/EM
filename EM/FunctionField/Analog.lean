@@ -103,6 +103,7 @@ def FFMullinConjecture : Prop :=
 
     We state this as an open hypothesis since formalizing the algebraic geometry
     (etale cohomology, Frobenius eigenvalues) is far beyond current Mathlib. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def WeilBound : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q →
   ∀ (_n : ℕ),
@@ -118,6 +119,7 @@ def WeilBound : Prop :=
     Over F_p[t], this follows UNCONDITIONALLY from the Weil bound.
     Over Z, the analog (Dirichlet's theorem + error terms) requires
     WeightedPNTinAP (= Wiener-Ikehara), which is standard but substantial. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFPopulationEquidist : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
   -- Irreducible polynomials are equidistributed modulo Q.
@@ -252,11 +254,11 @@ theorem ffProd_monic (d : FFEMData p) : ∀ n, (d.ffProd n).Monic := by
 
 /-- Coprimality cascade: no irreducible of positive degree can divide
     both ffProd(n) and ffProd(n) + 1. This is the function field analog
-    of the coprimality cascade in `SieveDefinedDynamics.lean`.
+    of the coprimality cascade in `EM/SDDS/Dynamics.lean`.
 
     Proof: if Q | ffProd(n) and Q | (ffProd(n) + 1), then Q | 1.
     But an irreducible polynomial of degree >= 1 cannot divide 1. -/
-theorem coprimality_cascade (d : FFEMData p)
+theorem coprimality_cascade {n : ℕ} (d : FFEMData p)
     (Q : Polynomial (ZMod p)) (hQ : Irreducible Q)
     (hdvd_prod : Q ∣ d.ffProd n) (hdvd_succ : Q ∣ d.ffProd n + 1) : False := by
   have hdvd_one : Q ∣ 1 := by
@@ -293,6 +295,7 @@ def FFSeqInjective : Prop :=
     from the Weil bound. But the orbit-specificity barrier remains:
     the walk is a deterministic sequence of PRODUCTS of character values,
     not a sum to which Weil applies. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFDSL : Prop :=
   ∀ _d : FFEMData p,
   ∀ Q : Polynomial (ZMod p), Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -325,7 +328,7 @@ def WeilDoesNotImplyFFDSL : Prop :=
 
     Net assessment: the function field setting eliminates the easy part
     (ANT for PE) but the hard part (DSL) is unchanged. -/
-theorem ff_analog_landscape :
+theorem ff_analog_landscape {n : ℕ} :
     -- (1) Weil => Population Equidist is trivial
     (WeilBound p → FFPopulationEquidist p) ∧
     -- (2) FFMullinConjecture is well-posed
@@ -566,6 +569,7 @@ All three approaches face obstacles -- see Section 11.
     Formalizing the full Deligne theorem requires etale cohomology, which
     is far beyond current Lean/Mathlib. We state the hypothesis abstractly
     as the conjunction of FFLM and the conclusion that Frobenius equidistributes. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def DeligneEquidistribution : Prop :=
   ∀ (d : FFEMData p),
   -- When the monodromy is large (eventually |Gal| > 1),
@@ -589,7 +593,8 @@ def DeligneEquidistribution : Prop :=
     in (F_p[t]/(Q))* CONDITIONED on the walk position ffProd(n) mod Q.
 
     This is the function field analog of ConditionalMultiplierEquidist
-    from LargeSieveSpectral.lean. -/
+    from EM/CME/Reduction.lean. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFCME : Prop :=
   ∀ (d : FFEMData p) (Q : Polynomial (ZMod p)),
     Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -732,6 +737,7 @@ FFLM requires Deligne-level (non-abelian) information.
 
     The non-abelian part of Gal (what distinguishes S_d from its
     abelianization Z/2Z) is what FFLM captures beyond SE. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFSEFromAbelianMonodromy : Prop :=
   -- SE for the FF-EM walk follows from the Weil bound alone
   -- (abelian monodromy suffices).
@@ -869,7 +875,7 @@ The monodromy perspective (Sections 8-11) REFINES this assessment:
     (2) Coprimality cascade (proved, structural)
     (3) FFLM + Deligne => FFCME => FF-MC (monodromy chain, faces sequential gap)
     (4) All routes require closing the orbit-specificity / sequential gap -/
-theorem ff_monodromy_landscape :
+theorem ff_monodromy_landscape {n : ℕ} :
     -- (1) Weil => Population Equidist (same as before)
     (WeilBound p → FFPopulationEquidist p) ∧
     -- (2) Coprimality cascade (same as before)
@@ -934,7 +940,7 @@ Maps to: #127 (refined), #90 (orbit specificity persists).
     The two genuinely unexplored frontiers for DSL are:
     (1) Non-homogeneous Markov chains (Doeblin/Dobrushin convergence)
     (2) Linnik-type multiplicative large sieve -/
-theorem ff_cyclotomic_dead_end :
+theorem ff_cyclotomic_dead_end {n : ℕ} :
     -- (1) Weil => PE still holds (abelian monodromy = same thing)
     (WeilBound p → FFPopulationEquidist p) ∧
     -- (2) Coprimality cascade still holds

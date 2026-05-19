@@ -16,8 +16,9 @@ infrastructure from `FactorTree.lean`.
   branching reaches Q-divisible nodes with positive density
 * `FFWeakFMCD` -- weak first moment condition: distinct irreducible factors
   of acc(n)+1 grow without bound
-* `FFFactorCountGrows` -- the number of distinct irreducible factors
-  of acc(n)+1 grows (from degree growth)
+* `FFOmegaLeDegree` -- distinct irreducible factor count is bounded by degree
+* `PopulationTreeBridge` / `FFFirstMomentComparison` -- bridge Props connecting
+  population diversity to the factor tree and the integer first-moment picture
 
 ## Main results
 
@@ -25,6 +26,8 @@ infrastructure from `FactorTree.lean`.
 * `pop_diversity_implies_mixed_pop_equidist` -- diversity => mixed pop equidist
 * `weil_implies_weak_fmcd` -- Weil => weak first moment condition
 * `ff_factor_pool_degree_grows` -- degree of acc(n)+1 tends to infinity (PROVED)
+* `ff_acc_degree_grows` / `ff_standard_degree_grows` -- accumulator degree growth (PROVED)
+* `ff_omega_le_degree_standard` -- FFOmegaLeDegree holds (PROVED)
 * `ff_population_equidist_landscape` -- summary landscape theorem
 
 ## Key mathematical content
@@ -43,7 +46,8 @@ population-level result to the factor tree structure:
 
 3. **Weak first moment condition**: The accumulated product acc(n)+1 has degree
    tending to infinity, so the number of available irreducible factor choices
-   grows. This is the FF analog of `FFWeakFMCD` from FirstMoment.lean.
+   grows. `FFWeakFMCD` is the FF analog of the integer weak-FMCD chain
+   in `EM/Ensemble/FirstMoment.lean`.
 
 The sole gap remains the orbit-specificity barrier: population diversity
 holds for GENERIC polynomials, but the FF-EM walk produces SPECIFIC
@@ -71,6 +75,7 @@ variable (p : ℕ) [hp : Fact (Nat.Prime p)]
 
     This is FREE from the Weil bound + prime polynomial theorem. Over Z,
     the analog requires WeightedPNTinAP. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFPopMixedDiversity : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q →
   -- For large enough degree, Q divides f+1 for ~1/(p^d - 1) of monic squarefree f's.
@@ -118,6 +123,7 @@ theorem pop_diversity_implies_factor_exists :
     Caveat: this is a POPULATION statement. It says the tree as a whole
     has Q-divisible nodes; it does NOT say the GREEDY path (standard EM)
     reaches them. The greedy-to-tree gap is the FF-DSL barrier. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFMixedPopEquidist : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q →
   ∀ (start : Polynomial (ZMod p)), start.Monic → 0 < start.natDegree →
@@ -164,6 +170,7 @@ theorem pop_diversity_implies_mixed_pop_equidist :
     The weak FMC says: the factor set grows, providing more branching
     options as the walk progresses. This is necessary (but not sufficient)
     for the mixed walk to reach arbitrary targets. -/
+-- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFWeakFMCD : Prop :=
   ∀ (start : Polynomial (ZMod p)), start.Monic → 0 < start.natDegree →
   ∀ (σ : FFMixedSelection p), FFMixedSelectionValid p start σ →

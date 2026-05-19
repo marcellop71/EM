@@ -125,7 +125,7 @@ theorem not_mc_nonempty_missing (h : ¬MullinConjecture) : Set.Nonempty MissingP
   unfold MullinConjecture
   intro p hp
   have : p ∉ MissingPrimes := by rw [h_empty]; exact fun h => h
-  simp only [MissingPrimes, Set.mem_setOf_eq, not_and, not_forall, not_not] at this
+  simp only [MissingPrimes, Set.mem_ofPred_eq, not_and, not_forall, not_not] at this
   exact this ((isPrime_iff_natPrime p).mp hp)
 
 end GuardianStructure
@@ -196,7 +196,7 @@ theorem missing_prime_never_chosen {q : Nat}
 theorem missing_multiplier_ne_zero {q : Nat} (hq_prime : Nat.Prime q)
     (hq_missing : q ∈ MissingPrimes) (n : Nat) :
     (seq (n + 1) : ZMod q) ≠ 0 := by
-  haveI : Fact (Nat.Prime q) := ⟨hq_prime⟩
+  have : Fact (Nat.Prime q) := ⟨hq_prime⟩
   intro h0
   rw [ZMod.natCast_eq_zero_iff] at h0
   -- h0 : q | seq(n+1)
@@ -244,7 +244,7 @@ theorem infiniteSpectralConspiracy :
     refine ⟨hqp, ?_⟩
     -- Need: exists chi : DirichletCharacter C q, chi != 1
     -- Card of DirichletCharacter C q = phi(q) = q - 1 >= 2 for prime q >= 3
-    haveI : Fact (Nat.Prime q) := ⟨hqp⟩
+    have : Fact (Nat.Prime q) := ⟨hqp⟩
     have hcard : (Finset.univ.erase (1 : DirichletCharacter ℂ q)).card = q - 2 := by
       rw [Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ,
         ← Nat.card_eq_fintype_card,

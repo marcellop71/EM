@@ -8,6 +8,7 @@ import EM.CME.Reduction
 import EM.Ensemble.PT
 import EM.Ensemble.WeylChain
 import EM.Population.TransferStrategy
+import EM.Population.HeadDomination
 import EM.Population.WeakErgodicity
 import EM.Ensemble.Structure
 import EM.Reduction.VisitEquidist
@@ -54,14 +55,9 @@ attribute [blueprint "thm:walk-div-bridge"
 -- Master reduction chain
 -- ============================================================================
 
-attribute [blueprint "thm:full-chain-dsl"
-  (statement := /--
-    $\mathrm{DSL} \;\Longrightarrow\; \mathrm{CME}
-    \;\Longrightarrow\; \mathrm{CCSB} \;\Longrightarrow\; \mathrm{MC}$.
-    DSL is the sole remaining hypothesis for MC, assuming standard
-    analytic number theory.
-  -/)]
-  full_chain_dsl
+-- (thm:full-chain-dsl retired 2026-08-17: `full_chain_dsl` proved MC from
+--  MinFacResidueEquidist + DSL, and MinFacResidueEquidist is false, Dead End #160.  The
+--  main chain is `thm:cme-mc` below: CME ⇒ CCSB ⇒ MC.)
 
 -- ============================================================================
 -- Single Hit Theorem
@@ -175,24 +171,18 @@ attribute [blueprint "thm:sd-cancel"
   -/)]
   sd_implies_cancellation
 
-attribute [blueprint "thm:pe-dsl-mc"
-  (statement := /--
-    $\mathrm{PE} + \mathrm{DSL} \;\Longrightarrow\; \mathrm{MC}$.
-  -/)]
-  pe_dsl_implies_mc
+-- (thm:pe-dsl-mc, thm:pe-dslh-mc, thm:dsl-closes-all retired 2026-08-17: their premise
+--  PopulationEquidist / MinFacResidueEquidist is false, Dead End #160; the declarations are
+--  archived in EM/Archive/Population/PopulationEquidistArchive.lean.)
 
-attribute [blueprint "thm:pe-dslh-mc"
+attribute [blueprint "thm:roughlpf-iff"
   (statement := /--
-    $\mathrm{PE} + \mathrm{DSLHitting} \;\Longrightarrow\; \mathrm{MC}$.
+    $\mathrm{RoughLPFEquidist}(q) \iff \forall a\ \text{coprime to } q,\
+    \sum_{p \equiv a\ (q),\, p > q} w_p = c(q{+}1)/(q-1)$, with
+    $w_p = p^{-1}\prod_{r<p}(1-1/r)$: the population hypothesis is an identity between
+    convergent series (Dead End \#160).
   -/)]
-  pe_dsl_hitting_implies_mc
-
-attribute [blueprint "thm:dsl-closes-all"
-  (statement := /--
-    Under standard ANT (MinFacResidueEquidist) plus DSL:
-    $\mathrm{MC} \;\wedge\; \mathrm{CCSB}$.
-  -/)]
-  dsl_closes_all
+  HeadDomination.roughLPFEquidist_iff
 
 -- ============================================================================
 -- Generalized MC

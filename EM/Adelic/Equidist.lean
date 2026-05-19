@@ -178,7 +178,7 @@ theorem cme_implies_mwi (hcme : ConditionalMultiplierEquidist) :
 theorem cme_implies_mme (hcme : ConditionalMultiplierEquidist) :
     MultiplierMarginalEquidist := by
   intro q inst hq hne χ hχ ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Number of walk positions: Fintype.card (ZMod q)ˣ
   set C := Fintype.card (ZMod q)ˣ with hC_def
   have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos
@@ -365,7 +365,7 @@ theorem crt_fiber_implies_mwi_proved
     (hmme : MultiplierMarginalEquidist) :
     MultWalkIndependence := by
   intro q inst hq hne χ hχ a ε hε
-  haveI : Fact (Nat.Prime q) := inst
+  have : Fact (Nat.Prime q) := inst
   -- Constants
   set C := Fintype.card (DirichletCharacter ℂ q) with hC_def
   have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos
@@ -556,12 +556,9 @@ theorem cpd_mme_implies_mc
 theorem all_routes_to_mc_adelic :
     -- Route 1: Adelic (MWI + MME)
     (AdelicEquidist → MullinConjecture) ∧
-    -- Route 2: DSL (PE → CME)
-    (DeterministicStabilityLemma → PopulationEquidist → MullinConjecture) ∧
-    -- Route 3: CRT bridge (PCE → OCE)
+    -- Route 2: CRT bridge (PCE → OCE)   (the former DSL route is retired, Dead End #160)
     (CRTPointwiseTransferBridge → PopulationConditionalEquidist → MullinConjecture) :=
   ⟨adelic_implies_mc,
-   fun hdsl hpe => cme_implies_mc (hdsl hpe),
    fun hbridge hpce => oce_implies_mc (hbridge hpce)⟩
 
 /-- **Enhanced landscape with full equivalences and the CPD route**.
@@ -594,7 +591,7 @@ theorem adelic_landscape :
 
 The walk lag-1 autocorrelation ∑ χ(w(n))·conj(χ(w(n+1))) equals the
 conjugate of the multiplier character sum by `walk_shift_one_correlation`
-(from EquidistSelfCorrecting.lean). Since conjugation preserves norms,
+(from EM/Equidist/SelfCorrecting.lean). Since conjugation preserves norms,
 MME is equivalent to vanishing walk lag-1 autocorrelation.
 -/
 

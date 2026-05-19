@@ -496,9 +496,7 @@ theorem gram_row_sum_implies_lsi
     rw [Finset.mul_sum]
     congr 1; ext n
     -- Goal: b r * x r n * (conj(b s) * conj(x s n)) = b r * conj(b s) * eAN(n * (α r - α s))
-    -- Bridge IK.eAN to _root_.eAN so we can use conj_eAN, eAN_add
     simp only [hx_def]
-    rw [eAN_eq_root_eAN, eAN_eq_root_eAN]
     -- Goal involves star = starRingEnd ℂ after simp
     change b r * _root_.eAN (α r * ↑↑n) * (starRingEnd ℂ (b s) * starRingEnd ℂ (_root_.eAN (α s * ↑↑n))) =
         b r * starRingEnd ℂ (b s) * _root_.eAN (↑↑n * (α r - α s))
@@ -633,12 +631,7 @@ theorem gram_als_weak
       · positivity
     linarith
   -- Apply gram_row_sum_implies_lsi
-  -- Need to bridge: the LHS uses eAN(α_r * n) but gram_row_sum_implies_lsi uses
-  -- IK.eAN(α_r * n). These are equal by eAN_eq_root_eAN.
   have key := gram_row_sum_implies_lsi R N α _ hC hrow a
-  -- gram_row_sum_implies_lsi uses IK.eAN, we need _root_.eAN
-  -- Rewrite in key: IK.eAN = _root_.eAN
-  simp only [eAN_eq_root_eAN] at key
   exact key
 
 /-!
@@ -827,7 +820,6 @@ theorem gram_als_improved
     have : 0 ≤ (N : ℝ) := Nat.cast_nonneg N
     positivity
   have key := gram_row_sum_implies_lsi R N α _ hC hrow a
-  simp only [eAN_eq_root_eAN] at key
   exact key
 
 /-!
@@ -959,7 +951,6 @@ theorem gram_offdiag_bilinear_implies_als
     rw [Finset.mul_sum]
     congr 1; ext n
     simp only [hx_def]
-    rw [eAN_eq_root_eAN, eAN_eq_root_eAN]
     change b r * _root_.eAN (α r * ↑↑n) * (starRingEnd ℂ (b s) * starRingEnd ℂ (_root_.eAN (α s * ↑↑n))) =
         b r * starRingEnd ℂ (b s) * _root_.eAN (↑↑n * (α r - α s))
     rw [conj_eAN]
@@ -983,6 +974,104 @@ theorem gram_offdiag_bilinear_implies_als
   have hcombine : ↑N * l2NormSq b + (1/δ - 1) * l2NormSq b =
       (1/δ + ↑N - 1) * l2NormSq b := by ring
   linarith
+
+/-- **IK additive large sieve implies the analytic large sieve.**
+
+Bridge between the two open large-sieve Props of this development:
+`IK.AdditiveLargeSieve` (this file) and `AnalyticLargeSieve`
+(`EM/LargeSieve/Basic.lean`).
+
+Normalization notes:
+* Spacing: `AnalyticLargeSieve` assumes the ℝ/ℤ distance bound
+  `δ ≤ |α r − α s − round (α r − α s)|`, which is *stronger* than the
+  `δ ≤ |Int.fract (α r) − Int.fract (α s)|` required by `IsSpaced`
+  (the circle distance is a min over integer shifts, `round_le`), so the
+  analytic hypotheses instantiate the IK ones.
+* Range of `δ`: `AnalyticLargeSieve` allows `δ ≤ 1` while
+  `IK.AdditiveLargeSieve` requires `δ ≤ 1/2`. For `R ≥ 2` the ℝ/ℤ spacing
+  forces `δ ≤ 1/2` (`round_sep_delta_le_half`); the degenerate cases
+  `R ≤ 1` are proved directly by Cauchy–Schwarz using `δ⁻¹ ≥ 1`.
+* Constant and exponential: `1/δ + N − 1` vs `N − 1 + δ⁻¹` and
+  `eAN (α r · n)` vs `exp(2πi·n·α r)` agree up to `ring`.
+
+The **converse is not an instantiation**: `IsSpaced` (fract-difference
+spacing) does not control the circle distance — e.g. `α = (ε, 1−ε)` is
+`(1−2ε)`-fract-spaced but only `2ε`-close on ℝ/ℤ — so no `iff` is stated. -/
+theorem ik_als_implies_analytic_als (h : AdditiveLargeSieve) :
+    _root_.AnalyticLargeSieve := by
+  intro N hN a R α δ hδ hδ1 hsep
+  -- Rewrite the exponential into the `eAN (α r * n)` form used by IK.
+  have hexp : ∀ (r : Fin R) (n : Fin N),
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑(↑n : ℤ) * ↑(α r)) =
+        eAN (α r * ↑(n : ℕ)) := by
+    intro r n
+    rw [_root_.als_exp_eq_eAN]
+    congr 1
+    push_cast
+    ring
+  simp_rw [hexp]
+  have hl2 : l2NormSq a = ∑ n : Fin N, ‖a n‖ ^ 2 := rfl
+  by_cases hR2 : ∃ r s : Fin R, r ≠ s
+  · -- R ≥ 2: direct instantiation of the IK statement.
+    obtain ⟨r0, s0, hr0s0⟩ := hR2
+    have hδhalf : δ ≤ 1 / 2 := round_sep_delta_le_half α δ hsep r0 s0 hr0s0
+    have hspaced : IsSpaced α δ := by
+      intro r s hrs
+      calc δ ≤ |α r - α s - round (α r - α s)| := hsep r s hrs
+        _ ≤ |(α r - α s) - ↑(⌊α r⌋ - ⌊α s⌋)| := round_le _ _
+        _ = |Int.fract (α r) - Int.fract (α s)| := by
+            congr 1
+            have hr := Int.floor_add_fract (α r)
+            have hs := Int.floor_add_fract (α s)
+            push_cast
+            linarith
+    have key := h R N α a δ hδ hδhalf hN hspaced
+    rw [hl2] at key
+    calc (∑ r, ‖∑ n : Fin N, a n * eAN (α r * ↑(n : ℕ))‖ ^ 2)
+        ≤ (1 / δ + ↑N - 1) * ∑ n : Fin N, ‖a n‖ ^ 2 := key
+      _ = ((N : ℝ) - 1 + δ⁻¹) * ∑ n : Fin N, ‖a n‖ ^ 2 := by
+          rw [one_div]; ring
+  · -- R ≤ 1: Cauchy–Schwarz on the single term, using δ⁻¹ ≥ 1.
+    push Not at hR2
+    have hRle : R ≤ 1 := by
+      by_contra hR
+      push Not at hR
+      have h01 := hR2 ⟨0, by omega⟩ ⟨1, by omega⟩
+      simp [Fin.ext_iff] at h01
+    have hinv : 1 ≤ δ⁻¹ := by
+      rw [← one_div, le_div_iff₀ hδ]
+      linarith
+    have hterm : ∀ r : Fin R,
+        ‖∑ n : Fin N, a n * eAN (α r * ↑(n : ℕ))‖ ^ 2 ≤
+          (N : ℝ) * ∑ n : Fin N, ‖a n‖ ^ 2 := by
+      intro r
+      calc ‖∑ n : Fin N, a n * eAN (α r * ↑(n : ℕ))‖ ^ 2
+          ≤ (∑ n : Fin N, ‖a n * eAN (α r * ↑(n : ℕ))‖) ^ 2 := by
+            gcongr
+            exact norm_sum_le _ _
+        _ = (∑ n : Fin N, ‖a n‖) ^ 2 := by
+            congr 1
+            refine Finset.sum_congr rfl fun n _ => ?_
+            rw [norm_mul, _root_.eAN_norm, mul_one]
+        _ ≤ ↑(Finset.univ : Finset (Fin N)).card * ∑ n : Fin N, ‖a n‖ ^ 2 :=
+            sq_sum_le_card_mul_sum_sq
+        _ = (N : ℝ) * ∑ n : Fin N, ‖a n‖ ^ 2 := by simp
+    have hnn : (0 : ℝ) ≤ ∑ n : Fin N, ‖a n‖ ^ 2 :=
+      Finset.sum_nonneg fun _ _ => sq_nonneg _
+    calc (∑ r, ‖∑ n : Fin N, a n * eAN (α r * ↑(n : ℕ))‖ ^ 2)
+        ≤ ∑ _r : Fin R, (N : ℝ) * ∑ n : Fin N, ‖a n‖ ^ 2 :=
+          Finset.sum_le_sum fun r _ => hterm r
+      _ = (R : ℝ) * ((N : ℝ) * ∑ n : Fin N, ‖a n‖ ^ 2) := by
+          simp [Finset.sum_const]
+      _ ≤ 1 * ((N : ℝ) * ∑ n : Fin N, ‖a n‖ ^ 2) := by
+          have hR1 : (R : ℝ) ≤ 1 := by exact_mod_cast hRle
+          have : (0 : ℝ) ≤ (N : ℝ) * ∑ n : Fin N, ‖a n‖ ^ 2 :=
+            mul_nonneg (Nat.cast_nonneg N) hnn
+          nlinarith
+      _ ≤ ((N : ℝ) - 1 + δ⁻¹) * ∑ n : Fin N, ‖a n‖ ^ 2 := by
+          rw [one_mul]
+          have : (N : ℝ) ≤ (N : ℝ) - 1 + δ⁻¹ := by linarith
+          exact mul_le_mul_of_nonneg_right this hnn
 
 end AdditiveLargeSieve
 

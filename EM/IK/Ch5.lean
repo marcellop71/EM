@@ -13,6 +13,11 @@ import Mathlib.Topology.Algebra.InfiniteSum.Basic
 Formalization of Chapter 5 of H. Iwaniec and E. Kowalski,
 *Analytic Number Theory*, AMS Colloquium Publications vol. 53, 2004.
 
+**Reference tier**: this file is a statement catalog transcribed from
+Iwaniec–Kowalski for orientation; its declarations are definitions/statements
+(with a handful of proofs) that the reduction network does NOT depend on.
+Only the root `EM.lean` imports it.
+
 ## Contents
 - §5.1: Definitions and preliminaries (L-function structure, analytic conductor)
 - §5.2: Approximations to L-functions (approximate functional equation)

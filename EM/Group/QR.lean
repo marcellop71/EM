@@ -1,5 +1,6 @@
 import EM.Group.Core
 import Mathlib.NumberTheory.LegendreSymbol.QuadraticReciprocity
+import Mathlib.Tactic.Simproc.Factors
 
 /-!
 # Quadratic Reciprocity and SubgroupEscape
@@ -86,7 +87,7 @@ theorem legendreSym_three_eq_neg_one_of_five {q : ℕ} [Fact (Nat.Prime q)]
   simp only [show (3 : ℕ) / 2 = 1 from by decide, one_mul] at hqr
   show legendreSym q (↑(3 : ℕ)) = -1; rw [hqr]
   rw [neg_one_pow_half_eq_one (by omega), one_mul]
-  rw [legendreSym_nat_eq_mod 3 q 2 (by omega)]; native_decide
+  rw [legendreSym_nat_eq_mod 3 q 2 (by omega)]; decide
 
 /-- (3/q) = -1 when q ≡ 7 mod 12. -/
 theorem legendreSym_three_eq_neg_one_of_seven {q : ℕ} [Fact (Nat.Prime q)]
@@ -96,7 +97,7 @@ theorem legendreSym_three_eq_neg_one_of_seven {q : ℕ} [Fact (Nat.Prime q)]
   simp only [show (3 : ℕ) / 2 = 1 from by decide, one_mul] at hqr
   show legendreSym q (↑(3 : ℕ)) = -1; rw [hqr]
   rw [neg_one_pow_half_eq_neg_one' (by omega)]
-  rw [legendreSym_nat_eq_mod 3 q 1 (by omega)]; native_decide
+  rw [legendreSym_nat_eq_mod 3 q 1 (by omega)]; decide
 
 /-- 3 is a QNR mod q for primes q > 3 with q ≢ ±1 mod 12. -/
 theorem legendreSym_three_eq_neg_one {q : ℕ} [Fact (Nat.Prime q)]
@@ -123,7 +124,7 @@ theorem legendreSym_five_eq_neg_one_of_two {q : ℕ} [Fact (Nat.Prime q)]
   have hqr := @legendreSym.quadratic_reciprocity_one_mod_four 5 q _ _
     (by decide) (by omega)
   show legendreSym q (↑(5 : ℕ)) = -1; rw [hqr]
-  rw [legendreSym_nat_eq_mod 5 q 2 (by omega)]; native_decide
+  rw [legendreSym_nat_eq_mod 5 q 2 (by omega)]; decide
 
 /-- (5/q) = -1 when q ≡ 3 mod 5. -/
 theorem legendreSym_five_eq_neg_one_of_three {q : ℕ} [Fact (Nat.Prime q)]
@@ -131,7 +132,7 @@ theorem legendreSym_five_eq_neg_one_of_three {q : ℕ} [Fact (Nat.Prime q)]
   have hqr := @legendreSym.quadratic_reciprocity_one_mod_four 5 q _ _
     (by decide) (by intro h; subst h; omega)
   show legendreSym q (↑(5 : ℕ)) = -1; rw [hqr]
-  rw [legendreSym_nat_eq_mod 5 q 3 (by omega)]; native_decide
+  rw [legendreSym_nat_eq_mod 5 q 3 (by omega)]; decide
 
 /-- 5 is a QNR mod q for primes q > 5 with q ≢ ±1 mod 5. -/
 theorem legendreSym_five_eq_neg_one {q : ℕ} [Fact (Nat.Prime q)]
@@ -178,32 +179,32 @@ private theorem legendreSym_seven_neg_one_mod4_3 {q : ℕ} [Fact (Nat.Prime q)]
 /-- `legendreSym q 7 = -1` when `q % 28 = 5`, i.e., `q ≡ 1 mod 4` and `q ≡ 5 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_5 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 5) : legendreSym q 7 = -1 :=
-  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 5 (by omega) (by native_decide)
+  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 5 (by omega) (by decide)
 
 /-- `legendreSym q 7 = -1` when `q % 28 = 11`, i.e., `q ≡ 3 mod 4` and `q ≡ 4 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_11 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 11) : legendreSym q 7 = -1 :=
-  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 4 (by omega) (by native_decide)
+  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 4 (by omega) (by decide)
 
 /-- `legendreSym q 7 = -1` when `q % 28 = 13`, i.e., `q ≡ 1 mod 4` and `q ≡ 6 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_13 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 13) : legendreSym q 7 = -1 :=
-  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 6 (by omega) (by native_decide)
+  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 6 (by omega) (by decide)
 
 /-- `legendreSym q 7 = -1` when `q % 28 = 15`, i.e., `q ≡ 3 mod 4` and `q ≡ 1 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_15 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 15) : legendreSym q 7 = -1 :=
-  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 1 (by omega) (by native_decide)
+  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 1 (by omega) (by decide)
 
 /-- `legendreSym q 7 = -1` when `q % 28 = 17`, i.e., `q ≡ 1 mod 4` and `q ≡ 3 mod 7` (NQR). -/
 theorem legendreSym_seven_eq_neg_one_17 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 17) : legendreSym q 7 = -1 :=
-  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 3 (by omega) (by native_decide)
+  legendreSym_seven_neg_one_mod4_1 (by omega) (by omega) 3 (by omega) (by decide)
 
 /-- `legendreSym q 7 = -1` when `q % 28 = 23`, i.e., `q ≡ 3 mod 4` and `q ≡ 2 mod 7` (QR). -/
 theorem legendreSym_seven_eq_neg_one_23 {q : ℕ} [Fact (Nat.Prime q)]
     (hmod : q % 28 = 23) : legendreSym q 7 = -1 :=
-  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 2 (by omega) (by native_decide)
+  legendreSym_seven_neg_one_mod4_3 (by omega) (by omega) 2 (by omega) (by decide)
 
 /-- 7 is a QNR mod q for primes q > 7 outside the 6 QR classes mod 28. -/
 theorem legendreSym_seven_eq_neg_one {q : ℕ} [Fact (Nat.Prime q)]
@@ -246,12 +247,12 @@ theorem legendreSym_thirteen_eq_neg_one {q : ℕ} [Fact (Nat.Prime q)]
   have : q % 13 = 2 ∨ q % 13 = 5 ∨ q % 13 = 6 ∨
          q % 13 = 7 ∨ q % 13 = 8 ∨ q % 13 = 11 := by omega
   rcases this with h | h | h | h | h | h
-  · rw [legendreSym_nat_eq_mod 13 q 2 (by omega)]; native_decide
-  · rw [legendreSym_nat_eq_mod 13 q 5 (by omega)]; native_decide
-  · rw [legendreSym_nat_eq_mod 13 q 6 (by omega)]; native_decide
-  · rw [legendreSym_nat_eq_mod 13 q 7 (by omega)]; native_decide
-  · rw [legendreSym_nat_eq_mod 13 q 8 (by omega)]; native_decide
-  · rw [legendreSym_nat_eq_mod 13 q 11 (by omega)]; native_decide
+  · rw [legendreSym_nat_eq_mod 13 q 2 (by omega)]; decide
+  · rw [legendreSym_nat_eq_mod 13 q 5 (by omega)]; decide
+  · rw [legendreSym_nat_eq_mod 13 q 6 (by omega)]; decide
+  · rw [legendreSym_nat_eq_mod 13 q 7 (by omega)]; decide
+  · rw [legendreSym_nat_eq_mod 13 q 8 (by omega)]; decide
+  · rw [legendreSym_nat_eq_mod 13 q 11 (by omega)]; decide
 
 /-! ### QR condition for p = 53
 
@@ -288,7 +289,7 @@ theorem legendreSym_fiftythree_eq_neg_one {q : ℕ} [Fact (Nat.Prime q)]
          q % 53 = 50 ∨ q % 53 = 51 := by omega
   rcases hcase with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h <;> {
     have : (↑q : ℤ) % (↑(53 : ℕ) : ℤ) = ↑(q % 53 : ℕ) := by omega
-    rw [this, h]; native_decide }
+    rw [this, h]; decide }
 
 /-! ### QR condition for p = 43
 
@@ -327,7 +328,7 @@ theorem legendreSym_fortythree_eq_neg_one_mod4_1 {q : ℕ} [Fact (Nat.Prime q)]
     q % 43 = 42 := by omega
   rcases hcase with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h <;> {
     have : (↑q : ℤ) % (↑(43 : ℕ) : ℤ) = ↑(q % 43 : ℕ) := by omega
-    rw [this, h]; native_decide }
+    rw [this, h]; decide }
 
 set_option maxHeartbeats 800000 in
 /-- (43/q) = -1 when q ≡ 3 mod 4 and q%43 is not an NQR mod 43. -/
@@ -360,7 +361,7 @@ theorem legendreSym_fortythree_eq_neg_one_mod4_3 {q : ℕ} [Fact (Nat.Prime q)]
     q % 43 = 41 := by omega
   rcases hcase with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h <;> {
     have : (↑q : ℤ) % (↑(43 : ℕ) : ℤ) = ↑(q % 43 : ℕ) := by omega
-    rw [this, h]; native_decide }
+    rw [this, h]; decide }
 
 /-! ### Bridge: Legendre symbol to IsSquare (SubgroupEscape connection)
 
@@ -626,7 +627,7 @@ theorem se_of_prime_index_escape {q : Nat} [inst : Fact (Nat.Prime q)]
 /-- **Concrete SE helper (multi-witness)**: verify SubgroupEscape at prime q
     by providing, for each prime factor ℓ of q-1, a multiplier index n and
     value v such that v^((q-1)/ℓ) ≠ 1. Different primes ℓ may use different
-    multiplier indices. The value checks are `native_decide`-friendly. -/
+    multiplier indices. The value checks are `decide`-friendly. -/
 theorem se_of_prime_index_concrete {q : Nat} [inst : Fact (Nat.Prime q)]
     (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
     (hesc : ∀ ℓ ∈ (q - 1).primeFactors,
@@ -671,14 +672,15 @@ theorem se_at_131 (hq : IsPrime 131) (hne : ∀ k, seq k ≠ 131) :
   apply se_of_prime_index_concrete hq hne
   intro ℓ hℓ
   -- 130 = 2 × 5 × 13, so primeFactors = {2, 5, 13}
-  have hpf : (131 - 1 : ℕ).primeFactors = {2, 5, 13} := by native_decide
+  have hpf : (131 - 1 : ℕ).primeFactors = {2, 5, 13} := by
+    simp only [Nat.primeFactors, Nat.reduceSub, Nat.primeFactorsList_ofNat]; decide
   rw [hpf, Finset.mem_insert, Finset.mem_insert, Finset.mem_singleton] at hℓ
   rcases hℓ with rfl | rfl | rfl
   · -- ℓ = 2: mult 6 (= seq 7 mod 131 = 88), 88^65 ≠ 1 mod 131
-    exact ⟨6, 88, by native_decide, by native_decide, by native_decide⟩
+    exact ⟨6, 88, by decide, by rw [multZ, Mullin.seq_seven]; decide +kernel, by decide +kernel⟩
   · -- ℓ = 5: mult 0 (= 3), 3^26 ≠ 1 mod 131
-    exact ⟨0, 3, by native_decide, by native_decide, by native_decide⟩
+    exact ⟨0, 3, by decide, by decide +kernel, by decide +kernel⟩
   · -- ℓ = 13: mult 0 (= 3), 3^10 ≠ 1 mod 131
-    exact ⟨0, 3, by native_decide, by native_decide, by native_decide⟩
+    exact ⟨0, 3, by decide, by decide +kernel, by decide +kernel⟩
 
 end MullinGroup

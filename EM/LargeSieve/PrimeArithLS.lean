@@ -236,7 +236,7 @@ set_option maxHeartbeats 3200000 in
 theorem als_implies_prime_arith_ls (hals : AnalyticLargeSieve) :
     PrimeArithmeticLargeSieve := by
   intro p hp_prime N hN a
-  haveI : Fact (Nat.Prime p) := ⟨hp_prime⟩
+  have : Fact (Nat.Prime p) := ⟨hp_prime⟩
   -- Define evaluation points α_b = b/p for b : Fin p
   set α : Fin p → ℝ := fun b => (b : ℕ) / (p : ℝ) with hα_def
   have hp_pos : (0 : ℝ) < (p : ℝ) := Nat.cast_pos.mpr hp_prime.pos

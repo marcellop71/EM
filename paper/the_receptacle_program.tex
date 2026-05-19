@@ -1,0 +1,560 @@
+%% =========================================================================
+\section{The Receptacle Program}
+\label{sec:receptacle}
+%% =========================================================================
+
+\noindent\textbf{Original contribution.}\enspace
+This section reads the formalization against a template imported from
+two celebrated proofs, and reports what the template delivers here:
+one arrow proved, one arrow equivalent to the conjecture itself, and
+one branch---the eventually-prime branch---that no receptacle of the
+kind considered can see.  The unconditional consequence
+$\MC \Rightarrow$ ``infinitely many Euclid--Mullin numbers are
+composite'' is new and machine-verified.
+
+\begin{roadmap}
+\begin{enumerate}[nosep,leftmargin=*]
+\item[\S\ref{sec:two-arrow}] The two-arrow template --- Detection and Gap;
+  calibration against Frey--Ribet--Wiles and Hill--Hopkins--Ravenel.
+\item[\S\ref{sec:congruence-receptacle}] Our congruence instance ---
+  Gap proved, Detection equivalent to MC, and where min and max really part.
+\item[\S\ref{sec:gap-scope}] Scope of the Gap theorem --- covering families,
+  and the two residual escapes.
+\item[\S\ref{sec:autonomous-branch}] The eventually-prime branch ---
+  perpetual primality, the autonomous walk, and $\MC \Rightarrow (\mathrm{C}\infty)$.
+\item[\S\ref{sec:conservation}] The conservation law --- an observed regularity,
+  not a theorem.
+\end{enumerate}
+\end{roadmap}
+
+%% =========================================================================
+\subsection{The Two-Arrow Template}
+\label{sec:two-arrow}
+%% =========================================================================
+
+Sections~\ref{sec:walk}--\ref{sec:hard} attack MC frontally: find a
+hypothesis under which the specific orbit of~$2$ inherits generic
+behaviour.  There is an older and, historically, more successful
+strategy: \emph{do not attack the statement, attack the
+counterexample.}
+
+The strategy has a fixed shape.  Transport a hypothetical
+counterexample into a designed algebraic world---call it a
+\defname{receptacle}---in which its mere existence becomes a
+\emph{nonzero class} in a group one can compute.  Then compute that
+the receiving group is \emph{zero}.  We call the two halves
+\defname{Detection} and \defname{Gap}:
+\[
+  \text{\defname{Detection}} \colon \quad
+  \text{counterexample} \;\Longrightarrow\; 0 \neq c \in G,
+  \qquad
+  \text{\defname{Gap}} \colon \quad G = 0 .
+\]
+Detection~$\wedge$~Gap yields the non-existence of the counterexample.
+Neither half alone says anything.
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+ & \textbf{Detection} & \textbf{Gap} \\
+\midrule
+Fermat
+  & Frey curve, then Ribet
+  & $\dim S_2(\Gamma_0(2)) = 0$ \\
+  & level-lowering~\cite{Ribet1990,Wiles1995}
+  & \\[0.4em]
+Kervaire
+  & the $C_8$-equivariant
+  & slice spectral sequence:\\
+invariant one
+  & detecting map~\cite{HHR2016}
+  & $\pi_{-2}\Omega = 0$, $256$-periodicity \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+Two features of these proofs deserve emphasis, because they are what
+the template is really made of.
+
+First, in both cases the class produced by Detection is nonzero
+\emph{by construction}.  A Frey curve attached to a solution of
+$a^p + b^p = c^p$ is not merely a curve that happens to be there: its
+discriminant is a perfect $p$-th power, and that is precisely the
+input to Ribet's level-lowering.  The counterexample is not observed
+in the receptacle---it is \emph{compelled} to occupy a specific,
+nonzero position.
+
+Second, and this is the point most often lost, the receptacle of
+Hill--Hopkins--Ravenel was \textbf{built}, not found.  The
+$C_8$-equivariant spectrum~$\Omega$ does not arise from prior
+homotopy theory; it was designed to satisfy exactly three properties
+(detection, periodicity, a gap), and the entire technical apparatus
+exists to make those three properties simultaneously true.  A
+receptacle is a piece of engineering, and the correct question to ask
+of a candidate receptacle is not ``does it exist in nature?'' but
+``can it be built so that both arrows hold?''
+
+%% =========================================================================
+\subsection{Our Congruence Instance}
+\label{sec:congruence-receptacle}
+%% =========================================================================
+
+The formalization already contains one complete instance of the
+template.  The receptacle is the world of \emph{propagating congruence
+invariants} modulo~$m$, developed in
+\S\ref{sec:min-max-dichotomy}: sets $S \subseteq \ZZ/m\ZZ$ closed
+under the transition relation, containing the orbit tail, and blocking
+the capture of a prime~$q$.
+
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{}}
+\toprule
+\textbf{Detection} & $\mathrm{IC}_{\min}$ (Definition~\ref{def:ic-min}) ---
+  \openhyp \\
+\textbf{Gap} & \code{no\_cvdp\_obstruction}
+  (Theorem~\ref{thm:no-invariant}) --- \proved \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The Gap arrow is a genuine theorem: for every missing prime~$q$ and
+every rich enough modulus, the receiving class of congruence
+certificates is \emph{empty}
+(\lean{EM/Obstruction/NoInvariant.lean}{no\_cvdp\_obstruction}).  The
+Detection arrow is $\mathrm{IC}_{\min}$, and here the template stalls
+in the sharpest possible way: $\mathrm{IC}_{\min}$ is not a weakening
+of MC, nor a step towards it, but is \emph{logically equivalent} to it
+(\lean{EM/Obstruction/NoInvariant.lean}{ic\_min\_implies\_mullin},
+\lean{EM/Obstruction/NoInvariant.lean}{mullin\_implies\_ic\_min}).
+Nothing in this instance is progress towards a proof of MC; what it
+delivers is the no-go content of the Gap arrow.
+
+\paragraph{The max side is the consistency control.}
+A template that never fires proves nothing about its own validity.
+The $\mathrm{maxFac}$ sequence supplies the control experiment: there
+the pair fails at \emph{Gap}, and it fails for the right reason.  The
+Cox--van der Poorten invariant is genuinely nonzero---the singleton
+$\{6\} \subseteq \ZZ/12\ZZ$ is an honest obstruction to the prime~$5$
+(\lean{EM/Obstruction/MaxVariant.lean}{max\_cvdp\_obstruction\_five})---and
+missing primes really do exist, infinitely many of
+them~\cite{Booker2012,PollackTrevino2014}.  So the same receptacle,
+applied to the same construction with one symbol changed, correctly
+reports the existence of counterexamples.  This is the calibration
+that makes the min-side emptiness informative rather than an artifact.
+
+\paragraph{Where min and max actually part company.}
+The break point between the two rules is \emph{not} free-state
+fullness, which is rule-symmetric (Lemma~\ref{lem:free-transition}
+and Remark~\ref{rem:fullness-symmetric}): from a free state the
+reachable set is full under \emph{both} rules.  The genuine break
+point is the \textbf{capture condition} itself, tabulated in
+\S\ref{sec:two-sequences}: $\minFac(N) = q$ is an open congruence
+condition, satisfiable modulo the rich modulus
+$\mathrm{forcingModulus}(q)$, so forcing states exist and the Gap
+theorem has something to refute; $\mathrm{maxFac}(N) = q$ is a
+smoothness---an anatomy---condition that no fixed modulus can
+express, so max-side blocking degenerates and obstructions exist
+trivially.  That is where Booker-type omissions live; the full
+account, including the eviction/fullness/CRT-reach proof, is
+\S\ref{sec:no-invariant}.
+
+%% =========================================================================
+\subsection{Scope of the Gap Theorem, Stated Honestly}
+\label{sec:gap-scope}
+%% =========================================================================
+
+A no-go theorem is only as good as the class it quantifies over, so
+the class deserves a precise description.  What
+\code{no\_cvdp\_obstruction} kills is every obstruction expressible as
+a congruence condition at \textbf{some finite} modulus.  Three
+supporting lemmas make the phrase ``some finite modulus'' do real
+work.
+
+\begin{lemma}[No finite prime covering ---
+\lean{EM/Obstruction/NoInvariant.lean}{no\_finite\_prime\_covering}]
+\label{lem:no-finite-covering}
+For every finite set~$T$ of primes there is $N_0$ such that for all
+$n \geq N_0$ and all $p \in T$, $p \nmid \Prod{2}(n)+1$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+Apply eviction (Lemma~\ref{lem:eviction}) to $m = \prod_{p \in T} p$:
+past~$N_0$ the candidate is coprime to~$m$, hence to every $p \in T$.
+\end{proof}
+
+\noindent
+This single line disposes of the entire Sierpi\'nski / covering-system
+class of certificates, since a covering system is by definition
+\emph{finite}: no fixed finite set of primes can supply a divisor of
+$\Prod{2}(n)+1$ for every~$n$.
+
+The remaining worry is a \emph{family} $(m_i, S_i)$ of congruence
+obstructions, no one of which need work alone.  It does not escape
+either, and the reason is that Theorem~\ref{thm:no-invariant} is
+\textbf{set-generic}: it quantifies over an arbitrary
+$S \subseteq \ZZ/m\ZZ$ with no structural hypothesis whatsoever.
+
+\begin{lemma}[Assembly at the lcm ---
+\lean{EM/Obstruction/NoInvariant.lean}{covering\_family\_assembles}]
+\label{lem:covering-assembles}
+Let $m_i \mid M$ for all~$i$ and let each $S_i \subseteq \ZZ/m_i\ZZ$
+be propagating, with $S_{i_0}$ containing the tail.  Then
+$\bigcup_i \mathrm{liftSet}(S_i) \subseteq \ZZ/M\ZZ$ is propagating and
+contains the tail.
+\end{lemma}
+
+\noindent
+Propagation and tail containment survive both the lift
+(\lean{EM/Obstruction/NoInvariant.lean}{propagating\_lift},
+\lean{EM/Obstruction/NoInvariant.lean}{containsTail\_lift}) and the union
+(\lean{EM/Obstruction/NoInvariant.lean}{propagating\_iUnion},
+\lean{EM/Obstruction/NoInvariant.lean}{containsTail\_iUnion}), so the
+assembled object is a bona fide candidate obstruction at the single
+modulus~$M$---and set-genericity refutes it.
+
+\begin{theorem}[Covering families need no separate treatment ---
+\lean{EM/Obstruction/NoInvariant.lean}{no\_covering\_family\_obstruction}]
+\label{thm:no-covering-family}
+Let $q$ be a missing prime, $(m_i)_{i \in \iota}$ a finite family of
+moduli dividing $M \neq 0$ with $\mathrm{RichEnough}(q,M)$, and
+$S_i \subseteq \ZZ/m_i\ZZ$ arbitrary.  Then
+$\bigcup_i \mathrm{liftSet}(S_i)$ is not a CvdP obstruction for~$q$
+modulo~$M$.
+\end{theorem}
+
+\noindent
+The Lean proof is literally
+\code{no\_cvdp\_obstruction hq hM hrich \_}, and that is the content:
+covering families are not a new phenomenon.  One honest caveat, already
+recorded in \S\ref{sec:no-invariant}: \code{Blocks} does not lift, only
+\code{BlocksDeath} does.  But blocking at a coarse modulus does not
+\emph{certify} omission, because the candidate's class at the finer
+modulus~$M$ is smaller; a valid certificate must block where it is
+finally evaluated.  The situation is ``unsound'', not ``uncovered''.
+
+\begin{frontierbox}
+\textbf{The two residual escapes, and we do not claim otherwise.}
+\begin{enumerate}[nosep,leftmargin=*]
+\item \textbf{Unbounded moduli.}  A family whose moduli are unbounded
+  has no finite lcm; such an object is genuinely profinite/adelic and
+  lies outside the theorem's class.  (The profinite picture is
+  sketched in \S\ref{sec:hard}.)
+\item \textbf{Non-congruence (anatomy) invariants.}  Smoothness is the
+  archetype---it is the max-side mechanism---and
+  \S\ref{sec:autonomous-branch} exhibits a live min-side example.
+\end{enumerate}
+\end{frontierbox}
+
+%% =========================================================================
+\subsection{The Eventually-Prime Branch}
+\label{sec:autonomous-branch}
+%% =========================================================================
+
+The second escape is not hypothetical.  This subsection presents the
+first concrete, internally consistent mechanism by which MC could
+fail, and extracts from it a new unconditional consequence of MC\@.
+The owning file is \code{EM/Population/AutonomousBranch.lean}
+(420~lines, zero \code{sorry}).
+
+\begin{definition}[Perpetual primality and $(\mathrm{C}\infty)$ ---
+\lean{EM/Population/AutonomousBranch.lean}{PerpetualPrimality},
+\lean{EM/Population/AutonomousBranch.lean}{InfinitelyManyComposite}]
+\label{def:perpetual-primality}
+$(\omega 1)$ \defname{PerpetualPrimality}$(N_1)$:
+$\Prod{2}(n)+1$ is prime for every $n \geq N_1$.
+
+$(\mathrm{C}\infty)$ \defname{InfinitelyManyComposite}: for every~$N$
+there is $n \geq N$ with $\Prod{2}(n)+1$ composite.
+\end{definition}
+
+\noindent
+We stress at once that $(\omega 1)$ is \textbf{not} believed to hold.
+It is presented as a branch that current methods cannot exclude, not
+as a plausible truth.
+
+\paragraph{The walk becomes autonomous.}
+Under $(\omega 1)$ the candidate is its own least prime factor, so the
+step consumes the whole candidate:
+$\seq{2}(n{+}1) = \Prod{2}(n)+1$
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_seq\_succ}) and
+therefore
+\[
+  \Prod{2}(n{+}1) = \Prod{2}(n)\bigl(\Prod{2}(n)+1\bigr)
+\]
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_prod\_succ}).
+Reducing modulo a prime~$q$, the residue walk loses its
+non-autonomous character entirely:
+\[
+  \walkZ{2}{q}{n{+}1} = f\bigl(\walkZ{2}{q}{n}\bigr),
+  \qquad f(w) = w(w+1) = w^2 + w
+\]
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_walkZ\_succ}).
+The map~$f$ is literally the function-field autonomous map
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_walkZ\_eq\_ffAutonomousMap}),
+and the tail of the walk is exactly its orbit from~$\walkZ{2}{q}{N_1}$
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_walkZ\_orbit}).
+
+It is worth flagging that this map recurs.  The same $f(w) = w^2+w$ is the
+walk of the \emph{take-all} selection rule (\S\ref{sec:selection-landscape}),
+and---conjugated by $w \mapsto w+1$---the map whose backward orbit
+of~$-1$ is precisely the target of $(\mathrm{C}\infty)$
+(\S\ref{sec:level-tower}).  Three different routes arrive at one map, and
+its death condition $f(w) = -1$, i.e.\ $\Phi_3(w) = 0$, is the same
+equation in all three.
+
+Now $f(w) = -1$ if and only if $w^2 + w + 1 = 0$, i.e.\ if and only if
+$\Phi_3$ has a root in $\FF_q$
+(\lean{EM/FunctionField/AutonomousMap.lean}{ffAutonomousMap\_eq\_neg\_one\_iff}).
+A root would be a unit of multiplicative order~$3$, forcing
+$3 \mid q-1$; so for $q \equiv 2 \pmod 3$ with $q \geq 5$ there is no
+root (\lean{EM/FunctionField/AutonomousMap.lean}{phi3\_no\_roots}) and
+$-1$ is unreachable from any starting position other than~$-1$ itself
+(\lean{EM/FunctionField/AutonomousMap.lean}{ff\_neg\_one\_unreachable}).
+
+\begin{keyresult}
+\begin{theorem}[Exclusion on a density-$1/2$ set ---
+\lean{EM/Population/AutonomousBranch.lean}{perpetual\_primality\_excludes\_two\_mod\_three}]
+\label{thm:perpetual-excludes}
+Assume $(\omega 1)$ from step~$N_1$.  Let $q$ be a prime with
+$q \equiv 2 \pmod 3$, $q \geq 5$, and $\walkZ{2}{q}{N_1} \neq -1$.
+Then $q \nmid \Prod{2}(n)+1$ for \emph{every} $n \geq N_1$.  If in
+addition $q$ is fresh at step~$N_1$, then $q$ never occurs in the
+sequence
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_primality\_missing},
+\lean{EM/Population/AutonomousBranch.lean}{perpetual\_primality\_mem\_missingPrimes}).
+\end{theorem}
+\end{keyresult}
+
+\noindent
+The primes $q \equiv 2 \pmod 3$ have natural density~$1/2$ among all
+primes.  So on this branch MC does not merely fail; it fails on half
+of the primes.
+
+A second, cleaner argument removes every side condition.
+
+\begin{keyresult}
+\begin{theorem}[Bertrand route ---
+\lean{EM/Population/AutonomousBranch.lean}{eventually\_prime\_implies\_not\_mullin}]
+\label{thm:bertrand-route}
+If there is a $T$ with $\Prod{2}(n)+1$ prime for all $n \geq T$, then
+$\MC$ is false.  No congruence condition, no freshness hypothesis, no
+witness prime is needed.
+\end{theorem}
+\end{keyresult}
+
+\begin{proof}[Proof sketch]
+By Bertrand's postulate pick a prime~$r$ with
+$\Prod{2}(T)+1 < r \leq 2(\Prod{2}(T)+1)$.  Under $(\omega 1)$ the
+primes ever appearing are divisors of $\Prod{2}(T)$---all at
+most~$\Prod{2}(T) < r$---together with the candidates
+$\Prod{2}(n)+1$ for $n \geq T$.  The first such candidate is
+$\Prod{2}(T)+1 < r$, and the next already satisfies
+$\Prod{2}(T{+}1)+1 = \Prod{2}(T)(\Prod{2}(T)+1)+1 > 2(\Prod{2}(T)+1)
+\geq r$
+(\lean{EM/Population/AutonomousBranch.lean}{perpetual\_candidate\_jump}).
+So~$r$ falls strictly inside the gap and never appears.
+\end{proof}
+
+\noindent
+The two routes say different things.  Bertrand refutes MC outright but
+is non-constructive about \emph{which} primes are lost; the $\Phi_3$
+route names them, and it is the part that transports the
+function-field picture to~$\ZZ$.
+
+Contraposing Theorem~\ref{thm:bertrand-route} gives a statement about
+MC that involves no hypotheses at all.
+
+\begin{keyresult}
+\begin{theorem}[MC forces $(\mathrm{C}\infty)$ ---
+\lean{EM/Population/AutonomousBranch.lean}{mullin\_implies\_infinitelyManyComposite}]
+\label{thm:mc-implies-cinfty}
+If $\MC$ holds, then infinitely many Euclid--Mullin numbers
+$\Prod{2}(n)+1$ are composite.  Moreover $(\mathrm{C}\infty)$ is
+\emph{exactly} the failure of $(\omega 1)$ at every threshold
+(\lean{EM/Population/AutonomousBranch.lean}{infinitelyManyComposite\_iff\_no\_perpetual\_primality}).
+\end{theorem}
+\end{keyresult}
+
+\noindent
+The two landscape theorems collect the branch:
+\lean{EM/Population/AutonomousBranch.lean}{autonomous\_branch\_landscape}
+(conditional, with a witness) and
+\lean{EM/Population/AutonomousBranch.lean}{autonomous\_branch\_unconditional\_landscape}
+(the three unconditional statements).
+
+\paragraph{Significance.}
+Four points, stated carefully.
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{A concrete failure mechanism.}  This is the first
+  mechanism in this development by which MC could fail that is
+  concrete and internally consistent, rather than a bare negation.  It
+  is transported from the function-field setting
+  (\code{EM/FunctionField/AutonomousMap.lean}) to the integers, where
+  the same $\Phi_3$ criterion applies verbatim.  It is conditional on
+  $(\omega 1)$, which is wildly implausible, but nothing in the
+  present infrastructure rules it out.
+
+\item \textbf{Invisible to congruence obstructions---consistently so.}
+  The branch is not a counterexample to Theorem~\ref{thm:no-invariant};
+  it is an illustration of its scope.  \code{Transition} deliberately
+  over-approximates the true dynamics
+  (Remark~\ref{rem:over-approximation}): it admits composite candidates
+  $N = \pi M$, and free-state fullness exploits precisely that freedom.
+  The autonomous tail $\{w \mapsto w(w{+}1)\}$ is therefore \emph{not}
+  a propagating set for \code{Transition}, so no congruential invariant
+  can see it.  This is a concrete instance of the principle that any
+  disproof of MC must be non-congruential.
+
+\item \textbf{One phenomenon, not two.}  In both halves of this section
+  what defeats the congruence method is \textbf{anatomy}: smoothness on
+  the max side (\S\ref{sec:congruence-receptacle}), compositeness on the
+  min side.  Neither is a condition at any fixed modulus.  The
+  min/max correction and the eventually-prime branch are the same
+  observation seen from two directions.
+
+\item \textbf{A named open hypothesis.}  $(\mathrm{C}\infty)$ is
+  hereby elevated to a named open hypothesis gating this branch.  It is
+  a \emph{necessary} condition for MC by
+  Theorem~\ref{thm:mc-implies-cinfty}, and it is presumably far easier
+  than MC---but it is open, and closing the branch requires it.
+\end{enumerate}
+
+\begin{remark}[Relation to the mixed-walk results]
+\label{rem:mixed-perpetual}
+Perpetual primality already appears in \S\ref{sec:variants}
+(Theorem~\ref{thm:perpetual-periodicity}).  Those results are stated
+for the \emph{mixed} walk $\mathrm{mixedWalkProd}$, and they constrain
+the walk's own residue---for instance it never sits at $1 \bmod 3$,
+since $\Phi_3$ of the accumulator would then be divisible by~$3$ and
+composite.  They exclude no prime from the sequence.  The results of
+this subsection are for the standard $\Prod{2}$, $\seq{2}$, and their
+conclusion is missingness of primes, hence a refutation of MC\@.  The
+two developments are disjoint in content.
+\end{remark}
+
+%% =========================================================================
+\subsection{The Conservation Law: an Observed Regularity}
+\label{sec:conservation}
+%% =========================================================================
+
+Across every receptacle surveyed in this development, one pattern
+recurs:
+\[
+  \text{Detection-difficulty} \;+\; \text{Gap-difficulty}
+  \;\geq\; \text{the orbit-specificity barrier.}
+\]
+We record this as an \textbf{observed regularity, not a theorem}.  It
+is not formalized, it has no proof, and we do not claim it constrains
+receptacles not yet built.  What it does is organize the evidence.
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+\textbf{Receptacle} & \textbf{Detection} & \textbf{Gap} \\
+\midrule
+Congruence (\S\ref{sec:congruence-receptacle})
+  & $\mathrm{IC}_{\min}$ $=$ the barrier
+  & proved \\
+Distributional (\S\ref{sec:hard})
+  & free (Fourier bridge)
+  & CME $=$ the barrier \\
+Consumption (below)
+  & free (shield ledger)
+  & \emph{false}, not hard \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+The third row is the new datum, and it is the interesting one.  In the
+consumption receptacle one attempts to charge each hit of a missing
+prime against a finite supply of resources; Detection is then almost
+free, since the ledger is an identity.  The hope is that the
+difficulty has been pushed onto Gap.  It has not: the Gap produced is
+not \emph{hard} but \textbf{false}, and the eventually-prime branch of
+\S\ref{sec:autonomous-branch} is what inhabits it.  On that branch
+$\omega(\Prod{2}(n)+1) - 1 = 0$ at every step: each candidate is
+prime, the orbit spends nothing, and the zero ledger is perfectly
+feasible.  Detection and Gap fail together.
+
+Two mechanisms explain the pattern.  Both are heuristics.
+
+\paragraph{Zero-Configuration.}
+Consumption arguments yield only \emph{upper} bounds.  Shields are
+spent only at composite steps, so the all-zero ledger is always
+feasible, and in any additive receptacle ``absence'' is~$0$---the
+class that Gap is trying to exclude.  Frey--Ribet and
+Hill--Hopkins--Ravenel work because the counterexample is forced to
+occupy a \emph{nonzero} position by construction (the perfect $p$-th
+power discriminant; the designed detecting map).  A receptacle in
+which the counterexample can sit at zero cannot have a useful Gap.
+
+\paragraph{Support-Invisibility.}
+Missingness of~$q$ is a \emph{support} condition: it says that~$q$
+never appears in $\sum_p e_p$, the multiset of exponents of the
+accumulator.  Computable algebraic invariants, by contrast, factor
+through $p \mapsto p \bmod m$---that is, through the walk, which sees
+only the product $\Prod{2}(n) \bmod m$ and not which primes built it.
+A receptacle built from such invariants is structurally blind to the
+condition it is asked to detect.
+
+\paragraph{The consumption sharpenings.}
+For the record, the consumption receptacle does produce real theorems;
+they are simply not the ones that close MC\@.  All are in
+\code{EM/Population/HittingSetStructure.lean}.
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Self-referential shield supply}
+  (\lean{EM/Population/HittingSetStructure.lean}{hittingSet\_ncard\_le\_appearing}):
+  for a missing prime~$q$, $|\mathrm{HittingSet}(q)|$ is at most the
+  number of primes below~$q$ that have \emph{already appeared} in the
+  sequence.  This sharpens the bound $\leq q$ of
+  Lemma~\ref{lem:finite-hitting}: the shields spent on~$q$ must all be
+  sequence terms the sequence itself has produced.  Since the guardian
+  is never~$2$, one may even delete~$2$ from the receptacle
+  (\lean{EM/Population/HittingSetStructure.lean}{hittingSet\_ncard\_le\_appearing\_odd}).
+
+\item \textbf{Finite missing confinement}
+  (\lean{EM/Population/HittingSetStructure.lean}{finite\_missing\_confinement}):
+  for a finite family~$Q$ of missing primes there is a time~$T$ past
+  which $\walkZ{2}{q}{n} \notin \{0, -1\}$ for every $q \in Q$
+  simultaneously---the $0$ clause for all~$n$, the $-1$ clause by
+  Finite Hitting uniformised over~$Q$
+  (\lean{EM/Population/HittingSetStructure.lean}{finite\_missing\_confinement\_walkZ}).
+
+\item \textbf{The ledger}
+  (\lean{EM/Population/HittingSetStructure.lean}{hitting\_ledger\_sum},
+  \lean{EM/Population/HittingSetStructure.lean}{hitting\_ledger\_bound}):
+  counting shields by step or by shielded prime gives the same total
+  (Fubini), and consequently, for a finite family~$F$ of missing
+  primes,
+  \[
+    \sum_{q \in F}
+      \bigl|\{n < N : q \mid \Prod{2}(n)+1\}\bigr| \;+\; N
+    \;\leq\; \sum_{n < N} \omega\bigl(\Prod{2}(n)+1\bigr).
+  \]
+  The four statements are packaged as
+  \lean{EM/Population/HittingSetStructure.lean}{consumption\_landscape}.
+\end{itemize}
+
+\noindent
+Each summand on the left is eventually~$0$ by Finite Hitting, so the
+ledger is a \emph{finite} charge against an unbounded supply.  That is
+exactly the Zero-Configuration failure mode: the inequality is true,
+sharp enough to be interesting, and consistent with the ledger being
+identically zero.
+
+\begin{frontierbox}
+\textbf{What a working receptacle would have to do.}  It would have to
+force the counterexample into a \emph{nonzero} position---not merely
+permit one---and it would have to see the \emph{support} of the
+accumulator's factorization, not only its residue.  No receptacle in
+this development does both.  Whether one can be \emph{built}, in the
+Hill--Hopkins--Ravenel sense, is the open question this section
+leaves.
+\end{frontierbox}

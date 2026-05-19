@@ -1,12 +1,11 @@
 /.lake
 __pycache__/
 
-agents/
 docs/
-scripts/
 tmp/
 
 # LaTeX build artifacts
+*.listing
 *.aux
 *.log
 *.out
@@ -14,3 +13,11 @@ tmp/
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+
+# local-only archive of retired Lean code (RED chain, #exit files)
+EM/Archive/
+
+# local tooling / environments
+.venv/
+.claude/
+texput.log

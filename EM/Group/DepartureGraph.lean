@@ -1,5 +1,6 @@
-import EM.Equidist.Bootstrap
 import EM.Group.Core
+import Mathlib.Data.Fintype.Pigeonhole
+import Mathlib.Tactic.Group
 
 /-!
 # Departure Graph Framework
@@ -133,7 +134,7 @@ theorem departureSet_empty_of_unvisited (w m : ℕ → G) (g : G)
     (hg : g ∉ visitedSet w) :
     departureSet w m g = ∅ := by
   ext x
-  simp only [departureSet, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+  simp only [departureSet, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false]
   rintro ⟨k, hpos, -⟩
   exact hg ⟨k, hpos⟩
 
@@ -143,7 +144,7 @@ theorem globalMultiplierSet_eq_union (w m : ℕ → G) :
     globalMultiplierSet m = ⋃ g ∈ visitedSet w, departureSet w m g := by
   ext x
   simp only [globalMultiplierSet, Set.mem_range, Set.mem_iUnion, visitedSet,
-    departureSet, Set.mem_setOf_eq]
+    departureSet, Set.mem_ofPred_eq]
   constructor
   · rintro ⟨k, rfl⟩
     exact ⟨w k, ⟨k, rfl⟩, k, rfl, rfl⟩
@@ -228,7 +229,7 @@ theorem em_departure_empty_of_unvisited (q : ℕ) (g : ZMod q)
     (hg : g ∉ emVisitedSet q) :
     emDepartureSet q g = ∅ := by
   ext x
-  simp only [emDepartureSet, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+  simp only [emDepartureSet, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false]
   rintro ⟨k, hpos, -⟩
   exact hg ⟨k, hpos⟩
 
@@ -237,7 +238,7 @@ theorem em_multiplier_union (q : ℕ) :
     emMultiplierSet q = ⋃ g ∈ emVisitedSet q, emDepartureSet q g := by
   ext x
   simp only [emMultiplierSet, Set.mem_range, emVisitedSet, emDepartureSet,
-    Set.mem_iUnion, Set.mem_setOf_eq]
+    Set.mem_iUnion, Set.mem_ofPred_eq]
   constructor
   · rintro ⟨k, rfl⟩
     exact ⟨walkZ q k, ⟨k, rfl⟩, k, rfl, rfl⟩
@@ -269,7 +270,7 @@ theorem exists_infinite_fiber_of_finite {G : Type*} [Finite G] (w : ℕ → G) :
   obtain ⟨g, hg⟩ := Finite.exists_infinite_fiber w
   refine ⟨g, ?_⟩
   rw [Set.infinite_coe_iff] at hg
-  convert hg using 1
+  exact hg
 
 /-- The infinitely-visited element lies in the visited set. -/
 theorem infinite_fiber_mem_visitedSet {G : Type*} [Finite G] (w : ℕ → G) :
@@ -287,7 +288,7 @@ theorem infinite_departures_at_recurrent {G : Type*} [Finite G]
     Set.Infinite {k : ℕ | w k = g ∧ m k ∈ departureSet w m g} := by
   apply Set.Infinite.mono _ hg
   intro k hk
-  simp only [Set.mem_setOf_eq] at hk ⊢
+  simp only [Set.mem_ofPred_eq] at hk ⊢
   exact ⟨hk, k, hk, rfl⟩
 
 end InfiniteRecurrence
@@ -536,13 +537,13 @@ theorem infinite_departures_avoiding_death (w m : ℕ → G) [Finite G]
   have hN_finite : Set.Finite {k : ℕ | ¬(N ≤ k)} := by
     apply (Set.Finite.subset (Set.finite_Iio N) _)
     intro k hk
-    simp only [Set.mem_setOf_eq, not_le] at hk
+    simp only [Set.mem_ofPred_eq, not_le] at hk
     exact Set.mem_Iio.mpr hk
   have hinf2 : Set.Infinite ({k : ℕ | w k = c} \ {k | ¬(N ≤ k)}) :=
-    hcof.diff hN_finite
+    hcof.sdiff hN_finite
   apply hinf2.mono
   intro k hk
-  simp only [Set.mem_diff, Set.mem_setOf_eq, not_not] at hk ⊢
+  simp only [Set.mem_sdiff, Set.mem_ofPred_eq, not_not] at hk ⊢
   exact ⟨hk.2, hk.1, departure_avoids_death_value w m hwalk t N havoid c k hk.2 hk.1⟩
 
 end TargetAvoidance
