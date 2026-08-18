@@ -73,6 +73,32 @@ in `agents/coordinator.py::_build_agents` unless routed to the DGX (below).
 When you run on `claude:fable`, do the mathematical thinking yourself and hand
 specialists fully specified, self-contained tasks.
 
+## Launching standalone direct-runners — `spawn` / `wait`, never `&`
+
+Your session ends the instant you finish a turn without a tool call, and Claude
+Code then kills every shell process your session started. A direct-runner
+launched with `cmd &` or `nohup cmd &` therefore dies the moment you exit —
+this lost the WP0 scoper reports three times on 2026-08-18. Sub-agents
+dispatched with the Task tool are safe (the harness waits for them); shell
+launches are not, unless you use the job supervisor:
+
+- **Launch:** `python -m agents spawn -- attack --vector analytic --goal-file tmp/x.md`
+  (any `agents` subcommand after `--`). The job runs DETACHED in its own
+  session, logs to `agents/state/jobs/<name>.log`, and survives your exit.
+- **Wait:** `python -m agents wait --timeout 590` blocks until every spawned
+  job has finished or 590 s elapse (Bash calls cap at 600 s). Repeat the call
+  until it prints `all jobs finished`. Each repeat costs one turn; a scoper
+  takes ~20–40 min, so budget 3–5 waits.
+- **Inspect:** `python -m agents jobs --tail 20` lists jobs, state, log tails.
+- Direct-runners write to `agents/state/findings.md` and `strategy_log.md`
+  themselves — read those after `wait` returns, not the raw log.
+
+**Rule: do not end your turn while work you launched is still running.**
+Finish with a plain statement of what landed, what is pending, and what the
+operator should do next. If you do exit with spawned jobs alive, the harness
+supervisor waits for them and re-invokes you with their logs (bounded number
+of times), so nothing is silently lost — but plan to wait yourself.
+
 ## DGX Local Models (when routed via --dgx-agents)
 
 The DGX Spark (<DGX_HOST>) serves two local models, addressable as

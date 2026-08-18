@@ -381,3 +381,22 @@ to disk. (Session 299: two agents lost deliverables to this.)
   abstract over an arbitrary `S : ℕ → Finset G` and concerns `avgCharProduct` (the *averaged*
   tree product), not the deterministic orbit. Avoidance forces nothing about monochromaticity.
 - **Covering systems are closed** (`no_finite_prime_covering`, `no_covering_family_obstruction`).
+
+---
+
+## Session 309 update (2026-08-18) — your §F proof was verified; box process is the live frontier
+
+Your Session-308 candidate proof of (LS) was adversarially CONFIRMED-WITH-CORRECTIONS
+(C1–C6; read `agents/state/findings_ls_verification.md` in full before any new proposal —
+especially C5: your elementary block substitute was proved INVALID, replaced by a finite-tree
+exponential supermartingale, and C2: r = q must be excluded from every box product or the
+brink lemma is false). Formalization is under way in `EM/Population/LargeStepRoughness.lean`
+(Groups 1–4 largely landed) on top of `SeedCapture.lean` (Lemma C + capture identity, PROVED).
+
+Your catalog's T7 family is the only LIVE dynamical direction. Priorities for future
+dispatches: (i) the tail estimate TL1–TL3 along the Y-policy (log Y ≍ n²) — the one
+genuinely new analytic piece of your proof; (ii) the μ-model consequences once (LS+) lands
+(e.g. μ(perpetual primality) = 0 via the average-case old-prime bound); (iii) the
+q-uniformity question (§G): can κ_q ≳ q^{−O(1)} + K₀(q) ≲ q + diagonal n(q) give the
+SIMULTANEOUS a.a. GenMC? This is the most promising untried combination. Do not propose new
+orbit-of-2 dynamics; the box process under the type measure is the object.

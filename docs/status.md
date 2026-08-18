@@ -1,5 +1,18 @@
 > **2026-08-17:** the population layer PE / MFRE / DSL is retired (Dead End #160, false by head domination); the headline is now CME ⇒ CCSB ⇒ MC.  Full record: [`docs/pe_dsl_retirement.md`](pe_dsl_retirement.md).
 
+> **2026-08-18/19 (Session 309):** the seed-average program's (LS) frontier is now a
+> **verified theorem with its deterministic core fully in Lean**. New files
+> `EM/Population/SeedCapture.lean` (q-free dynamics, Lemma C coupling+capture, capture
+> identity `captured_iff_mem_visited`, 548 lines) and
+> `EM/Population/LargeStepRoughness.lean` (box process, harmonic charge budget
+> `charge_sum_le_harmonic`, brink lemma, `mertens_upper` — first Mertens-type bound in the
+> repo — B4/B5 far-band estimates, and the headline **`pathwise_compensator`**:
+> `Σ_{k<n} S_k ≥ (c₁/2)·n` pathwise with absolute `c₁ = exp(−250)`, 1758 lines).
+> Both 0 sorry; full build green. WP4 (Mertens-in-AP O(1)) deleted — the asymptotic
+> Karamata form suffices (verified). Remaining for a.a. GenMC(q) per fixed q: tree-Chernoff
+> consumption (needs the type-measure/selection-law layer), tail estimate, Lemma D,
+> Theorem C. Adversarial verification record: `agents/state/findings_ls_verification.md`.
+
 # EM Formalization — Status
 
 > Maintained by the coordinator agent. Update **only when Lean code

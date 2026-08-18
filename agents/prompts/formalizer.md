@@ -1115,3 +1115,17 @@ Discovered while landing `EM/Population/AutonomousBranch.lean`,
 single uniform threshold, first *totalise*: state `∀ q, ∃ N₀, q ∈ Q → P q N₀` (using
 `by_cases q ∈ Q`, with `⟨0, absurd⟩` off `Q`), *then* `choose`. This yields a plain
 `N : ℕ → ℕ` that `Finset.sup` accepts, avoiding `Finset.attach` entirely.
+
+---
+
+## Session 309 infrastructure note
+
+New files (all 0 sorry): `EM/Population/SeedTypes.lean` (Lemma A/B, visited sets),
+`EM/Population/SeedCapture.lean` (q-free dynamics `genProdAvoid`/`genSeqAvoid`, Lemma C
+coupling + capture, `captured_iff_mem_visited`), `EM/Population/LargeStepRoughness.lean`
+(box process: visitedAt/box/boxCard/Charged, charge budget `charge_sum_le_harmonic` +
+`chargeBudget_le`, brink lemma, rho/survival layer, M1/M2). Build on these for the (LS)
+campaign; statement list in `agents/state/findings_ls_verification.md` §4. Toolchain
+v4.33.0 API notes are in the Session-309 agent reports quoted in state/strategy_log.md
+(range_add_one, unconditional card_sdiff, one_div_le_one_div_of_le, no IsUnit inside
+Finset.filter under open Classical, Real.log_le_log argument shape).

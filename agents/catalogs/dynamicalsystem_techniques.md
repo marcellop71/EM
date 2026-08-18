@@ -2,7 +2,8 @@
 
 **Domain**: Dynamical systems, ergodic theory, non-autonomous walks on finite groups
 **Attack agent**: `attack_dynamicalsystem`
-**Last updated**: Session 292
+**Last updated**: Session 308 (new family **T7: Population Box Process** — the first
+technique family in this catalog where classical probabilistic dynamics legitimately applies)
 
 ---
 
@@ -78,6 +79,48 @@
 | T6.2 | Accumulating CRT independence | As P(n) gains prime factors, CRT dimension grows | Correlations "diluted" in high dimensions | DEAD | #115 | CRT representation of a single integer is degenerate — all coordinates locked. Walk mod q has dimension 1 regardless. Illusory dimensional explosion |
 | T6.3 | Kowalski-Soundararajan equidist | CRT subsets equidistribute on average | Average equidist of orbit mod q | DEAD | — | Requires independence (confirmed by K-S 2021). Population-level |
 
+### T7: Population Box Process (type-measure martingale methods) — **NEW, Session 308, LIVE**
+
+**This is the first technique family in this catalog for which classical probabilistic
+dynamics is legitimately applicable.** The object is NOT the deterministic orbit of `2`; it is
+the *box process* of the seed-average law (`tmp/strategy_seed_average_2026-08-18.md`):
+
+- **State**: `(Bag_k, (V_k(r))_{r ≤ Y})` where `V_k(r)` = residues `c_j mod r` at `r`-exposed
+  steps `j < k`, `Bag_k` = primes dividing `P_k`, `B_k(r)` = units `∖ (−V_k(r))^{-1}`,
+  `|B_k(r)| = r−1−|V_k(r)|`.
+- **Driving measure**: the *type measure* — natural densities of unions of residue classes mod
+  `M_Y = ∏_{r≤Y} r` with `Y` an **absolute constant**. This is an honest finite probability
+  space, so martingales / compensators / Borel–Cantelli / Freedman are legitimate.
+- **Transition law (exact, proved-in-principle)**: `P(p_{k+1}=p ∣ τ) = ρ_p ∏_{r<p}(1−ρ_r)`,
+  `ρ_r = [c_k new mod r]/|B_k(r)|`, `ρ_r = 0` on `Bag` and at old positions.
+  `S_k(y) = P(p_{k+1} > y ∣ τ) = ∏_{r≤y}(1−ρ_r)`.
+
+| ID | Technique | Preconditions | What it gives | EM status | Notes |
+|----|-----------|---------------|---------------|-----------|-------|
+| T7.1 | Type/CRT product density (Lemma B + CRT) | multipliers `≤ y`, `M_y` squarefree | exact product formula for `dens(τ)` | CONFIRMED (Session 308 WP0(a)) | local factor at `r = p_{i+1}` is exactly one class; consistency = "`c_i` new mod `p_{i+1}`"; no hidden dependence since `c_0..c_n` are functions of `τ` alone |
+| T7.2 | Revisit-freeness (Lemma A) | none | `r ∤ P_k+1` at old positions; `\|V_∞(r)\| ≤ r−2` for uncaptured `r` | PROVED | `SeedTypes.not_dvd_succ_of_revisit`, `card_visitedSet_le_sub_two` |
+| T7.3 | `q`-free coupling (Lemma C) | `m' ≡ m mod M_y/q`, `q ∤ m'` | capture ⟺ `m' mod q ∈ −V_n(q)^{-1}`; **capture is a COVERAGE statement** | CONFIRMED (WP0(b)) | shielding handled by using `q`-**exposed** steps; `q`-power case ⊆ tail |
+| T7.4 | Large-multiplier randomisation (Lemma D) | type-determined threshold `y_k = C k log₂ c_k`; light-bag types | `P(p_{k+1} ≡ a ∣ τ, large) ≥ κ_q > 0` | OPEN, 7/10 | needs ONLY `weightedPNTinAP_asymp_proved` + Chebyshev `θ ≤ (log 4)x`. **Not** Mertens `O(1)`. `A = 2` suffices |
+| T7.5 | **Roughness charge budget** | none (deterministic) | `Σ_{r<2n} H_{r−1} ≤ θ(2n)+π(2n) = O(n)` against `n` steps ⟹ `S_k(y_k) ≥ c₁` on `≥ n/2` steps, pathwise | **VERIFIED Session 309 (CONFIRMED-WITH-CORRECTIONS); core IN LEAN** (`EM/Population/LargeStepRoughness.lean`: F1a–F1e `charge_sum_le_harmonic`, F1f–F1h `chargeBudget_le`, F2, F3 brink, B1–B3, B7, B8, M1, M2 — Session 309 slices 1–2) | The engine of (LS). Six corrections C1–C6 (see `agents/state/findings_ls_verification.md`): exclude `r = q` everywhere; near band `r ≤ 2k+1`; Y tied to n (`log Y ≍ n²`, cutoff `k ≥ n/log n`); tail estimate is new work; tree supermartingale replaces block chaining; stop at σ. Constants: `T = 6`, `c₁ := e^{−36}` (exp-route B7) |
+| T7.6 | Brink dichotomy | `\|B_k(r)\| = 1` and position new | `ρ_r = 1` ⟹ `p_{k+1} ≤ r` (the multiplier is forced small) | PROVED (argument) | describes `{S_k = 0}` exactly; also gives `ρ_r ≤ 1/2` at all steps with a huge multiplier |
+| T7.7 | Exponential supermartingale on the finite type tree | compensator `Σ S_k ≥ v` surely | `P(N_n < K) ≤ exp(λK − (1−e^{−λ})v)`; at `λ=1, K=(c₁/4)n`: rate `exp(−0.066·c₁·n)` | LEGITIMATE (Session 309) | first time a martingale tool applies. **WARNING (C5): the "elementary block substitute" is INVALID** — the charge budget is global (no per-block version) and goodness is not block-past-measurable; a middle block can be all high-exponent steps. Use the backward-induction supermartingale `E[e^{−λN+θV}] ≤ 1` (per-node factor `e^{θS}(1−θS) ≤ 1`), stopped at σ on `{σ > k} ∈ F_k` |
+| T7.8 | Theorem C chaining | Lemma D + `q`-free `V`-growth | geometric decay of the uncaptured density | OPEN, 6/10 | must be written by stopping times (`largeness` is `F_{k+1}`-measurable); `K₀ = π(q−1) + k₀ + k₁` |
+
+**Dead / corrected within T7** (do not re-introduce):
+- Seed-magnitude threshold `y_k = C k log₂ P_k` (**SM**): non-measurable for the type
+  σ-algebra; and the large-step event then has probability `≍ 1/log log X`, making Theorem C
+  vacuous and **(LS) false**. Use `y_k = C k log₂ c_k`.
+- The §1.7 heuristic "only primes `r ≳ k/log k` are still active" (**CI**): assumes the small
+  primes are captured, i.e. the population form of the conclusion. Use T7.5 instead.
+- Worst-case `ω(m) ≤ log₂ m` bag bound (**AG**): unbounded on a type; replace by the first
+  moment `E[Σ_{r∣m, r≥z}1/r] ≤ 2/(z log z)` and a density-`2/log C` exclusion.
+- "each `r < q` is new at most `r−1` times" (the original `K₀` justification): **false** —
+  `V(r)` grows only at `r`-exposed steps. Use distinctness of multipliers (`π(q−1)`).
+
+**Scope**: T7 caps at **a.a. GenMC(q) for each fixed `q`**. `κ_q ≍ c(A)/φ(q) → 0` and
+`K₀(q) → ∞`, so there is no `q`-uniformity, and natural density is not countably additive; the
+simultaneous statement is open. T7 is **not** a route to MC (#90 stands).
+
 ---
 
 ## Decomposition Strategies
@@ -131,6 +174,14 @@ No such theory exists. Creating one would be a genuine mathematical contribution
 ---
 
 ## The Frontier (what might actually work)
+
+### F0: The box process / seed-average law (T7) — **now the top item (Session 308)**
+Target: **a.a. GenMC(q)** — "for a.a. squarefree seeds `m`, the greedy orbit of `m` captures
+`q`" — the cap the paper flags as unattained. Route: T7.1–T7.4 (exact conditional selection
+law + Lemma D) ⟹ Theorem C, plus T7.5–T7.7 ⟹ (LS). Uses **no character sums, no
+equidistribution hypothesis, no orbit claim**, so it is immune to #90/#117/#136–#139/#157/#160.
+Analytic input: `weightedPNTinAP_asymp_proved` (in repo) and Chebyshev `θ ≤ (log 4)x` (Mathlib).
+Scope cap: per `q` (see T7 "Scope"). Feasibility 6/10 (was 2/10 before the charge budget).
 
 ### F1: Population Transfer (PT) — most promising
 **Why**: cleanest separation between sieve-theoretic (PE) and dynamical (PT) content. PT asks only: does the EM trajectory sample ShiftedSquarefree without mod-q bias?
@@ -208,7 +259,28 @@ Monitor for:
 | 276 | FF-specific dynamical reasoning lines assessment (6 questions) | ALL 6 FF-specific questions map to existing dead ends: (1) FF-DSL orbit-specificity = #127 (FF walk sum ≠ standard char sum), (2) perpetual irreducibility = new structural finding (autonomous map f(w)=w(w+1) on F_p) but orbit-specific, (3) monodromy/Deligne = #129 (FFLM false, Deligne = family), (4) SelectionBiasNeutral = #130 (= FF-CME by rfl), (5) pool depletion → capture = counting argument only, (6) Artin-Schreier tower = protects irreducibility, doesn't help coverage. FF setting gives 3 population-level advantages (free PE from Weil, exact π_p(d), explicit Galois) but NONE bypass orbit-specificity barrier. One genuinely new finding: Φ₃ exclusion criterion (formalized in EM/FunctionField/AutonomousMap.lean, 225 lines) proves -1 unreachable for p≡2 mod 3 under autonomous map. Assessment dispatched to analytic agent (which proved the theorems) | 0 (6 questions definitively closed; analytic agent handled the one positive finding) |
 | 291 | Scoping Pass S-Φ: Schmidt's theorem applicability to Φ-cocycle on Ẑ | Confirmed Session 181 independently with 4 parallel agents. System (A) (odometer+Φ): all 5 Schmidt hypotheses satisfied, R(c̃) POP-computable, gives a.e.-equidist for consecutive integers (= PE). System (B) (EM iteration): framework inapplicable — cocycle over F(x)=x·minFac(x+1) is tautological. Transfer A→B = Dead End #90. Unique ergodicity fails (Φ discontinuous). New elements: Haar μ(L_p) computation with sum-to-1, E[log Φ] = +∞ (irrelevant for compact G), explicit System A/B taxonomy. Coboundary test = CCSB reformulation (equivalence collapse). Verdict: NO-GO-foundations. No Lean code | 0 (definitive closure: Schmidt/cocycle approach fully explored and dead) |
 | 292 | Option 1 consolidation: synthesize evidence from S-LDP, S-Φ, S-Profinite, S-FF | Classification: META-OBSERVATION (not theorem, not conjecture). Cannot be formalized without tautology: defining "dynamically irreducible" circularly. Closest formalizable version: `orbit_barrier_thesis` (conjunction of dead-end witnesses). Four scoping passes converge on same diagnosis: orbit-specificity barrier is intrinsic. Two fundamental barriers: Four-Way Blocker + Marginal/Joint. Publishable as AI-assisted mathematical exploration case study. Falsifiable by: new equidist theorem for non-autonomous deterministic multiplicative walks. Option 3 (FF-AG) CLOSED. Option 1 is main deliverable track | 0.3 (clean consolidation + publication assessment) |
+| 308 | WP0 adversarial scoping of the seed-average law + WP5 frontier (LS) | (a)(b)(c) CONFIRMED; (d)(e) CORRECTED (2 bugs found independently: SM seed-magnitude threshold — which makes Theorem C vacuous AND (LS) false — and AG worst-case `ω(m)`); (d)(iii) CONFIRMED, **WP4 deleted** (and two further weakenings: no Mertens of any kind, `A=2`, one crude Abel bound). **Main deliverable: candidate PROOF of (LS)** via the deterministic roughness charge budget `Σ_{r<2n}H_{r−1} ≤ θ(2n)+π(2n) = O(n)` + distinctness of multipliers + brink dichotomy + Freedman — analytic input only Chebyshev. New technique family T7 (population box process). Flagged the per-`q` vs simultaneous scope gap. 2 candidate dead ends (SM, CI) | **2.5** (first genuinely applicable probabilistic-dynamics technique; frontier item moved 2/10 → 6/10) |
 | 294 | S-Height scoping: confinement height Ĥ_q as Lyapunov function | NO-GO-capacity-gap. Novel formulation (not equivalence collapse). Avoids 4/5 specific prior failure modes. But capacity-bound gap = MC-mod-q (orbit-specificity #90). N2 (capacity = lower bound, MATCHED-LINEAR) is FATAL. POP/ORB dilemma: POP null → vacuous, ORB null → circular. Existing L(N) strictly dominates Ĥ_q | 0.2 (structural closure; 7th scoping pass confirms barrier from new angle) |
+
+**Session 308 changes the pattern.** For the first time the home domain applies, because the
+object changed: the *box process* under the *type measure* is an honest finite probability
+space, so martingales and Borel–Cantelli are legitimate. The lesson for future dispatches:
+**do not ask "can ergodic theory see the orbit of 2" (answer: no, 29 times). Ask "is there a
+population-level process with an honest measure whose coverage forces capture".** The
+box process is one; the frontier item (LS) went from 2/10 to 6/10 in a single session because
+of a purely deterministic accounting identity (T7.5), not because of any ergodic theorem.
+
+**UNTRIED combinations flagged (Session 308)**:
+- T7.5 (charge budget) × T7.6 (brink dichotomy) at **fixed small `q`**: for `q = 3` the
+  endgame band is `r < 2k` with `r ≠ 3`; can the budget be made explicit enough to give a
+  numerical `κ_3` and a clean `q = 3` theorem first (as §1.7 recommends)?
+- T7.5 × the **simultaneous** statement (§G): the budget gives an exponential rate
+  `e^{−c₁n/16}` with `c₁` **absolute** (not `q`-dependent!) for (LS); the `q`-dependence sits
+  only in `κ_q` and `K₀(q)`. If `κ_q ≳ 1/q^{O(1)}` and `K₀(q) ≲ q`, a diagonal `n(q)` might
+  give simultaneous a.a. GenMC. **This is the most promising untried combination.**
+- T7 × the mixed/ε-walk framework (`EM/Advanced/EpsilonRandomMC.lean`): the box process is a
+  second, independent probabilistic model of the same recursion; do the two coverage
+  statements imply each other? (`DenseCaptureHypothesis` vs. `V_∞(q) = all units`.)
 
 **Success rate on novel proposals**: 1/29 (3.4%) led to a proved theorem (super-exponential growth, Session 105). Most proposals hit the fundamental dynamical obstacle: classical ergodic theory requires invariant measures, and no substitute exists for deterministic, non-stationary walks.
 
@@ -220,3 +292,27 @@ Monitor for:
 **+1 shift exploitation CLOSED as dynamical direction** (Session 157): The cofactor identity is algebraically complete (6 theorems in EM/Reduction/DSLInfra.lean). The cofactor walk is a coordinate change, not new dynamics. cofZ is position-dependent (less decorrelated than multiplier). Any remaining +1 shift leverage is arithmetic/sieve-theoretic. Do NOT re-propose cofactor-based dynamical arguments.
 
 **Do NOT re-propose**: classical ergodic theory (#74, #86, #95), random walk theory (#86, #95), transition matrix arguments (#110), CRT-based "independence" (#98, #107, #115), sieve-theoretic transfer (#116), ensemble mixing-time analysis (collapses under conditioning, Session 120), growth-based decorrelation for population cross-terms (#118, Session 137), SelfCorrectingDrift/Lyapunov reformulations (#120, Session 142 — SCD = SVE via telescope identity), cofactor walk / +1 shift dynamical arguments (Session 157 — coordinate change, no independent dynamics, position-dependent, all leverage arithmetic not dynamical), **Furstenberg group extension / cocycle / skew product / coboundary / Schmidt essential range approaches** (Sessions 181, 291 — PhiNotCoboundary = population, Φ discontinuous on Ẑ, EM orbit Haar-measure-zero, step-to-walk gap unbridgeable, MartingaleCME ill-defined, Tao-Collatz non-transferable, System A ≠ System B decisive, coboundary test = CCSB equivalence collapse, NO-GO-foundations), or **Reconvergence / Ratner analogies / unique ergodicity / perturbation coupling** (Session 183 — Reconvergence Lemma FALSE via butterfly sensitivity, unique ergodicity blocked by non-autonomy, no orbit-specific equidist for non-algebraic systems in literature), or **confinement height / avoidance-cost Lyapunov arguments** (Session 294 — γ_q constant under all population nulls, capacity = lower bound MATCHED-LINEAR, POP/ORB dilemma, L(N) strictly dominates Ĥ_q).
+
+---
+
+## Session 309 addendum (2026-08-18) — §F verified and largely formalized
+
+The T7.5 candidate proof was adversarially verified (attack-analytic): **CONFIRMED-WITH-
+CORRECTIONS** (C1–C6, full report `agents/state/findings_ls_verification.md`). Highlights:
+- **Sound**: charge bookkeeping exact (`Σ 1/|B| ≤ H_{r−1}`, no hidden log; budget tight up
+  to ≈1.6×); no circularity; the random-good-step-set worry dissolves because only the SUM
+  `Σ S_k` is used and its lower bound is sure. Four-Way-Blocker leg 4 genuinely not needed.
+- **Corrected**: r = q must be excluded everywhere (brink FALSE at r = q); near band is
+  `r ≤ 2k+1`; the truncation quantifier `∃Y₀ ∀Y ≥ Y₀` kills the far-band constant — Y must
+  be a POLICY `log Y(n) ≍ n²` with cutoff `k ≥ n/log n` (this also changes the Theorem C
+  (e-3) statement shape); the tail estimate along Y(n) is new work (~200 lines, `≲ log n/n`);
+  **the block substitute is invalid** (see T7.7) — tree supermartingale instead.
+- **Bonus**: `#{k < n : S_k = 0} ≤ π(2n)` pathwise — the (e-2) non-null event is exactly the
+  spoiled-step set, density o(1). For the paper.
+- **Lean status after Session 309** (`EM/Population/`): `SeedCapture.lean` (548 lines —
+  q-free dynamics, Lemma C coupling+capture, capture identity `captured_iff_mem_visited`);
+  `LargeStepRoughness.lean` (992+ lines — Groups 1–3 complete incl.
+  `charge_sum_le_harmonic`, `brink_forces_small_multiplier`; Group 4 B1–B3/B7/B8;
+  F1f–F1h `chargeBudget_le`; M1/M2). Remaining: B4/B5 (slice 3, dispatched), M3/M4 +
+  ★`pathwise_compensator` assembly, Group 6 tree Chernoff, Group 7 tail, then Lemma D +
+  Theorem C. All statements per the §4 list in the verification report.

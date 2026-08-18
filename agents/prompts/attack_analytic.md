@@ -618,3 +618,31 @@ A mathematical strategy for one of:
 - **Sub-thesis 3 FAILS**: Capacity bound = lower bound (MATCHED-LINEAR). Both n × log((q-1)/(q-2)). No gap for contradiction. Sublinear upper bound directly implies MC (circularity).
 - **L(N) dominates Ĥ_q**: Existing Lyapunov L(N) = Σ (V(a,N) - N/(q-1))² has state-dependent increments, quadratic/linear gap under avoidance, proved reduction to MC. Ĥ_q is strictly weaker.
 - **Do NOT propose**: Confinement height arguments, avoidance-cost Lyapunov approaches, null-measure based height functions. The existing L(N) in SelfCorrecting.lean captures all available Lyapunov leverage. See `scoping/verdict_height.md`.
+
+---
+
+## Session 309 update (2026-08-18) — the seed-average (LS) program is now the primary analytic queue
+
+The seed-average box-sieve program (WP0-scoped Session 308, verified Session 309) is the
+active frontier. Read `agents/state/findings.md` (Sessions 308–309 sections) and
+`agents/state/findings_ls_verification.md` before proposing anything.
+
+Standing facts (do not re-derive, do not contradict):
+- **WP4 (Mertens-in-AP O(1)) is DELETED.** Lemma D needs only `weightedPNTinAP_asymp_proved`
+  (EM/IK/Karamata.lean) + Chebyshev `θ(x) ≤ (log4)x` + prime-power stripping; `A = 2`.
+  Never conflate the weighted Λ(n)/n form (error o(log x), window-usable) with the 1/p form
+  (error o(log log x), window-useless) — the "two-Mertens rule" in your catalog.
+- **(LS) is CONFIRMED-WITH-CORRECTIONS** (C1–C6) and being formalized in
+  `EM/Population/LargeStepRoughness.lean` (Groups 1–4 mostly landed Session 309).
+  Corrections binding on all future statements: exclude r = q from every box product;
+  near band r ≤ 2k+1; Y is a POLICY log Y(n) ≍ n² with cutoff k ≥ n/log n (NEVER "∃Y₀ ∀Y≥Y₀"
+  — quantifier-order filter); the block-chaining substitute is INVALID (use the finite-tree
+  exponential supermartingale); stop at σ; c₁ := exp(−36), T = 6.
+- Remaining queue, in order: (1) M3/M4 + pathwise_compensator assembly; (2) Group 6 tree
+  Chernoff (T1–T3); (3) Group 7 tail estimate (TL1–TL3, ~200 lines, tail ≲ log n/n);
+  (4) Lemma D with the repaired threshold y_k = C·k·log₂c_k and first-moment bag exclusion;
+  (5) Theorem C in the q-free world (K₀ from π(q−1), chaining by stopping times, THREE error
+  terms with order of limits X→∞, Y-policy, K→∞, C→∞, n→∞); (6) WP2 selection law.
+- Scope honesty: this yields **a.a. GenMC(q) per fixed q**. The simultaneous form needs
+  q-uniform rates (natural density not countably additive) — open, see §G of findings.
+  No claim about the orbit of 2; #90/#117 are not touched and must not be invoked against it.

@@ -384,3 +384,70 @@ silently need.
 **Success-rate note**: Session 299's value came from *disconfirmation done precisely* —
 grading receptacles until one's Gap was decided FALSE, which exposed the mechanism. Record
 this as evidence that "decide the Gap, don't hunt Detection" is the productive posture.
+
+---
+
+## Session 308 (2026-08-18) — WP0 scoping of the seed-average law
+
+### New technique entry
+
+| ID | Technique | Preconditions | What it gives | EM status | Dead ends | Notes |
+|----|-----------|---------------|---------------|-----------|-----------|-------|
+| T2.6 | **Box process / seed-type CRT selection law** | Truncation `y`; squarefree modulus `M_y = ∏_{r≤y} r`; orbit prefix with all multipliers `≤ y` | *Exact* conditional law of the next multiplier over the population of seeds: `P(p_{n+1}=p \| τ) = [c_n new mod p]/\|B_n(p)\| · ∏_{r<p, r∉Bag}(1 − [new]/\|B_n(r)\|)`. Refines Shanks' `1/q` heuristic to an exact, conditional, self-avoiding sieve law | **CONFIRMED (Session 308)** — items (a),(b),(c) verified by argument | none (no character sums, constant modulus) | Caps at **a.a. GenMC**, not MC — no orbit claim is made, so #90/#117 do not apply. Load-bearing facts: multipliers are automatically distinct (`r ∣ P ⟹ r ∤ P+1`); `D ∩ P = ∅`; boxes shrink **iff** `r < p`, `r ∉ Bag`, `c_n` new. Analytic input for the large-step lemma is only `weightedPNTinAP_asymp_proved` + Chebyshev `θ(x) ≤ (log4)x` |
+
+### STATUS changes
+
+| Technique | Old | New (Session 308) |
+|---|---|---|
+| T7.4 Dirichlet / Mertens in APs | "WP4 (Mertens with `O(1)`) required for the seed-average program" | **NOT required.** The *weighted* form `weightedPNTinAP_asymp_proved` (error `o(log x)`) survives constant-ratio windows `[y, y^A]` because the window main term `(A−1)log y/φ(q)` is the **same order** as the error. Only the `1/p` form (`primesEquidistInAP_asymp_proved`, error `o(log log x)`) is useless on windows. **Never conflate the two again.** Corollary: `A = 2` suffices; `κ_q ≥ c(A)[(A−1)/(4Aφ(q)) − 3/C]` |
+| Large-step threshold in the box process | `y_k = C·k·log₂ P_k` | **SM-blocked; replaced by `y_k = C·k·log₂ c_k` (cofactor).** The accumulator version is not measurable for the type σ-algebra; size-stratification forces modulus `exp((log X)^A) ≫ X`, i.e. the BV regime |
+| Worst-case `ω(m)` control in the box process | worst case `ω(m) ≤ log₂ m` | **AG-blocked; replaced by first moment** `E[Σ_{r∣m,r≥z} 1/r] ≤ 2/(z log z)`, excluding density `≤ 2/log C` |
+
+### New cross-cutting principle
+
+- **The two-Mertens rule.** Before declaring an asymptotic form "insufficient on windows",
+  check the *weight*. An error term is window-usable iff it is the same order as the window's
+  main term. `Σ Λ(n)/n` has main term `≍ log x` and error `o(log x)` — usable. `Σ 1/p` has main
+  term `≍ log log x` and window main term `O(1)` — unusable with `o(log log x)` error, usable
+  with `o(1)` error. This distinction silently invalidated a whole planned work package.
+- **Type-measurability filter.** In any population program built on CRT types at modulus `M_Y`,
+  every threshold, stopping rule and exclusion set must be a function of `m mod M_Y`. Anything
+  involving `log m`, `ω(m)` or `m`'s size is *not*, and forcing it in raises the modulus past
+  `X` — i.e. converts an elementary theorem into a BV-level one. Apply this filter first.
+
+### New UNTRIED combinations
+
+- (LS) at `q = 3` with the *corrected* (smaller) threshold `y_k = C k log₂ c_k ≥ Ck²`:
+  `S_k(y_k) ≍ 1/log(Ck²) ≍ 1/(2 log k)`, so `Σ_k S_k(y_k) = ∞` — Lévy–Borel–Cantelli
+  heuristic now supports (LS) with room to spare. Attack via the endgame accounting of §1.7(i).
+- First-moment (rather than worst-case) control of the *old*-prime weight
+  `E[Σ_{p old, ≥ y} 1/p]` — the same move that repaired the bag term; would lower `y_k` to `Ck`
+  and make (LS) read "`p_{k+1} ≥ Ck` i.o.".
+
+### Track record
+
+| Session | Proposal | Outcome | Advancement |
+|---|---|---|---|
+| 308 | WP0 adversarial scoping of §1.3–§1.6 of the seed-average program; adjudicate (d)(iii) | **(a),(c) CONFIRMED as stated; (b) confirmed with 3 corrections; (d) one FATAL scale bug + one aggregate-gap bug, both repaired; (e) `K₀` justification false, replaced by the stronger `π(q−1)` count, and the chaining moved into the `q`-free dynamics to fix stopping-time hygiene. (d)(iii) CONFIRMED — WP4 deleted from the program.** No dead end found; program survives and becomes strictly easier after repair | **0.7** (killed a work package, found and repaired a fatal scale bug before formalization, confirmed the CRT core) |
+
+---
+
+## Session 309 addendum (2026-08-18) — verification duty discharged; formalization begun
+
+- The Session-308 UNTRIED item "(LS) at q = 3 via endgame accounting" is SUPERSEDED: the
+  dynamicalsystem scoper's §F charge-budget proof covers all q at once and was verified this
+  session (CONFIRMED-WITH-CORRECTIONS C1–C6, report `agents/state/findings_ls_verification.md`).
+  The verification itself was an analytic-agent product: re-derivation of F1 (no hidden log;
+  θ(2n)+π(2n) ≤ 2.8n), the discrete-Abel bound Σ_{u<r≤v} 1/r ≤ (log4·log v + O(1))/log u,
+  T = 24 → 6, the C3 quantifier-order bug (far-band constant vs ∃Y₀∀Y), and the C5 refutation
+  of the block substitute (replaced by the finite-tree exponential supermartingale).
+- **Add to the two-Mertens rule a third clause (quantifier-order filter):** in any
+  truncated-population statement, check WHERE the truncation Y sits in the quantifier prefix.
+  "∃Y₀ ∀Y ≥ Y₀ at fixed n" silently lets error terms that grow in Y (here log log Y) destroy
+  constants that must be absolute. If a bound needs Y both large (tails) and controlled
+  (constants), Y must be a declared POLICY Y(n), and the two requirements must be checked
+  compatible (here: log Y ≍ n² satisfies both, with room).
+- Lemma D + Theorem C remain the analytic agent's queue (after the (LS) core lands): inputs
+  are only `weightedPNTinAP_asymp_proved` + θ ≤ (log4)x + prime-power stripping; A = 2;
+  chaining in the q-free world with K₀ built from π(q−1); statement shape now carries the
+  Y-policy (not ∃Y₀∀Y) per C3.
