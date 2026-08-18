@@ -52,22 +52,12 @@ The registry is regenerated automatically by `lake build`.
 
 ## Building
 
-Requires the pinned Lean toolchain in [`lean-toolchain`](lean-toolchain).  Dependencies:
-Mathlib `v4.33.0`, [CA](https://github.com/marcellop71/CA) `v4.33.0` (the content-addressing
-registry) and LeanArchitect (pinned to `main`) are git requires and are fetched by `lake`; one
-sibling checkout remains a path dependency of the lakefile:
-
-```
-dev/
-├── lean/
-│   └── EM/          (this repo)
-└── proofinity/
-    └── declbuild-meta/   github.com/proofinity-it/declbuild-meta @ 63734c0
-```
-
-Then `lake build` at the repo root.  Two libraries are built: `EM` (the mathematics; depends
-only on Mathlib) and `EMRegistry` (root `EMRegistry.lean`: `EM` plus the registry tooling
-`EM/Meta/{Registry,Strategies,Blueprint}.lean`, which need CA, declbuild-meta and LeanArchitect).
+Requires the pinned Lean toolchain in [`lean-toolchain`](lean-toolchain).  All dependencies are
+git requires fetched by `lake`: Mathlib `v4.33.0`, [CA](https://github.com/marcellop71/CA)
+`v4.33.0` (the content-addressing registry) and LeanArchitect (pinned to `main`).  Then
+`lake build` at the repo root.  Two libraries are built: `EM` (the mathematics; depends only on
+Mathlib) and `EMRegistry` (root `EMRegistry.lean`: `EM` plus the registry tooling
+`EM/Meta/{Registry,Blueprint}.lean`, which need CA and LeanArchitect).
 
 Verified set: no `sorry`, no user axioms, no `native_decide`; run
 `python3 tools/check_axioms.py` after `lake build` to confirm that every published declaration

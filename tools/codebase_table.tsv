@@ -167,7 +167,6 @@ Cross-check infrastructure	Meta/Registry.lean	Content-addressed registry, \textt
 Cross-check infrastructure	Meta/DeadEnds.lean	Dead end registry: 159 documented, 27 witnessed, 10 revivable
 Cross-check infrastructure	Meta/OrbitBarrier.lean	Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis
 Cross-check infrastructure	Meta/BagInformation.lean	What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity
-Cross-check infrastructure	Meta/Strategies.lean	Content-addressed theories and strategies (DeclbuildMeta)
 Iwaniec--Kowalski infrastructure	IK/Tauberian.lean	One-sided Tauberian, L-series bounds, prime power stripping
 Iwaniec--Kowalski infrastructure	IK/AbelChain.lean	Abel summation chain: $(\log p)/p \to 1/p$ infrastructure
 Iwaniec--Kowalski infrastructure	IK/Karamata.lean	Karamata's Tauberian theorem for Dirichlet series; \texttt{WeightedPNTinAPAsymp} proved unconditionally

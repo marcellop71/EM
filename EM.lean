@@ -3,9 +3,9 @@
 The verified set is exactly this import closure: no `sorry`, no user axioms, no
 `native_decide`; every published declaration depends only on `propext`, `Classical.choice`,
 `Quot.sound` (gate: `python3 tools/check_axioms.py`, run after `lake build`).
-This module depends only on Mathlib.  The registry tooling (`EM/Meta/{Registry,Strategies,
-Blueprint}.lean`, which need CA / declbuild-meta / LeanArchitect) is the separate library
-`EMRegistry` (root `EMRegistry.lean`), built by `lake build` as well. The ONLY files under EM/ deliberately excluded are those in
+This module depends only on Mathlib.  The registry tooling (`EM/Meta/{Registry,Blueprint}.lean`,
+which need CA / LeanArchitect) is the separate library `EMRegistry` (root `EMRegistry.lean`),
+built by `lake build` as well. The ONLY files under EM/ deliberately excluded are those in
 EM/Archive/ — retired mathematics kept for reference, with proof bodies
 stubbed behind `#exit` or preserved whole-file; see EM/Archive/README.md.
 `tools/gen_codebase_table.py` audits this: it warns when a live file is
