@@ -141,6 +141,7 @@ import EM.Population.SizeResidueDecoupling
 import EM.Population.RelativeSize
 import EM.Population.HittingSetStructure
 import EM.Population.InfiniteM
+import EM.Population.LargeStepRoughness
 import EM.Population.ReciprocalSum
 import EM.Population.RigidityMaster
 import EM.Population.SeedCapture
