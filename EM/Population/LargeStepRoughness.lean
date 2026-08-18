@@ -987,6 +987,410 @@ theorem markov_count_le (q m n : ℕ) (T : ℝ) :
         simp only [hg, chargeBudget, Finset.sum_filter, ← hR]
         rw [Finset.sum_comm]
 
+/-! ## 6.  Chebyshev consequences
+
+Third slice of the deterministic core of **(LS)**: the two Chebyshev
+consequences that the far band needs (**B4**, the discrete Abel bound on
+`∑ 1/r` over a dyadic-free range of primes) together with the prime-counting
+upper bound (**F2d**).  Verified statement list,
+`agents/state/findings_ls_verification.md` §4, with the analysis of §2.3-§2.4.
+
+Everything here is pure prime-counting analysis: no orbit content, no boxes,
+no `ρ`.  The only input is `sum_log_prime_le` (Chebyshev's `θ(N) ≤ N log 4`,
+itself from Mathlib's `primorial_le_four_pow`).
+
+Absolute constants are *not* optimised; only their being absolute matters. -/
+
+/-- `log r`, supported on the primes: the increment of Chebyshev's `θ`. -/
+noncomputable def gLog (i : ℕ) : ℝ := if i.Prime then Real.log i else 0
+
+theorem gLog_nonneg (i : ℕ) : 0 ≤ gLog i := by
+  unfold gLog
+  split_ifs with h
+  · exact Real.log_nonneg (by exact_mod_cast h.one_lt.le)
+  · exact le_rfl
+
+/-- **Chebyshev's `θ`.**  `θ(t) = ∑_{r ≤ t, r prime} log r`. -/
+noncomputable def thetaR (t : ℕ) : ℝ :=
+  ∑ r ∈ (Finset.range (t + 1)).filter Nat.Prime, Real.log r
+
+/-- The partial Mertens sum `∑_{r ≤ t, r prime} (log r)/r`. -/
+noncomputable def mertensPartial (t : ℕ) : ℝ :=
+  ∑ r ∈ (Finset.range (t + 1)).filter Nat.Prime, Real.log r / r
+
+theorem thetaR_succ (t : ℕ) : thetaR (t + 1) = thetaR t + gLog (t + 1) := by
+  rw [thetaR, thetaR, Finset.range_add_one, Finset.filter_insert]
+  split_ifs with h
+  · rw [Finset.sum_insert (by simp), gLog, if_pos h]; ring
+  · rw [gLog, if_neg h]; ring
+
+theorem mertensPartial_succ (t : ℕ) :
+    mertensPartial (t + 1) = mertensPartial t + gLog (t + 1) / ((t : ℝ) + 1) := by
+  rw [mertensPartial, mertensPartial, Finset.range_add_one, Finset.filter_insert]
+  split_ifs with h
+  · rw [Finset.sum_insert (by simp), gLog, if_pos h]
+    push_cast
+    ring
+  · rw [gLog, if_neg h]
+    simp
+
+theorem thetaR_nonneg (t : ℕ) : 0 ≤ thetaR t :=
+  Finset.sum_nonneg fun _ hr => by
+    rw [Finset.mem_filter] at hr
+    exact Real.log_nonneg (by exact_mod_cast hr.2.one_lt.le)
+
+/-- **Chebyshev.**  `θ(t) ≤ (t+1) log 4`, a restatement of `sum_log_prime_le`. -/
+theorem thetaR_le (t : ℕ) : thetaR t ≤ ((t : ℝ) + 1) * Real.log 4 := by
+  have h := sum_log_prime_le (t + 1)
+  rw [thetaR]
+  push_cast at h
+  exact h
+
+/-- **Discrete Abel summation.**  Summation by parts for `∑ (log r)/r` against
+Chebyshev's `θ`.  All the `1/0 = 0` junk cancels formally, so the identity holds
+for every `n` with no side conditions. -/
+private theorem abel_identity (n : ℕ) :
+    mertensPartial n
+      = thetaR n / n + ∑ i ∈ Finset.range n, thetaR i * (1 / (i : ℝ) - 1 / ((i : ℝ) + 1)) := by
+  induction n with
+  | zero =>
+    have h : (Finset.range 1).filter Nat.Prime = ∅ :=
+      Finset.filter_eq_empty_iff.mpr (by
+        intro t ht
+        rw [Finset.mem_range] at ht
+        interval_cases t
+        exact Nat.not_prime_zero)
+    rw [mertensPartial, thetaR, h]
+    simp
+  | succ n ih =>
+    rw [mertensPartial_succ, ih, Finset.sum_range_succ, thetaR_succ]
+    push_cast
+    ring
+
+/-- The Abel tail term at index `i` is at most `2 log 4 / (i+1)`. -/
+private theorem abel_tail_term_le (i : ℕ) :
+    thetaR i * (1 / (i : ℝ) - 1 / ((i : ℝ) + 1))
+      ≤ 2 * Real.log 4 * (1 / ((i : ℝ) + 1)) := by
+  have hLnn : (0 : ℝ) ≤ Real.log 4 := Real.log_nonneg (by norm_num)
+  rcases Nat.eq_zero_or_pos i with hi | hi
+  · subst hi
+    have h1 : (1 : ℝ) / ((0 : ℕ) : ℝ) - 1 / (((0 : ℕ) : ℝ) + 1) = -1 := by norm_num
+    have h4 : (1 : ℝ) / (((0 : ℕ) : ℝ) + 1) = 1 := by norm_num
+    rw [h1, h4]
+    nlinarith [thetaR_nonneg 0]
+  · have hx : (1 : ℝ) ≤ (i : ℝ) := by exact_mod_cast hi
+    have hx0 : (0 : ℝ) < (i : ℝ) := by linarith
+    have hx1 : (0 : ℝ) < (i : ℝ) + 1 := by linarith
+    have e1 : (1 : ℝ) / (i : ℝ) - 1 / ((i : ℝ) + 1) = 1 / ((i : ℝ) * ((i : ℝ) + 1)) := by
+      field_simp
+      ring
+    have e2 : 2 * Real.log 4 * (1 / ((i : ℝ) + 1))
+        = (2 * Real.log 4 * (i : ℝ)) * (1 / ((i : ℝ) * ((i : ℝ) + 1))) := by
+      field_simp
+    rw [e1, e2]
+    refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+    nlinarith [thetaR_le i, mul_nonneg hLnn (by linarith : (0 : ℝ) ≤ (i : ℝ) - 1)]
+
+/-- The Abel head term is at most `2 log 4`. -/
+private theorem abel_head_le (n : ℕ) : thetaR n / (n : ℝ) ≤ 2 * Real.log 4 := by
+  have hLnn : (0 : ℝ) ≤ Real.log 4 := Real.log_nonneg (by norm_num)
+  rcases Nat.eq_zero_or_pos n with hn | hn
+  · subst hn
+    have h : thetaR 0 / ((0 : ℕ) : ℝ) = 0 := by simp
+    rw [h]
+    linarith
+  · have hx : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+    rw [div_le_iff₀ (by linarith)]
+    nlinarith [thetaR_le n, mul_nonneg hLnn (by linarith : (0 : ℝ) ≤ (n : ℝ) - 1)]
+
+/-- **Mertens, upper bound only.**  `∑_{r ≤ v, r prime} (log r)/r ≤ 2 log 4 (2 + log v)`.
+
+Proved by *discrete summation by parts* against Chebyshev's `θ` (route: direct
+induction proving the Abel identity, then `θ(t) ≤ (t+1) log 4` termwise and
+`harmonicR_le`).  No integrals, no dyadic blocks.
+Verified statement list `findings_ls_verification.md` §2.3 (**B4**). -/
+theorem mertens_upper (v : ℕ) :
+    ∑ r ∈ (Finset.range (v + 1)).filter Nat.Prime, Real.log r / r
+      ≤ 2 * Real.log 4 * (2 + Real.log v) := by
+  have hLnn : (0 : ℝ) ≤ Real.log 4 := Real.log_nonneg (by norm_num)
+  have htail : ∑ i ∈ Finset.range v, thetaR i * (1 / (i : ℝ) - 1 / ((i : ℝ) + 1))
+      ≤ 2 * Real.log 4 * harmonicR v := by
+    calc ∑ i ∈ Finset.range v, thetaR i * (1 / (i : ℝ) - 1 / ((i : ℝ) + 1))
+        ≤ ∑ i ∈ Finset.range v, 2 * Real.log 4 * (1 / ((i : ℝ) + 1)) :=
+          Finset.sum_le_sum fun i _ => abel_tail_term_le i
+      _ = 2 * Real.log 4 * harmonicR v := by rw [harmonicR, Finset.mul_sum]
+  have hmul : 2 * Real.log 4 * harmonicR v ≤ 2 * Real.log 4 * (1 + Real.log v) :=
+    mul_le_mul_of_nonneg_left (harmonicR_le v) (by linarith)
+  have hexp : 2 * Real.log 4 * (2 + Real.log v)
+      = 2 * Real.log 4 + 2 * Real.log 4 * (1 + Real.log v) := by ring
+  show mertensPartial v ≤ 2 * Real.log 4 * (2 + Real.log v)
+  rw [abel_identity v, hexp]
+  linarith [abel_head_le v]
+
+/-- **B4 — the discrete Abel bound.**  For `2 ≤ u`,
+
+```
+∑_{u < r ≤ v, r prime} 1/r  ≤  2 log 4 (2 + log v) / log u.
+```
+
+Each prime `r > u` satisfies `1/r ≤ (log r)/(r log u)`; then `mertens_upper`.
+Verified statement list `findings_ls_verification.md` §2.3 (**B4**). -/
+theorem recip_prime_sum_le (u v : ℕ) (hu : 2 ≤ u) :
+    ∑ r ∈ (Finset.Ioc u v).filter Nat.Prime, (1 : ℝ) / r
+      ≤ 2 * Real.log 4 * (2 + Real.log v) / Real.log u := by
+  have hu1 : (1 : ℝ) < (u : ℝ) := by
+    have : (1 : ℕ) < u := by omega
+    exact_mod_cast this
+  have hlu : 0 < Real.log u := Real.log_pos hu1
+  have hsub : (Finset.Ioc u v).filter Nat.Prime ⊆ (Finset.range (v + 1)).filter Nat.Prime := by
+    intro t ht
+    rw [Finset.mem_filter, Finset.mem_Ioc] at ht
+    rw [Finset.mem_filter, Finset.mem_range]
+    exact ⟨by omega, ht.2⟩
+  have hstep : ∀ t ∈ (Finset.Ioc u v).filter Nat.Prime,
+      (1 : ℝ) / t ≤ Real.log t / t / Real.log u := by
+    intro t ht
+    rw [Finset.mem_filter, Finset.mem_Ioc] at ht
+    have ht0 : (0 : ℝ) < (t : ℝ) := by exact_mod_cast ht.2.pos
+    have hlt : Real.log u ≤ Real.log t :=
+      Real.log_le_log (by linarith) (by exact_mod_cast ht.1.1.le)
+    rw [le_div_iff₀ hlu]
+    calc (1 : ℝ) / (t : ℝ) * Real.log u ≤ (1 : ℝ) / (t : ℝ) * Real.log t :=
+          mul_le_mul_of_nonneg_left hlt (by positivity)
+      _ = Real.log t / t := by ring
+  have hnn : ∀ i ∈ (Finset.range (v + 1)).filter Nat.Prime,
+      i ∉ (Finset.Ioc u v).filter Nat.Prime → (0 : ℝ) ≤ Real.log i / i / Real.log u := by
+    intro i hi _
+    rw [Finset.mem_filter] at hi
+    have h1 : (0 : ℝ) ≤ Real.log i := Real.log_nonneg (by exact_mod_cast hi.2.one_lt.le)
+    exact div_nonneg (div_nonneg h1 (Nat.cast_nonneg i)) hlu.le
+  calc ∑ r ∈ (Finset.Ioc u v).filter Nat.Prime, (1 : ℝ) / r
+      ≤ ∑ r ∈ (Finset.Ioc u v).filter Nat.Prime, Real.log r / r / Real.log u :=
+        Finset.sum_le_sum hstep
+    _ ≤ ∑ r ∈ (Finset.range (v + 1)).filter Nat.Prime, Real.log r / r / Real.log u :=
+        Finset.sum_le_sum_of_subset_of_nonneg hsub hnn
+    _ = (∑ r ∈ (Finset.range (v + 1)).filter Nat.Prime, Real.log r / r) / Real.log u := by
+        rw [Finset.sum_div]
+    _ ≤ 2 * Real.log 4 * (2 + Real.log v) / Real.log u := by
+        rw [div_eq_mul_inv, div_eq_mul_inv]
+        exact mul_le_mul_of_nonneg_right (mertens_upper v) (by positivity)
+
+/-- `log 4 ≤ 2`, from `2 ≤ e`. -/
+theorem log_four_le_two : Real.log 4 ≤ 2 := by
+  have he : (2 : ℝ) ≤ Real.exp 1 := by have := Real.add_one_le_exp (1 : ℝ); linarith
+  have hl2 : Real.log 2 ≤ 1 := by
+    have h := Real.log_le_log (by norm_num : (0 : ℝ) < 2) he
+    rwa [Real.log_exp] at h
+  have h4 : Real.log 4 = 2 * Real.log 2 := by
+    rw [show (4 : ℝ) = 2 ^ (2 : ℕ) by norm_num, Real.log_pow]
+    push_cast; ring
+  linarith
+
+/-- **The Chebyshev `π` upper bound.**  Splitting the primes below `N` at `√N`:
+the small ones are at most `√N + 1` in number, and each large one contributes
+`log r > (1/2) log N` to `θ(N) ≤ N log 4`.
+Verified statement list `findings_ls_verification.md` §2.4 (**F2d**). -/
+theorem primeCount_le (N : ℕ) (hN : 2 ≤ N) :
+    (((Finset.range N).filter Nat.Prime).card : ℝ)
+      ≤ Real.sqrt N + 1 + 2 * Real.log 4 * N / Real.log N := by
+  classical
+  set s := (Finset.range N).filter Nat.Prime with hs
+  set S1 := s.filter (fun r => r ≤ Nat.sqrt N) with hS1
+  set S2 := s.filter (fun r => ¬ r ≤ Nat.sqrt N) with hS2
+  have hsub : s ⊆ S1 ∪ S2 := by
+    intro t ht
+    by_cases h : t ≤ Nat.sqrt N
+    · exact Finset.mem_union_left _ (Finset.mem_filter.mpr ⟨ht, h⟩)
+    · exact Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨ht, h⟩)
+  have hcard : s.card ≤ S1.card + S2.card :=
+    le_trans (Finset.card_le_card hsub) (Finset.card_union_le _ _)
+  -- small primes
+  have h1 : S1.card ≤ Nat.sqrt N + 1 := by
+    have hss : S1 ⊆ Finset.range (Nat.sqrt N + 1) := by
+      intro t ht
+      rw [hS1, Finset.mem_filter] at ht
+      rw [Finset.mem_range]
+      omega
+    calc S1.card ≤ (Finset.range (Nat.sqrt N + 1)).card := Finset.card_le_card hss
+      _ = Nat.sqrt N + 1 := Finset.card_range _
+  have hsq : ((Nat.sqrt N : ℕ) : ℝ) ≤ Real.sqrt N := by
+    have hle : Nat.sqrt N * Nat.sqrt N ≤ N := Nat.sqrt_le N
+    have hle' : ((Nat.sqrt N : ℕ) : ℝ) * ((Nat.sqrt N : ℕ) : ℝ) ≤ (N : ℝ) := by
+      exact_mod_cast hle
+    rw [show ((Nat.sqrt N : ℕ) : ℝ) = Real.sqrt (((Nat.sqrt N : ℕ) : ℝ) ^ 2) from
+      (Real.sqrt_sq (by positivity)).symm]
+    exact Real.sqrt_le_sqrt (by nlinarith)
+  have hS1le : (S1.card : ℝ) ≤ Real.sqrt N + 1 := by
+    have h : ((S1.card : ℕ) : ℝ) ≤ ((Nat.sqrt N + 1 : ℕ) : ℝ) := by exact_mod_cast h1
+    push_cast at h
+    linarith
+  -- large primes
+  have hlogN : 0 < Real.log N := by
+    refine Real.log_pos ?_
+    have : (1 : ℕ) < N := by omega
+    exact_mod_cast this
+  have hstep2 : ∀ t ∈ S2, Real.log N / 2 ≤ Real.log t := by
+    intro t ht
+    rw [hS2, Finset.mem_filter, hs, Finset.mem_filter, Finset.mem_range] at ht
+    obtain ⟨⟨htN, htp⟩, htg⟩ := ht
+    have hlt : Nat.sqrt N < t := by omega
+    have h2 : N < t * t := lt_of_lt_of_le (Nat.lt_succ_sqrt N) (Nat.mul_le_mul hlt hlt)
+    have h3 : (N : ℝ) ≤ (t : ℝ) * (t : ℝ) := by exact_mod_cast h2.le
+    have hN0 : (0 : ℝ) < (N : ℝ) := by
+      have : (0 : ℕ) < N := by omega
+      exact_mod_cast this
+    have ht0 : (t : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr htp.pos.ne'
+    have h := Real.log_le_log hN0 h3
+    rw [Real.log_mul ht0 ht0] at h
+    linarith
+  have hsum2 : (S2.card : ℝ) * (Real.log N / 2) ≤ ∑ t ∈ S2, Real.log t := by
+    calc (S2.card : ℝ) * (Real.log N / 2) = ∑ _t ∈ S2, Real.log N / 2 := by
+          rw [Finset.sum_const, nsmul_eq_mul]
+      _ ≤ ∑ t ∈ S2, Real.log t := Finset.sum_le_sum hstep2
+  have hsum3 : ∑ t ∈ S2, Real.log t ≤ (N : ℝ) * Real.log 4 := by
+    refine le_trans (Finset.sum_le_sum_of_subset_of_nonneg (?_ : S2 ⊆ s) ?_) (sum_log_prime_le N)
+    · rw [hS2]; exact Finset.filter_subset _ _
+    · intro i hi _
+      rw [hs, Finset.mem_filter] at hi
+      exact Real.log_nonneg (by exact_mod_cast hi.2.one_lt.le)
+  have hS2le : (S2.card : ℝ) ≤ 2 * Real.log 4 * N / Real.log N := by
+    rw [le_div_iff₀ hlogN]
+    linarith
+  have hcardR : (s.card : ℝ) ≤ (S1.card : ℝ) + (S2.card : ℝ) := by exact_mod_cast hcard
+  linarith
+
+/-- **F2d, threshold form.**  Eventually `π(2n) ≤ n/50`.
+
+The threshold is non-constructive (`⌈e^600⌉`); all that matters downstream is
+that *some* threshold works.  Verified statement list
+`findings_ls_verification.md` §2.4 (**F2d**). -/
+theorem primeCount_small :
+    ∃ n₀ : ℕ, ∀ n ≥ n₀,
+      (((Finset.range (2 * n)).filter Nat.Prime).card : ℝ) ≤ (n : ℝ) / 50 := by
+  refine ⟨⌈Real.exp 600⌉₊, fun n hn => ?_⟩
+  have hexp600 : Real.exp 600 ≤ (n : ℝ) :=
+    le_trans (Nat.le_ceil _) (by exact_mod_cast hn)
+  have hbig : (262144 : ℝ) ≤ (n : ℝ) := by
+    have he : (2 : ℝ) ≤ Real.exp 1 := by have := Real.add_one_le_exp (1 : ℝ); linarith
+    have hp1 : ((2 : ℝ)) ^ (18 : ℕ) ≤ (Real.exp 1) ^ (18 : ℕ) :=
+      pow_le_pow_left₀ (by norm_num) he 18
+    have hp2 : (Real.exp 1) ^ (18 : ℕ) = Real.exp 18 := by
+      rw [Real.exp_one_pow]; norm_num
+    have hp3 : Real.exp 18 ≤ Real.exp 600 := Real.exp_le_exp.mpr (by norm_num)
+    have hp4 : ((2 : ℝ)) ^ (18 : ℕ) = 262144 := by norm_num
+    linarith
+  have hn0 : (0 : ℝ) < (n : ℝ) := by linarith
+  have hn1 : (1 : ℕ) ≤ n := by
+    rcases Nat.eq_zero_or_pos n with h | h
+    · subst h; norm_num at hbig
+    · exact h
+  have h2n : ((2 * n : ℕ) : ℝ) = 2 * (n : ℝ) := by push_cast; ring
+  have hlogn : (600 : ℝ) ≤ Real.log n := by
+    have h := Real.log_le_log (Real.exp_pos 600) hexp600
+    rwa [Real.log_exp] at h
+  have hlog2n : (600 : ℝ) ≤ Real.log ((2 * n : ℕ) : ℝ) := by
+    rw [h2n]
+    have h : Real.log (n : ℝ) ≤ Real.log (2 * (n : ℝ)) := Real.log_le_log hn0 (by linarith)
+    linarith
+  have hlog4 : Real.log 4 ≤ 2 := log_four_le_two
+  have hA3 := primeCount_le (2 * n) (by omega)
+  -- main term
+  have hmain : 2 * Real.log 4 * ((2 * n : ℕ) : ℝ) / Real.log ((2 * n : ℕ) : ℝ) ≤ (n : ℝ) / 75 := by
+    rw [div_le_iff₀ (by linarith : (0 : ℝ) < Real.log ((2 * n : ℕ) : ℝ))]
+    have hL : 2 * Real.log 4 * ((2 * n : ℕ) : ℝ) ≤ 8 * (n : ℝ) := by
+      rw [h2n]
+      nlinarith [mul_nonneg hn0.le (by linarith : (0 : ℝ) ≤ 2 - Real.log 4)]
+    have hR : (n : ℝ) / 75 * 600 ≤ (n : ℝ) / 75 * Real.log ((2 * n : ℕ) : ℝ) :=
+      mul_le_mul_of_nonneg_left hlog2n (by linarith)
+    linarith
+  -- square-root term
+  have hsqrt : Real.sqrt ((2 * n : ℕ) : ℝ) + 1 ≤ (n : ℝ) / 150 := by
+    have hs1 : Real.sqrt ((2 * n : ℕ) : ℝ) ≤ (n : ℝ) / 300 := by
+      rw [h2n]
+      have hmul : (262144 : ℝ) * (n : ℝ) ≤ (n : ℝ) * (n : ℝ) :=
+        mul_le_mul_of_nonneg_right hbig hn0.le
+      have hkey : (2 : ℝ) * (n : ℝ) ≤ ((n : ℝ) / 300) ^ 2 := by nlinarith
+      calc Real.sqrt (2 * (n : ℝ)) ≤ Real.sqrt (((n : ℝ) / 300) ^ 2) := Real.sqrt_le_sqrt hkey
+        _ = (n : ℝ) / 300 := Real.sqrt_sq (by linarith)
+    linarith
+  linarith
+
+/-! ## 7.  B5 — the far-band product
+
+The far band contributes `∏ (1 - ρ_r) ≥ exp(-C (1 + log y)/log k)`: pointwise
+`ρ_r ≤ 2/r` (**B2**), summed by **B4**, then converted by **B3**.
+Verified statement list `findings_ls_verification.md` §4 (**B5**). -/
+
+/-- **B5a.**  The far-band escape mass is at most twice the reciprocal-prime sum
+over `(2k+1, y]`. -/
+theorem far_band_mass_le (y : ℕ) (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) :
+    ∑ r ∈ farBand q y k, rho q m r k
+      ≤ 2 * ∑ r ∈ (Finset.Ioc (2 * k + 1) y).filter Nat.Prime, (1 : ℝ) / r := by
+  have hsub : farBand q y k ⊆ (Finset.Ioc (2 * k + 1) y).filter Nat.Prime := by
+    intro t ht
+    rw [farBand, Finset.mem_filter, Finset.mem_Icc] at ht
+    rw [Finset.mem_filter, Finset.mem_Ioc]
+    exact ⟨⟨by omega, ht.1.2⟩, ht.2.1⟩
+  calc ∑ r ∈ farBand q y k, rho q m r k
+      ≤ ∑ r ∈ farBand q y k, 2 * ((1 : ℝ) / r) := by
+        refine Finset.sum_le_sum fun t ht => ?_
+        rw [farBand, Finset.mem_filter, Finset.mem_Icc] at ht
+        have h := rho_le_far ht.2.1 hnd ht.1.1
+        have he : (2 : ℝ) / (t : ℝ) = 2 * ((1 : ℝ) / (t : ℝ)) := by ring
+        rw [he] at h
+        exact h
+    _ ≤ ∑ r ∈ (Finset.Ioc (2 * k + 1) y).filter Nat.Prime, 2 * ((1 : ℝ) / r) :=
+        Finset.sum_le_sum_of_subset_of_nonneg hsub (fun i _ _ => by positivity)
+    _ = 2 * ∑ r ∈ (Finset.Ioc (2 * k + 1) y).filter Nat.Prime, (1 : ℝ) / r := by
+        rw [Finset.mul_sum]
+
+/-- **B5b.**  From a bound `E` on the far-band escape mass to a lower bound on
+the far-band product, by **B3** (`e^{-2x} ≤ 1 - x` on `[0,1/2]`) and
+`rho_le_half_of_far`. -/
+theorem far_band_product_ge_of_mass (E : ℝ) (y : ℕ)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hk : 1 ≤ k)
+    (hE : ∑ r ∈ farBand q y k, rho q m r k ≤ E) :
+    Real.exp (-(2 * E)) ≤ ∏ r ∈ farBand q y k, (1 - rho q m r k) := by
+  have hstep : ∀ t ∈ farBand q y k, Real.exp (-(2 * rho q m t k)) ≤ 1 - rho q m t k := by
+    intro t ht
+    rw [farBand, Finset.mem_filter, Finset.mem_Icc] at ht
+    exact one_sub_ge_exp rho_nonneg (rho_le_half_of_far ht.2.1 hnd hk ht.1.1)
+  have hsum : ∑ t ∈ farBand q y k, (-(2 * rho q m t k))
+      = -(2 * ∑ r ∈ farBand q y k, rho q m r k) := by
+    simp [Finset.mul_sum]
+  calc Real.exp (-(2 * E))
+      ≤ Real.exp (-(2 * ∑ r ∈ farBand q y k, rho q m r k)) :=
+        Real.exp_le_exp.mpr (by linarith)
+    _ = ∏ t ∈ farBand q y k, Real.exp (-(2 * rho q m t k)) := by
+        rw [← hsum, Real.exp_sum]
+    _ ≤ ∏ t ∈ farBand q y k, (1 - rho q m t k) :=
+        Finset.prod_le_prod (fun i _ => (Real.exp_pos _).le) hstep
+
+/-- **B5 — the far-band product bound.**  For `k ≥ 1` and any cut `y`,
+
+```
+∏_{2k+2 ≤ r ≤ y, r ≠ q} (1 - ρ_r(k))  ≥  exp( -8 log 4 (2 + log y) / log (2k+1) ).
+```
+
+This is B5a + B4 (`recip_prime_sum_le`) + B5b.  Downstream (slice 4) the
+`Y`-policy supplies `log y ≤ 4 log k`, which turns the exponent into an
+*absolute* constant.  Verified statement list `findings_ls_verification.md`
+§2.3, §4 (**B5**). -/
+theorem far_band_product_ge (y : ℕ) (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hk : 1 ≤ k) :
+    Real.exp (-(8 * Real.log 4 * (2 + Real.log y) / Real.log ((2 * k + 1 : ℕ) : ℝ)))
+      ≤ ∏ r ∈ farBand q y k, (1 - rho q m r k) := by
+  have hu : 2 ≤ 2 * k + 1 := by omega
+  have hM := recip_prime_sum_le (2 * k + 1) y hu
+  have hmass : ∑ r ∈ farBand q y k, rho q m r k
+      ≤ 2 * (2 * Real.log 4 * (2 + Real.log y) / Real.log ((2 * k + 1 : ℕ) : ℝ)) := by
+    refine le_trans (far_band_mass_le y hnd) ?_
+    linarith
+  have heq : -(8 * Real.log 4 * (2 + Real.log y) / Real.log ((2 * k + 1 : ℕ) : ℝ))
+      = -(2 * (2 * (2 * Real.log 4 * (2 + Real.log y) / Real.log ((2 * k + 1 : ℕ) : ℝ)))) := by
+    ring
+  rw [heq]
+  exact far_band_product_ge_of_mass _ y hnd hk hmass
+
 end LargeStepRoughness
 
 end
