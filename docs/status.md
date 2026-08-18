@@ -13,6 +13,20 @@
 > consumption (needs the type-measure/selection-law layer), tail estimate, Lemma D,
 > Theorem C. Adversarial verification record: `agents/state/findings_ls_verification.md`.
 
+> **2026-08-19 (Session 310, commit f391732):** WP2 and Group 6 are CLOSED; **(LS+) is
+> proved in Lean** (`LSPlus.ls_plus`). Four new files, ~2,750 lines, 0 sorry:
+> `EM/Population/SelectionLaw.lean` (905 — type cells mod `M_Y/q`, dependent-family CRT
+> counting `card_filter_crt`, **exact** `selection_law : #(cell ∩ Survives) = survival·#cell`);
+> `EM/Population/TreeChernoff.lean` (616 — abstract finite-tree exponential supermartingale
+> + Chernoff lower tail, C5 replacement, localized variants making C6 trivial, Mathlib-only);
+> `EM/Population/MertensLower.lean` (755 — **`mertens_lower`**: `log n − 13 ≤ Σ_{p≤n} log p/p`,
+> first lower Mertens in the repo, not in Mathlib; **`window_recip_lower`**:
+> `log log Y − log log z − 16 ≤ Σ_{z<r≤Y} 1/r`); `EM/Population/LSPlus.lean` (469 — `ls_plus`:
+> over one period, `#{m : < (c₁/8)n big steps} ≤ M_Y·e^{−(3/16)c₁n} + tail-term`).
+> Remaining for a.a. GenMC(q) per fixed q: Group 7 tail assembly (unblocked by
+> `window_recip_lower`), the D5c policy lemma (convenience), Lemma D, Theorem C.
+> Population scope only; no orbit claim; #90/#117 untouched.
+
 # EM Formalization — Status
 
 > Maintained by the coordinator agent. Update **only when Lean code
@@ -58,6 +72,16 @@
 ## Recent changes
 
 _(coordinator: append dated entries here when the Lean code changes)_
+
+### 2026-08-19 (Session 310) — WP2 + Group 6 closed; (LS+) proved
+
+Commit f391732; four new files, ~2,750 lines, 0 sorry, build 8,925 jobs, axiom gate clean.
+`SelectionLaw.lean`: WP2 (type cells, CRT counting, exact selection law).
+`TreeChernoff.lean`: abstract finite Chernoff (C5 replacement; localized variants = C6 for
+free; candidate ForMathlib promotion). `MertensLower.lean`: lower Mertens I (const 13) +
+windowed log log lower bound (const 16) — Group 7's analytic gap closed.
+`LSPlus.lean`: `ls_plus`, the honest (LS+) with rate `exp(−(3/16)c₁n)` + tail term.
+Next: Group 7 tail assembly, D5c policy lemma, Lemma D, Theorem C.
 
 ### 2026-08-18 (c) — reader-review remediation, phases (1)–(4)
 

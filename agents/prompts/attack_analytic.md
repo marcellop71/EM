@@ -645,9 +645,11 @@ Standing facts (do not re-derive, do not contradict):
   `exp(−(3/16)c₁n)` + additive degenerate-tail term) are ALL PROVED IN LEAN.
   NOTE: the Lean constant is `c₁ = exp(−250)` (crude but absolute; the paper value
   exp(−35) is not what compiled — never quote exp(−35/−36) as the Lean constant).
-- Remaining queue, in order: (1) Group 7 tail assembly TL1–TL3 (analytic input
-  `window_recip_lower` already landed; per-cell first moments via `selection_law`;
-  target tail ≲ log n/n at log Y = n², feeds ls_plus's additive term); (2) D5c policy
+- Remaining queue, in order: (1) Group 7 tail ASSEMBLY (slices TL0–TL3 landed in
+  `EM/Population/TailEstimate.lean`, Session 310 cont.: ω≤log₂, old-count ≤ k²(log₂Y+1),
+  `survival_le_of_active_lower`, `markov_divisor_mass`; remaining: bag-count ω(m)+k lemma,
+  the E arithmetic with z ≫ k²log₂Y, selection-law transport, union over k under
+  n² ≤ log Y ≤ n³ → tail ≲ log n/n, feeds ls_plus's additive term); (2) D5c policy
   lemma (`bigThreshold ≤ Y` from `n² ≤ log Y`); (3) Lemma D with the repaired threshold
   y_k = C·k·log₂c_k and first-moment bag exclusion; (4) Theorem C in the q-free world
   (K₀ from π(q−1), chaining by stopping times, THREE error terms with order of limits
