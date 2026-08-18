@@ -529,7 +529,9 @@ Three attack vectors: analytic (Bombieri-Vinogradov), algebraic (SE+Mixing), com
     await _stream_with_backend(spec, prompt)
 
 
-async def run_attack(vector: str, *, model: str = "claude:opus") -> None:
+async def run_attack(
+    vector: str, *, goal: str | None = None, model: str = "claude:opus"
+) -> None:
     """Launch an attack agent directly."""
     valid = {"analytic", "algebraic", "combinatorial", "dynamicalsystem"}
     if vector not in valid:
@@ -556,7 +558,10 @@ async def run_attack(vector: str, *, model: str = "claude:opus") -> None:
     catalog_path = ROOT / "agents" / "catalogs" / f"{vector}_techniques.md"
     dead_ends_path = ROOT / "EM" / "Meta" / "DeadEnds.lean"
 
+    goal_section = f"\n\n## Focus\n\n{goal}" if goal else ""
+
     prompt = f"""## Attack Vector: {vector}
+{goal_section}
 
 ## CRITICAL CONSTRAINT
 

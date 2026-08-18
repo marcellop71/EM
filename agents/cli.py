@@ -120,6 +120,11 @@ def main() -> None:
         choices=["analytic", "algebraic", "combinatorial", "dynamicalsystem"],
         help="Which attack vector to pursue",
     )
+    p_attack.add_argument("--goal", type=str, default=None, help="Focus for this attack")
+    p_attack.add_argument(
+        "--goal-file", type=str, default=None,
+        help="Path to a file containing the focus (overrides --goal)",
+    )
     p_attack.add_argument(
         "--model", type=str, default="claude:opus",
         help="Provider-qualified model (e.g. claude:opus, claude:fable, openai:gpt-5.2, dgx:qwen, dgx:ornith)",
@@ -266,7 +271,11 @@ def main() -> None:
         case "scout":
             asyncio.run(run_scout(topic=args.topic, model=args.model))
         case "attack":
-            asyncio.run(run_attack(vector=args.vector, model=args.model))
+            goal = args.goal
+            if args.goal_file:
+                from pathlib import Path
+                goal = Path(args.goal_file).read_text().strip()
+            asyncio.run(run_attack(vector=args.vector, goal=goal, model=args.model))
         case "paper":
             goal = args.goal
             if args.goal_file:
