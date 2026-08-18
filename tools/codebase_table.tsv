@@ -187,3 +187,10 @@ Iwaniec--Kowalski infrastructure	IK/DirichletDensity.lean	Unconditional Dirichle
 For Mathlib (extracted, Mathlib-only)	ForMathlib/VanDerCorput.lean	The finite van der Corput inequality $\|\sum_{n<N} f(n)\|^2 \le 2N^2/(H{+}1) + 2\delta N^2$ (Mathlib-only imports)
 For Mathlib (extracted, Mathlib-only)	ForMathlib/ZModDftParseval.lean	Parseval/Plancherel for \code{ZMod.dft}: $\sum_k \|\hat\Phi(k)\|^2 = N\sum_j \|\Phi(j)\|^2$
 For Mathlib (extracted, Mathlib-only)	ForMathlib/CoprimeAffineBlock.lean	$\#\{t\in[k,k{+}N): \gcd(N, at{+}b)=1\} = \varphi(N)$ for $\gcd(a,N)=1$; $B$ blocks give $B\varphi(N)$
+Seed-average program (new)	Population/SeedTypes.lean	Lemma A (revisit-freeness), visited-set bounds, Lemma B (CRT prefix invariance)
+Seed-average program (new)	Population/SeedCapture.lean	$q$-free dynamics via \code{ordCompl}; Lemma C coupling (shielding); capture identity \code{captured\_iff\_mem\_visited}
+Seed-average program (new)	Population/LargeStepRoughness.lean	The box process and harmonic charge budget $\mathrm{Ch}_n \le 2.8n$; brink lemma; Mertens upper bound; the pathwise compensator $\sum_{k<n} S_k \ge (c_1/2)n$
+Seed-average program (new)	Population/SelectionLaw.lean	WP2: type cells mod $M_Y/q$, CRT product counting, and the exact selection law $\#(\text{cell}\cap\text{Survives}) = S_k\cdot\#\text{cell}$
+Seed-average program (new)	Population/TreeChernoff.lean	Abstract finite-tree exponential supermartingale and Chernoff lower tail (C5 replacement), localized variants
+Seed-average program (new)	Population/MertensLower.lean	Mertens I lower bound $\sum_{p\le n} \log p/p \ge \log n - 13$; windowed $\log\log$ lower bound (not in Mathlib)
+Seed-average program (new)	Population/LSPlus.lean	(LS+): the large-step large-deviation bound $\#\{N < (c_1/8)n\} \le M_Y e^{-(3/16)c_1 n} + \mathrm{tail}$ over one period
