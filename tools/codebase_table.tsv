@@ -194,3 +194,4 @@ Seed-average program (new)	Population/SelectionLaw.lean	WP2: type cells mod $M_Y
 Seed-average program (new)	Population/TreeChernoff.lean	Abstract finite-tree exponential supermartingale and Chernoff lower tail (C5 replacement), localized variants
 Seed-average program (new)	Population/MertensLower.lean	Mertens I lower bound $\sum_{p\le n} \log p/p \ge \log n - 13$; windowed $\log\log$ lower bound (not in Mathlib)
 Seed-average program (new)	Population/LSPlus.lean	(LS+): the large-step large-deviation bound $\#\{N < (c_1/8)n\} \le M_Y e^{-(3/16)c_1 n} + \mathrm{tail}$ over one period
+Seed-average program (new)	Population/TailEstimate.lean	Group 7 slices: $\omega(N) \le \log_2 N$, old-position prime count $\le k^2(\log_2 Y{+}1)$, per-seed survival upper bound $S_k(y) \le e^{-\sum_{\text{active}} 1/r}$, divisor first moment + Markov mass

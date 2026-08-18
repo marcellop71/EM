@@ -151,6 +151,7 @@ import EM.Population.SeedTypes
 import EM.Population.SelectionLaw
 import EM.Population.SylvesterTower
 import EM.Population.SpectralConspiracy
+import EM.Population.TailEstimate
 import EM.Population.TransferStrategy
 import EM.Population.TreeChernoff
 import EM.Population.WeakErgodicity
