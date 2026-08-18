@@ -4,6 +4,8 @@
 #      TM technique mismatch | SM scale mismatch | MR methodological rule | -- number never assigned
 # witness: a genuine (non-placeholder) Lean theorem, or —.  revival: weak-MC revival score 0–3, or -.
 # Regenerate outputs with: python3 tools/gen_dead_ends.py
+# Session numbers (S1–S307) refer to the project's session logs (agents/state/strategy_log*.md);
+# the full text of sessions 1–274 is kept locally and is not part of the public repository.
 1	MR	Computing concrete sequence values	Compute $\mathrm{seq}(8)$--$\mathrm{seq}(12)$ or other concrete Euclid--Mullin terms inside the Lean development	Methodological rule: concrete values prove nothing about all primes $q$; breaks the build, contributes nothing (Guiding Principle). Closest code OS: finite data says nothing about the whole orbit	1	—	-	probable — number never written; block \#1--3 inferred from catalog range; still valid
 2	MR	Raising ThresholdHitting by computation	Increase $T$ in \code{ThresholdHitting T} $\Rightarrow$ MC by checking individual primes	Checking individual primes does not prove the conjecture; $T=11$ is the proved reduction (\code{threshold\_11\_implies\_mullin'}) and no finite $T$ closes MC	1	—	-	probable — number never written; still valid
 3	MR	Brute-force SubgroupEscape instances	Add \code{SubgroupEscape} instances prime by prime beyond $q \le 157$	SE is already proved globally via PRE $\Rightarrow$ SE; instance-by-instance work is redundant with the global theorem	1	—	-	probable — number never written; still valid

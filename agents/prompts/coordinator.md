@@ -190,10 +190,10 @@ When new theorems are formalized (not just analyzed — actually compiled into L
 The strategy log is split into three files:
 
 - **`state/strategy_log.md`**: Active log (recent sessions only, ~2000-3000 lines). Append new session entries here.
-- **`state/strategy_log_old.md`**: Archive of older sessions. When strategy_log.md exceeds ~3000 lines, move the oldest sessions to this file.
+- **`state/strategy_log_old.md`** (kept locally in `tmp/`, not in the public repo): archive of older sessions (1–274). When strategy_log.md exceeds ~3000 lines, move the oldest sessions there.
 - **`state/strategy_log_summary.md`**: Compressed digest of ALL sessions (key outcomes, phase summaries, attack vector assessment, codebase growth). Update this after sessions that produce significant results (new theorems proved, new dead ends, phase transitions).
 
-**When to rotate**: If strategy_log.md exceeds ~3000 lines, move sessions older than the last 20 to strategy_log_old.md and update the archive note in strategy_log.md's header.
+**When to rotate**: If strategy_log.md exceeds ~3000 lines, move sessions older than the last 20 to the local `tmp/strategy_log_old.md` and update the archive note in strategy_log.md's header.
 
 **When to update summary**: After any session that changes the attack vector assessment, proves a new reduction, or discovers a significant dead end.
 
