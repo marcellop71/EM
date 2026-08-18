@@ -31,7 +31,7 @@ This catalog contains:
 
 ## Dead Ends Catalog
 
-**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`** (`docs/dead_ends.md` is only a pointer stub).
+**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`**.
 
 Entries are classified by category code — **OS** (orbit-specificity), **TM** (technique mismatch), **SM** (scale mismatch), **CI** (circularity), **SF** (structurally false / counterexample), **CO** (definitional collapse), **DG** (decorrelation gap), **AG** (aggregate gap) — and carry a weak-MC revival score 0–3. Read the current entry count from `deadEndCount` in that file rather than trusting any number quoted here.
 
@@ -280,7 +280,6 @@ The EM walk is w(n+1) = w(n) · m(n) where the multipliers m(n) are distinct pri
 
 **The authoritative dead-ends catalog is the Lean file `EM/Meta/DeadEnds.lean`**
 (docstring tables + `#check` re-exports of the formal Lean witnesses).
-`docs/dead_ends.md` is only a pointer stub.
 
 **Do NOT edit the catalog yourself.** New dead ends are recorded in
 `EM/Meta/DeadEnds.lean` by the coordinator/formalizer — that file must still
@@ -381,3 +380,129 @@ to disk. (Session 299: two agents lost deliverables to this.)
   abstract over an arbitrary `S : ℕ → Finset G` and concerns `avgCharProduct` (the *averaged*
   tree product), not the deterministic orbit. Avoidance forces nothing about monochromaticity.
 - **Covering systems are closed** (`no_finite_prime_covering`, `no_covering_family_obstruction`).
+
+---
+
+## Session 309 update (2026-08-18) — your §F proof was verified; box process is the live frontier
+
+Your Session-308 candidate proof of (LS) was adversarially CONFIRMED-WITH-CORRECTIONS
+(C1–C6; read `agents/state/findings_ls_verification.md` in full before any new proposal —
+especially C5: your elementary block substitute was proved INVALID, replaced by a finite-tree
+exponential supermartingale, and C2: r = q must be excluded from every box product or the
+brink lemma is false). Formalization is under way in `EM/Population/LargeStepRoughness.lean`
+(Groups 1–4 largely landed) on top of `SeedCapture.lean` (Lemma C + capture identity, PROVED).
+
+Your catalog's T7 family is the only LIVE dynamical direction.
+
+**Session 310 (2026-08-19, commit f391732): (LS+) IS PROVED IN LEAN** (`LSPlus.ls_plus`):
+over one period of the q-free dynamics, `#{m : fewer than (c₁/8)n big steps} ≤
+M_Y·exp(−(3/16)c₁n) + #{degenerate-prefix seeds}`, via the exact selection law
+(`SelectionLaw.selection_law`, WP2) plugged into an abstract finite-tree Chernoff
+(`TreeChernoff`, your C5 replacement, with C6 handled by LOCALIZATION — no stopped
+process). The lower Mertens toolbox (`MertensLower.window_recip_lower`) is also landed.
+Lean constant: `c₁ = exp(−250)` (absolute; do not quote the paper's exp(−35)).
+
+Priorities for future dispatches: (i) the Group 7 tail ASSEMBLY (TL1–TL3: old/bag-prime
+count W ≤ k²log₂Y, per-cell `S_k(Y) ≤ exp(−Σ_{z≤r≤Y}1/r + W/z)` with z = W², first
+moment over cells via the selection law — the analytic input is already proved, this is
+now bookkeeping + one Markov exclusion for `|D ∩ [z,Y]|`); (ii) Lemma D and Theorem C
+per the corrected shapes (findings.md (d)/(e)); (iii) the μ-model consequences of (LS+)
+(e.g. μ(perpetual primality) = 0 via the average-case old-prime bound); (iv) the
+q-uniformity question (§G): can κ_q ≳ q^{−O(1)} + K₀(q) ≲ q + diagonal n(q) give the
+SIMULTANEOUS a.a. GenMC? This is the most promising untried combination. Do not propose new
+orbit-of-2 dynamics; the box process under the type measure is the object.
+
+## Session 311 update (2026-08-19)
+The seed-average program's probabilistic layer is COMPLETE: selection law → lemma_D_z →
+theorem_C all landed via the finite-tree Chernoff engine (TreeChernoff), with the sure
+pathwise compensator (Session 309 §F) as the only lower-bound input. Key structural lesson
+for future proposals: prescribed-class successes with per-cell conditional bounds + a
+deterministic success-count cap (strict-growth ≤ q−1, non-exposed ≤ q−1) turn coverage
+statements into one Chernoff application — no stopping times, no Freedman, no blocks.
+Open: §G simultaneous-q (needs q-uniformity of κ_q = e⁻¹²⁸/(16φ(q)) — the rate already IS
+explicit in q; the blocker is the order of limits in natural density, not the rate).
+
+## Session 313 update (2026-08-19) — your box process cannot constrain ONE orbit
+
+Read `docs/analysis/sure_layer_missed_primes.md`. Your §F charge budget was verified in Session 309
+and remains a genuine achievement — it evades all four legs of the Four-Way Blocker. Session 313
+established the price of that evasion.
+
+**The layer is symmetric between captured and missed primes, hence inert on one orbit.** It is the
+deductive closure of just two facts: the *non-divisibility* content of `minFac` minimality, and
+multiplier distinctness. Neither discriminates between a prime missed forever and one captured at step
+10^100. Dead ends **#169–#174**; do not re-propose per-orbit consequences of the charge budget, the
+brink lemma, or the pathwise compensator, and never read `1/|box|` as a per-path quantity — its only
+meaning is a conditional probability over the **seed fibre**, which is #90.
+
+Concretely, the `(ℤ/5)^×` witness of #90/#117 **is** a box-process witness: `q=5`, `m=2`, all
+multipliers `≡ 4 (mod 5)` gives `box = {2,3}` forever, exactly two charges in the entire history
+(`Σ 1/|box| = 1/4+1/3 ≪ H₄`), brink never reached, `S_k ≡ 1` — and `5` missed forever. Distinctness
+does not rescue it: it constrains the *primes*, not their *residues*.
+
+**New principle, to sit beside the Session-299 anatomy principle — the sign asymmetry of `minFac`.**
+`p_k = minFac(N_k)` yields infinitely many negative facts and exactly one positive fact, about a prime
+captured by definition. The sure layer can therefore produce only *upper* bounds on hit counts —
+`#{k : q ∣ P(k)+1} ≤ π(q)` for **every** `q` — and never the lower bound of 1 that capture requires.
+**Screening test: does your proposal produce a positive divisibility fact about a prescribed prime? If
+not, it is inert.**
+
+**Where T7 can still go:** only §G, the simultaneous-in-`q` form — a *population* question, unaffected
+by the above. The `(Ẑ, Haar)` route (`docs/analysis/simultaneous_in_q_scoping.md` §4) needs no new
+analysis, only measure-theoretic packaging. Advertise the scope change (`ℕ ⊂ Ẑ` is Haar-null) as loudly
+as the existing population caveat, and never conflate it with dead ends #101 or #155.
+
+**Credit where due:** the model obstruction (#171) — that `SeedCapture.genSeqAvoid_ne_avoided` makes
+the whole sure layer satisfiable by a dynamics missing `q` by construction — was your finding, is the
+strongest single argument of Session 313, and is the only one of the six with a ready-made formal
+witness. Keep looking for arguments of that shape: *identify the model class your theorems actually
+quantify over, then exhibit a member of it that fails the conclusion.*
+
+## Session 314 update (2026-08-19) — T7's §G direction is DONE; the box process now has a genuine measure
+
+The one place Session 313 left open for T7 — the simultaneous-in-`q` form via `(Ẑ, Haar)` — is now
+**proved in Lean** (full build green, 0 `sorry`). Three new files in `EM/Population/`:
+
+- `ProfiniteEnsemble.lean` — the ambient space `Ω = Π (r : Nat.Primes), ZMod r` with
+  `μ = MeasureTheory.Measure.infinitePi` of uniform measures; `measure_residue_classes` (an
+  `M`-periodic event has measure equal to its period fraction), `measure_cylinder`, `redMod_iota`,
+  and `measure_range_iota_eq_zero` (**`ℕ ⊂ Ω` is μ-null**, proved).
+- `ProfiniteDynamics.lean` — the greedy dynamics on a profinite point via `leastVanishing` (a
+  profinite point has no `minFac`). Agreement with the integer dynamics is **unconditional**, needing
+  only `1 ≤ m`: `profSeq (iota m) k = genSeq m k`. Band-local agreement:
+  `profProd_agree_of_agree`, `genSeq_eq_profSeq_of_agree`.
+- `ProfiniteHeadline.lean` — `measure_some_prime_missed_eq_zero : μ {x | ∃ q : Nat.Primes, x q ≠ 0 ∧
+  ¬ ∃ j, profSeq x j = q} = 0`. **μ-almost every profinite seed captures every prime.**
+
+Also landed: `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` (**the Coupling Lemma** — if the genuine
+orbit misses `q` before depth `n`, the `q`-free reference dynamics coincides with it there; no
+nondegeneracy hypothesis needed), the `q ≤ Y` and band structure of the modulus exported through
+`three_type_union_small` / `type_bad_small` / `uncaptured_in_few_classes`, and
+`SelectionLaw.modulus_squarefree`, `coprime_modulus_self`, `prime_dvd_modulus`.
+
+**The transferable lesson, and it is a dynamical-systems lesson — the additivity heuristic.**
+Simultaneity in `q` was an **additivity** problem, not a **rate** problem. Dead end #168 said so;
+Session 314 confirmed it by *building the countably additive measure* and letting
+`measure_iUnion_null` do the union over `q`. **No `q`-uniform rate is used anywhere** — `κ_q`,
+`K₀(q)`, `n(q)` never appear. This is the same move that made T7 legitimate in the first place
+(Session 308: "is there a population-level process with an honest measure"), pushed one step further:
+
+> **When a per-parameter statement refuses to combine, ask whether the ambient notion of size is
+> countably additive before hunting for a uniform rate.** Natural and logarithmic density are only
+> finitely additive; a summable `ε_q` buys nothing under them.
+
+**Modelling choice worth reusing:** prefer `Π ZMod r` over `Ẑ = Π ℤ_p` **when the moduli in play are
+squarefree**. The EM programme only ever conditions on `m mod M` with `M` a product of *distinct*
+band primes, so the extra `p`-adic levels are dead weight.
+
+**Scope caveats — state these every time; do not soften them.**
+- `ℕ ⊂ Ω` is **μ-null**. "μ-a.e. seed" is **not** "almost all integer seeds".
+- The result says **nothing** about the orbit of `2`. Dead ends **#90** and **#117** are untouched;
+  MC is not approached. T7's orbit direction remains closed by #169–#174.
+- **Mathematically new content: none** — the finite counting chain is the mathematics, the passage to
+  all `q` is packaging. A feature, not a defect, but it must be stated.
+- **Not dead end #101** (`Ẑ` as a home for the *walk*) and **not #155** (Loeb receptacle).
+- Every statement in this arc remains a **population** statement.
+
+**No new dead ends this session.** `EM/Meta/DeadEnds.lean` stays at 174/164/32/15; #167 and #168
+remain correct as written.

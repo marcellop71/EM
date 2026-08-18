@@ -1115,3 +1115,176 @@ Discovered while landing `EM/Population/AutonomousBranch.lean`,
 single uniform threshold, first *totalise*: state `∀ q, ∃ N₀, q ∈ Q → P q N₀` (using
 `by_cases q ∈ Q`, with `⟨0, absurd⟩` off `Q`), *then* `choose`. This yields a plain
 `N : ℕ → ℕ` that `Finset.sup` accepts, avoiding `Finset.attach` entirely.
+
+---
+
+## Session 310 infrastructure note (supersedes the queue part of Session 309's)
+
+WP2 and Group 6 are DONE (commit f391732, all 0 sorry): `EM/Population/SelectionLaw.lean`
+(type cells `stepCell` over `modulus q Y = ∏_{r ∈ bandUpTo q Y} r` — q EXCLUDED; generic
+dependent-family CRT counting `card_filter_crt`; EXACT `selection_law`),
+`EM/Population/TreeChernoff.lean` (abstract finite Chernoff: `exp_supermartingale`,
+`chernoff_bound(_local)`, `chernoff_quarter(_local)` — reuse for ANY finite conditional-
+counting argument; Mathlib-only), `EM/Population/MertensLower.lean` (`mertens_lower`
+const 13, `window_recip_lower` const 16 — the lower Mertens toolbox),
+`EM/Population/LSPlus.lean` (`ls_plus`, plus the reusable congruence layer
+`survival_congr`/`stepSurvival_congr`/`fiber_eq_stepCell` and `bigStep_iff_survives`).
+Open work items, in order: Group 7 tail assembly TL1–TL3 (use `window_recip_lower` +
+`selection_law` per cell; target `tail ≲ log n/n` at log Y = n²); the D5c policy lemma
+(discharge `bigThreshold ≤ Y` from `n² ≤ log Y`); Lemma D; Theorem C.
+v4.33 API notes from Session 310: `Finset.range_add_one` (not range_succ),
+`Finset.card_filter_add_card_filter_not`, camel `notMem`, `le_mul_inv_iff₀` for Markov
+rearrangements, explicit `[DecidablePred]` binders before stating filter-rewrite lemmas
+(Classical.propDecidable mismatch), and don't `push_cast` through
+`((∏ r ∈ T, r : ℕ) : ZMod r)` before a `ZMod.natCast_eq_zero_iff` rewrite.
+
+## Session 309 infrastructure note
+
+New files (all 0 sorry): `EM/Population/SeedTypes.lean` (Lemma A/B, visited sets),
+`EM/Population/SeedCapture.lean` (q-free dynamics `genProdAvoid`/`genSeqAvoid`, Lemma C
+coupling + capture, `captured_iff_mem_visited`), `EM/Population/LargeStepRoughness.lean`
+(box process: visitedAt/box/boxCard/Charged, charge budget `charge_sum_le_harmonic` +
+`chargeBudget_le`, brink lemma, rho/survival layer, M1/M2). Build on these for the (LS)
+campaign; statement list in `agents/state/findings_ls_verification.md` §4. Toolchain
+v4.33.0 API notes are in the Session-309 agent reports quoted in state/strategy_log.md
+(range_add_one, unconditional card_sdiff, one_div_le_one_div_of_le, no IsUnit inside
+Finset.filter under open Classical, Real.log_le_log argument shape).
+
+## Session 311 update (2026-08-19)
+Infrastructure now available (all 0 sorry): `TailAssembly.tail_small` + `ls_plus_with_tail`
+(quantitative tail at policy n²/2 ≤ log Y; note the vacuity lesson: never intersect
+hypothesis windows into an unsatisfiable point — check ∃ Y), `LemmaD.window_ap_recip_lower`
+(window AP 1/p-mass ≥ 1/(8φ(q)), Karamata-only), `LemmaD.window_recip_upper` (≤ 32),
+`LemmaD.lemma_D_z` (cell-form conditional multiplier bound, κ = e⁻¹²⁸/(16φ(q)), window
+start z a free parameter), `TheoremC.theorem_C` (#GoodSeed ≤ M·e^{−(3/8)κ((c₁/2)n−K₀)}
+via TreeChernoff.chernoff_quarter_local — no new engine), `AlmostAllGenMC` (headline, check
+build state). API notes: `div_le_div_iff₀` (not `div_le_div_iff`); `Finset.le_sup` needs
+explicit `(f := ...)`; `positivity` can't unfold defs; `ZMod.natCast_zmod_surjective`;
+`Finset.card_le_card_of_injOn` goals need `simp only [Finset.mem_coe, ...]` not `rw`.
+
+---
+
+## Session 312 — new infrastructure (seed-average programme, natural-density form)
+
+The seed-average programme (Sessions 308–312) is complete and now delivers a **natural-density**
+statement. Newly available, all 0 `sorry`, axioms `[propext, Classical.choice, Quot.sound]`:
+
+| Name | File | What it gives you |
+|---|---|---|
+| `FiberTheoremC.FiberGood` / `theorem_C_fiber` | `EM/Population/FiberTheoremC.lean` | Theorem C with `GoodSeed`'s two seed-specific clauses replaced by a **fibre existential**; the predicate is then `modulus q Y`-periodic. Use this, not `TheoremC.theorem_C`, whenever you need periodicity. |
+| `PeriodicDensity.periodRep` / `card_filter_le_of_type_bad` / `eventually_density_le` / `limsup_density_le` | `EM/ForMathlib/PeriodicDensity.lean` | Generic, EM-independent: "few bad residue classes mod `M`" ⟹ "small upper natural density". |
+| `TypeBadSmall.type_bad_small` | `EM/Population/TypeBadSmall.lean` | The three type-measurable bad events cover `≤ ε·M_Y` of one period. |
+| `AlmostAllDensity.almost_all_genmc_density` / `almost_all_genmc_limsup` / `finite_simultaneous_density` | `EM/Population/AlmostAllDensity.lean` | The headlines. Upper natural density `≤ ε` of seeds missing `q` in `n` steps; and the finite-`S` uniform version. |
+
+**The lesson worth internalising.** A bound on a *fraction over one period of `M`* is a **diagonal**
+count (each residue class occurs once, so every other coordinate of the seed is determined by
+`m mod M`); a natural-density bound is a **product** count. They are not comparable. Before
+transferring any period bound to density, check that the counted predicate is genuinely a function
+of `m mod M` — and if it is not, look for the fibre weakening that makes it one, rather than
+weakening the statement.
+
+## Standing caution on priority claims
+
+Never write "first / only formalization in any proof assistant" in a docstring or the paper without
+checking, at minimum: the **Isabelle/HOL AFP**, the Lean project **PrimeNumberTheoremAnd**,
+**Metamath set.mm**, **HOL Light `100/`**, and **open Mathlib PRs**. Session 312 found that the
+repo's long-standing "no Mertens theorem in any proof assistant" claim was false (AFP since 2018),
+and that a `ζ(2) = π²/6` "unprecedented" claim was also false (Mathlib has the Basel problem).
+"Not in Mathlib at pin `vX.Y.Z`" is usually the only defensible form. Record:
+`agents/state/findings_mertens_priorart.md`.
+
+**Score so far: two claims audited, two failed** (Mertens, Session 312; van der Corput, Session 314).
+Session 314 resolved the flagged "first van der Corput bound in any proof assistant" claim in
+`EM/LargeSieve/Analytic.lean`: it does **not** stand. Note the trap that made it survive so long — a
+*different* theorem can share the name. The **oscillatory-integral** van der Corput lemma is in the
+Lean **Carleson** project and in mathlib4 PR **#39406**, while this repo proves the **discrete
+Weyl–van der Corput inequality**. Search the mathematics, not the label, and check **open** mathlib4
+PRs as well as merged ones.
+
+## Session 313 (2026-08-19) — scoping session, no new Lean; one small target going spare
+
+Session 313 was scoping only (`docs/analysis/sure_layer_missed_primes.md`, verdict **DEAD — budget
+vacuous**). Dead ends #169–#174 were catalogued; `EM/Meta/DeadEnds.lean` is now
+**174 / 164 / 32 / 15** and re-exports `SeedCapture.genSeqAvoid_ne_avoided` as the witness for #171
+(this added `import EM.Population.SeedCapture` to the registry's import surface).
+
+**Target going spare — the Coupling Lemma** (~15 lines, `EM/Population/SeedCapture.lean`). Verified
+absent from the repo; only the unrelated `LemmaDBox.genSeqAvoid_eq_iff` greps nearby.
+
+> If `q` is prime, `m ≥ 2`, and `genSeq m j ≠ q` for all `j < n`, then `genProdAvoid q m j =
+> genProd m j` and `genSeqAvoid q m j = genSeq m j` for all `j < n`.
+
+Proof: induction on `k`. With `P = genProd m k`, `N = P+1 ≥ 3`, `p = minFac N = genSeq m k ≠ q`:
+`p` prime, `p ∣ N`, `p ≠ q`, so `prime_dvd_qfreePart_iff` gives `p ∣ qfreePart q N`, whence
+`(qfreePart q N).minFac ≤ p`. Conversely `qfreePart q N ≥ 2` (else `N` is a power of `q`, forcing
+`minFac N = q`), so `(qfreePart q N).minFac` is a prime dividing `N` via `qfreePart_dvd`, hence
+`≥ minFac N = p`. Equality; accumulators agree at `k+1`.
+
+Useful corollary to state: if `q` is missed by the whole orbit, the `q`-free reference dynamics **is**
+the true dynamics. This is hygiene for anyone reasoning about `genSeqAvoid` — it is *not* a step toward
+MC, and must not be advertised as one.
+
+**Do not** attempt to derive anything about the missed set of a single orbit from
+`LargeStepRoughness`. See #169–#174.
+
+**LANDED Session 314** as `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` — and it needed **no**
+nondegeneracy hypothesis, only `q.Prime`, `1 ≤ m`, and `∀ j < n, genSeq m j ≠ q`.
+
+---
+
+## Session 314 (2026-08-19) — the profinite ensemble; new infrastructure and two reusable techniques
+
+Three new files in `EM/Population/`, all 0 `sorry`, full build green:
+
+| Name | File | What it gives you |
+|---|---|---|
+| `Ω`, `μ`, `measure_cylinder`, `measure_residue_classes`, `redMod`, `redMod_iota`, `measure_range_iota_eq_zero` | `EM/Population/ProfiniteEnsemble.lean` | The ambient space `Ω = Π (r : Nat.Primes), ZMod r` with `μ = MeasureTheory.Measure.infinitePi` of the uniform measures. `measure_residue_classes` is the workhorse: an `M`-periodic event has measure exactly its period fraction, `μ {x | redMod P x ∈ T} = #T / ∏_{r∈P} r` — this is how a finite counting bound becomes a measure bound. `measure_range_iota_eq_zero` proves **`ℕ ⊂ Ω` is μ-null**. |
+| `leastVanishing`, `profProd`, `profSeq`, `profSeq_iota`, `AgreeUpTo`, `profProd_agree_of_agree`, `genSeq_eq_profSeq_of_agree` | `EM/Population/ProfiniteDynamics.lean` | Greedy dynamics on a profinite point. A profinite point has no `minFac`, so selection is by `leastVanishing` (least prime coordinate `≡ −1`). Agreement with the integer dynamics is **unconditional** — only `1 ≤ m`: `profSeq (iota m) k = genSeq m k`. Band-local agreement lets you compare two points that agree below `Y`. |
+| `MissingEvent`, `covering`, `measure_missing_le`, `measure_missing_eq_zero`, `measure_some_prime_missed_eq_zero` | `EM/Population/ProfiniteHeadline.lean` | The headline: `μ {x | ∃ q : Nat.Primes, x q ≠ 0 ∧ ¬ ∃ j, profSeq x j = q} = 0`. μ-almost every profinite seed captures every prime. |
+
+Also landed: `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` (the Coupling Lemma, above); the `q ≤ Y`
+and band structure of the modulus exported through `AlmostAllGenMC.three_type_union_small`,
+`TypeBadSmall.type_bad_small` and `AlmostAllDensity.uncaptured_in_few_classes`; and
+`SelectionLaw.modulus_squarefree`, `SelectionLaw.coprime_modulus_self`,
+`SelectionLaw.prime_dvd_modulus`.
+
+### Reusable technique 1 — the outer-measure trick
+
+A Mathlib `Measure` **is an outer measure**: `measure_mono` and `measure_iUnion_null` apply to
+**arbitrary** sets, measurable or not. So a null-set claim about a complicated event needs only the
+*covering* sets to be measurable. Concretely, `measure_missing_le` never proves `MissingEvent` is
+measurable — it exhibits a measurable cylinder `{x | redMod P x ∈ T}` containing it and applies
+`measure_mono`, then `measure_residue_classes`. This removed what looked like Session 314's main
+formalization risk. **Reach for it whenever you are about to build a measurability argument for an
+event you only need to bound above.**
+
+### Reusable technique 2 — `Measure.infinitePi` needs no Polish hypothesis
+
+`MeasureTheory.Measure.infinitePi` (Mathlib `Probability/ProductMeasure.lean`) requires only
+`IsProbabilityMeasure` on each coordinate — **no Polish / standard-Borel hypothesis**, and no bespoke
+Carathéodory extension. The cylinder formula comes from `Measure.isProjectiveLimit_infinitePi` /
+`Measure.infinitePi_map_restrict`. Provide the per-coordinate `IsProbabilityMeasure` instance and the
+product measure is immediate.
+
+### Modelling note — `Π ZMod r`, not `Ẑ = Π ℤ_p`
+
+Choose `Π (r : Nat.Primes), ZMod r` over `Ẑ` **when the moduli in play are squarefree**. The EM
+programme only ever conditions on `m mod M` with `M` a product of *distinct* band primes, so the
+`p`-adic levels of `ℤ_p` are dead weight and every CRT statement stays at `ZMod` of a squarefree
+modulus.
+
+### Scope caveats — reproduce these in any docstring or paper text that mentions the result
+
+- `ℕ ⊂ Ω` is **μ-null**. "μ-a.e. seed" is **not** "almost all integer seeds".
+- The result says **nothing** about the orbit of `2`; dead ends **#90** and **#117** are untouched;
+  MC is not approached.
+- **Mathematically new content: none** — the finite counting chain is the mathematics, the passage to
+  all `q` is packaging. A feature, not a defect, but it must be stated.
+- **Not dead end #101** (`Ẑ` as a home for the *walk*), **not #155** (Loeb receptacle).
+- Every statement in this arc remains a **population** statement; the orbit direction was closed in
+  Session 313 (#169–#174).
+- Simultaneity in `q` was an **additivity** problem, not a rate problem (#168): the union over `q` is
+  `measure_iUnion_null`, and no `q`-uniform rate appears anywhere.
+
+**No new dead ends.** `EM/Meta/DeadEnds.lean` stays at **174 / 164 / 32 / 15**; #167 and #168 remain
+correct as written.

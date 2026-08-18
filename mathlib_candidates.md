@@ -1,6 +1,6 @@
 # Mathlib Contribution Candidates from the Euclid–Mullin Formalization
 
-The repository [EM](https://github.com/marcellop71/EM) (182 files, ~95,000 lines, zero
+The repository [EM](https://github.com/marcellop71/EM) (208 files, ~107,000 lines, zero
 `sorry`) formalizes reductions of Mullin's Conjecture against **Mathlib `v4.33.0`**
 (toolchain `leanprover/lean4:v4.33.0`). Along the way it developed general-purpose
 mathematics that appears to fill genuine gaps in Mathlib. This file lists the candidates.
@@ -12,17 +12,23 @@ number — line numbers rot on every edit, names do not. Everything below is gre
 grep -rn "necklace_identity_proved" EM/ --include="*.lean"
 ```
 
-A machine-readable index of all 356 published declarations is in `registry/`.
+A machine-readable index of all 358 published declarations is in `registry/`.
 
 **Scope.** Only live code is offered.  The repository's `EM/Archive/` (retired, `#exit`-guarded
 files) is kept locally and is not part of the public tree; no candidate below lives there
 (verified 2026-08-17).
 
 **Status of the "missing from Mathlib" claims.** Re-verified against Mathlib `v4.33.0` on
-2026-08-17 (second pass the same day: every identifier and file path below mechanically
-re-checked; §A7, §B12, §B13 added). **Three** previously-listed items have since landed in Mathlib and are recorded
-as withdrawn rather than silently dropped (§B2, §B7, §B8) — please flag any others; the
-claim is what a reviewer's time is spent on.
+2026-08-19: every file path and identifier below mechanically re-checked, and the `v4.33.0`
+checkout re-grepped. **Three** previously-listed items have since landed in Mathlib and are
+recorded as withdrawn rather than silently dropped (§B2, §B7, §B8).
+
+**Prior art outside Mathlib matters too, and two entries have it.** Absence from Mathlib is
+necessary but not sufficient for a contribution to be worth a reviewer's time: if a result
+already exists in another Lean development, or sits in an open PR, that is the first thing a
+reviewer needs to know. Two of the strongest entries are in exactly that position — §A1 (van
+der Corput) and §A7 (Mertens) — and each now carries a prior-art note. Priority claims
+previously attached to both were audited and **retracted**. Please flag any others.
 
 **Declarations marked `private`** are not exported and would need unsealing before any
 port. They are flagged.
@@ -34,11 +40,17 @@ port. They are flagged.
 | Tier | What it means | Items |
 |---|---|---|
 | **A** | Substantial, self-contained, clearly absent, likely wanted | 1–7 |
-| **B** | Real gaps, smaller or more specialised | 8–20 |
-| **C** | One- or two-line facts; cheap to add, cheap to reprove | 21–27 |
+| **B** | Real gaps, smaller or more specialised | 8–22 |
+| **C** | One- or two-line facts; cheap to add, cheap to reprove | 23–29 |
 
-If you only look at three, look at **§A7 (Karamata's Tauberian theorem, and Mertens in
-progressions)**, **§A1 (van der Corput)** and **§A2 (Parseval/Plancherel for `ZMod.dft`)**.
+If you only look at three, look at **§A7's Karamata half** (no Tauberian theorem of any
+kind is in Mathlib, and none is in the neighbouring Lean developments either),
+**§A2 (Parseval/Plancherel for `ZMod.dft`)** and **§A5 (necklace identity)**.
+
+*Changed 2026-08-19.* §A1 (van der Corput) and the Mertens half of §A7 were previously in
+this shortlist. Both are still absent from Mathlib `v4.33.0`, but both now have prior art
+elsewhere and an open mathlib4 PR — see the notes in those sections. They remain listed;
+they are no longer where a reviewer's scarce time is best spent.
 
 ---
 
@@ -56,7 +68,15 @@ with autocorrelation bounds `|R_h| ≤ δN` for lags `1 ≤ h ≤ H`,
 ```
 
 One of the basic techniques of analytic number theory. No occurrence of `van_der_corput`
-or `vanDerCorput` anywhere in Mathlib. Self-contained proof.
+or `vanDerCorput` anywhere in Mathlib `v4.33.0` (re-grepped 2026-08-19). Self-contained proof.
+
+> **Prior art — read before spending time here.** A theorem named `van_der_Corput` has been
+> in the Lean 4 **Carleson** project since its blueprint (arXiv:2405.06423, May 2024) and is
+> in the finished formalization: `Carleson/Classical/VanDerCorput.lean`, plus
+> `Carleson/HolderVanDerCorput.lean`. There is also an **open mathlib4 PR #39406**. So this
+> entry is offered as an *alternative statement shape* (finite, autocorrelation-bounded,
+> Mathlib-only imports), not as a first formalization; any earlier priority claim is
+> retracted.
 
 | Identifier | Kind | Description |
 |---|---|---|
@@ -196,12 +216,12 @@ explicit; nothing is borrowed beyond Weierstrass approximation, `intervalIntegra
 
 | Identifier | Kind | Description |
 |---|---|---|
-| `Karamata.dser`, `Karamata.psum` | def | Dirichlet series `∑ c n · n^{−s}`; partial sums `∑_{1≤n≤x} c n` |
-| `Karamata.tendsto_monomial` | thm | The theorem for the test function `y^k` |
-| `Karamata.tendsto_poly` | thm | … for polynomials |
-| `Karamata.exists_sandwich` | thm | Polynomials `P_l ≤ 1_{[e^{−1},1]}/y ≤ P_u` with integrals within `η` |
-| `Karamata.tendsto_psum_exp` | thm | `s · psum c (e^{1/s}) → C` |
-| `Karamata.karamata` | thm | **The theorem**: `psum c x / log x → C` |
+| `IK.Karamata.dser`, `IK.Karamata.psum` | def | Dirichlet series `∑ c n · n^{−s}`; partial sums `∑_{1≤n≤x} c n` |
+| `IK.Karamata.tendsto_monomial` | thm | The theorem for the test function `y^k` |
+| `IK.Karamata.tendsto_poly` | thm | … for polynomials |
+| `IK.Karamata.exists_sandwich` | thm | Polynomials `P_l ≤ 1_{[e^{−1},1]}/y ≤ P_u` with integrals within `η` |
+| `IK.Karamata.tendsto_psum_exp` | thm | `s · psum c (e^{1/s}) → C` |
+| `IK.Karamata.karamata` | thm | **The theorem**: `psum c x / log x → C` |
 
 Applied in the same file to the coefficients `c n = Λ(n)·1_{n ≡ a (q)}` (Mathlib's
 `vonMangoldt.residueClass`), whose L-series pole is exactly what
@@ -211,14 +231,24 @@ summation (`EM/IK/Tauberian.lean`, `EM/IK/AbelChain.lean`) the reciprocal form:
 
 | Identifier | File | Description |
 |---|---|---|
-| `Karamata.wcoef_tendsto` | `EM/IK/Karamata.lean` | `(∑_{n≤x, n≡a} Λ(n)/n) / log x → 1/φ(q)` |
+| `IK.wcoef_tendsto` | `EM/IK/Karamata.lean` | `(∑_{n≤x, n≡a} Λ(n)/n) / log x → 1/φ(q)` |
 | `IK.weightedPNTinAP_asymp_proved` | `EM/IK/Karamata.lean` | `∑_{p≤x, p≡a} log p / p ~ (log x)/φ(q)` |
 | `IK.prime_power_stripping_asymp_proved` | `EM/IK/Tauberian.lean` | Prime powers contribute `O(1)` |
 | `IK.primesEquidistInAP_asymp_proved` | `EM/IK/Karamata.lean` | `∑_{p≤x, p≡a} 1/p ~ (log log x)/φ(q)` |
 
-Mathlib has no Mertens theorem (not even for `q = 1`), so the second table is a candidate in
-its own right; the natural home for both is next to `PrimesInAP.lean`.  Nothing here is
-`private`.
+Mathlib `v4.33.0` has no Mertens theorem (not even for `q = 1`), so the second table is a
+candidate in its own right; the natural home for both is next to `PrimesInAP.lean`.  Nothing
+here is `private`.
+
+> **Prior art for the Mertens half — read before spending time here.** Two-sided Mertens I is
+> in the **Isabelle/HOL AFP** since 2018 (Eberl–Paulson, *The Prime Number Theorem*,
+> `Mertens_Theorems.thy`; `mertens_bound_strong` has strictly better constants than anything
+> here), and in Lean 4 outside Mathlib in **PrimeNumberTheoremAnd**
+> (`IEANTN/Mertens.lean`, `sum_log_prime_div_eq_log`, no `sorry`). An **open mathlib4 PR
+> #41394** ("feat(NumberTheory/Mertens)") supersedes #40656. Any priority claim is retracted.
+> **The Karamata half is unaffected**: no Tauberian theorem of any kind appears in Mathlib
+> `v4.33.0`, and none of the developments above contains one — that is the part of this entry
+> a reviewer should weigh.
 
 ---
 
@@ -449,6 +479,50 @@ Mathlib counts integers by least prime factor.
 Companion, on a progression (`EM/Population/BagConditionedLaw.lean`):
 `BagConditionedLaw.tendsto_bagClass_div_ap` — among `m ≡ 1 (mod P)`, `minFac m = p` (for
 `p ∤ P`) has relative density `(1/p)∏_{r<p, r∤P}(1−1/r)`.
+
+---
+
+## B14. Periodic Events Have Natural Density Equal to Their Period Fraction
+
+**File:** `EM/ForMathlib/PeriodicDensity.lean` (Mathlib-only imports; added 2026-08-19)
+
+If membership in a set of naturals depends only on the residue mod `M`, its upper natural
+density is the fraction of residues in one period. Elementary block counting, but it is the
+step every "density of an `M`-periodic condition" argument needs, and Mathlib states it
+nowhere.
+
+| Identifier | Description |
+|---|---|
+| `PeriodicDensity.periodRep` | Representative of `m` in `[1, M]` (`M` in place of `0`) |
+| `PeriodicDensity.periodRep_modEq`, `…_mem_Ico`, `…_eq_self` | Its basic API |
+| `PeriodicDensity.card_fiber_le` | Fibre count over one block |
+| `PeriodicDensity.eventually_density_le` | `#{m ≤ X : P m}/X ≤ #T/M + o(1)` for `M`-periodic `P` |
+| `PeriodicDensity.limsup_density_le` | `limsup` form |
+
+---
+
+## B15. Finite-Tree Exponential Supermartingale and Chernoff Lower Tail
+
+**File:** `EM/Population/TreeChernoff.lean` (Mathlib-only imports)
+
+A self-contained Chernoff bound on a finite sample space with a refinement filtration, in
+the form one needs when the per-step success probabilities are only bounded *conditionally*
+rather than independent: given a refining family `F k`, events `A k` measurable for it, and
+a conditional lower bound `hcond` on each step's success weight, the number of successes is
+below a quarter of its compensator with exponentially small probability. Proved by backward
+induction on the tree; no measure theory and no independence.
+
+Mathlib has Hoeffding/Chernoff material only for genuinely independent families
+(`Mathlib/Probability/Moments/`), so the conditional/filtration form is absent. Offered as a
+generic engine rather than as number theory.
+
+| Identifier | Description |
+|---|---|
+| `TreeChernoff.theta`, `exp_neg_eq_one_sub_theta` | The `1 − e^{−λ}` change of variable |
+| `TreeChernoff.chernoff_bound` | General bound |
+| `TreeChernoff.chernoff_quarter` | The quarter-of-compensator form |
+| `TreeChernoff.chernoff_bound_of_dominating`, `chernoff_quarter_of_dominating` | Domination variants |
+| `TreeChernoff.chernoff_quarter_local` | Localized variant (bad set intersected with `{v ≤ compensator}`), which avoids a stopped supermartingale |
 
 ---
 

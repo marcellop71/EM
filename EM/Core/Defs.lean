@@ -18,8 +18,8 @@ The first several terms are:
     2, 3, 7, 43, 13, 53, 5, 6221671, 38709183810571, 139, 2801, 11, 17, ...
 
 Note that **primes do not appear in order**. The prime 5 only shows up at
-position 6, and 11 at position 11. Some small primes like **31** and **37**
-have never been observed in the sequence despite extensive computation.
+position 6, and 11 at position 11. The smallest prime not yet observed in the
+computed initial segment is **41**; whether every prime eventually appears is open.
 
 **Mullin's Conjecture** (1963, open): Every prime number eventually appears
 in the Euclid–Mullin sequence.
@@ -105,7 +105,7 @@ def aux : Nat → Nat × Nat
     | 3  | 42             | 43          | 43      |   43 |
     | 4  | 1806           | 1807        | 13      |   13 |
     | 5  | 23478          | 23479       | 53      |   53 |
-    | 6  | 1244134        | 1244135     | 5       |    5 |
+    | 6  | 1244334        | 1244335     | 5       |    5 |
 
     Note at step 4: 1807 = 13 * 139, so the smallest prime factor is 13,
     not 1807 itself. The sequence does not produce primes in order! -/
@@ -506,7 +506,7 @@ theorem seq_injective : ∀ m n, seq m = seq n → m = n := by
 -- * Booker (2016) showed that a *generalized* Euclid construction (using
 --   partitions of the prime set) provably reaches every prime — but this
 --   does not resolve the conjecture for the specific smallest-factor sequence.
--- * It is not known whether 31 or 37 ever appear in the sequence.
+-- * It is not known whether 41 (the smallest unobserved prime) ever appears.
 --
 -- The conjecture is stated below as a *proposition* (a `def` of type `Prop`),
 -- not as a theorem. This is the honest way to formalize an open problem in

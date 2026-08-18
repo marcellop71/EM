@@ -1,8 +1,12 @@
 /.lake
 __pycache__/
 
-docs/
 tmp/
+
+# Compiled papers — regenerate with `lualatex main.tex`; published as release
+# assets rather than tracked (they were purged from history 2026-08-19).
+paper/main.pdf
+paper/short/main.pdf
 
 # LaTeX build artifacts
 *.listing
@@ -21,3 +25,13 @@ EM/Archive/
 .venv/
 .claude/
 texput.log
+
+# Private research record and internal reviews: kept on disk, never published.
+# Purged from all history 2026-08-19 (git filter-repo); a copy lives in
+# ../EM-private/ and the pre-rewrite state is in ../EM-full-backup-*.bundle.
+# Subsumes the detached-job records written by agents/jobs.py.
+agents/state/
+docs/reviews/
+
+# declbuild daemon state (oleans, traces, log) — local only
+.declbuild/

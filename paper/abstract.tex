@@ -1,59 +1,66 @@
 \begin{abstract}
+\footnotesize
 The Euclid--Mullin sequence is $a(0)=2$,
-$a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, with $\text{lpf}$ the least
-prime factor; Mullin's Conjecture (MC, 1963) says every prime appears.
-The running product $a(0)\cdots a(n)$ evolves by the \emph{Euclid step}
-$T(n) = n\cdot\text{lpf}(n{+}1)$ on squarefree integers (multiply the bag of
-primes collected so far by the least prime factor of the product plus
-one), so the sequence is the orbit of~$2$ under~$T$, and MC asks whether
-that orbit meets every prime.
-We present a Lean~4 formalization ($\EMLineCount$~lines,
-\EMFileCount~files, zero~\texttt{sorry}) that maps what one orbit of~$T$
-provably inherits from the structure of~$T$.
-Two exact projections frame the map, and they are not on a par: the
+$a(n{+}1) = \text{lpf}(a(0)\cdots a(n)+1)$, with $\text{lpf}$ the least prime
+factor; Mullin's Conjecture (MC, 1963) says every prime appears.  Its
+running product evolves by the \emph{Euclid step}
+$T(n) = n\cdot\text{lpf}(n{+}1)$ on squarefree integers, so the sequence is
+the orbit of~$2$ under~$T$ and MC asks whether that orbit meets every
+prime.  We present a Lean~4 formalization ($\EMLineCount$~lines,
+\EMFileCount~files, zero~\texttt{sorry}) mapping what one orbit of~$T$
+provably inherits from~$T$.
+Two exact projections frame it, and they are not on a par: the
 \emph{residue walk} $T^n(2) \bmod q$ carries MC itself, turning it into a
-hitting statement on $(\ZZ/q\ZZ)^\times$ (its algebraic precondition
-proved free), and is where all the upper structure lives; the
-\emph{growth constant} $C = \lim_N \log T^N(2)/2^N$, a semiconjugacy
-$C(Tm) = 2C(m)$ to doubling, carries only the floor---its vanishing is a
-complete invariant for $(\mathrm{C}\infty)$, ``infinitely many Euclid
-numbers are composite''---and MC is invisible from it.
-At the top of the map is the machine-verified chain
-$\mathrm{CME} \Rightarrow \mathrm{CCSB} \Rightarrow \mathrm{MC}$, where
-CME (conditional multiplier equidistribution along the orbit, for a
-missing prime) is a \emph{reformulation} of MC in the language of the
-walk: since it is quantified over missing primes, MC implies it
-vacuously and $\mathrm{CME} \Leftrightarrow \mathrm{CCSB} \Leftrightarrow
-\mathrm{DH} \Leftrightarrow \mathrm{MC}$ (all machine-checked); its
-content is the direction that turns a hitting problem into an
-equidistribution problem.  Nothing sits under it: weaker-looking
-hypotheses collapse to CME, are
+hitting statement on $(\ZZ/q\ZZ)^\times$ (its algebraic precondition proved
+free), and holds all the upper structure; the \emph{growth constant}
+$C = \lim_N \log T^N(2)/2^N$, a semiconjugacy to doubling, carries only the
+floor---its vanishing is a complete invariant for $(\mathrm{C}\infty)$,
+``infinitely many Euclid numbers are composite''---and MC is invisible
+from it.
+At the top is the machine-verified chain
+$\mathrm{CME} \Rightarrow \mathrm{CCSB} \Rightarrow \mathrm{MC}$, where CME
+(conditional multiplier equidistribution along the orbit, for a missing
+prime) \emph{reformulates} MC in the language of the walk: quantified over
+missing primes, so MC implies it vacuously and $\mathrm{CME}
+\Leftrightarrow \mathrm{CCSB} \Leftrightarrow \mathrm{DH} \Leftrightarrow
+\mathrm{MC}$ (all machine-checked); its content is the direction turning a
+hitting problem into an equidistribution problem.
+Nothing sits under it: weaker-looking hypotheses collapse to CME, are
 walled by orbit-specificity (finite counterexamples in
-$(\ZZ/5\ZZ)^\times$), or are false---fixed-modulus population
-equidistribution of least prime factors is proved equivalent to a series
-identity that fails by head domination.  At the bottom, weak forms of MC
-bottom out at $(\mathrm{C}\infty)$, Sylvester-tower primality: MC implies
-a no-infinite-prime-tower statement for a doubly exponential sequence,
-which is open.  Around the map: no propagating congruence
-invariant blocks a prime under $\text{lpf}$, while the same class
+$(\ZZ/5\ZZ)^\times$), or are false---fixed-modulus equidistribution of
+least prime factors is proved equivalent to a series identity that fails
+by head domination.  At the bottom sits $(\mathrm{C}\infty)$,
+Sylvester-tower primality: MC implies a no-infinite-prime-tower statement
+for a doubly exponential sequence, which is open.  Around it: no propagating
+congruence invariant blocks a prime under $\text{lpf}$, while the same class
 machine-checks Cox--van der Poorten's omission of~$5$ under the largest
 prime factor; a comparison class (ensemble, factor tree, two-point,
 $\varepsilon$-random, function field) isolates \emph{selection} as the
 difficulty, with almost-all factor-tree hitting unconditional; and
-Karamata's Tauberian theorem with Mertens' theorem in progressions is
-formalized along the way.  150 dead ends are catalogued with the reason each fails; every
-result and open hypothesis is tagged and registered in the public
-repository.
-
-\medskip\noindent\textbf{Statements and proofs.}
-Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
-are formally verified in Lean~4; the identifier links to the source.  Most
-proofs are sketched; correctness is guaranteed by the type-checker, and
-the Lean source is the authoritative reference for every statement (the
-20~key declarations were cross-checked against the paper's statements
-with LeanArchitect~\cite{LeanArchitect2026}, which found one missing
-precondition, since corrected).  Published results and open hypotheses
-carry \texttt{@[publish]}/\texttt{@[open\_point]} tags in the repository
-(\url{https://github.com/marcellop71/EM}); a machine-readable registry is
-in \texttt{registry/}.
+Karamata's Tauberian theorem with Mertens in progressions is formalized
+along the way.  For the greedy map itself, one unconditional
+theorem does clear the seed ensemble: for each \emph{fixed} prime~$q$ and
+each $\varepsilon>0$ there is a finite horizon~$n$ at which the seeds
+coprime to~$q$ missing~$q$ in their first~$n$ multipliers have upper
+natural density at most~$\varepsilon$---no character sums, an exact CRT
+selection law against a deterministic compensator bound, and nothing
+claimed about the orbit of~$2$.
+Simultaneity in~$q$ is a question of additivity, not of rates: for natural
+density it stays open past finite sets of primes, upper density being only
+finitely subadditive, while on the profinite ensemble
+$\Omega = \prod_{r} \ZZ/r\ZZ$, where the same counting chain is reused and
+countable additivity is available, $\mu$-almost every point captures every
+prime whose coordinate it does not annihilate---a different ensemble, in
+which $\NN$ is $\mu$-null, so neither statement strengthens the other.
+\DEentries~dead ends are catalogued with the reason each fails.
 \end{abstract}
+
+\smallskip\noindent{\footnotesize\textbf{Statements and proofs.}
+Theorems marked {\color{leanink}\sffamily\footnotesize$\checkmark$\,name}
+are verified in Lean~4, the identifier linking to the source, which is
+authoritative (LeanArchitect~\cite{LeanArchitect2026} cross-checked the
+20~key declarations and found one missing precondition, since corrected).
+Results and open hypotheses carry
+\texttt{@[publish]}/\texttt{@[open\_point]} tags in the repository
+(\url{https://github.com/marcellop71/EM}); the registry is in
+\texttt{registry/}.}

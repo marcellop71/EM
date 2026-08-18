@@ -17,6 +17,8 @@ import EM.GaussEM.GaussConfinement
 import EM.GaussEM.GaussWalkStructure
 import EM.Population.ReciprocalSum
 import EM.Population.AutonomousBranch
+import EM.Population.SeedCapture
+import EM.Population.GrowingRange
 import EM.Stochastic.FactorDiversity
 import EM.Stochastic.EpsilonDegeneration
 import EM.Obstruction.NoInvariant
@@ -51,7 +53,7 @@ the file where it is documented, and whether a formal Lean witness exists.
 
 ## Catalog
 
-**Single source of truth: `tools/dead_ends.tsv`** (one row per number 1–160: category, name,
+**Single source of truth: `tools/dead_ends.tsv`** (one row per number 1–168: category, name,
 approach, rationale, session, witness, revival score, status).  `python3 tools/gen_dead_ends.py`
 regenerates the block below, `paper/dead_ends_table.tex` (the complete catalogue in the paper's
 appendix), `paper/dead_ends_stats.tex` and `docs/dead_ends_catalog.md`, and prints the counts that
@@ -67,9 +69,9 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 
 <!-- BEGIN GENERATED CATALOGUE -->
 
-160 numbers; 150 catalogued entries; 29 with a genuine Lean witness; 10 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
+177 numbers; 167 catalogued entries; 35 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
 
-### Orbit specificity (OS, 8) — population or ensemble statistics do not determine what one orbit does
+### Orbit specificity (OS, 10) — population or ensemble statistics do not determine what one orbit does
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 9 | Chebotarev / Kummer route | 10 | Chebotarev not in Mathlib ($\sim$5000 lines); even if available it gives population density (SieveEquidistribution), not orbit-specific SieveTransfer. Abelian case degenerates to Dirichlet in APs (Session 298) | — | - |
@@ -80,6 +82,8 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 127 | Weil bound does not close FF-DSL | 166 | Weil gives population equidistribution of irreducibles only; $\mathrm{ffProd}(n)+1$ is one specific polynomial, the walk sum is a sum of products of character values (not a Weil sum), and the relevant population is $O(1)$; orbit specificity (#90) and the Four-Way Blocker are unchanged. | — | 2 |
 | 148 | Consumption ledger is one-sided | 299 | The ledger only yields caps (`hittingSet_ncard_le_appearing`, starvation); a contradiction needs a lower bound on spending, which requires orbit control, exactly what the consumption discipline forbids. Detection strength is zero (tail class $0$ unconditionally via `exists_tail_coprime`); the Gap is false, not hard. | `hittingSet_ncard_le` | 1 |
 | 158 | Tail-identity Borel–Cantelli is #90 again | 307 | `standard_tail_not_bad` needs the bad set to have $\mathrm{card}=0$, not density $\to 0$; a density-zero bad set may contain the sparse sequence $\{\prod M\}$ at no cost. The identity turns an orbit statement into an ensemble-member statement, but specificity reappears as which members are good (#58/#117). | — | 0 |
+| 172 | Sure compensator as evidence of coverage progress | 313 | Wrong sign. $S_k = \prod_r (1-\rho_r)$ is *maximal* ($\equiv 1$) exactly when no position is ever new — i.e. for the orbits that capture nothing. Per-path, ``large $S_k$'' means ``no progress toward coverage''; the opposite (ensemble) reading requires the seed residue to be uniform in its box, which is #90. Both proved sure bounds — charge $\le$, survival $\ge$ — constrain the half-line *opposite* to capture-freeness: the configurations satisfying the whole layer are downward-closed in charge, and the capture-free ones sit at the extreme point (zero charge, $S_k\equiv 1$, boxes frozen). No upper bound on charge can exclude zero charge. | — | 0 |
+| 176 | The scale-uniform tail bound ``(N2)'' as the missing \S G input | 317 | Not a population statement. With $X=m$ and $\delta<1/m$ the bound leaves no room for the seed $m$ itself, so (N2) forces *every* seed to miss only finitely many primes coprime to it (`GrowingRange.scaleUniformTail_cofinite`); at $m=2$ it says the Euclid–Mullin sequence contains every sufficiently large prime (`scaleUniformTail_cofinite_mc`), far above the known floor MC $\Rightarrow$ RD $\Rightarrow$ (S) $\Rightarrow$ (C$\infty$). The honest input is (N2$'$), the same bound for $X\ge X_0(\delta)$; at scale $X$ it concerns the primes $q>X$, for which the seeds $m\le X$ are $X$ distinct points of $\mathbb{Z}/q$ and no period $M\le X$ sees the event — orbit-specificity in the sense of #90. What the population method does give is the growing-range form: some ineffective $Q\to\infty$ with a.a.\ seeds $m$ selecting every prime $q\le Q(m)$, $q\nmid m$ (`seed_range_never_density`), the exact analogue of Tao's ``almost bounded values'' for Collatz. | `scaleUniformTail_cofinite_mc` | 1 |
 
 ### Decorrelation gap (DG, 7) — multiplier-level cancellation or independence does not transfer to the walk
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -92,7 +96,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 117 | MultCancel does not force WalkCancel | 128 | Multipliers alternating $\{2,3\}$ mod 5 with $\chi(2)=i$: multiplier sums vanish for even $K$, but $W_K=(K/2)(1+i)$, $\|W_K\|=\Theta(K)$. Compatible with every EM structural property; the transfer is equivalent to CCSB/CME. Sharpens #58. | `OrbitBarrier.mult_cancel_not_walk_cancel` | 0 |
 | 123 | FourPointPCV: cross-time is not cross-modulus | 146 | SCRTI gives cross-modulus independence at one time; FourPointPCV needs cross-time independence at one modulus. Four-time decay is HOD-type mixing (#84), harder than CCSB; the four values are deterministic functions of one seed (#115); pairwise PCV itself open. Superseded: false (#156), DSL vacuous (#160). | — | - |
 
-### Aggregate gap (AG, 5) — an average-case or aggregate bound does not give the per-fibre or per-class bound needed
+### Aggregate gap (AG, 7) — an average-case or aggregate bound does not give the per-fibre or per-class bound needed
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 101 | Bundle Walk / Weak MC / profinite | 70 | BundleGap is weaker than SieveTransfer as a statement but no technique proves it otherwise; product-group characters do not factor (shared minFac index couples moduli), reducing to MMCSB; $\delta(M)\to0$ is population-level. In $(\mathbb Z/11)^\times$ cycling $\{3,4\}$ generates yet visits only $\{1,3\}$. | — | 0 |
@@ -100,8 +104,10 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 121 | SMSB plus SE per-class escape | 143 | $\|B\|\le\delta N$ gives by pigeonhole some class with small bad density, not all and not $-1$; per-class uniformity needs $P(\mathrm{bad}\mid w=c)\approx P(\mathrm{bad})$, i.e. CME. SE gives generation, not statistics. Superseded: SMSB false at $\chi\equiv1$ (#156). | `marginal_joint_barrier_witness` | 2 |
 | 139 | Backward-dynamics chain broken everywhere | 266 | ETA false at $c=-1$ (#136), DCTA false at $q=3$, SRE mis-stated (#138), CRTPropagationStep false (absorption drains nonzero-class mass each step even with the corrected limit), AEP false (#137), SMLB$(c)$ likely false since absorption forces $\mathrm{genSeq}$ to grow; chain zero-sorry but vacuous. | — | 0 |
 | 153 | Iwasawa / Euler-system receptacle | 299 | Kolyvagin derivatives need classes over the full squarefree lattice; the orbit supplies a single maximal flag $P_0 \mid P_1 \mid \cdots$. No $\mathbb{Z}_p$-tower (layer degrees are not $p$-powers), no motive, no period formula. | — | 0 |
+| 162 | Worst-case bag-prime bound in Lemma D | 309 | Once the threshold is type-determined, the worst-case bound is unbounded on a single type and destroys the uniform-in-$k$ constant: an average-case supply statement is being asked to hold per fibre. Repaired by a first moment, $\mathbb{E}\big[\sum_{r \mid m,\ r > z} 1/r\big] \le 2/(z\log z)$, and a Markov exclusion of a set of relative density $\le 1/C$ (`TailEstimate.seed_divisor_first_moment`, `TailEstimate.markov_divisor_mass`). | — | 3 |
+| 173 | Applying `pathwise_compensator` to the orbit of 2 | 313 | Inapplicable at every horizon. The theorem requires $(\forall j<n,\ \tilde p_j \le Y)$ *and* $\log Y \le n^2$ (and $e^{600}\le n$). No sure bound of that shape holds for the true orbit: the only sure size information permits $p_k \approx 2^{2^k}$, i.e. $\log Y \approx 2^n \gg n^2$. In the seed-average programme $Y$ is a *policy* on a seed population and the violating seeds are absorbed into `ls_plus`'s additive degenerate-tail term — a single orbit cannot be absorbed into a tail term. Any future dispatch wanting to use the compensator on one orbit must first supply an unconditional $\log p_k \le k^2$, which is strictly stronger than (C$\infty$). | — | 1 |
 
-### Collapse (CO, 27) — the proposed hypothesis is definitionally (or by a short argument) equivalent to an existing one, usually CME, CCSB or MC itself
+### Collapse (CO, 28) — the proposed hypothesis is definitionally (or by a short argument) equivalent to an existing one, usually CME, CCSB or MC itself
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 10 | WeakDecorrelation equals TailSE | 11 | Equivalent to TailSE, already known insufficient: gives escapes $R(N)\to\infty$ but not positive escape density, so no $o(N)$ walk sum | — | - |
@@ -131,8 +137,9 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 149 | Ledger small-prime output weaker than injectivity | 299 | The ledger gives $\sum_{p\le y} h_\infty(p) \le \pi(y)^2$, strictly weaker than the injectivity bound $\pi(y)$ (`seq_injective`), because ``$\exists p\le y$ with $p\mid N_n$'' is ``$\minFac N_n \le y$'': the roughness trap, quantified. | `seq_injective` | 0 |
 | 150 | Covering-system congruence obstructions | 299 | Covering systems are finite by definition, so `exists_tail_coprime` at $m=\prod T$ kills fixed-finite-prime-set covering (`no_finite_prime_covering`); assembling at the lcm gives one set at one modulus and `no_cvdp_obstruction` is set-generic. Residual escapes: unbounded/profinite families and anatomy invariants. | `CvdP.no_covering_family_obstruction` | 0 |
 | 159 | $\varepsilon$-interpolation family reformulates MC | 307 | `mullin_iff_exists_failWeight_bound`: for $q\neq 2$, MC at $q$ iff some $(\varepsilon,N,c)$ with $N\varepsilon<c$ has $\mathrm{failWeight}\le 1-c$; outside $N<c/\varepsilon$ no bound exists unless MC holds; if $q$ never occurs, $\mathrm{failWeight}\ge(1-\varepsilon)^N$, compatible with a.s. capture at every fixed $\varepsilon$. MC relocated into a finite window, not weakened. | `mullin_iff_exists_failWeight_bound` | 0 |
+| 169 | Harmonic charge budget applied to a single orbit | 313 | Vacuous: the budget is an *identity*, not an inequality with slack. The box starts at $r-1$, a charge decrements it by *exactly* one (`boxCard_succ_of_charged`) and a non-charge leaves it unchanged (`boxCard_of_not_charged`), so the charged box sizes are exactly $r-1,\dots,r-C$ and $\sum_{\text{charged}} 1/\|B\| = H_{r-1}-H_{r-1-C}$. The theorem is therefore *equivalent*, for a single path, to $C \le r-2$ — and the Lean proof is transparently that, an injection into `Finset.range (r-1)`. But $C$ counts distinct cofactor residues at $r$-exposed steps, which are units mod $r$, so $C \le r-2$ is forced by counting alone. Zero orbit-distinguishing content at every $r$ and every horizon; the aggregate form is within an absolute constant of generic behaviour. The reading ``$\approx r\log r$ declines are permitted'' is a lossy relaxation — only *charges* are bounded, declines are not. | — | 1 |
 
-### Circularity (CI, 11) — the argument presupposes the conclusion or an equivalent
+### Circularity (CI, 13) — the argument presupposes the conclusion or an equivalent
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 12 | PairDecorrelation is circular | 11 | $h=1$ correlation is just the multiplier sum (`walk_shift_one_correlation`); $h \ge 2$ requires PairDecorrelation, which is equivalent to walk equidistribution / DH itself — circular | — | - |
@@ -146,8 +153,10 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 116 | Sieve-theoretic transfer for DSL circular | 114 | The sieve axiom $\omega(r)\sim1/r$ is EMDirichlet mod $r$, so the argument assumes EMDirichlet for all auxiliaries: circular for $q\le L$, reduces to BVImpliesMMCSB for $q>L$. CRT independence is a scope error (for fixed $r$, $r\equiv a$ mod $q$ is deterministic). Superseded: DSL vacuous (#160). | — | 0 |
 | 132 | L-function factorization is circular | 173 | Controlling $L_{\mathrm{non\text{-}EM}}$ requires knowing which primes are non-EM, i.e. MC itself; the reformulation reduces to the hypothesis it aims to prove (maps to #90). | — | 1 |
 | 134 | No Tauberian lever for $L_{\mathrm{EM}}$ | 173 | $\prod n \ge 2^{n+1}$ makes the series converge for all $s>0$ (`accum_reciprocal_summable`); $L_{\mathrm{EM}}$ is entire on $\Re s>0$ with no pole at $s=1$. The standard PNT route uses $L(s,\chi)$ over all primes, already formalized. | — | 1 |
+| 166 | ``The bag has caught up'' justification of $S_k \asymp 1$ | 309 | Circular: it assumes the small primes have been captured, which is precisely the population form of the conclusion (LS)/Theorem C. Any proof of (LS) routing through ``the bag has caught up'' presupposes its own conclusion. The non-circular route, and the one actually formalized, is the harmonic charge budget $\sum_{r<2n} H_{r-1} \le \theta(2n)+\pi(2n) = O(n)$, which uses only that an *uncaptured* prime pays $1/\|B\|$ into its own finite budget whenever it declines (`LargeStepRoughness.charge_sum_le_harmonic`). | — | 3 |
+| 170 | ``The box has not collapsed'' as a usable branch | 313 | Circular. `seed_mem_box`'s Lean proof is literally ``exposure $\Rightarrow$ non-divisibility'' (it ends in `not_dvd_succ_of_exposed_avoid`), so $\|B_k(r)\|\ge 1$ unwinds to ``$r \nmid \Prod{m}(j) + 1$ at every $r$-exposed $j<k$'', i.e. the walk mod $r$ avoids the death class — which is $\neg\mathrm{DynamicalHitting}(r)$, the hypothesis one is trying to contradict. The other branch (``$r$ rarely exposed'') is refuted outright by `few_small_multipliers`: at least $n-\pi(r)$ of the first $n$ steps are $r$-exposed regardless. Nor can the circle be broken by weakening: the only nonvacuous quantitative negation, $C \ge r-1$, *is* MC($r$). Exact mirror of #166 — #166 blocks the entrance to (LS), this blocks the exit. | — | 0 |
 
-### Structurally false (SF, 26) — the proposed statement is false: an explicit counterexample or a proved refutation
+### Structurally false (SF, 30) — the proposed statement is false: an explicit counterexample or a proved refutation
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 6 | Direct SE implies DH (generation not coverage) | 5 | Counterexample: in $\mathbb{Z}/6$ steps $2,2,2,\dots$ generate but partial sums cycle $0,2,4$ and miss all odd elements; generation does not imply coverage. Later $\mathbb{Z}/4$ witness | — | - |
@@ -176,8 +185,12 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 156 | Uncentered ensemble character layer false | 307 | Take $\chi\equiv 1$: `ensembleAvg` of $1$ is $1$, so the SD limit is $1$ not $0$; energy $K^2 \not\le CK$; bad density $1$; four-point average $\equiv 1$; $E[E^2]=K^4$. The side conditions ($\chi(0)=0$, $\sum\chi=0$) of `MultCancelToWalkCancel` were never back-ported. Repair: centered per-$\chi$ covariance plus Cesàro drift. | `UncenteredRefutations.not_stepDecorrelation` | 0 |
 | 157 | Fixed-step multiplier equidistribution false | 307 | $\mathrm{genSeq} n 0=2$ for every odd $n$ (`genSeq_zero_of_odd`) and at least half the squarefree $n$ are odd, so mass $\ge 1/2$ sits on $2\bmod q$: false for $q\ge 5$. Not a parity artifact: on the family $2p$ the Dirichlet density of $\{\minFac(2p+1)=3\}$ is $1/2$. Independent of absorption. | `UncenteredRefutations.not_ensembleMultiplierEquidist` | 0 |
 | 160 | PE/MFRE/RoughLPFEquidist false: head domination | - | The density of $\{\minFac m=p\}$ is $w_p=p^{-1}\prod_{r<p}(1-1/r)$; weights telescope, so the class density is the convergent series $\sum_{p\equiv a}w_p$ (`tendsto_classCount_div`) and RoughLPFEquidist is the identity $\sum_{p\equiv a}w_p=c_q/(q-1)$, on which Dirichlet is silent: the class of the least prime above $q$ receives more than its share (about twice for large $q$; the excess at any fixed $q$ is a finite positive-term computation, deliberately not run in Lean). Same for MFRE/PE, UCE. | `HeadDomination.roughLPFEquidist_iff` | 0 |
+| 164 | Block-chaining substitute for Freedman | 309 | False on two independent counts: (i) the harmonic charge budget is *global* and admits no per-block version — a middle block may consist entirely of high-exponent steps, so the per-block lower bound fails; (ii) the goodness of step $k$ depends on $\tilde p_{k+1}$, so the block indicator is not block-past-measurable and the chaining is not a martingale. Replaced by a finite-tree exponential supermartingale driven by the *sure* compensator bound (`TreeChernoff.chernoff_quarter_local`), which needs neither stopping nor blocks. | — | 3 |
+| 165 | Omitting $r \ne q$ from the $q$-free box process | 309 | False at $r = q$: the $q$-free selector $\tilde p = \minFac_{\ne q}$ ignores $q$ entirely, so the brink lemma (F3) fails at $r = q$ and the step survival $S_k$ computes the wrong probability. The $q$-free type is a function of $m \bmod M_Y$ with $q \nmid M_Y$; $q$ is not a box coordinate at all, and the $q$-coordinate is carried separately by the capture identity. | — | 1 |
+| 171 | Sure layer can force a capture ($q$-free model obstruction) | 313 | Structurally impossible. Every theorem of the sure layer is proved *about* $`genSeqAvoid` q m$, and `SeedCapture.genSeqAvoid_ne_avoided` proves that this dynamics *never selects* $q$. So at every finite horizon on which the $q$-free orbit is nondegenerate, the entire layer is satisfied by a dynamics that misses $q$ by construction; no consequence of the layer alone can force any capture. Stated precisely so as not to overclaim: capture *is* recoverable per-orbit via `captured_iff_mem_visited` at $m'=m$, but nothing sure forces `visitedSetAvoid` to grow so as to contain a *prescribed* class. The single cleanest reason the orbit direction is closed, and the only one with a ready-made formal witness. | `SeedCapture.genSeqAvoid_ne_avoided` | 0 |
+| 175 | Unrestricted generalized Mullin conjecture $\mathrm{GenMC}(n)$ over all primes | 316 | False for every $n\ge 2$: $n \mid \Prod{n}(k)$ for all $k$ (`start_dvd_genProd`), so a prime $p\mid n$ is coprime to $\Prod{n}(k)+1$ and is never selected. In particular $2$ never re-appears in $\seq{2}$, so the old $\mathrm{GenMC}(2)\Rightarrow\mathrm{MC}$ was $\bot\Rightarrow\mathrm{MC}$, and the cofinal-hitting premise was unsatisfiable for every $n\ge1$ (the walk is identically $0$ mod $p\mid n$; for $n=1$ the $q=2$ clause fails). Same defect as Conjecture A (#1). Repaired 2026-08-20: $\mathrm{GenMC}(n)$ now quantifies over primes $q\nmid n$, the hitting hypothesis likewise, and $\mathrm{GenMC}(2)\iff\mathrm{MC}$ (`gen_mc_two_iff_mc`). | `gen_mc_unrestricted_false` | 0 |
 
-### Technique mismatch (TM, 51) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
+### Technique mismatch (TM, 55) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 4 | Consecutive vs arbitrary subsequences (ordering problem) | 5 | Those theorems concern arbitrary subsequences/subset products or existence of some good ordering; DH needs prefix products of one fixed ordering (the EM walk). Generation/coverage of subsets says nothing about the specific order | — | - |
@@ -231,8 +244,12 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 144 | Reciprocity transfer to min sequence fails | 298 | Max proofs make a real character constant on the finite factor support of the Euclid number; $\minFac$ confines it to a cofinite set, where no nontrivial character is constant (`char_non_constancy`). The invariant is congruential at $\Pi_n=8mP_n$: eviction automatic, fullness at $\Pi_n$, fragment empty. | `Reciprocity.no_reciprocity_induction_proof` | 0 |
 | 147 | Avoidance does not force factor-set diversity | 299 | (F1) `meanCharValue` contracts by averaging over a factor set while the walk selects one factor with $\\|\chi(s)\\|=1$; (F2) the chain concludes some branch reaches $-1$, avoidance constrains one branch; (F3) `productMultiset` fixes factor sets in advance, real ones are path-dependent. | `diverse_steps_imply_vanishing` | 1 |
 | 152 | Support-invisibility of algebraic invariants | 299 | Missingness is a support condition on $\sum_p e_p$, but every computable algebraic invariant factors through $p\mapsto p \bmod m$, hence through the walk, which sees only the product. | — | 0 |
+| 167 | Logarithmic density for the simultaneous-in-$q$ form | 312 | The premise is false: logarithmic density is *also* only finitely additive (singletons have log density $0$ and their union is $\mathbb{N}$), so it supports no Borel–Cantelli. The settings where log density genuinely is better behaved do not apply: Davenport–Erd\H{o}s needs *sets of multiples* (the failure sets $F_q$ are not divisibility conditions — that is exactly what excluding $q$ from `bandUpTo` means, #165), and log-averaged Furstenberg systems gain from *dilation invariance*, which the greedy map lacks and which is orthogonal to simultaneity anyway. Independently, the $1/m$ weights destroy `SelectionLaw.selection_law`: it is an *equality* obtained from CRT surjectivity on a full period and requires a weight constant on residue classes, whereas $\sum_{m\le X,\ m\equiv a (M)} 1/m = (1/M)\log(X/M)+O(1/M)$ is exact only as $X/M\to\infty$ — precisely the regime in which log density coincides with natural density on these $M$-periodic events. Pure loss. | `SelectionLaw.selection_law` | 0 |
+| 168 | Summable per-$q$ rates close the union over all primes | 312 | Summability *is* achievable ($\varepsilon_q=q^{-2}$ with $C_c(q)=\max(48q,3q^2)$ and $n(q)\approx 2e^{250}\exp(8B\varphi(q))$; the $e^{25}\log n/n$ tail is slack, not binding), and the differing sample spaces are *not* an obstruction ($\mathrm{modulus} q Y \mid P(Y')$, and `SelectionLaw.genSeqAvoid_prefix_eq_of_modEq` is stated for an arbitrary multiple of the band primes), so the finite-$S$ union bound is a genuine corollary (`AlmostAllDensity.finite_simultaneous_density`). But at scale $X$ only $q \lesssim \log\log\log X$ are controlled, and Borel–Cantelli is a theorem about *countably additive* measures: under a finitely additive density $\sum_q \varepsilon_q<\infty$ implies nothing about $\bigcup_q F_q$ (increasing sets of density $\le\delta$ can have union of density $1$). The rate is not the obstruction; the additivity is. The repair is a countably additive ambient measure — the profinite ensemble, in which every event is a cylinder event; built in Session 314 as $\Omega=\prod_r \mathbb{Z}/r$ with the product uniform measure (squarefree moduli make $\mathbb{Z}_r$ unnecessary), where the union over all $q$ is a one-line consequence of countable additivity (`ProfiniteHeadline.measure_some_prime_missed_eq_zero`). That is a statement about a different ensemble, in which $\mathbb{N}$ is null; it does not revive the natural-density form. | `AlmostAllDensity.finite_simultaneous_density` | 1 |
+| 174 | Bounding the missed-prime counting function | 313 | Every such target requires a *lower* bound on the hit count. The sure layer's only multiplier-size statement is `few_small_multipliers`, an *upper* bound on the number of small multipliers — the wrong direction, and the only one available, because distinctness is the only sure arithmetic fact about the multiplier sequence. Moreover a lower bound is gated on an open problem: under `AutonomousBranch.PerpetualPrimality` (open; its negation is (C$\infty$), the top frontier item) $p_k = \prod_k+1$ grows doubly exponentially and $\mathrm{hits}(x)=O(\log\log x)$; even granting (C$\infty$), compositeness gives only $p_k \le \sqrt{\prod_k+1}$, still doubly exponential. Hence any nontrivial bound on $\mathrm{missed}(x)$ implies (C$\infty$) and much more, and cannot come from a bookkeeping layer. Underlying cause: the *sign asymmetry of* `minFac` — $p_k=\minFac(N_k)$ yields infinitely many non-divisibility facts and exactly one divisibility fact, about a prime captured by definition. | — | 1 |
+| 177 | Height argument for capture at a fixed prime | 318 | The approximation exponent $\prod_{v<\infty}\|P_n+1\|_v=1/E_n$ is identically $H^{-1}$ (below Roth's $2$, no information); Baker degrades as $\exp(-C^{\omega}\prod h)$ with $\omega\approx n$ terms, far below $1/E_n$, and the subspace theorem needs a fixed support while $P_n$ is an $S_n$-unit with $S_n$ growing (#134 mismatch); $\prod E_n\to0$ in $\Omega$ is the tautology ``every prime divides some Euclid number''. The structural reason: $\mathbb Z_q^\times=\mu_{q-1}\times(1+q\mathbb Z_q)$, the walk mod $q$ is the *torsion* (Teichm\"uller) component, and every absolute value and $q$-adic logarithm factors through the torsion-free data. Formally, the capture identity shows that for a fixed multiplier prefix — hence fixed heights, defects and all $\|\cdot\|_v$, $v\ne q$ — capture of $q$ is a condition on the single residue $m\bmod q$ with both outcomes realised, so no inequality among height-type functionals decides it. The only height/torsion coupling left (Northcott: bounded height $\Rightarrow$ finitely many) reproduces the seed-average programme on the bounded-height family $m\le X$. See `docs/analysis/height_argument_attempt_2026-08-20.md`. | `SeedCapture.captured_iff_mem_visited` | 1 |
 
-### Scale mismatch (SM, 12) — the error term of the tool exceeds the signal on an $O(\log x)$-term or exponentially sparse orbit
+### Scale mismatch (SM, 14) — the error term of the tool exceeds the signal on an $O(\log x)$-term or exponentially sparse orbit
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 11 | BlockDecorrelation for high-order characters | 11 | Works for low-order characters but fails for order $d \sim q-1$: block bound does not scale with the character order | — | - |
@@ -247,6 +264,8 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 108 | Harper BDH / Weil scale mismatch | 81 | BDH needs well-distribution in APs (circular for EM) and non-concentration; EM products are super-exponentially sparse, and it yields variance over most $q$, not pointwise. Weil error $O(p^{n/2})$ per degree is vacuous for an orbit at a single degree per step. | — | 1 |
 | 154 | LSD/Wirsing density along the orbit | 299 | No exponentially-sparse LSD theorem exists; the orbit contributes $O(\log x)$ terms below $x$, far under every LSD error term (Wirsing 1961, Tenenbaum II.5, Serre 1976 checked: nothing for sparse sequences). | — | 1 |
 | 155 | Nonstandard / ultraproduct receptacle | 299 | Detection is honest (Łoś transfers avoidance) but the Loeb measure of the hyperfinite orbit is $0$ for every sequence, avoiding or not; a conservative extension yields no new Gap by definition. | — | 0 |
+| 161 | Seed-magnitude large-step threshold | 309 | $y_k$ is a function of the seed's magnitude, not of its type, so $\{\tilde p_k > y_k\}$ is not measurable for the type $\sigma$-algebra mod $M_Y$; forcing measurability by size-stratification needs $Y \gtrsim (\log X)^A$, i.e.\ modulus $\exp((\log X)^A) \gg X$ — the Bombieri–Vinogradov regime (#96). Independently, the conditional probability of a large step at that threshold is $\asymp 1/\log\log X$, so Theorem C would be vacuous and (LS) false as stated. Repaired by the type-determined $y_k = C k \log_2 c_k$ (cofactor), which keeps the modulus constant and gives $\log y_k = (2+o(1))\log k$, exactly what the far-band estimate needs. | — | 3 |
+| 163 | Truncation quantifier order in Theorem C | 309 | Under that order the far-band constant $c_0$ degenerates as $\log\log Y/\log k \to \infty$, so $c_0$ is not absolute; and simultaneously forcing the degenerate-prefix tail to vanish requires $\log Y \gg n \log n$. The two requirements are incompatible at fixed $n$. Repaired by tying $Y$ to $n$ ($\log Y \asymp n^2$, cutoff $k \ge n/\log n$), which gives $c_0 \ge e^{-23}$ and changes the statement shape of Theorem C. | — | 3 |
 
 ### Methodological rules (MR, 3) — not mathematical obstructions but standing rules of the project (no numerical certificates, no instance-by-instance work), numbered in the earliest sessions
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -465,6 +484,22 @@ wall in front of all of them.
    (infinitely many `Pₙ + 1` composite).  Conditional-on-anatomy statements about MC
    proper are the least-mapped region of the catalogue, not an exhausted one.
 
+## Run X-SeedAverage (Session 312): entries #161–#166
+
+Session 312: #161–#166 added — six statement-level near-misses from the seed-average
+programme (sessions 309–311), all repaired in flight; catalogue counts move
+160/150/29/10 → 166/156/29/15.
+
+None of the six is a barrier to a technique: each is a *statement* that was written down,
+found to be wrong or vacuous, and corrected before anything was formalized (#161 SM the
+seed-magnitude large-step threshold, #162 AG the worst-case bag-prime bound in Lemma D,
+#163 SM the truncation quantifier order in Theorem C, #164 SF the block-chaining substitute
+for Freedman, #165 SF omitting `r ≠ q` from the q-free box process, #166 CI the "the bag has
+caught up" justification of `S_k ≍ 1`).  All carry witness `—`, and five of the six carry
+revival score 3 precisely *because* the repaired forms are what the seed-average programme
+actually proved: they are catalogued so the swarm does not re-introduce the broken version
+when it re-derives the same lemmas.
+
 ## Numbering aliases (do NOT add these twice)
 
 Some session notes predate the current numbering. The tables above are the ground truth;
@@ -494,6 +529,10 @@ the following historical labels are aliases of rows already present:
 - #90 via ensemble averaging (AlmostAllRSD route)
 - #125 via pairwise-only variance (second moment suffices)
 - #129 via abelian Galois = Dirichlet (FF weak MC)
+- #161, #162, #163, #164, #166 — the *repaired* forms are the seed-average programme's own
+  lemmas (type-determined threshold, first-moment bag bound, the `log Y ≍ n²` policy window,
+  the finite-tree supermartingale, the harmonic charge budget), so each near-miss points
+  directly at a proved weak-MC ingredient
 
 **Tier B — Medium revival (score 2)**
 - #86 via ensemble quasi-randomness
@@ -505,7 +544,8 @@ the following historical labels are aliases of rows already present:
 - #146 via weak MC on the density-1/2 set q ≡ 1 mod 3 (the autonomous map has a fixed point)
 
 **Tier C — Marginal (score 1)**
-- #20, #108, #128, #130, #132, #134, #135, #137, #138, #140, #145, #147, #148, #154, GaussOS
+- #20, #108, #128, #130, #132, #134, #135, #137, #138, #140, #145, #147, #148, #154, #165,
+  GaussOS
 
 **Tier D — Stays dead (score 0)**
 - #58, #81, #93, #95, #96, #101, #109, #110, #115, #116, #117, #131, #133, #139, #141,
@@ -583,6 +623,12 @@ example := @CvdP.no_finite_prime_covering
 -- Dead End #151: confinement-cohomology Gap is false (free tails ⇒ H⁰ ≠ 0)
 -- `free_transition` is rule-symmetric: it is NOT the min/max break point.
 example := @CvdP.free_transition
+
+-- Dead End #171: the sure layer cannot force a capture ($q$-free model obstruction).
+-- Every theorem of the sure (per-path) layer is proved about `genSeqAvoid q m`, and this says
+-- that dynamics never selects `q`: so the whole layer is satisfied, at every finite horizon,
+-- by a dynamics that misses `q` by construction.  Session 313.
+example := @SeedCapture.genSeqAvoid_ne_avoided
 
 -- Dead ends #137, #140, #141, #142 have Lean witnesses in files this module does not import
 -- (`Ensemble/CRT`, `Advanced/IteratedProductCoverage`, `Population/AvoidanceTube`,
@@ -671,13 +717,23 @@ example := @chebyshev_concentration_proved -- ChebyshevConcentration PROVED (unc
 /-! ## Aggregate statistics -/
 
 /-- Highest catalogued dead-end number.  Numbers are assigned progressively in the session logs
-and cited everywhere by number, so they are never renumbered.  Ten of the 160 numbers (#25,
+and cited everywhere by number, so they are never renumbered.  Ten of the 175 numbers (#25,
 #64–#72) were never assigned to any entry (2026-08-18 reconstruction, `tools/dead_ends.tsv`);
-`deadEndEntryCount` is the number of actual entries. -/
-def deadEndCount : ℕ := 160
+`deadEndEntryCount` is the number of actual entries.  Session 312 added #161–#166 (six
+statement-level near-misses from the seed-average programme, sessions 309–311) and #167–#168
+(the two candidate routes to the simultaneous-in-`q` form, both refuted while scoping §G:
+logarithmic density, and summable per-`q` rates).  Session 313 added #169–#174, the six
+obstructions closing the *orbit* direction for the sure (per-path) layer: the charge budget is
+an identity (#169), "the box has not collapsed" is `¬DynamicalHitting` (#170), the `q`-free
+model never selects `q` (#171), the compensator has the wrong per-path sign (#172) and is
+inapplicable to the orbit of 2 (#173), and missed-prime counting is gated on (C∞) (#174).
+Session 316 (2026-08-20 codebase review) added #175: the unrestricted generalized conjecture
+`GenMC(n)` over *all* primes is false for every `n ≥ 2` (a prime dividing `n` is never selected),
+so the old `GenMC(2) ⇒ MC` was vacuous; repaired in `EM/Ensemble/WeylChain.lean`. -/
+def deadEndCount : ℕ := 177
 
-/-- Number of catalogued dead-end entries: the 160 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 150
+/-- Number of catalogued dead-end entries: the 175 numbers minus the ten never assigned. -/
+def deadEndEntryCount : ℕ := 167
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -688,20 +744,33 @@ full catalogue found genuine witnesses for entries the old tables did not carry 
 (`dirichlet_residues_independent`), #58 (via #117's counterexample), #93 (`cme_implies_feb`),
 #96 (`prod_superlinear`), #110 (`doeblin_eq_cme`), #119 (`sp_eq_cme`), #120
 (`lyapunov_telescope`) — and #144's `no_reciprocity_induction_proof` (Session 307, a real
-proof), giving 29. -/
-def witnessedDeadEndCount : ℕ := 29
+proof), giving 29.  Session 312's #167 (`SelectionLaw.selection_law`) and #168
+(`AlmostAllDensity.finite_simultaneous_density`) bring it to 31: in both, the refutation of the
+route is witnessed by the theorem that bounds what the route can actually deliver.  Session 313
+adds #171 (`SeedCapture.genSeqAvoid_ne_avoided`: the `q`-free dynamics provably never selects
+`q`, so the whole sure layer is satisfied by a dynamics that misses `q` by construction),
+giving 32.  The other five Session-313 entries are deliberately left unwitnessed: the
+declarations they cite are the objects being critiqued, not formal certificates.  Session 316
+adds #175 (`gen_mc_unrestricted_false`), giving 33.  Session 317 adds #176
+(`GrowingRange.scaleUniformTail_cofinite_mc`: the "(N2)" input of the §G scoping implies a
+cofinite MC, so it is an orbit statement), giving 34.  Session 318 adds #177
+(`SeedCapture.captured_iff_mem_visited`: capture is a torsion datum invisible to heights),
+giving 35. -/
+def witnessedDeadEndCount : ℕ := 35
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
-#136, #146). -/
-def revivableDeadEndCount : ℕ := 10
+#136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
+near-misses: their repaired forms are proved ingredients of the a.a. GenMC(q) chain, which is
+why they score high on the weak-MC axis despite being catalogued as errors. -/
+def revivableDeadEndCount : ℕ := 15
 
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 160 ∧
-    deadEndEntryCount = 150 ∧
-    witnessedDeadEndCount = 29 ∧
-    revivableDeadEndCount = 10 ∧
+    deadEndCount = 177 ∧
+    deadEndEntryCount = 167 ∧
+    witnessedDeadEndCount = 35 ∧
+    revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival
     (∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)

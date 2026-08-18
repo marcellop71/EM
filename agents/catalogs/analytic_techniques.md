@@ -384,3 +384,244 @@ silently need.
 **Success-rate note**: Session 299's value came from *disconfirmation done precisely* —
 grading receptacles until one's Gap was decided FALSE, which exposed the mechanism. Record
 this as evidence that "decide the Gap, don't hunt Detection" is the productive posture.
+
+---
+
+## Session 308 (2026-08-18) — WP0 scoping of the seed-average law
+
+### New technique entry
+
+| ID | Technique | Preconditions | What it gives | EM status | Dead ends | Notes |
+|----|-----------|---------------|---------------|-----------|-----------|-------|
+| T2.6 | **Box process / seed-type CRT selection law** | Truncation `y`; squarefree modulus `M_y = ∏_{r≤y} r`; orbit prefix with all multipliers `≤ y` | *Exact* conditional law of the next multiplier over the population of seeds: `P(p_{n+1}=p \| τ) = [c_n new mod p]/\|B_n(p)\| · ∏_{r<p, r∉Bag}(1 − [new]/\|B_n(r)\|)`. Refines Shanks' `1/q` heuristic to an exact, conditional, self-avoiding sieve law | **CONFIRMED (Session 308)** — items (a),(b),(c) verified by argument | none (no character sums, constant modulus) | Caps at **a.a. GenMC**, not MC — no orbit claim is made, so #90/#117 do not apply. Load-bearing facts: multipliers are automatically distinct (`r ∣ P ⟹ r ∤ P+1`); `D ∩ P = ∅`; boxes shrink **iff** `r < p`, `r ∉ Bag`, `c_n` new. Analytic input for the large-step lemma is only `weightedPNTinAP_asymp_proved` + Chebyshev `θ(x) ≤ (log4)x` |
+
+### STATUS changes
+
+| Technique | Old | New (Session 308) |
+|---|---|---|
+| T7.4 Dirichlet / Mertens in APs | "WP4 (Mertens with `O(1)`) required for the seed-average program" | **NOT required.** The *weighted* form `weightedPNTinAP_asymp_proved` (error `o(log x)`) survives constant-ratio windows `[y, y^A]` because the window main term `(A−1)log y/φ(q)` is the **same order** as the error. Only the `1/p` form (`primesEquidistInAP_asymp_proved`, error `o(log log x)`) is useless on windows. **Never conflate the two again.** Corollary: `A = 2` suffices; `κ_q ≥ c(A)[(A−1)/(4Aφ(q)) − 3/C]` |
+| Large-step threshold in the box process | `y_k = C·k·log₂ P_k` | **SM-blocked; replaced by `y_k = C·k·log₂ c_k` (cofactor).** The accumulator version is not measurable for the type σ-algebra; size-stratification forces modulus `exp((log X)^A) ≫ X`, i.e. the BV regime |
+| Worst-case `ω(m)` control in the box process | worst case `ω(m) ≤ log₂ m` | **AG-blocked; replaced by first moment** `E[Σ_{r∣m,r≥z} 1/r] ≤ 2/(z log z)`, excluding density `≤ 2/log C` |
+
+### New cross-cutting principle
+
+- **The two-Mertens rule.** Before declaring an asymptotic form "insufficient on windows",
+  check the *weight*. An error term is window-usable iff it is the same order as the window's
+  main term. `Σ Λ(n)/n` has main term `≍ log x` and error `o(log x)` — usable. `Σ 1/p` has main
+  term `≍ log log x` and window main term `O(1)` — unusable with `o(log log x)` error, usable
+  with `o(1)` error. This distinction silently invalidated a whole planned work package.
+- **Type-measurability filter.** In any population program built on CRT types at modulus `M_Y`,
+  every threshold, stopping rule and exclusion set must be a function of `m mod M_Y`. Anything
+  involving `log m`, `ω(m)` or `m`'s size is *not*, and forcing it in raises the modulus past
+  `X` — i.e. converts an elementary theorem into a BV-level one. Apply this filter first.
+
+### New UNTRIED combinations
+
+- (LS) at `q = 3` with the *corrected* (smaller) threshold `y_k = C k log₂ c_k ≥ Ck²`:
+  `S_k(y_k) ≍ 1/log(Ck²) ≍ 1/(2 log k)`, so `Σ_k S_k(y_k) = ∞` — Lévy–Borel–Cantelli
+  heuristic now supports (LS) with room to spare. Attack via the endgame accounting of §1.7(i).
+- First-moment (rather than worst-case) control of the *old*-prime weight
+  `E[Σ_{p old, ≥ y} 1/p]` — the same move that repaired the bag term; would lower `y_k` to `Ck`
+  and make (LS) read "`p_{k+1} ≥ Ck` i.o.".
+
+### Track record
+
+| Session | Proposal | Outcome | Advancement |
+|---|---|---|---|
+| 308 | WP0 adversarial scoping of §1.3–§1.6 of the seed-average program; adjudicate (d)(iii) | **(a),(c) CONFIRMED as stated; (b) confirmed with 3 corrections; (d) one FATAL scale bug + one aggregate-gap bug, both repaired; (e) `K₀` justification false, replaced by the stronger `π(q−1)` count, and the chaining moved into the `q`-free dynamics to fix stopping-time hygiene. (d)(iii) CONFIRMED — WP4 deleted from the program.** No dead end found; program survives and becomes strictly easier after repair | **0.7** (killed a work package, found and repaired a fatal scale bug before formalization, confirmed the CRT core) |
+
+---
+
+## Session 309 addendum (2026-08-18) — verification duty discharged; formalization begun
+
+- The Session-308 UNTRIED item "(LS) at q = 3 via endgame accounting" is SUPERSEDED: the
+  dynamicalsystem scoper's §F charge-budget proof covers all q at once and was verified this
+  session (CONFIRMED-WITH-CORRECTIONS C1–C6, report `agents/state/findings_ls_verification.md`).
+  The verification itself was an analytic-agent product: re-derivation of F1 (no hidden log;
+  θ(2n)+π(2n) ≤ 2.8n), the discrete-Abel bound Σ_{u<r≤v} 1/r ≤ (log4·log v + O(1))/log u,
+  T = 24 → 6, the C3 quantifier-order bug (far-band constant vs ∃Y₀∀Y), and the C5 refutation
+  of the block substitute (replaced by the finite-tree exponential supermartingale).
+- **Add to the two-Mertens rule a third clause (quantifier-order filter):** in any
+  truncated-population statement, check WHERE the truncation Y sits in the quantifier prefix.
+  "∃Y₀ ∀Y ≥ Y₀ at fixed n" silently lets error terms that grow in Y (here log log Y) destroy
+  constants that must be absolute. If a bound needs Y both large (tails) and controlled
+  (constants), Y must be a declared POLICY Y(n), and the two requirements must be checked
+  compatible (here: log Y ≍ n² satisfies both, with room).
+- Lemma D + Theorem C remain the analytic agent's queue (after the (LS) core lands): inputs
+  are only `weightedPNTinAP_asymp_proved` + θ ≤ (log4)x + prime-power stripping; A = 2;
+  chaining in the q-free world with K₀ built from π(q−1); statement shape now carries the
+  Y-policy (not ∃Y₀∀Y) per C3.
+
+## Session 310 addendum (2026-08-19) — lower Mertens landed; (LS+) proved; queue advanced
+
+- **NEW TOOL (PROVED, `EM/Population/MertensLower.lean`)**: `mertens_lower`
+  (`log n − 13 ≤ Σ_{p≤n} log p/p`, elementary via Legendre + `n^n ≤ eⁿn!`; first lower
+  Mertens in the repo, not in Mathlib) and `window_recip_lower`
+  (`log log Y − log log z − 16 ≤ Σ_{z<r≤Y} 1/r`, discrete Abel against two-sided
+  `M(t) = log t + O(1)`). Use these for ALL windowed reciprocal lower bounds; the
+  two-Mertens rule still governs which FORM applies where.
+- **(LS+) proved** (`LSPlus.ls_plus`, rate `exp(−(3/16)c₁n)`, Lean `c₁ = exp(−250)`),
+  via the exact selection law (`SelectionLaw.selection_law`) + abstract tree Chernoff
+  (`TreeChernoff`, C6 by localization). WP2 and Group 6 are CLOSED.
+- Queue now: Group 7 tail assembly (TL1–TL3, analytic input done), D5c policy lemma,
+  Lemma D (repaired shapes, A = 2), Theorem C ((e-1)/(e-2)/(e-3) shapes with Y-policy).
+
+## Track record — Session 311 (2026-08-19)
+| Technique | Outcome |
+|---|---|
+| Karamata window subtraction (weighted PNT at x=y,y²; ε=1/(16φ)) | PROVED — window_ap_recip_lower, the program's κ_q source |
+| Prime-power stripping reuse (de-privatize vs duplicate) | PROVED — prime_power_tail_bound |
+| Crude Chebyshev window upper bound (Σ_{y<r≤y²}1/r ≤ 32) | PROVED — window_recip_upper |
+| Markov divisor exclusion at window start z | PROVED at z = n⁶ (tail) and z = Cc² (Lemma D); FAILS at z = Cc (no log-saving in Σ_{p>z}1/p² without extra Chebyshev work) — scale warning, not a dead end |
+| First-failure ⟹ SurvivesUpTo + per-cell selection law | PROVED — tail_small assembly pattern |
+Success rate for the seed-average campaign remains 100% across S309–S311.
+
+---
+
+## Session 312 (2026-08-19) — simultaneous-in-`q` scoping (§G of the seed-average programme)
+
+Full note: `docs/analysis/simultaneous_in_q_scoping.md`.
+
+### New technique entries
+
+| ID | Technique | Preconditions | What it gives | EM status | Dead ends | Notes |
+|----|-----------|---------------|---------------|-----------|-----------|-------|
+| T2.7 | **Profinite ensemble `(Ẑ, Haar)` as the sample space of the box process** | Cylinder-measurability of every event (`SelectionLaw.genSeqAvoid_prefix_eq_of_modEq` is already stated for an arbitrary multiple of the band primes); a.e. totality of the dynamics (Mertens divergence + multiplier distinctness) | `μ(F_q) = 0` per `q` directly from `almost_all_genmc` by letting `n → ∞`; then **countable additivity** gives `μ(⋃_q F_q) = 0` — the simultaneous form, with **no `q`-uniform rate** | **PROMISING (S312)**; no new analysis, only measure-theoretic packaging | not #101, not #155 | Scope: `ℕ ⊂ Ẑ` is Haar-null, so this is "a.a. *profinite* seed", not "a.a. integer seed"; says nothing about the orbit of `2` (#90/#117 untouched). Distinct from #101 (there `Ẑ` hosted the *walk*, to extract orbit information) and #155 (there the Gap was vacuous; here the null orbit is a declared scope limit) |
+| T2.8 | Logarithmic density for simultaneity in `q` | — | nothing | **DEAD (S312)** — dead end #167 | #167 | Log density is also only finitely additive; on `M_Y`-periodic events it equals natural density once `X/M → ∞`; and `1/m` weights destroy the exact CRT selection law, which needs a weight constant on residue classes |
+
+### New cross-cutting principle
+
+**The additivity/rate distinction.** Before optimizing constants to make a per-parameter failure
+fraction summable, ask whether the ambient "measure" is countably additive. Natural density and
+logarithmic density are both only *finitely* additive; Borel–Cantelli is a theorem about countably
+additive measures. Summability of `ε_q` buys **nothing** for a countable union under a finitely
+additive density (increasing sets of density `≤ δ` can have union of density `1`). The fix is never
+a better rate; it is a genuine measure.
+
+### STATUS changes
+
+| Technique | Old | New (S312) |
+|---|---|---|
+| Seed-average law, simultaneous-in-`q` form (§G) | OPEN, "needs a `q`-uniform rate `κ_q ≥ q^{−O(1)}`" | **Reframed.** The rate is *not* the obstruction: summability is achievable (`ε_q = q^{−2}`, `Cc(q) = max(48q, 3q²)`, `n(q) ≈ 2e^{250}exp(8Bφ(q))`), the `e²⁵ log n/n` tail is slack, and the differing moduli are compatible (`modulus q Y ∣ P(Y')`). The obstruction is finite additivity. **Available now and PROVED**: `AlmostAllDensity.finite_simultaneous_density` (finitely many primes). Available with packaging: the `Ẑ`-Haar simultaneous law. |
+| `k₀(q)` / `K₀(q)` in Lemma D | unremarked | **Exponential and ineffective.** `k₀(q) ≥ exp(8Bφ(q))` (the `exp(8Bφ)` threshold inside `LemmaD.window_ap_recip_lower`), and the other half `x₀(q,b,1/(16φ(q)))` comes from the Karamata input, hence carries no rate (uniformity in `q` is Siegel–Walfisz, ineffective). No explicit `n(q)` can be written down; existence suffices for union bounds, but no "uniform rate" claim may be made. |
+| "Mertens I is unprecedented in a proof assistant" (S149 note) | asserted | **FALSE, corrected S312.** Isabelle AFP has explicit two-sided Mertens I since 2018; `PrimeNumberTheoremAnd` has it in Lean; mathlib4#41394 is open. Only "not in Mathlib v4.33.0" is true. See `agents/state/findings_mertens_priorart.md`. |
+
+### New UNTRIED combinations
+
+- Carathéodory extension of the cylinder content to `lim ℤ/Mℤ`, then `almost_all_genmc` as a Haar
+  bound — the cheapest honest route to a countable statement. `EM/Adelic/Profinite.lean` exists.
+- `genSeq`/`genSeqAvoid` as a.e.-defined maps on `Ẑ` (needs the Mertens-divergence totality
+  argument).
+
+### Track record
+
+| Session | Proposal | Outcome | Advancement |
+|---|---|---|---|
+| 312 | Scoping §G: (i) `q`-uniform rate + union bound; (ii) logarithmic density | (i) **NEEDS-NEW-INPUT** — corrected the dispatch on two points (the `log n/n` tail is *not* binding; the differing moduli are *not* fatal), identified the true obstruction as finite additivity, and extracted the finite-`S` corollary (since PROVED). (ii) **DEAD**, dead end #167. Third route found: **`(Ẑ, Haar)`**, delivering the simultaneous form with no `q`-uniform rate and no new analysis. | **0.6** |
+
+## Session 313 (2026-08-19) — the SURE layer applied to ONE orbit: closed
+
+**New technique family row — T6.6, Sure / pathwise finitary budgets** (it masquerades as a
+probabilistic method, hence the placement under T6):
+
+| ID | Technique | Preconditions | Gives | EM status | Dead ends | Notes |
+|---|---|---|---|---|---|---|
+| T6.6 | Harmonic charge budget / box process (LS) | Fixed seed, `q`-free greedy dynamics, auxiliary prime `r ≠ q`, nondegeneracy | `Σ_{charged} 1/|box| ≤ H_{r−1}`; aggregated `≤ π(N)+N log 4`; compensator `Σ_k S_k ≥ (c₁/2)n` | **PROVED, but VACUOUS for one orbit** | #169–#174, #90, #166 | Per-seed *statement* whose *content* is seed-measure. At a fixed seed the sum telescopes to `H_{r−1} − H_{r−1−C}`, so the theorem ⟺ `C ≤ r−2` (the Lean proof is literally an injection into `range (r−1)`). Session 313. |
+
+**T2 (Sieve Methods) — annotation.** The seed-average box sieve is population-only *by
+construction*. `AlmostAllGenMC.almost_all_genmc` is per fixed `q`, natural density on seeds; do not
+cite it as evidence of orbit-level progress.
+
+**Standing caveat (add near the top when next editing).** `pathwise_compensator`, `ls_plus`, and
+everything downstream carry a *type-bound policy* hypothesis (`log Y ≍ n²`, plus a degenerate-tail
+term). Any dispatch wanting to apply these to the orbit of 2 must first supply an unconditional
+`log p_k ≤ k²` — strictly stronger than (C∞), and unavailable. Dead end #173.
+
+**F-frontier note.** The box process is the first *provable* per-path tool that bypasses all four
+legs of the Four-Way Blocker. Its vacuity at a single seed is evidence about the shape of the
+barrier: **a per-path statement provable without any of the four structural inputs has so far
+invariably been a cardinality statement, and the missed set is not cardinality-controlled.**
+
+**Screening test for any future per-path proposal** (the *sign asymmetry of `minFac`*): does it
+produce a **positive divisibility fact about a prescribed prime**? `minFac(N)=p` yields infinitely
+many non-divisibility facts and exactly one divisibility fact, about a prime captured by definition.
+If the proposal produces no positive fact, it is inert.
+
+### What NOT to do
+
+* Do **not** propose bounding the missed set of a single orbit from `charge_sum_le_harmonic`,
+  `chargeBudget_le`, or `pathwise_compensator`. Their per-orbit content is pigeonhole in `ZMod r`.
+* Do **not** propose "the box stays large" as an attackable branch — it is `¬DynamicalHitting(r)` by
+  definition (#170, mirror of #166). The companion branch "rarely exposed" is refuted by
+  `few_small_multipliers`.
+* Do **not** propose any bound on `missed(x)` or `Σ_{q missed ≤ x} 1/q` — every sure size bound points
+  the wrong way, and any nontrivial bound implies (C∞) (#174).
+
+### Track record
+
+| 313 | Sure-layer bound on the missed set of one orbit (LS box process, seed `m=2`) | **DEAD — budget vacuous.** `charge_sum_le_harmonic` ⟺ pigeonhole `C ≤ r−2` ⟺ the definition of exposure; per-orbit weight is the identically-zero capture indicator (gap = #90). Exposure branch refuted by distinctness; "box stays large" = `¬DH(r)` (circular, mirror of #166). `pathwise_compensator` inapplicable (type bound is a policy). `missed(x)` gated on (C∞). Minimal ingredient (NPLB) ⟺ MC-mod-`q` (collapse). By-product: the **Coupling Lemma** (`q` missed ⟹ `genSeqAvoid q m = genSeq m`) is missing from the repo, ~15 lines. | **0.2** |
+
+---
+
+## Session 314 (2026-08-19) — §G delivered: the profinite ensemble, in Lean
+
+Everything below is **proved in Lean, full build green, 0 `sorry`**. Three new files in
+`EM/Population/`: `ProfiniteEnsemble.lean`, `ProfiniteDynamics.lean`, `ProfiniteHeadline.lean`.
+
+### STATUS changes
+
+| Technique | Old | New (S314) |
+|---|---|---|
+| **T2.7** Profinite ensemble as the sample space of the box process | **PROMISING (S312)** — "no new analysis, only measure-theoretic packaging" | **PROVED.** Realised concretely as `Ω = Π (r : Nat.Primes), ZMod r`, `μ = MeasureTheory.Measure.infinitePi` of uniform measures — *not* as `Ẑ = Π ℤ_p`. Headline `ProfiniteHeadline.measure_some_prime_missed_eq_zero : μ {x \| ∃ q : Nat.Primes, x q ≠ 0 ∧ ¬ ∃ j, profSeq x j = q} = 0`. The packaging estimate was correct: no new analysis was needed. Scope caveats below are binding. |
+| Seed-average law, **simultaneous-in-`q`** form (§G) | OPEN; reframed S312 as "the obstruction is finite additivity" | **CLOSED in the μ-model.** The union over `q` is one application of `measure_iUnion_null`. **No `q`-uniform rate is used anywhere** — `κ_q`, `K₀(q)`, `n(q)` never appear. The S312 diagnosis is vindicated exactly. Still open, and not attempted: any simultaneous statement in *natural density on `ℕ`*. |
+| T6.6 sure / pathwise budgets | PROVED but VACUOUS for one orbit (#169–#174) | **Unchanged.** S314 is entirely on the population side; it neither revives nor further damages T6.6. |
+| "First van der Corput bound in any proof assistant" (`EM/LargeSieve/Analytic.lean`) | flagged unverified/suspect (S312) | **FALSE.** Name collision: the *oscillatory-integral* van der Corput lemma is in the Lean Carleson project and mathlib4 PR **#39406**; this repo proves the *discrete Weyl–van der Corput inequality*. Second audited priority claim, second failure. |
+
+### Cross-cutting principle — the additivity/rate distinction, now confirmed by construction
+
+The S312 principle stands and is upgraded from diagnosis to method:
+
+> **When a per-parameter statement refuses to combine, ask whether the ambient notion of size is
+> countably additive *before* hunting for a uniform rate.** Natural and logarithmic density are only
+> finitely additive; making `ε_q` summable buys nothing under them. The fix is never a better rate;
+> it is a genuine measure — and S314 shows that *building* the measure can be cheap.
+
+### Newly available infrastructure (flag for reuse)
+
+- `ProfiniteEnsemble.measure_residue_classes` — an `M`-periodic event has measure equal to its period
+  fraction, `μ {x | redMod P x ∈ T} = #T / ∏_{r∈P} r`. **This is the bridge** from any finite counting
+  bound in the seed-average programme to a measure bound. Also `measure_cylinder`, `redMod_iota`.
+- `ProfiniteEnsemble.measure_range_iota_eq_zero` — `ℕ ⊂ Ω` is μ-null (proved, not assumed).
+- `ProfiniteDynamics.profSeq_iota` — agreement `profSeq (iota m) k = genSeq m k`, **unconditional**
+  (only `1 ≤ m`); plus band-local `profProd_agree_of_agree`, `genSeq_eq_profSeq_of_agree`.
+- `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` — the **Coupling Lemma** flagged as going spare in
+  S313, landed with **no nondegeneracy hypothesis**.
+- `q ≤ Y` and the band structure of the modulus are now exported through
+  `AlmostAllGenMC.three_type_union_small` / `TypeBadSmall.type_bad_small` /
+  `AlmostAllDensity.uncaptured_in_few_classes`; plus `SelectionLaw.modulus_squarefree`,
+  `coprime_modulus_self`, `prime_dvd_modulus`.
+- Two formalization techniques worth borrowing (recorded in `agents/prompts/formalizer.md`): the
+  **outer-measure trick** (a Mathlib `Measure` is an outer measure, so `measure_mono` /
+  `measure_iUnion_null` apply to *arbitrary* sets — only the covering sets need be measurable), and
+  the fact that `Measure.infinitePi` needs only `IsProbabilityMeasure` per coordinate, **no Polish /
+  standard-Borel hypothesis**.
+
+### Scope caveats — binding, do not soften
+
+* `ℕ ⊂ Ω` is **μ-null**; "μ-a.e. seed" is **not** "almost all integer seeds".
+* Says **nothing** about the orbit of `2`; **#90** and **#117** untouched; MC not approached.
+* **Mathematically new content: none** — the finite counting chain is the mathematics, the passage to
+  all `q` is packaging. A feature, not a defect, but it must be stated.
+* **Not #101** (`Ẑ` as a home for the *walk*), **not #155** (Loeb receptacle).
+* Every population statement in this arc remains a **population** statement; the orbit direction was
+  closed in S313 (#169–#174).
+
+**No new dead ends.** `EM/Meta/DeadEnds.lean` stays at **174 / 164 / 32 / 15**. **#167 and #168 remain
+correct as written** — they concern what natural and logarithmic density *cannot* do, and S314 used
+neither.
+
+### Track record
+
+| Session | Proposal | Outcome | Advancement |
+|---|---|---|---|
+| 314 | Build the countably additive ambient measure for the box process and take the union over `q` | **PROVED.** `Ω = Π ZMod r` with `Measure.infinitePi`; `measure_residue_classes` transports the finite counting chain; `measure_iUnion_null` gives the simultaneous form. The S312 reframing ("additivity, not rate") was exactly right — **no `q`-uniform rate was needed or used**. Two reusable formalization techniques extracted (outer-measure trick; `infinitePi` without Polish hypotheses). Priority-claim audit #2 (van der Corput) failed. Scope is unchanged: population/profinite only. | **0.8** (closes §G in the μ-model; no new mathematics, and says so) |

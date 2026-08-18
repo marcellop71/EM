@@ -10,4 +10,4 @@ The information-theoretic route was definitively closed because:
 - The EM walk is a single deterministic trajectory with zero Shannon entropy
 - This is a CATEGORY ERROR, not a failure of specific techniques
 
-All 18 information-theoretic dead ends are documented in the authoritative catalog `EM/Meta/DeadEnds.lean` (`docs/dead_ends.md` is only a pointer stub).
+All 18 information-theoretic dead ends are documented in the authoritative catalog `EM/Meta/DeadEnds.lean`.

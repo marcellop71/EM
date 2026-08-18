@@ -6,7 +6,8 @@
 
 \noindent\textbf{Original contribution.}\enspace
 The four-way blocker, the selectability analysis, the oracle barrier, and
-the CCSB-as-frontier argument below are new.  Together they explain
+the CCSB-as-frontier argument below are contributions of this work.
+Together they explain
 \emph{why} the remaining hypothesis resists both computation and existing
 analytic tools, and what a proof would have to supply instead.
 
@@ -155,6 +156,62 @@ of~\S\ref{sec:function-field}.  The gap between what is free and what is
 witnessed to be unreachable \emph{is} the orbit-specificity barrier, and
 every open hypothesis in the reduction network lives inside it.
 
+
+\paragraph{The sure layer cannot constrain one orbit.}
+The seed-average programme of \S\ref{sec:seed-average} contains exactly
+one ingredient that is valid along a single orbit: its \emph{sure} layer
+--- statements that are per-path and hypothesis-free, of which the
+harmonic charge budget
+(\lean{EM/Population/LargeStepRoughness.lean}{charge\_sum\_le\_harmonic})
+is the strongest.  Writing $B_r(k)$ for the box of unit residues mod~$r$
+not yet excluded by an exposed step, and calling a step \emph{charged}
+when $r$ is still active, the step is $r$-exposed, and the cofactor
+residue mod~$r$ is new, it reads
+$\sum_{k<n,\ \mathrm{charged}} 1/\#B_r(k) \le H_{r-1}$.  It nevertheless
+carries \emph{no} information about the set of primes missed by one
+orbit, because it is an identity plus a pigeonhole.  The box starts at
+$\#B_r(0) = r-1$
+(\lean{EM/Population/LargeStepRoughness.lean}{boxCard\_zero}); a charge
+decrements it by \emph{exactly} one
+(\lean{EM/Population/LargeStepRoughness.lean}{boxCard\_succ\_of\_charged})
+and a non-charge leaves it unchanged
+(\lean{EM/Population/LargeStepRoughness.lean}{boxCard\_of\_not\_charged}).
+So with $C$ charges before~$n$ the left-hand side telescopes to
+$H_{r-1} - H_{r-1-C}$, and the only content left in the inequality is that
+$C \leq r-2$, i.e.\ that every term $1/\#B_r(k)$ is well defined --- which
+counting the units mod~$r$ forces anyway.  Zero orbit-distinguishing
+content, at every~$r$ and every horizon.
+
+There is also a model obstruction, and it is the cleanest of the six.
+Every theorem of the layer is proved about the \emph{$q$-free} dynamics
+(\S\ref{sec:seed-average}), and that dynamics provably never selects~$q$
+(\lean{EM/Population/SeedCapture.lean}{genSeqAvoid\_ne\_avoided}); the
+whole layer is therefore satisfied by a process that misses~$q$ by
+construction, so no consequence of it alone can force a capture.  Dead
+Ends~\#169--\#174 record the six independent obstructions: the identity
+collapse~(\#169), the surviving ``the box has not collapsed'' branch,
+which unwinds to $\neg\DH(r)$ and is the mirror of the circularity
+in~\#166~(\#170), the model obstruction~(\#171, with a formal Lean
+witness), the wrong per-path sign of the compensator, maximal exactly for
+orbits that capture nothing~(\#172), its inapplicability to the true
+orbit, whose multipliers admit no sure size bound~(\#173), and the
+$(\mathrm{C}\infty)$ gate on any bound for the missed-prime counting
+function~(\#174).
+
+\smallskip\noindent\textbf{The sign asymmetry of $\minFac$.}\enspace
+Behind all of this is one structural fact, worth stating on its own.  The
+definition $\seq{2}(n) = \minFac(\Prod{2}(n)+1)$ yields infinitely many
+\emph{negative} facts --- $r \nmid \Prod{2}(n)+1$ for every prime
+$r < \seq{2}(n)$ --- and exactly \emph{one} positive fact, about a prime
+that is captured by definition.  Every sure ingredient \emph{in this programme} is
+a deduction from these together with multiplier distinctness, hence every
+one of them is a non-divisibility statement about primes that are
+\emph{not} captured.  So this layer produces only \emph{upper} bounds on
+hit counts --- indeed $\#\{n : q \mid \Prod{2}(n)+1\} \leq \pi(q)$ for every
+prime~$q$, missed or captured --- and never the lower bound of~$1$ that
+capture requires.  This is a screening test for any per-path proposal:
+\emph{does it produce a positive divisibility fact about a prescribed
+prime?}  If not, it is inert, however unconditional it looks.
 
 \paragraph{Dead Ends as a Roadmap.}
 \DEentries~approaches were explored and found to be dead ends
@@ -378,15 +435,19 @@ factorization through PED.
 
 \paragraph{The Van der Corput Barrier}
 
-The van der Corput inequality (Theorem~\ref{thm:vdc}, now fully proved
-in the formalization) converts character sum bounds into autocorrelation
+The van der Corput inequality (Theorem~\ref{thm:vdc}, proved in the
+formalization) converts character sum bounds into autocorrelation
 bounds.  Theorem~\ref{thm:shift-one} gives $R_1 = o(N)$ under the
-Decorrelation Hypothesis.  VdC with $H = 1$
-yields $|S_N|^2 \leq \frac{N+1}{2}(N + 2|R_1|) = N^2/2 + o(N^2)$,
-hence $|S_N| \leq N/\sqrt{2}$.  This is non-trivial but \emph{not}
-$o(N)$.  To get $o(N)$, one needs higher-order correlations $R_h = o(N)$
-for $h \geq 2$, which requires HigherOrderDecorrelation
-(Theorem~\ref{thm:hod-mc}).
+Decorrelation Hypothesis.  A single shift is not enough: in the classical
+form, $H = 1$ yields
+$|S_N|^2 \leq \frac{N+1}{2}(N + 2|R_1|) = N^2/2 + o(N^2)$, hence
+$|S_N| \leq N/\sqrt{2}$ --- non-trivial, but a constant fraction of the
+trivial bound and \emph{not} $o(N)$; in the weakened form actually proved
+here the right-hand side $2N^2/(H+1) + 2\delta N^2$ is $o(N^2)$ only when
+$H \to \infty$ \emph{and} $\delta \to 0$, which makes the same point
+structurally.  To get $o(N)$ one needs higher-order correlations
+$R_h = o(N)$ for all $h \leq H$ with $H \to \infty$, which is
+HigherOrderDecorrelation (Theorem~\ref{thm:hod-mc}).
 The telescoping identity $\sum_n \chi(w(n))(\chi(m(n))-1) = O(1)$
 is a precise structural constraint.
 

@@ -1,5 +1,6 @@
 import EM.Reduction.DSLInfra
 import EM.Equidist.Bootstrap
+import EM.ForMathlib.CharNormOne
 import Mathlib.Analysis.Convex.StrictConvexSpace
 import Mathlib.Analysis.InnerProductSpace.Convex
 import Mathlib.NumberTheory.MulChar.Duality
@@ -21,7 +22,7 @@ the character sum |sum_{s in S} chi(s)| is strictly less than |S|. This is the
 ## Main Results
 
 ### Proved Theorems
-* `char_norm_one_of_hom`       -- |chi(g)| = 1 for group hom chi : G →* C*
+* `char_norm_one_of_hom`       -- |chi(g)| = 1 for group hom chi : G →* C* (now in EM/ForMathlib/CharNormOne.lean)
 * `exists_ne_one_of_nontrivial` -- nontrivial chi on generators: exists s in S with chi(s) != 1
 * `ne_of_chi_ne_one`            -- chi(s) != 1 implies s != 1
 * `norm_add_lt_two_of_ne`       -- |z + w| < 2 for unit-norm z != w
@@ -49,17 +50,6 @@ section SpectralGap
 
 variable {G : Type*} [CommGroup G] [Fintype G] [DecidableEq G]
 
-omit [DecidableEq G] in
-/-- Character values on finite groups have norm 1.
-    Generalizes `char_value_norm_one` from DSLInfra.lean to abstract groups.
-    For chi : G →* C* with G finite, chi(g) is a root of unity of order dividing |G|. -/
-theorem char_norm_one_of_hom (chi : G →* ℂˣ) (g : G) :
-    ‖(chi g : ℂ)‖ = 1 := by
-  have hpow : (chi g : ℂ) ^ Fintype.card G = 1 := by
-    have h : (chi g : ℂˣ) ^ Fintype.card G = 1 := by
-      rw [← map_pow, pow_card_eq_one, map_one]
-    rw [← Units.val_pow_eq_pow_val, h, Units.val_one]
-  exact Complex.norm_eq_one_of_pow_eq_one hpow Fintype.card_ne_zero
 
 omit [Fintype G] [DecidableEq G] in
 /-- If chi is nontrivial on G and S generates G (closure S = top) with S a Finset,
@@ -530,17 +520,6 @@ def factorSetResidues (n : ℕ) : Finset (ZMod q) :=
   ((Finset.range (prod n + 2)).filter (fun p =>
     Nat.Prime p ∧ q ≤ p ∧ p ∣ (prod n + 1))).image (fun p => ((p : ℕ) : ZMod q))
 
-/-- Bridge: Euclid.IsPrime implies Nat.Prime. -/
-private theorem isPrime_implies_natPrime' {p : ℕ} (hp : IsPrime p) : Nat.Prime p := by
-  rw [Nat.prime_def_minFac]
-  refine ⟨hp.1, ?_⟩
-  have hmf_dvd := Nat.minFac_dvd p
-  have hne1 : p ≠ 1 := by have := hp.1; omega
-  have hmf_ge : 2 ≤ p.minFac := (Nat.minFac_prime hne1).two_le
-  rcases hp.2 p.minFac hmf_dvd with h | h
-  · omega
-  · exact h
-
 /-- The walk multiplier seq(n+1) mod q is in the factor set residues,
     provided seq(n+1) >= q.
 
@@ -551,7 +530,7 @@ private theorem isPrime_implies_natPrime' {p : ℕ} (hp : IsPrime p) : Nat.Prime
 theorem multZ_in_factorSetResidues (n : ℕ) (hge : q ≤ seq (n + 1)) :
     (seq (n + 1) : ZMod q) ∈ factorSetResidues (q := q) n := by
   simp only [factorSetResidues, Finset.mem_image, Finset.mem_filter, Finset.mem_range]
-  refine ⟨seq (n + 1), ⟨?_, isPrime_implies_natPrime' (seq_isPrime (n + 1)),
+  refine ⟨seq (n + 1), ⟨?_, IsPrime.toNatPrime (seq_isPrime (n + 1)),
     hge, seq_dvd_succ_prod n⟩, rfl⟩
   -- seq(n+1) is in range(prod n + 2)
   have hdvd := seq_dvd_succ_prod n

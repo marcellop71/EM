@@ -31,7 +31,7 @@ This catalog contains:
 
 ## Dead Ends Catalog
 
-**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`** (`docs/dead_ends.md` is only a pointer stub).
+**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`**.
 
 Entries are classified by category code — **OS** (orbit-specificity), **TM** (technique mismatch), **SM** (scale mismatch), **CI** (circularity), **SF** (structurally false / counterexample), **CO** (definitional collapse), **DG** (decorrelation gap), **AG** (aggregate gap) — and carry a weak-MC revival score 0–3. Read the current entry count from `deadEndCount` in that file rather than trusting any number quoted here.
 
@@ -137,7 +137,7 @@ Session 97 (new):
 **Session 119 (new)**:
 - **CharVarianceImpliesConcentration PROVED**: Reformulated `EnsembleCharSumConcentration` from `Tendsto` to pointwise (ε, δ) bounds. Added `normSq(χ(a)) ≤ 1` condition. Markov bound + ceiling argument. +~70 lines, 1 theorem.
 - **DecorrelationImpliesVariance PROVED**: Energy recurrence induction with C=2. Base K=0 trivial, K=1 by normSq bound, step: cross terms bounded via StepDecorrelation. +~280 lines, 8 theorems (including helpers: genSeqCharEnergy_zero/succ, ensembleAvg_le_of_pointwise/sum/add, cross_term_bound_from_sd).
-- **SquarefreeResidueEquidist assessment**: Requires ~800-1500 lines of new infrastructure. Biggest blocker: ζ(2) = π²/6 (unprecedented in any proof assistant). Marked as long-term open.
+- **SquarefreeResidueEquidist assessment**: Requires ~800-1500 lines of new infrastructure. Biggest blocker: ζ(2) = π²/6 (**stale claim — Mathlib has the Basel problem, `hasSum_zeta_two`; corrected Session 312**). Marked as long-term open.
 - **Concentration chain now complete**: StepDecorrelation → CharSumVarianceBound → EnsembleCharSumConcentration → cancellation. StepDecorrelation is the SOLE remaining gap.
 
 **Session 120 (new)**:
@@ -423,7 +423,6 @@ The **Kummer / Chebotarev route** is the ONLY algebraic approach not equivalent 
 
 **The authoritative dead-ends catalog is the Lean file `EM/Meta/DeadEnds.lean`**
 (docstring tables + `#check` re-exports of the formal Lean witnesses).
-`docs/dead_ends.md` is only a pointer stub.
 
 **Do NOT edit the catalog yourself.** New dead ends are recorded in
 `EM/Meta/DeadEnds.lean` by the coordinator/formalizer — that file must still

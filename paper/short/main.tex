@@ -23,18 +23,16 @@ reformulations, a composite floor, and population laws\\
 The Euclid--Mullin sequence is $a(0)=2$, $a(n{+}1)=\lpf(a(0)\cdots a(n)+1)$,
 $\lpf$ the least prime factor; Mullin's conjecture (MC, 1963) says every
 prime appears.  The running product $P_n=a(0)\cdots a(n)$ evolves by the \emph{Euclid step}
-$T(n)=n\cdot\lpf(n{+}1)$ on squarefree integers (multiply the bag of primes
-collected so far by the least prime factor of the product plus one), so
-the sequence is the orbit of~$2$ under~$T$ and MC asks whether that orbit
-meets every prime.  We record what is provable about one orbit of~$T$, all of it
+$T(n)=n\cdot\lpf(n{+}1)$ on squarefree integers, so the sequence is the
+orbit of~$2$ under~$T$ and MC asks whether that orbit meets every prime.  We record what is provable about one orbit of~$T$, all of it
 machine-checked in Lean~4 over Mathlib.  (i)~\emph{Reformulations.}
 Modulo a prime~$q$ the orbit is a multiplicative walk; $q$ appears iff the
 walk hits~$-1$ at the right stage, and MC is equivalent to each of several
 walk statements---cofinal hitting, character-sum cancellation, and
 \emph{conditional multiplier equidistribution} (CME).  These are
-equivalences, not reductions: each is quantified over missing primes and
-MC makes that quantifier empty; their content is the direction that turns
-a hitting problem into an equidistribution problem.  (ii)~\emph{The
+equivalences, not reductions: each is quantified over missing primes, so
+MC empties the quantifier; their content is the direction turning a
+hitting problem into an equidistribution problem.  (ii)~\emph{The
 composite floor.}  $C=\lim\log(a(0)\cdots a(N))/2^{N}$ exists, is a
 semiconjugacy $C(Tm)=2C(m)$, and vanishes iff infinitely many Euclid
 numbers are composite~$\Cinf$; MC implies $\Cinf$, and $\Cinf$ says
@@ -46,25 +44,42 @@ and inserts the rung $\mathrm{MC}\Rightarrow\mathrm{RD}\Rightarrow\rho=0\Rightar
 $w_p=p^{-1}\prod_{r<p}(1-1/r)$, the $w_p$ telescope, and the class of
 $\lpf\bmod q$ among $q$-rough integers has the \emph{convergent} density
 $\sum_{p\equiv a}w_p$; so fixed-modulus equidistribution of the least
-prime factor is equivalent to a family of series identities that
-Dirichlet's theorem does not touch and that fails by head domination.  On
-the progression $m\equiv1\pmod P$ that contains the Euclid numbers, the
-least prime outside the bag is selected with relative density exactly
-$1/q$---Shanks' heuristic made precise.  For each prime~$q$, almost every
-squarefree seed reaches~$q$ somewhere in its factor tree, unconditionally.
+prime factor is equivalent to a family of series identities untouched by
+Dirichlet's theorem, which fails by head domination.  On
+the progression $m\equiv1\pmod P$ containing the Euclid numbers, the least
+prime outside the bag is selected with relative density exactly
+$1/q$---Shanks' heuristic made precise, and the $n=0$ case of an exact
+type-conditional selection law.  Iterating that law
+against a deterministic per-path compensator bound yields, for each
+\emph{fixed} prime~$q$ and each $\varepsilon>0$, a finite horizon~$n$ at
+which the seeds coprime to~$q$ missing~$q$ in their first~$n$ multipliers
+have upper natural density at most~$\varepsilon$: unconditional, with no
+character sums, and silent about the orbit of~$2$.
+Simultaneity in~$q$ is an additivity question, not a rate question: open
+for natural density past finite sets of primes, while on the profinite
+ensemble $\prod_{r\ \text{prime}}\ZZ/r\ZZ$ with the product uniform measure the
+same counting chain gives $\mu$-almost every point capturing every prime
+whose coordinate it does not annihilate --- a different ensemble, in which
+$\NN$ is null.
+For each prime~$q$, almost every
+squarefree seed also reaches~$q$ somewhere in its factor tree, unconditionally.
 Karamata's Tauberian theorem and Mertens' theorem in progressions are
 formalized along the way.  (iv)~\emph{Min versus max.}  Cox--van der
 Poorten's omission of~$5$ for the largest-prime-factor variant is
 machine-checked; under $\lpf$ capture is a residue-class condition, so no
-propagating congruence invariant can block a prime.
+propagating congruence invariant blocks a prime.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-Euclid's proof that there are infinitely many primes takes a finite set of
-primes and factors the product plus one.  Mullin~\cite{Mullin1963} made
-the choice canonical: always take the \emph{smallest} prime factor.
+Euclid's proposition~IX.20 of the \emph{Elements} shows that for any finite
+set of distinct primes, \emph{every} prime factor of their product plus one
+lies outside the set: to grow your set of primes you may pick any factor of
+their product plus one
+(\href{https://open.substack.com/pub/marcellop71/p/a-subtle-misreading-of-euclid}{a
+Substack post I wrote on this}).  Mullin~\cite{Mullin1963} made the choice
+canonical: always take the \emph{smallest} prime factor.
 \begin{equation}\label{eq:em}
   a(0)=2, \qquad a(n{+}1)=\lpf\bigl(a(0)a(1)\cdots a(n)+1\bigr).
 \end{equation}
@@ -495,6 +510,174 @@ Shanks' ``probability $1/q$'' heuristic~\cite{Shanks1991} made precise at
 the population level; what the orbit inherits from it remains heuristic,
 since $P_n+1$ is one member of the progression, not a random one.
 
+\subsection{The seed-average law: almost all seeds coprime to $q$ capture $q$}
+\label{sec:seed-average}
+
+The bag-conditioned law describes one step.  Iterating it gives an
+unconditional density theorem for the greedy map itself.  Run the greedy
+map from an arbitrary seed: $P_m(0)=m$, $P_m(k{+}1)=P_m(k)\,p_m(k)$ with
+$p_m(k)=\lpf(P_m(k)+1)$.
+
+\begin{theorem}[\lean{EM/Population/AlmostAllDensity.lean}{almost\_all\_genmc\_density},
+\lean{EM/Population/AlmostAllDensity.lean}{almost\_all\_genmc\_limsup}]
+\label{thm:almost-all-capture}
+For every prime~$q$ and every $\varepsilon>0$ there are a horizon~$n$ and a
+threshold~$X_0$ such that for all $X\ge X_0$,
+$\#\{m\le X: q\nmid m,\ p_m(j)\ne q \text{ for all } j<n\}\le\varepsilon X$.
+\end{theorem}
+
+\noindent\emph{Scope.}  This is a statement about the \emph{seed ensemble}
+and says nothing about the Euclid--Mullin orbit of~$2$, which is a single
+trajectory.  The prime~$q$ is \emph{fixed}: $n$ and $X_0$ depend on $q$ and
+$\varepsilon$, and the simultaneous-in-$q$ form is open \emph{for natural
+density}, since upper natural density is only finitely \emph{sub}additive:
+finite subadditivity does give one
+horizon uniform over any \emph{finite} set of primes
+(\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density}),
+and a diagonal argument lets the range grow with the seed: for some
+ineffective nondecreasing $Q\to\infty$, almost every seed~$m$ selects every
+prime $q\le Q(m)$ coprime to it
+(\lean{EM/Population/GrowingRange.lean}{seed\_range\_never\_density}).
+That is as far as it goes, and the only bridge to a single orbit is a
+theorem: if some relation on seeds preserves ``$m$ misses~$q$'' for every
+$q$ and its class of~$2$ has positive upper density, then $\MC$ holds
+(\lean{EM/Population/GrandOrbit.lean}{transfer\_principle}); for the
+natural relation ``orbits eventually coincide'' the class is presumably
+thin.  It is proved on a different ensemble,
+which carries a countably additive measure (next paragraph); the
+two are not comparable, because the integers are null there.  The horizon
+is finite; there is no
+limit in~$n$, no equidistribution hypothesis, and every input is
+unconditional.
+
+\noindent\emph{The profinite packaging.}  Simultaneity in~$q$ was never a
+rate problem --- summable per-$q$ failure fractions are available, by
+applying the theorem at $\varepsilon_q=q^{-2}$ --- but an additivity
+problem, and the repair is a countably additive ambient measure.  Take
+$\Omega=\prod_{r\ \text{prime}}\ZZ/r\ZZ$ with $\mu$ the product of the
+uniform measures.  Write $p_x(j)$ for the $j$-th multiplier of the greedy
+orbit of a point $x\in\Omega$, defined next.  Coordinates $\ZZ/r\ZZ$, not $\ZZ_r$: the programme only
+ever conditions on $m\bmod M$ with $M$ squarefree, so one residue per
+prime records everything it can see, and including \emph{every} prime as a
+coordinate --- $q$ among them --- is what makes the $q$-coordinate the free
+CRT coordinate that the selection law exploits by excluding~$q$ from its
+own modulus $M_Y=\prod_{r\le Y,\,r\ne q}r$ (movement (ii) below).
+The measure enters once, as an equality: an $M$-periodic event has measure
+exactly its period fraction $\#T/M$
+(\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_residue\_classes}).
+A profinite point has no $\lpf$, so the multiplier is re-expressed
+coordinatewise as the least prime whose coordinate of the current Euclid
+element vanishes
+(\lean{EM/Population/ProfiniteDynamics.lean}{leastVanishing}); along the
+diagonal $\iota(m)=(m\bmod r)_r$ this \emph{is} the integer dynamics, with
+no hypothesis beyond $m\ge1$
+(\lean{EM/Population/ProfiniteDynamics.lean}{profSeq\_iota}) --- the same
+process, not a lookalike.  Lifting a profinite point by CRT to an integer
+agreeing with it at every prime coordinate $\le Y$ (with $q\le Y$
+load-bearing, since $M_Y$ omits~$q$) puts every point that misses~$q$ into
+the bad-type covering of movement (iii), so
+$\mu\{x: x_q\ne0,\ p_x(j)\ne q\ \forall j\}=0$
+(\lean{EM/Population/ProfiniteHeadline.lean}{measure\_missing\_eq\_zero}),
+and countable additivity does the union over~$q$:
+\[
+  \mu\bigl\{x\in\Omega:\ \exists q\ \text{prime},\ x_q\ne0
+     \ \text{and}\ p_x(j)\ne q\ \text{for all } j\bigr\}=0
+\]
+(\lean{EM/Population/ProfiniteHeadline.lean}{measure\_some\_prime\_missed\_eq\_zero}).
+No $q$-uniform rate is used anywhere: at each fixed~$q$ the horizon goes to
+infinity separately.  \emph{Scope.}  $\NN\subset\Omega$ is $\mu$-null
+(\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_range\_iota\_eq\_zero},
+proved), so ``$\mu$-a.e.\ seed'' is not ``almost all integer seeds'' --- a
+$\mu$-null set can have upper density~$1$ in~$\NN$; structurally, $\mu$-a.e.\ point
+has infinitely many vanishing coordinates while an integer has finitely many
+(\lean{EM/Population/ProfiniteAttractor.lean}{measure\_divisorFinite\_eq\_zero}),
+and MC itself reads ``$\Prod{}(n)\to0$ in the profinite topology''
+(\lean{EM/Population/ProfiniteAttractor.lean}{mc\_iff\_tendsto\_zero}) --- and transfer must go
+through the finite residue-class statements plus a genuine
+equidistribution input, never through ``a.e.'' alone.  Mathematically new
+content: none; the finite counting chain is the mathematics and this is
+packaging, which is a feature, not an apology.  Nothing follows about the
+orbit of~$2$.
+
+The proof has three movements, and forms no character sum anywhere.
+
+\emph{(i) Capture becomes a residue condition.}  A truncated orbit is a CRT
+function of the seed: if $M$ is divisible by every prime $\le y$ and the
+first $n$ multipliers of $m$ stay $\le y$, then every $m'\equiv m\ (M)$ has
+the same first $n$ multipliers
+(\lean{EM/Population/SeedTypes.lean}{genSeq\_prefix\_of\_modEq}).  This
+fails exactly at~$q$, so one runs the \emph{$q$-free} dynamics, which always
+selects the least prime $\ne q$ dividing the current Euclid number; that run
+is a legitimate, seed-residue-blind reference orbit.  Let $V_q(m,n)$ be the
+residues mod~$q$ of its cofactors at the steps where it declined an
+available~$q$.  Then for $q\nmid m'$, $m'\equiv m\ (M)$,
+\[
+  \exists\,j<n:\ p_{m'}(j)=q
+  \iff
+  m'\bmod q\ \in\ -V_q(m,n)^{-1},
+  \qquad \#V_q(m,n)\le n
+\]
+(\lean{EM/Population/SeedCapture.lean}{captured\_iff\_mem\_visited}).
+Dynamical capture is membership of one residue in an explicitly enumerated
+set of size $\le n$.
+
+\emph{(ii) An exact selection law and a deterministic compensator.}  With
+$M_Y=\prod_{r\le Y,\,r\ne q}r$ --- $q$ excluded, so that the coordinate
+$m\bmod q$ stays CRT-free --- the seeds of one period $[1,M_Y]$ split into
+\emph{type cells}, the fibres of the first-$n$-multipliers map, each cut out
+by local residue conditions
+(\lean{EM/Population/SelectionLaw.lean}{mem\_cell\_iff\_local}).  Inside a
+cell the proportion of seeds whose next Euclid number has no prime factor
+$\le y$ other than $q$ is \emph{exactly} the roughness survival product
+$S=\prod_{r\le y,\,r\ne q}(1-\rho_r)$, $\rho_r=1/\#B_r$ the reciprocal of a
+box of surviving unit residues
+(\lean{EM/Population/SelectionLaw.lean}{selection\_law}).  This is Shanks'
+heuristic made exact \emph{and} conditional on the whole type so far; the
+$1/q$ law above is its $n=0$ case.  The survival products are not summable,
+by a conservation law: each active prime shrinks its own box by one every
+time it declines, so it pays at most $H_{r-1}$ in total
+(\lean{EM/Population/LargeStepRoughness.lean}{charge\_sum\_le\_harmonic}), and
+$\sum_{r<2n}H_{r-1}=O(n)$.  Hence, on \emph{every} nondegenerate $Y$-bounded
+type path with $\log Y\le n^2$,
+$\sum_{k<n}S_k\ge (c_1/2)n$ with $c_1=e^{-250}$ absolute
+(\lean{EM/Population/LargeStepRoughness.lean}{pathwise\_compensator}).  This
+bound is deterministic and per-path: no probability, no ergodicity.  Feeding
+it, with the selection law as the conditional counting hypothesis, into an
+abstract finite-tree exponential supermartingale
+(\lean{EM/Population/TreeChernoff.lean}{chernoff\_quarter\_local}; Mathlib
+only, no measure theory) and into Lemma~D --- large steps land in any
+prescribed class coprime to~$q$ with proportion $\ge\kappa=e^{-128}/(16\varphi(q))$,
+from Karamata at window scale
+(\lean{EM/Population/LemmaDBox.lean}{lemma\_D\_z}) --- gives Theorem~C: the
+good uncaptured seeds are at most $M_Y\exp(-\tfrac38\kappa((c_1/2)n-K_0))$
+(\lean{EM/Population/TheoremC.lean}{theorem\_C}), whence an $\varepsilon$
+bound on one period
+(\lean{EM/Population/AlmostAllGenMC.lean}{almost\_all\_genmc}).
+
+\emph{(iii) Period fraction to natural density.}  This step is not a
+formality.  A period fraction is a diagonal count and natural density is a
+product count, and no inequality relates them: an $M$-periodic set can have
+diagonal count~$0$ over one period and product count $(q{-}1)M/q$.  Transfer
+therefore requires that \emph{every} clause be a function of $m\bmod M_Y$,
+and two are not --- $q\nmid m$ and ``uncaptured'', which by (i) is a
+condition on the fibre coordinate $m\bmod q$, absent from $M_Y$.  The repair
+costs no constant: the Chernoff argument uses capture only through the
+readoff ``visited set full $\Rightarrow$ every unit residue captured'' and
+through a capture criterion already stated for a general seed of the fibre,
+so both clauses weaken to ``\emph{some} seed of the residue fibre of~$m$ is
+coprime to~$q$ and uncaptured''
+(\lean{EM/Population/FiberTheoremC.lean}{FiberGood}), which is
+$M_Y$-periodic, and Theorem~C survives verbatim
+(\lean{EM/Population/FiberTheoremC.lean}{theorem\_C\_fiber}).  All three bad
+types are then fibre-measurable and jointly rare
+(\lean{EM/Population/TypeBadSmall.lean}{type\_bad\_small}), and a periodic
+covering of density $\varepsilon/2$ gives upper density $\varepsilon$ on
+$[1,X]$
+(\lean{EM/ForMathlib/PeriodicDensity.lean}{eventually\_density\_le}), the
+factor~$2$ absorbing the incomplete final block.  The truncation~$Y$ appears
+in neither the hypotheses nor the conclusion of
+Theorem~\ref{thm:almost-all-capture}.
+
 \subsection{Almost-all hitting in the factor tree}
 
 Replace the deterministic choice by the \emph{factor tree}: from a
@@ -553,7 +736,18 @@ $\sum_{p\le x,\ p\equiv a}1/p\sim\log\log x/\varphi(q)$
 (\lean{EM/IK/Karamata.lean}{weightedPNTinAP\_asymp\_proved},
 \lean{EM/IK/Karamata.lean}{primesEquidistInAP\_asymp\_proved}).  Mathlib has
 neither a Tauberian theorem nor Mertens' theorem, so these are offered as
-infrastructure.
+infrastructure.\footnote{Mertens' first theorem is not currently available
+in Mathlib (as of \texttt{v4.33.0}); a pull request upstreaming it is open
+at the time of writing~\cite{Mathlib41394}.  The explicit two-sided bounds
+used in \S\ref{sec:seed-average}
+(\lean{EM/Population/MertensLower.lean}{mertens\_lower}, and a windowed
+$\log\log$ lower bound) are therefore proved here from scratch by an
+elementary route, with deliberately crude constants.  No priority is
+claimed: sharper formalizations exist elsewhere --- Eberl and Paulson's
+Isabelle/HOL AFP entry gives
+$\mathfrak{M}(n)-\ln n\in(-1-9/\pi^2,\ \ln4]$~\cite{EberlPaulsonPNT}, and the
+\texttt{PrimeNumberTheoremAnd} Lean project proves
+$|\sum_{p\le x}\log p/p-\log x|\le\log4+4$~\cite{PNTplus}.}
 
 \section{Min versus max}
 \label{sec:minmax}
@@ -666,6 +860,9 @@ prove, and the errors are the author's.
 \bibitem{Vardi1991} I.~Vardi, Are all Euclid numbers squarefree?, in \emph{Computational Recreations in Mathematica}, Addison-Wesley, 1991, 82--89.
 \bibitem{Odoni1985} R.\,W.\,K.~Odoni, On the prime divisors of the sequence $w_{n+1}=1+w_1\cdots w_n$, \emph{J.\ London Math.\ Soc.\ (2)} 32 (1985), 1--11.
 \bibitem{Alladi1977} K.~Alladi, Duality between prime factors and an application to the prime number theorem for arithmetic progressions, \emph{J.\ Number Theory} 9 (1977), 436--451.
+\bibitem{EberlPaulsonPNT} M.~Eberl and L.\,C.~Paulson, The prime number theorem, \emph{Archive of Formal Proofs}, 2018; Isabelle/HOL theory \texttt{Mertens\_Theorems}. \url{https://www.isa-afp.org/entries/Prime_Number_Theorem.html}
+\bibitem{PNTplus} A.~Kontorovich, T.~Tao, et al., \emph{PrimeNumberTheoremAnd}, Lean~4 project, 2024--2026; file \texttt{PrimeNumberTheoremAnd/IEANTN/Mertens.lean}. \url{https://github.com/AlexKontorovich/PrimeNumberTheoremAnd}
+\bibitem{Mathlib41394} T.~Tao, \texttt{feat(NumberTheory/Mertens)}: the Mertens theorems, mathlib4 pull request \#41394, July 2026 (open at the time of writing). \url{https://github.com/leanprover-community/mathlib4/pull/41394}
 \end{thebibliography}
 
 \end{document}

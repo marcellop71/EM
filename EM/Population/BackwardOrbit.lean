@@ -190,13 +190,6 @@ theorem dvd_tower_iff {s : ℕ} (hs : 2 ≤ s) (ℓ k : ℕ) :
 
 /-! ## Part 3: the criterion -/
 
-/-- The seed's residue at stage `N` is `walkZ ℓ N + 1`. -/
-theorem cast_prod_add_one (ℓ N : ℕ) :
-    (((prod N + 1 : ℕ)) : ZMod ℓ) = walkZ ℓ N + 1 := by
-  unfold walkZ
-  push_cast
-  ring
-
 /-- **The branch criterion.**  On the perpetual-primality branch the walk value at the
 branch point must avoid the backward orbit of `0` modulo *every* prime `ℓ ≤ prod N`
 simultaneously.  A single hit anywhere refutes the branch. -/
@@ -205,7 +198,7 @@ theorem walkZ_notMem_preZero_of_perpetual {N : ℕ} (hpp : PerpetualPrimality N)
     walkZ ℓ N + 1 ∉ PreZero ℓ := by
   rintro ⟨k, hk⟩
   have hs : 2 ≤ prod N + 1 := by have := prod_ge_two N; omega
-  rw [← cast_prod_add_one] at hk
+  rw [← walk_add_one_cast] at hk
   have hdvd : ℓ ∣ tower (prod N + 1) k := (dvd_tower_iff hs ℓ k).mpr hk
   have hprime : Nat.Prime (tower (prod N + 1) k) :=
     perpetualPrimality_iff_tower_prime.mp hpp k
@@ -259,7 +252,7 @@ theorem backwardOrbitHitting_iff_infinitelyManyComposite :
   · intro h N
     obtain ⟨ℓ, hℓ, k, hk, hlt⟩ := h N
     have hs : 2 ≤ prod N + 1 := by have := prod_ge_two N; omega
-    rw [← cast_prod_add_one] at hk
+    rw [← walk_add_one_cast] at hk
     have hdvd : ℓ ∣ tower (prod N + 1) k := (dvd_tower_iff hs ℓ k).mpr hk
     refine ⟨k, fun hp => ?_⟩
     rcases (Nat.Prime.eq_one_or_self_of_dvd hp ℓ hdvd) with h1 | h1
@@ -270,7 +263,7 @@ theorem backwardOrbitHitting_iff_infinitelyManyComposite :
     have hs : 2 ≤ prod N + 1 := by have := prod_ge_two N; omega
     have hT : 2 ≤ tower (prod N + 1) k := two_le_tower hs k
     refine ⟨Nat.minFac (tower (prod N + 1) k), Nat.minFac_prime (by omega), k, ?_, ?_⟩
-    · rw [← cast_prod_add_one]
+    · rw [← walk_add_one_cast]
       exact (dvd_tower_iff hs _ k).mp (Nat.minFac_dvd _)
     · rcases lt_or_eq_of_le (Nat.minFac_le (show 0 < tower (prod N + 1) k by omega))
         with h' | h'

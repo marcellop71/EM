@@ -25,7 +25,6 @@ to path-counting for this random walk.
 ## Main Results
 
 ### Proved Theorems
-* `epsWalkProdFrom_zero` -- initial value
 * `epsWalkProdFrom_succ` -- recurrence via epsWalkFactorFrom
 * `epsWalkProdFrom_ge_two` -- accumulator >= 2 for acc >= 2
 * `epsWalkFactorFrom_prime` -- chosen factor is prime for acc >= 2
@@ -79,10 +78,6 @@ def epsWalkProdFrom (acc : ℕ) (σ : ℕ → Bool) : ℕ → ℕ
 def epsWalkFactorFrom (acc : ℕ) (σ : ℕ → Bool) (n : ℕ) : ℕ :=
   let P := epsWalkProdFrom acc σ n
   if σ n then (P + 1).minFac else secondMinFac (P + 1)
-
-/-- The initial value of the generalized accumulator is `acc`. -/
-theorem epsWalkProdFrom_zero (acc : ℕ) (σ : ℕ → Bool) :
-    epsWalkProdFrom acc σ 0 = acc := rfl
 
 /-- The recurrence: epsWalkProdFrom acc sigma (n+1) = (current) * (chosen factor). -/
 theorem epsWalkProdFrom_succ (acc : ℕ) (σ : ℕ → Bool) (n : ℕ) :

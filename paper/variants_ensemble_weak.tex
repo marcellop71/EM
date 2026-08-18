@@ -10,9 +10,11 @@ $\Prod{n}(k{+}1) = \Prod{n}(k)\cdot\seq{n}(k)$.
 The standard orbit is $n = 2$.
 
 \begin{definition}[\lean{EM/Ensemble/WeylChain.lean}{GenMullinConjecture}]
-$\mathrm{GenMC}(n)$: every prime appears in the generalized EM
-sequence from~$n$, i.e.\ $\forall q$ prime, $\exists k$,
-$\seq{n}(k) = q$.
+$\mathrm{GenMC}(n)$: every prime $q \nmid n$ appears in the generalized EM
+sequence from~$n$, i.e.\ $\forall q$ prime with $q \nmid n$, $\exists k$,
+$\seq{n}(k) = q$.  (Primes dividing~$n$ divide every $\Prod{n}(k)$ and are
+never selected, so the unrestricted version is false for all $n \ge 2$;
+dead end~\#175.)
 \end{definition}
 
 The reduction
@@ -22,8 +24,9 @@ implies~$\mathrm{GenMC}(n)$ for every squarefree~$n$, mirroring the
 standard inductive bootstrap.  And
 \lean{EM/Ensemble/WeylChain.lean}{gen\_mc\_two\_implies\_mc}
 {\color{leanink}$\checkmark$} shows $\mathrm{GenMC}(2) \Rightarrow
-\mathrm{MC}$, so the generalized conjecture specializes to the
-standard one.
+\mathrm{MC}$ (and \lean{EM/Ensemble/WeylChain.lean}{gen\_mc\_two\_iff\_mc}
+{\color{leanink}$\checkmark$} the converse), so the generalized
+conjecture specializes to the standard one.
 
 \paragraph{Bag arithmetic.}
 At each step~$k$, the Euclid number $\Prod{n}(k)+1$ has a ``bag'' of

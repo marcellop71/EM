@@ -34,25 +34,28 @@ MC not just for $n = 2$ but for arbitrary squarefree starting points.
 This motivates two key results.
 
 \begin{definition}[\defname{GenMullinConjecture}$(n)$]
-Every prime appears in the generalized EM sequence from starting
-point~$n$: $\forall\, q$ prime, $\exists\, k$,
-$\seq{n}(k) = q$.
+Every prime \emph{not dividing~$n$} appears in the generalized EM
+sequence from starting point~$n$: $\forall\, q$ prime with $q \nmid n$,
+$\exists\, k$, $\seq{n}(k) = q$.  The restriction is forced: $n \mid
+\Prod{n}(k)$ for all~$k$, so a prime dividing~$n$ is coprime to
+$\Prod{n}(k)+1$ and is never selected (dead end~\#175,
+\lean{EM/Ensemble/WeylChain.lean}{gen\_mc\_unrestricted\_false}).
 \end{definition}
 
 \begin{theorem}[\lean{EM/Ensemble/WeylChain.lean}{gen\_hitting\_implies\_gen\_mc\_proved}]
 \label{thm:gen-mc}
 For squarefree $n \geq 1$: if the generalized walk hits~$-1$
-cofinally for every prime~$q$,
+cofinally for every prime~$q \nmid n$,
 then $\mathrm{GenMullinConjecture}(n)$ holds.
 \end{theorem}
 
 \begin{proof}
-Strong induction on~$q$.  Assume every prime $p < q$ appears as
-$\seq{n}(k_p)$ for some~$k_p$.  Collect all witnesses into
+Strong induction on~$q$.  Assume every prime $p < q$ with $p \nmid n$
+appears as $\seq{n}(k_p)$ for some~$k_p$.  Collect all witnesses into
 a uniform bound~$N$.  Cofinal hitting at~$q$ provides $k \geq N$ with
-$q \mid \Prod{n}(k) + 1$.  Since all primes $p < q$ already appeared
-at steps $< k$, they divide $\Prod{n}(k)$ and hence cannot divide
-$\Prod{n}(k) + 1$.  So $q = \minFac(\Prod{n}(k) + 1) =
+$q \mid \Prod{n}(k) + 1$.  Every prime $p < q$ divides $\Prod{n}(k)$:
+either $p \mid n$, or $p$ appeared at a step $< k$; in both cases $p$
+cannot divide $\Prod{n}(k) + 1$.  So $q = \minFac(\Prod{n}(k) + 1) =
 \seq{n}(k)$.
 
 The argument is a generalized \code{captures\_target} lemma
@@ -345,6 +348,24 @@ This is why the orbit hypothesis is CME rather than multiplier cancellation:
 CME goes directly from conditional multiplier equidistribution to
 walk cancellation (via the fiber decomposition and telescoping),
 bypassing MultCancelToWalkCancel entirely.
+
+Everything above is a statement about \emph{this} route.  A different
+route does reach almost-all capture, unconditionally: the seed-average law
+of \S\ref{sec:seed-average}, which for each fixed prime~$q$ and each
+$\varepsilon>0$ produces a finite horizon~$n$ at which the seeds coprime
+to~$q$ missing~$q$ in their first~$n$ multipliers have upper natural
+density at most~$\varepsilon$
+(Theorem~\ref{thm:almost-all-capture},
+\lean{EM/Population/AlmostAllDensity.lean}{almost\_all\_genmc\_density}).
+It gets there precisely by \textbf{avoiding character sums entirely}:
+capture is converted into membership of one residue in an explicitly
+enumerated set (\lean{EM/Population/SeedCapture.lean}{captured\_iff\_mem\_visited}),
+after which the argument is exact CRT counting against a deterministic
+compensator bound.  The multiplier/walk gap of this remark ---
+Dead End~\#117 --- is therefore not on its path, since no walk character
+sum is ever formed.  What that route does \emph{not} do is say anything
+about the orbit of~$2$: a density-one statement over the seed ensemble is
+silent about any single trajectory, and Dead End~\#90 is untouched.
 \end{remark}
 
 \subsection{Self-Correcting Feedback and the Lyapunov Route}

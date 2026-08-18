@@ -1,5 +1,6 @@
 import EM.Equidist.FourierB
 import Mathlib.NumberTheory.LSeries.PrimesInAP
+import EM.ForMathlib.CharNormOne
 
 /-!
 # Self-Correcting Sieve and Block Rotation Analysis
@@ -917,18 +918,12 @@ rotations.
 section WalkTelescope
 
 /-- Every value of a multiplicative character `χ : (ZMod q)ˣ →* ℂˣ`,
-    viewed as a complex number, has norm 1.  Extracted here as a non-private
-    lemma for use in §37. -/
+    viewed as a complex number, has norm 1.  Alias of the generic
+    `char_norm_one_of_hom` (EM/ForMathlib/CharNormOne.lean), kept for downstream uses. -/
 theorem walkTelescope_char_norm_one {q : Nat} [Fact (Nat.Prime q)]
     (χ : (ZMod q)ˣ →* ℂˣ) (u : (ZMod q)ˣ) :
-    ‖(χ u : ℂ)‖ = 1 := by
-  have h2 : IsOfFinOrder (χ u) := χ.isOfFinOrder (isOfFinOrder_of_finite u)
-  have h3 : IsOfFinOrder ((χ u).val : ℂ) := by
-    obtain ⟨n, hn, hpow⟩ := h2.exists_pow_eq_one
-    exact isOfFinOrder_iff_pow_eq_one.mpr ⟨n, hn, by
-      rw [← Units.val_pow_eq_pow_val]
-      exact congrArg Units.val hpow⟩
-  exact h3.norm_eq_one
+    ‖(χ u : ℂ)‖ = 1 :=
+  char_norm_one_of_hom χ u
 
 /-- **Telescoping walk identity**: for any character χ and any N,
     ∑_{n<N} χ(w(n))·(χ(m(n)) - 1) = χ(w(N)) - χ(w(0)).

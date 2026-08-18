@@ -36,6 +36,17 @@ def main() -> None:
         help="Provider-qualified model (e.g. claude:opus, claude:fable, openai:gpt-5.2, dgx:qwen, dgx:ornith)",
     )
     p_coord.add_argument(
+        "--fallback-model", type=str, default="claude:opus",
+        help="Model the COORDINATOR switches to if --model hits a usage/consumption limit "
+             "(or stays overloaded past the retry budget). Session restarts from turn 1 on "
+             "the new model. 'none' disables. Default: claude:opus.",
+    )
+    p_coord.add_argument(
+        "--agents-model", type=str, default="opus",
+        help="SDK model alias for EVERY Task-dispatched sub-agent (opus, sonnet, haiku, "
+             "inherit) — independent of the coordinator's own --model. Default: opus.",
+    )
+    p_coord.add_argument(
         "--dgx-agents", type=str, default="",
         help=(
             "Route specialists to the DGX models. Comma-separated "
@@ -120,6 +131,11 @@ def main() -> None:
         choices=["analytic", "algebraic", "combinatorial", "dynamicalsystem"],
         help="Which attack vector to pursue",
     )
+    p_attack.add_argument("--goal", type=str, default=None, help="Focus for this attack")
+    p_attack.add_argument(
+        "--goal-file", type=str, default=None,
+        help="Path to a file containing the focus (overrides --goal)",
+    )
     p_attack.add_argument(
         "--model", type=str, default="claude:opus",
         help="Provider-qualified model (e.g. claude:opus, claude:fable, openai:gpt-5.2, dgx:qwen, dgx:ornith)",
@@ -177,6 +193,29 @@ def main() -> None:
     )
 
     # send
+    # spawn / wait / jobs — detached job supervision (see agents/jobs.py)
+    p_spawn = sub.add_parser(
+        "spawn",
+        help="Launch a direct-runner DETACHED so it survives the coordinator's session; "
+             "records it in agents/state/jobs/. Usage: agents spawn -- attack --vector analytic ...",
+    )
+    p_spawn.add_argument("--name", type=str, default=None, help="Job name (default: derived)")
+    p_spawn.add_argument(
+        "agent_args", nargs=argparse.REMAINDER,
+        help="The `agents` subcommand and its arguments (put `--` first)",
+    )
+    p_wait = sub.add_parser(
+        "wait", help="Block until every spawned job has finished (or --timeout seconds)",
+    )
+    p_wait.add_argument("--timeout", type=float, default=None,
+                        help="Seconds to wait before returning with jobs still running")
+    p_wait.add_argument("--poll", type=float, default=10.0, help="Poll interval (s)")
+    p_jobs = sub.add_parser("jobs", help="List spawned jobs and their state")
+    p_jobs.add_argument("--kill", action="store_true", default=False,
+                        help="SIGTERM every running job")
+    p_jobs.add_argument("--tail", type=int, default=0,
+                        help="Also print the last N log lines of each job")
+
     p_send = sub.add_parser("send", help="Send a message to the running coordinator")
     p_send.add_argument("message", nargs="+", help="Message text")
 
@@ -252,6 +291,9 @@ def main() -> None:
                 goal=goal,
                 no_paper=args.no_paper,
                 model=args.model,
+                agents_model=args.agents_model,
+                fallback_model=(None if args.fallback_model.lower() == 'none'
+                                else args.fallback_model),
                 qwen_agents=qwen_agents,
                 dgx_agents=dgx_agents,
             ))
@@ -266,7 +308,11 @@ def main() -> None:
         case "scout":
             asyncio.run(run_scout(topic=args.topic, model=args.model))
         case "attack":
-            asyncio.run(run_attack(vector=args.vector, model=args.model))
+            goal = args.goal
+            if args.goal_file:
+                from pathlib import Path
+                goal = Path(args.goal_file).read_text().strip()
+            asyncio.run(run_attack(vector=args.vector, goal=goal, model=args.model))
         case "paper":
             goal = args.goal
             if args.goal_file:
@@ -293,6 +339,41 @@ def main() -> None:
             asyncio.run(run_openai_agent(
                 agent=args.agent, prompt=prompt, model=args.model,
             ))
+        case "spawn":
+            from . import jobs
+            agent_args = [a for a in args.agent_args if a != "--"] if args.agent_args else []
+            if not agent_args:
+                print("spawn: nothing to run. Usage: agents spawn -- attack --vector analytic ...")
+                sys.exit(2)
+            job = jobs.spawn(agent_args, name=args.name)
+            print(f"spawned {job.name}  pid={job.pid}\n  log: {job.log}\n"
+                  f"  It runs detached; `agents wait` blocks until it finishes, "
+                  f"`agents jobs --tail 20` shows progress.")
+        case "wait":
+            from . import jobs
+            def _tick(live, elapsed):
+                names = ", ".join(j.name for j in live)
+                print(f"[wait {elapsed:5.0f}s] {len(live)} running: {names}", flush=True)
+            left = jobs.wait(args.timeout, poll=args.poll, on_tick=_tick)
+            if left:
+                print(f"TIMEOUT after {args.timeout:.0f}s; still running: "
+                      + ", ".join(j.name for j in left))
+                sys.exit(1)
+            print("all jobs finished")
+        case "jobs":
+            from . import jobs
+            if args.kill:
+                for j in jobs.kill_all():
+                    print(f"killed {j.name} (pid {j.pid})")
+            allj = jobs.all_jobs()
+            live = {j.name for j in jobs.running_jobs()}
+            if not allj:
+                print("no jobs recorded")
+            for j in allj:
+                state = "RUNNING" if j.name in live else "done"
+                print(f"{j.name:32} pid={j.pid:<7} {state:8} started {j.started}  log={j.log}")
+                if args.tail:
+                    print("    " + jobs.tail(j, args.tail).replace("\n", "\n    "))
         case "send":
             from datetime import datetime
             from .config import STATE_DIR

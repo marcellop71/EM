@@ -60,7 +60,7 @@ archived in `EM/Archive/Ensemble/MixedEnsembleArchive.lean`. Part 14c
 * `excludedPrimesUpTo c R Y`  -- primes ≤ Y in excluded factor residues
 
 ### Proved Theorems
-* `mixedWalkProd_minFac_eq_genProd` -- bridge: mixed walk = generalized EM walk
+* `mixedWalkProd_minFac_eq_genProd` -- bridge: mixed walk = generalized EM walk (in EM/Stochastic/MixedWalk.lean)
 * `step_zero_confinement`           -- trapped m has factors confined at step 0
 * `trapped_le_sum_confined`         -- trapped count <= sum over finsets of confined
 * `zero_not_reachable_of_coprime_trapped` -- 0 ∉ R_∞ for trapped m
@@ -88,17 +88,6 @@ open Mullin Euclid MullinGroup RotorRouter
 /-! ## Part 1: Bridge Between Mixed Walk and Generalized EM -/
 
 section Bridge
-
-/-- The all-minFac mixed walk from starting point m equals the generalized
-    EM accumulator genProd m k. Both start at m and multiply by minFac(P+1)
-    at each step. -/
-theorem mixedWalkProd_minFac_eq_genProd (m : ℕ) (k : ℕ) :
-    mixedWalkProd m minFacMixed k = genProd m k := by
-  induction k with
-  | zero => rfl
-  | succ k ih =>
-    simp only [mixedWalkProd, minFacMixed, genProd_succ, genSeq]
-    rw [ih]
 
 /-- The generalized EM sequence's prime genSeq(m, k) divides
     the mixed walk accumulator + 1. -/

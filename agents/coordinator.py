@@ -24,6 +24,7 @@ from .rendering import (
     AGENT_STYLES,
 )
 from .providers import AgentSpec, get_backend
+from . import jobs as _jobs
 from .providers.claude_backend import ClaudeBackend
 
 
@@ -70,7 +71,10 @@ def _load_prompt(name: str) -> str:
 # Agent definitions (used as SUB-agents by the coordinator via Claude SDK)
 # ---------------------------------------------------------------------------
 
-def _build_agents() -> dict[str, AgentDefinition]:
+def _build_agents(agent_model: str = "opus") -> dict[str, AgentDefinition]:
+    """Sub-agent registry.  ``agent_model`` is the SDK model alias
+    ("opus", "sonnet", "haiku", "inherit") given to EVERY sub-agent —
+    independent of the coordinator's own --model."""
     return {
         "lean-formalizer": AgentDefinition(
             description=(
@@ -79,7 +83,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("formalizer"),
             tools=["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-            model="opus",
+            model=agent_model,
         ),
         "literature-scout": AgentDefinition(
             description=(
@@ -88,7 +92,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("scout"),
             tools=["WebSearch", "WebFetch", "Read", "Write", "Edit", "Glob", "Grep"],
-            model="sonnet",
+            model=agent_model,
         ),
         "attack-analytic": AgentDefinition(
             description=(
@@ -97,7 +101,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_analytic"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "attack-algebraic": AgentDefinition(
             description=(
@@ -106,7 +110,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_algebraic"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "attack-combinatorial": AgentDefinition(
             description=(
@@ -115,7 +119,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_combinatorial"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "attack-dynamicalsystem": AgentDefinition(
             description=(
@@ -124,7 +128,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_dynamicalsystem"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "paper-writer": AgentDefinition(
             description=(
@@ -133,7 +137,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("paper"),
             tools=["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-            model="sonnet",
+            model=agent_model,
         ),
         "code-stylist": AgentDefinition(
             description=(
@@ -143,7 +147,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("stylist"),
             tools=["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-            model="opus",
+            model=agent_model,
         ),
     }
 
@@ -209,10 +213,16 @@ async def run_coordinator(
     *,
     no_paper: bool = False,
     model: str = "claude:opus",
+    agents_model: str = "opus",
+    fallback_model: str | None = "claude:opus",
     qwen_agents: tuple[str, ...] = (),
     dgx_agents: dict[str, str] | None = None,
 ) -> None:
     """Launch the coordinator agent.
+
+    `model` is the COORDINATOR's model (e.g. claude:fable); `agents_model` is
+    the SDK alias every Task-dispatched sub-agent runs on (default opus), and
+    the default `--model` for direct-runners the coordinator spawns.
 
     `dgx_agents` maps specialist name → provider-qualified DGX model
     (e.g. {"lean-formalizer": "dgx:ornith", "attack-analytic": "dgx:qwen"}).
@@ -341,7 +351,19 @@ async def run_coordinator(
             "the ABSOLUTE RULE (no computation) in force for yourself and them."
         )
 
+    models_note = (
+        f"\n\n## Models\n\nYou run on `{model}`"
+        + (f" (falls back to `{fallback_model}` if that model hits a usage limit — the "
+           f"session then restarts from turn 1, so keep state files current)"
+           if fallback_model and fallback_model != model else "")
+        + f". Every Task sub-agent runs on `{agents_model}`. "
+        f"When you spawn a direct-runner (`agents spawn -- attack ...`, `agents attack ...`, "
+        f"`agents formalize ...`), pass `--model claude:{agents_model}` explicitly so it "
+        f"matches the sub-agents."
+    )
+
     prompt = f"""You are the coordinator for the EM formalization agent swarm.
+{models_note}
 
 ## Current State
 
@@ -380,7 +402,7 @@ Update public status (only if Lean code changed): {ROOT / 'docs' / 'status.md'}
 Today's date: {datetime.now().strftime('%Y-%m-%d')}
 """
 
-    agents = _build_agents()
+    agents = _build_agents(agents_model)
     if no_paper:
         agents.pop("paper-writer", None)
 
@@ -402,9 +424,137 @@ Today's date: {datetime.now().strftime('%Y-%m-%d')}
         tools=_TOOLS_COORDINATOR,
         max_turns=30,
         budget=_BUDGET_COORDINATOR,
+        fallback_model=fallback_model,
     )
 
-    await _stream_with_backend(spec, prompt, agents=agents)
+    # Never let the harness reap the coordinator while a Task sub-agent is
+    # still running (run 2 on 2026-08-18 died this way at the 600s ceiling).
+    os.environ.setdefault("CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS", "0")
+
+    await _supervise_coordinator(spec, prompt, agents=agents)
+
+
+# Upper bound on "your jobs finished, continue" re-invocations, so a
+# coordinator that keeps spawning and exiting cannot loop forever.
+_MAX_CONTINUATIONS = 6
+
+
+async def _supervise_coordinator(
+    spec: AgentSpec,
+    prompt: str,
+    *,
+    agents: dict[str, AgentDefinition] | None,
+) -> None:
+    """Run the coordinator; refuse to return while jobs it spawned are alive.
+
+    Each time the coordinator's session ends with `agents spawn`-ed jobs still
+    running, wait for them, then re-invoke the coordinator with a continuation
+    prompt carrying the job logs.  Ctrl-C terminates the jobs so nothing is
+    left running behind the operator's back.
+    """
+    stale = _jobs.running_jobs()
+    if stale:
+        console.print(
+            f"[bold yellow]⚠ {len(stale)} job(s) from an earlier run are still "
+            f"running and will be supervised too:[/]"
+        )
+        for j in stale:
+            console.print(f"  [dim]{_jobs.summary_line(j)}[/]")
+
+    seen_before = {j.name for j in _jobs.all_jobs()}
+    current = prompt
+    try:
+        for round_no in range(_MAX_CONTINUATIONS + 1):
+            await _stream_with_backend(spec, current, agents=agents)
+
+            live = _jobs.running_jobs()
+            if not live:
+                new_done = [j for j in _jobs.all_jobs() if j.name not in seen_before]
+                if new_done:
+                    console.print("[bold green]✓ Coordinator exited; all spawned jobs finished:[/]")
+                    for j in new_done:
+                        console.print(f"  [dim]{_jobs.summary_line(j)}[/]")
+                return
+
+            if round_no == _MAX_CONTINUATIONS:
+                console.print(
+                    f"[bold red]Coordinator exited with {len(live)} job(s) running and the "
+                    f"continuation limit ({_MAX_CONTINUATIONS}) is reached. Waiting for the jobs "
+                    f"but NOT re-invoking the coordinator.[/]"
+                )
+                _wait_verbose(live)
+                return
+
+            console.print(
+                f"[bold yellow]⏳ Coordinator exited with {len(live)} spawned job(s) still "
+                f"running — waiting for them before returning control.[/]"
+            )
+            for j in live:
+                console.print(f"  [dim]{_jobs.summary_line(j)}[/]")
+            finished = _wait_verbose(live)
+
+            # Re-invoke with the results.
+            sections = []
+            for j in finished:
+                sections.append(
+                    f"### {j.name}\n\ncommand: `{' '.join(j.cmd)}`\nlog: `{j.log}`\n"
+                    f"last lines of log:\n```\n{_jobs.tail(j, 60)}\n```"
+                )
+            inbox = _read(STATE_DIR / "inbox.md")
+            inbox_section = (
+                f"\n\n## Inbox (live instructions from operator)\n\n{inbox}"
+                if inbox.strip() else ""
+            )
+            current = f"""You are the coordinator for the EM formalization agent swarm, resuming.
+
+Your previous session ended while {len(finished)} job(s) you had spawned with `agents spawn`
+were still running. The supervisor waited for them; they have now all finished. Their
+findings should be in `{STATE_DIR / 'findings.md'}` and `{STATE_DIR / 'strategy_log.md'}`
+(direct-runners append there) — read those files first, then the log tails below.
+
+{chr(10).join(sections)}
+{inbox_section}
+
+## Instructions
+
+1. Read `{STATE_DIR / 'findings.md'}` and the tail of `{STATE_DIR / 'strategy_log.md'}`.
+2. Evaluate the results of the finished jobs against the goal you were pursuing.
+3. Decide and dispatch the next action, or conclude the session.
+4. **Do not end your turn while work you launched is still running.** If you spawn a
+   direct-runner (`{sys.executable} -m agents spawn -- <subcommand> ...`), block on it with
+   `{sys.executable} -m agents wait --timeout 590` (repeat the call until it prints
+   "all jobs finished") before doing anything that depends on its result, and before
+   finishing. If you nevertheless exit with jobs running, this supervisor will wait
+   and re-invoke you (at most {_MAX_CONTINUATIONS} times per launch).
+5. Before finishing, complete the [IN PROGRESS] entry in strategy_log.md and state
+   plainly what landed, what is pending, and what the operator should do next.
+
+Today's date: {datetime.now().strftime('%Y-%m-%d')}
+"""
+    except KeyboardInterrupt:
+        live = _jobs.running_jobs()
+        if live:
+            console.print(
+                f"[bold red]Interrupted — terminating {len(live)} spawned job(s) so nothing "
+                f"is left running:[/]"
+            )
+            for j in _jobs.kill_all():
+                console.print(f"  [dim]killed {j.name} (pid {j.pid})[/]")
+        raise
+
+
+def _wait_verbose(live: list[_jobs.Job]) -> list[_jobs.Job]:
+    """Block until the given jobs finish, printing a status line each minute."""
+    last_print = [0.0]
+
+    def _tick(now_live, elapsed):
+        if elapsed - last_print[0] >= 60 or last_print[0] == 0.0:
+            last_print[0] = elapsed
+            names = ", ".join(j.name for j in now_live)
+            console.print(f"  [dim]waiting {elapsed/60:4.0f} min — running: {names}[/]")
+
+    _jobs.wait(None, poll=15.0, on_tick=_tick)
+    return live
 
 
 # ---------------------------------------------------------------------------
@@ -529,7 +679,9 @@ Three attack vectors: analytic (Bombieri-Vinogradov), algebraic (SE+Mixing), com
     await _stream_with_backend(spec, prompt)
 
 
-async def run_attack(vector: str, *, model: str = "claude:opus") -> None:
+async def run_attack(
+    vector: str, *, goal: str | None = None, model: str = "claude:opus"
+) -> None:
     """Launch an attack agent directly."""
     valid = {"analytic", "algebraic", "combinatorial", "dynamicalsystem"}
     if vector not in valid:
@@ -556,7 +708,10 @@ async def run_attack(vector: str, *, model: str = "claude:opus") -> None:
     catalog_path = ROOT / "agents" / "catalogs" / f"{vector}_techniques.md"
     dead_ends_path = ROOT / "EM" / "Meta" / "DeadEnds.lean"
 
+    goal_section = f"\n\n## Focus\n\n{goal}" if goal else ""
+
     prompt = f"""## Attack Vector: {vector}
+{goal_section}
 
 ## CRITICAL CONSTRAINT
 

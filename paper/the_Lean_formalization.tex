@@ -230,7 +230,7 @@ The population statement that \emph{is} true is the double limit
 $z\to\infty$ after $X\to\infty$; it follows from PrimeLogSum$^{\ast}$
 by partial summation, but it is not what any reduction consumed.
 Formalizing ANT further does not affect the paper's contribution: the
-reduction CME~$\Rightarrow$~MC is the novel content.
+reduction CME~$\Rightarrow$~MC is what this work contributes.
 
 \begin{center}
 \begin{tabular}{lr}
@@ -283,6 +283,12 @@ stable identifier independent of human naming.
 \quad UCE at $M{=}1$ is RoughLPFEquidist & \proved & \code{uce\_implies\_roughLPFEquidist}  & 07228cfb \\
 \quad Bag-conditioned multiplier law on $m\equiv 1\ (P)$ & \proved & \code{BagConditionedLaw.tendsto\_bagClass\_div\_ap}  & 72de1309 \\
 \quad Least missing prime has relative density exactly $1/q$ & \proved & \code{BagConditionedLaw.bagWeight\_least\_missing}  & 991c7b9a \\
+\quad Capture identity (dynamical capture $=$ one residue) & \proved & \code{SeedCapture.captured\_iff\_mem\_visited}  & \textrm{---} \\
+\quad Exact selection law (cell $\cap$ survives $= S\cdot$ cell) & \proved & \code{SelectionLaw.selection\_law}  & \textrm{---} \\
+\quad Pathwise compensator $\sum_{k<n} S_k \geq (c_1/2)n$ (deterministic) & \proved & \code{LargeStepRoughness.pathwise\_compensator}  & \textrm{---} \\
+\quad Theorem C (good uncaptured seeds exponentially rare) & \proved & \code{TheoremC.theorem\_C}  & \textrm{---} \\
+\quad \textbf{Almost-all capture, density form} (per fixed $q$) & \proved & \code{AlmostAllDensity.almost\_all\_genmc\_density}  & \textrm{---} \\
+\quad Profinite packaging: $\mu$-a.e.\ point captures every prime & \proved & \code{ProfiniteHeadline.measure\_some\_prime\_missed\_eq\_zero}  & \textrm{---} \\
 \quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting) & \proved & \code{dynamical\_hitting\_implies\_mullin}  & b069682d \\
 \quad \textbf{CCSB $\Rightarrow$ MC} (char sums) & \proved & \code{complex\_csb\_mc'}  & 2fb09cde \\
 \quad MMCSB $\Rightarrow$ MC (multi-modular) & \proved & \code{mmcsb\_implies\_mc}  & a4e5b5f2 \\
@@ -462,7 +468,7 @@ stable identifier independent of human naming.
 \quad No Tauberian lever for $L_{\mathrm{EM}}$ (\#134; documented, marker Prop) & \textbf{Dead} & \code{tauberian\_lever\_absent\_witness} \placeholder & \\
 \quad Cauchy--Davenport vacuous: $\mathrm{minOrder} = 2$ (\#140) & \textbf{Dead} & \code{minOrder\_units\_zmod\_eq\_two}  & \\
 \quad AEP false: absorption drains nonzero classes (\#137) & \textbf{Dead} & \code{death\_then\_never\_death\_again}  & e37a2056 \\
-\quad 160 numbers / 150 dead ends, 29 formally witnessed, 10 revivable & \proved & \code{dead\_end\_registry}  & \\
+\quad \DEnumbers~numbers / \DEentries~dead ends, \DEwitnessed~formally witnessed, \DErevivable~revivable & \proved & \code{dead\_end\_registry}  & \\
 \end{longtable}
 \renewcommand{\arraystretch}{1.0}
 \normalsize

@@ -151,7 +151,7 @@ TreeSieveDecay for q ≥ 5 is OPEN and represents a genuine mathematical challen
 
 ## Dead Ends Catalog
 
-**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`** (`docs/dead_ends.md` is only a pointer stub).
+**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`**.
 
 Entries are classified by category code — **OS** (orbit-specificity), **TM** (technique mismatch), **SM** (scale mismatch), **CI** (circularity), **SF** (structurally false / counterexample), **CO** (definitional collapse), **DG** (decorrelation gap), **AG** (aggregate gap) — and carry a weak-MC revival score 0–3. Read the current entry count from `deadEndCount` in that file rather than trusting any number quoted here.
 
@@ -477,7 +477,6 @@ File `EM/Group/DepartureGraph.lean` (393 lines, zero sorry) provides abstract gr
 
 **The authoritative dead-ends catalog is the Lean file `EM/Meta/DeadEnds.lean`**
 (docstring tables + `#check` re-exports of the formal Lean witnesses).
-`docs/dead_ends.md` is only a pointer stub.
 
 **Do NOT edit the catalog yourself.** New dead ends are recorded in
 `EM/Meta/DeadEnds.lean` by the coordinator/formalizer — that file must still
@@ -618,3 +617,142 @@ A mathematical strategy for one of:
 - **Sub-thesis 3 FAILS**: Capacity bound = lower bound (MATCHED-LINEAR). Both n × log((q-1)/(q-2)). No gap for contradiction. Sublinear upper bound directly implies MC (circularity).
 - **L(N) dominates Ĥ_q**: Existing Lyapunov L(N) = Σ (V(a,N) - N/(q-1))² has state-dependent increments, quadratic/linear gap under avoidance, proved reduction to MC. Ĥ_q is strictly weaker.
 - **Do NOT propose**: Confinement height arguments, avoidance-cost Lyapunov approaches, null-measure based height functions. The existing L(N) in SelfCorrecting.lean captures all available Lyapunov leverage. See `scoping/verdict_height.md`.
+
+---
+
+## Session 309 update (2026-08-18) — the seed-average (LS) program is now the primary analytic queue
+
+The seed-average box-sieve program (WP0-scoped Session 308, verified Session 309) is the
+active frontier. Read `agents/state/findings.md` (Sessions 308–309 sections) and
+`agents/state/findings_ls_verification.md` before proposing anything.
+
+Standing facts (do not re-derive, do not contradict):
+- **WP4 (Mertens-in-AP O(1)) is DELETED.** Lemma D needs only `weightedPNTinAP_asymp_proved`
+  (EM/IK/Karamata.lean) + Chebyshev `θ(x) ≤ (log4)x` + prime-power stripping; `A = 2`.
+  Never conflate the weighted Λ(n)/n form (error o(log x), window-usable) with the 1/p form
+  (error o(log log x), window-useless) — the "two-Mertens rule" in your catalog.
+- **(LS) is CONFIRMED-WITH-CORRECTIONS** (C1–C6) and being formalized in
+  `EM/Population/LargeStepRoughness.lean` (Groups 1–4 mostly landed Session 309).
+  Corrections binding on all future statements: exclude r = q from every box product;
+  near band r ≤ 2k+1; Y is a POLICY log Y(n) ≍ n² with cutoff k ≥ n/log n (NEVER "∃Y₀ ∀Y≥Y₀"
+  — quantifier-order filter); the block-chaining substitute is INVALID (use the finite-tree
+  exponential supermartingale); stop at σ; c₁ := exp(−36), T = 6.
+- **Session 310 status (2026-08-19, commit f391732):** pathwise_compensator, WP2 selection
+  law (EXACT, `SelectionLaw.selection_law`), Group 6 tree Chernoff (`TreeChernoff`,
+  abstract + localized), the lower Mertens toolbox (`MertensLower.mertens_lower` const 13,
+  `window_recip_lower` const 16), and the honest **(LS+)** (`LSPlus.ls_plus`, rate
+  `exp(−(3/16)c₁n)` + additive degenerate-tail term) are ALL PROVED IN LEAN.
+  NOTE: the Lean constant is `c₁ = exp(−250)` (crude but absolute; the paper value
+  exp(−35) is not what compiled — never quote exp(−35/−36) as the Lean constant).
+- Remaining queue, in order: (1) Group 7 tail ASSEMBLY (slices TL0–TL3 landed in
+  `EM/Population/TailEstimate.lean`, Session 310 cont.: ω≤log₂, old-count ≤ k²(log₂Y+1),
+  `survival_le_of_active_lower`, `markov_divisor_mass`; remaining: bag-count ω(m)+k lemma,
+  the E arithmetic with z ≫ k²log₂Y, selection-law transport, union over k under
+  n² ≤ log Y ≤ n³ → tail ≲ log n/n, feeds ls_plus's additive term); (2) D5c policy
+  lemma (`bigThreshold ≤ Y` from `n² ≤ log Y`); (3) Lemma D with the repaired threshold
+  y_k = C·k·log₂c_k and first-moment bag exclusion; (4) Theorem C in the q-free world
+  (K₀ from π(q−1), chaining by stopping times, THREE error terms with order of limits
+  X→∞, Y-policy, K→∞, C→∞, n→∞).
+- Scope honesty: this yields **a.a. GenMC(q) per fixed q**. The simultaneous form needs
+  q-uniform rates (natural density not countably additive) — open, see §G of findings.
+  No claim about the orbit of 2; #90/#117 are not touched and must not be invoked against it.
+
+## Session 311 update (2026-08-19)
+Queue items CLOSED: Group 7 tail assembly (TailAssembly.lean), Lemma D (LemmaD.lean +
+LemmaDBox.lean, analytic input = Karamata asymptotic only, A = 2), Theorem C
+(TheoremC.lean, via TreeChernoff reuse — the (e-2) block-chaining plan was superseded by
+the coordinator's success-prescription design; see findings.md Session 311). Remaining
+frontier for this program: (i) the simultaneous-in-q form (§G — needs q-uniform rate
+κ_q ≥ q^{−O(1)} plus diagonalization, or logarithmic density + Borel–Cantelli in q);
+(ii) D5c for ls_plus's own hthr (elementary shepherding). Do not propose block-chaining /
+Freedman variants for tree arguments — chernoff_quarter_local + sure compensator covers them.
+
+## Session 313 update (2026-08-19) — the SURE layer's orbit direction is CLOSED
+
+Read `docs/analysis/sure_layer_missed_primes.md` before proposing anything that touches
+`EM/Population/LargeStepRoughness.lean`.
+
+**Do not re-propose.** Bounding the missed set of a *single* orbit (including the true orbit, seed
+`m = 2`) from the sure, per-path layer — `charge_sum_le_harmonic`, `chargeBudget_le`,
+`brink_forces_small_multiplier`, `pathwise_compensator`. Six independent obstructions, dead ends
+#169–#174, any one sufficient:
+
+* **#169** The charge budget is an **identity**, not an inequality with slack. The box starts at
+  `r−1`, a charge decrements it by *exactly* one, non-charges leave it unchanged; so
+  `Σ_{charged} 1/|box| = H_{r−1} − H_{r−1−C}` and the theorem is *equivalent* to `C ≤ r−2` — forced
+  anyway by counting units mod `r`. The reading "`≈ r log r` declines are permitted" is a lossy
+  relaxation: only *charges* are bounded, declines are not.
+* **#170** "The box stays large" is `¬DynamicalHitting(r)` by definition (`seed_mem_box`'s Lean proof
+  is literally "exposure ⟹ non-divisibility"). Circular — the mirror of #166. The companion branch
+  "`r` rarely exposed" is refuted outright by `few_small_multipliers`.
+* **#171** *(witnessed)* Every sure theorem is about `genSeqAvoid q m`, and
+  `SeedCapture.genSeqAvoid_ne_avoided` proves that dynamics **never selects `q`**.
+* **#172/#173** `pathwise_compensator` has the wrong per-path sign (`S_k ≡ 1` is the capture-free
+  extreme) *and* cannot be instantiated at `m = 2`: its `log Y ≤ n²` is a seed-population **policy**,
+  and the true orbit permits `log Y ≈ 2^n`. Any route needing it must first prove `log p_k ≤ k²` —
+  strictly stronger than (C∞).
+* **#174** Bounds on `missed(x)` or `Σ_{q missed ≤ x} 1/q` need a *lower* bound on the hit count; the
+  only sure size statement is an *upper* bound. Gated on (C∞).
+
+**Collapse on record.** The minimal sufficient extra per-path hypothesis (NPLB: the cofactor residues
+mod `q` at exposed steps exhaust every unit but the death class) is **equivalent to MC-mod-`q`**.
+
+**Screening test — apply before proposing any per-path route.** *Sign asymmetry of `minFac`*:
+`p_k = minFac(N_k)` yields infinitely many non-divisibility facts and exactly **one** divisibility
+fact, about a prime captured by definition. So the sure layer yields only *upper* bounds on hit counts
+(`#{k : q ∣ P(k)+1} ≤ π(q)` for every `q`) and never the lower bound of 1 that capture requires. **Ask:
+does the proposal produce a positive divisibility fact about a prescribed prime? If not, it is inert.**
+
+**Still open, and still the right target:** the `(Ẑ, Haar)` route of
+`docs/analysis/simultaneous_in_q_scoping.md` §4. It is a *population* question and is untouched by the
+above.
+
+**Small formalization target going spare:** the **Coupling Lemma** — if `q` is missed by the orbit then
+`genSeqAvoid q m ≡ genSeq m` — is absent from the repo (~15 lines; proof sketch in §1 of the note).
+*(LANDED Session 314 as `SeedCapture.genSeqAvoid_eq_genSeq_of_missed`, with no nondegeneracy hypothesis.)*
+
+## Session 314 update (2026-08-19) — §G is DONE in the profinite model; it was never a rate problem
+
+The `(Ẑ, Haar)` route flagged as "still open, and still the right target" above is now **proved in
+Lean** (full build green, 0 `sorry`), in the concrete form `Ω = Π (r : Nat.Primes), ZMod r` with
+`μ = MeasureTheory.Measure.infinitePi` of the uniform measures. Three new files in `EM/Population/`:
+`ProfiniteEnsemble.lean`, `ProfiniteDynamics.lean`, `ProfiniteHeadline.lean`. Headline:
+
+> `ProfiniteHeadline.measure_some_prime_missed_eq_zero` — `μ {x | ∃ q : Nat.Primes, x q ≠ 0 ∧ ¬ ∃ j,
+> profSeq x j = q} = 0`. **μ-almost every profinite seed captures every prime.**
+
+**The transferable lesson — the additivity heuristic.** Simultaneity in `q` was an **additivity**
+problem, not a **rate** problem. Dead end #168 said exactly this; Session 314 confirmed it by
+building a countably additive measure and letting `measure_iUnion_null` perform the union over `q`.
+**No `q`-uniform rate is used anywhere** — `κ_q`, `K₀(q)`, `n(q)` never appear. Generalize this:
+
+> **When a per-parameter statement refuses to combine, ask whether the ambient notion of size is
+> countably additive *before* hunting for a uniform rate.** Natural and logarithmic density are only
+> finitely additive; optimizing constants to make `ε_q` summable buys nothing there.
+
+Supporting results you may cite: `measure_residue_classes` (an `M`-periodic event has measure equal
+to its period fraction — the bridge from the finite counting chain), `measure_cylinder`, `redMod_iota`,
+`ProfiniteDynamics.profSeq_iota` (agreement `profSeq (iota m) k = genSeq m k`, **unconditional**,
+needing only `1 ≤ m`), `profProd_agree_of_agree` / `genSeq_eq_profSeq_of_agree` (band-local agreement),
+`SeedCapture.genSeqAvoid_eq_genSeq_of_missed` (**the Coupling Lemma**, no nondegeneracy hypothesis),
+and the newly exported `q ≤ Y` + band structure of the modulus through `three_type_union_small` /
+`type_bad_small` / `uncaptured_in_few_classes`, plus `SelectionLaw.modulus_squarefree`,
+`coprime_modulus_self`, `prime_dvd_modulus`.
+
+**Scope caveats — state these every time you mention the result; do not soften them.**
+- `ℕ ⊂ Ω` is **μ-null** (`ProfiniteEnsemble.measure_range_iota_eq_zero`, proved). "μ-a.e. seed" is
+  **not** "almost all integer seeds"; no transfer to `ℕ` is claimed or available.
+- The result says **nothing** about the orbit of `2`. Dead ends **#90** and **#117** are untouched.
+  MC is **not** approached.
+- **Mathematically new content: none.** The finite counting chain (Theorem C → fibre form →
+  `type_bad_small` → `uncaptured_in_few_classes`) is the mathematics; the passage to all `q` is
+  packaging. A feature, not a defect — but it must be stated, not hidden.
+- **Not dead end #101** (`Ẑ` as a home for the *walk*, to extract orbit information) and **not #155**
+  (Loeb receptacle, vacuous Gap). Here `Ω` is the sample space of a *population* statement, and the
+  nullity of `ℕ` is a declared scope limitation.
+- Every statement in this arc remains a **population** statement. The orbit direction was closed in
+  Session 313 (dead ends #169–#174) and stays closed.
+
+**No new dead ends this session.** `EM/Meta/DeadEnds.lean` stays at 174/164/32/15. #167 and #168
+remain correct as written — they concern what natural and logarithmic density *cannot* do, and
+Session 314 did not use either.

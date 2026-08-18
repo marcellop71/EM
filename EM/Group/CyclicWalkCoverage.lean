@@ -5,6 +5,7 @@ import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.NumberTheory.Cyclotomic.Basic
 import Mathlib.NumberTheory.MulChar.Duality
 import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
+import EM.ForMathlib.CharNormOne
 
 /-!
 # Walk Coverage on Finite Groups
@@ -192,17 +193,6 @@ theorem char_sum_eq_zero (χ : G →* ℂˣ) (hχ : χ ≠ 1) :
   · exact absurd (sub_eq_zero.mp h) hb_ne
   · exact h
 
-omit [DecidableEq G] in
-/-- Character value has norm 1 on a finite group. -/
-theorem char_norm_one (χ : G →* ℂˣ) (g : G) : ‖(χ g : ℂ)‖ = 1 := by
-  have hfin' : IsOfFinOrder (χ g) := χ.isOfFinOrder (isOfFinOrder_of_finite g)
-  rw [isOfFinOrder_iff_pow_eq_one] at hfin'
-  obtain ⟨n, hn, hpow⟩ := hfin'
-  have hne : NeZero n := ⟨by omega⟩
-  exact Complex.norm_eq_one_of_mem_rootsOfUnity
-    (show (χ g) ∈ rootsOfUnity (⟨n, by omega⟩ : ℕ+) ℂ from by
-      rw [_root_.mem_rootsOfUnity]; exact hpow)
-
 omit [Fintype G] [DecidableEq G] in
 /-- For commutative groups, GroupWalk = Finset.prod. -/
 private theorem groupWalk_eq_finset_prod (steps : ℕ → G) (n : ℕ) :
@@ -231,7 +221,7 @@ theorem walkCharSum_norm_le (steps : ℕ → G) (χ : G →* ℂˣ) (M : ℕ) :
   unfold WalkCharSum
   calc ‖∑ n ∈ Finset.range M, (χ (GroupWalk steps n) : ℂ)‖
       ≤ ∑ n ∈ Finset.range M, ‖(χ (GroupWalk steps n) : ℂ)‖ := norm_sum_le _ _
-    _ = ∑ _ ∈ Finset.range M, (1 : ℝ) := by congr 1; ext n; exact char_norm_one χ _
+    _ = ∑ _ ∈ Finset.range M, (1 : ℝ) := by congr 1; ext n; exact char_norm_one_of_hom χ _
     _ = M := by simp
 
 omit [DecidableEq G] in
@@ -241,7 +231,7 @@ theorem stepCharSum_norm_le (steps : ℕ → G) (χ : G →* ℂˣ) (M : ℕ) :
   unfold StepCharSum
   calc ‖∑ k ∈ Finset.range M, (χ (steps k) : ℂ)‖
       ≤ ∑ k ∈ Finset.range M, ‖(χ (steps k) : ℂ)‖ := norm_sum_le _ _
-    _ = ∑ _ ∈ Finset.range M, (1 : ℝ) := by congr 1; ext k; exact char_norm_one χ _
+    _ = ∑ _ ∈ Finset.range M, (1 : ℝ) := by congr 1; ext k; exact char_norm_one_of_hom χ _
     _ = M := by simp
 
 omit [Fintype G] [DecidableEq G] in
@@ -376,7 +366,7 @@ private theorem hom_indicator_conj' (g a : G) :
   have conj_eq : ∀ f : G →* ℂˣ, starRingEnd ℂ (f g : ℂ) = (f g⁻¹ : ℂ) := by
     intro f
     rw [map_inv, Units.val_inv_eq_inv_val]
-    exact (Complex.inv_eq_conj (char_norm_one f g)).symm
+    exact (Complex.inv_eq_conj (char_norm_one_of_hom f g)).symm
   simp_rw [conj_eq]
   exact hom_indicator' g a
 
@@ -520,7 +510,7 @@ theorem walk_cancel_of_small_char_sums_from_expansion
         ≤ ∑ χ ∈ χs.filter (· ≠ 1), ‖(χ g⁻¹ : ℂ) * WalkCharSum steps χ M‖ :=
           norm_sum_le _ _
       _ = ∑ χ ∈ χs.filter (· ≠ 1), ‖WalkCharSum steps χ M‖ := by
-          congr 1; ext χ; rw [norm_mul, char_norm_one χ g⁻¹, one_mul]
+          congr 1; ext χ; rw [norm_mul, char_norm_one_of_hom χ g⁻¹, one_mul]
       _ ≤ ∑ _χ ∈ χs.filter (· ≠ 1), (δ * ↑M) := by
           apply Finset.sum_le_sum; intro χ hχ
           exact hbound χ (Finset.mem_filter.mp hχ).2
@@ -601,7 +591,8 @@ end CancelImpliesCoverage
 
 /-! ## Section 5: The Step-to-Walk Gap -/
 
-/-- **The step-to-walk gap**: StepCharCancel does NOT imply WalkCharCancel.
+/-! ### Step vs walk cancellation (documentation)
+ **The step-to-walk gap**: StepCharCancel does NOT imply WalkCharCancel.
 
     This is the fundamental structural gap between multiplier (step) character
     cancellation and walk character cancellation. In the Euclid-Mullin context,
@@ -616,7 +607,7 @@ end CancelImpliesCoverage
     direction ON AVERAGE. Walk cancellation says the ACCUMULATED PRODUCT has no
     preferred direction. These are fundamentally different because the product
     operation couples consecutive steps. -/
-theorem step_walk_gap_documented : True := trivial
+
 
 /-! ## Section 6: Counterexample -- Generation Without Coverage -/
 

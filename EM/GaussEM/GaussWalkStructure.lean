@@ -266,7 +266,7 @@ theorem gaussSeq_hits (d : GaussEMData) (n : ℕ) :
 -- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def InertHittingStronger : Prop := True
 
-/-- The observation is trivially true. -/
+/-- The observation is trivially true. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem inert_hitting_stronger : InertHittingStronger := trivial
 
 /-- For a split prime p with pi | p, pi | gaussProd(n)+1 is WEAKER than
@@ -275,7 +275,7 @@ theorem inert_hitting_stronger : InertHittingStronger := trivial
 -- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def SplitHittingWeaker : Prop := True
 
-/-- The observation is trivially true. -/
+/-- The observation is trivially true. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem split_hitting_weaker : SplitHittingWeaker := trivial
 
 /-! ## Section 9: The Orbit-Specificity Barrier -/
@@ -295,7 +295,7 @@ theorem split_hitting_weaker : SplitHittingWeaker := trivial
 -- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def GaussOrbitSpecificityBarrier : Prop := True
 
-/-- The barrier is a structural observation, hence trivially stated. -/
+/-- The barrier is a structural observation, hence trivially stated. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem gauss_orbit_specificity_barrier : GaussOrbitSpecificityBarrier := trivial
 
 /-! ## Section 10: Structural Comparison -/

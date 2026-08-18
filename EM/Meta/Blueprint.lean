@@ -190,8 +190,8 @@ attribute [blueprint "thm:roughlpf-iff"
 
 attribute [blueprint "thm:gen-hitting-mc"
   (statement := /--
-    If the generalized walk hits $-1$ cofinally for every prime $q$,
-    then $\mathrm{GenMullinConjecture}(n)$ holds.
+    For squarefree $n \ge 1$: if the generalized walk hits $-1$ cofinally for every prime
+    $q \nmid n$, then $\mathrm{GenMullinConjecture}(n)$ holds (every prime $q \nmid n$ appears).
   -/)]
   gen_hitting_implies_gen_mc_proved
 

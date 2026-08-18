@@ -23,7 +23,7 @@ When dispatching the lean-formalizer, ALWAYS include this reminder:
 
 ## Dead Ends Catalog
 
-**Before dispatching any agent on a new direction, consult `EM/Meta/DeadEnds.lean` (authoritative catalog; `docs/dead_ends.md` is a pointer stub).**
+**Before dispatching any agent on a new direction, consult `EM/Meta/DeadEnds.lean` (authoritative catalog).**
 
 Read the current entry count from `deadEndCount` in that file rather than trusting a number quoted here. Entries are organized by category code:
 - **OS** — Orbit-Specificity: population statistics ≠ orbit statistics
@@ -63,6 +63,41 @@ If a proposed approach maps onto any entry in the catalog, do NOT dispatch an ag
 - **attack-information**: **DISABLED (Session 68).** Route assessed as non-viable — category error (EM is deterministic, zero Shannon entropy). Prompt at `attack_information.md.disabled`.
 - **paper-writer**: Updates the paper (in `paper/` directory, split across `main.tex` and section files). Dispatch AFTER the formalizer lands new theorems.
 - **code-stylist**: Deep code quality — simplifies proofs by finding better Mathlib lemmas, reorganizes structure, enforces Mathlib conventions. Dispatch with a specific file or pattern. May change proof strategies but never theorem statements.
+
+## Coordinator model
+
+The coordinator may run on any Claude model: `coordinate --model claude:fable`
+(Claude Fable 5, the strongest reasoner — preferred for mathematics sessions),
+`claude:opus` (default), or `claude:sonnet`.  Sub-agents keep the models fixed
+in `agents/coordinator.py::_build_agents` unless routed to the DGX (below).
+When you run on `claude:fable`, do the mathematical thinking yourself and hand
+specialists fully specified, self-contained tasks.
+
+## Launching standalone direct-runners — `spawn` / `wait`, never `&`
+
+Your session ends the instant you finish a turn without a tool call, and Claude
+Code then kills every shell process your session started. A direct-runner
+launched with `cmd &` or `nohup cmd &` therefore dies the moment you exit —
+this lost the WP0 scoper reports three times on 2026-08-18. Sub-agents
+dispatched with the Task tool are safe (the harness waits for them); shell
+launches are not, unless you use the job supervisor:
+
+- **Launch:** `python -m agents spawn -- attack --vector analytic --goal-file tmp/x.md`
+  (any `agents` subcommand after `--`). The job runs DETACHED in its own
+  session, logs to `agents/state/jobs/<name>.log`, and survives your exit.
+- **Wait:** `python -m agents wait --timeout 590` blocks until every spawned
+  job has finished or 590 s elapse (Bash calls cap at 600 s). Repeat the call
+  until it prints `all jobs finished`. Each repeat costs one turn; a scoper
+  takes ~20–40 min, so budget 3–5 waits.
+- **Inspect:** `python -m agents jobs --tail 20` lists jobs, state, log tails.
+- Direct-runners write to `agents/state/findings.md` and `strategy_log.md`
+  themselves — read those after `wait` returns, not the raw log.
+
+**Rule: do not end your turn while work you launched is still running.**
+Finish with a plain statement of what landed, what is pending, and what the
+operator should do next. If you do exit with spawned jobs alive, the harness
+supervisor waits for them and re-invokes you with their logs (bounded number
+of times), so nothing is silently lost — but plan to wait yourself.
 
 ## DGX Local Models (when routed via --dgx-agents)
 
@@ -115,8 +150,8 @@ When choosing what to do next:
 
 **You are responsible for keeping the dead ends catalog up to date.** The
 authoritative catalog is the Lean file `EM/Meta/DeadEnds.lean` (docstring
-tables + `#check` re-exports of formal witnesses); `docs/dead_ends.md` is a
-pointer stub. After each session:
+tables + `#check` re-exports of formal witnesses), generated from `tools/dead_ends.tsv`
+by `tools/gen_dead_ends.py`. After each session:
 
 1. **Collect new dead ends** from all dispatched agents. If an attack agent reports a failed approach with a clear reason, it is a new dead end.
 2. **Assign the next number** in sequence (read the current maximum from `EM/Meta/DeadEnds.lean` — do not trust a hardcoded count).
@@ -190,10 +225,10 @@ When new theorems are formalized (not just analyzed — actually compiled into L
 The strategy log is split into three files:
 
 - **`state/strategy_log.md`**: Active log (recent sessions only, ~2000-3000 lines). Append new session entries here.
-- **`state/strategy_log_old.md`**: Archive of older sessions. When strategy_log.md exceeds ~3000 lines, move the oldest sessions to this file.
+- **`state/strategy_log_old.md`** (kept locally in `tmp/`, not in the public repo): archive of older sessions (1–274). When strategy_log.md exceeds ~3000 lines, move the oldest sessions there.
 - **`state/strategy_log_summary.md`**: Compressed digest of ALL sessions (key outcomes, phase summaries, attack vector assessment, codebase growth). Update this after sessions that produce significant results (new theorems proved, new dead ends, phase transitions).
 
-**When to rotate**: If strategy_log.md exceeds ~3000 lines, move sessions older than the last 20 to strategy_log_old.md and update the archive note in strategy_log.md's header.
+**When to rotate**: If strategy_log.md exceeds ~3000 lines, move sessions older than the last 20 to the local `tmp/strategy_log_old.md` and update the archive note in strategy_log.md's header.
 
 **When to update summary**: After any session that changes the attack vector assessment, proves a new reduction, or discovers a significant dead end.
 

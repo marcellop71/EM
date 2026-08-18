@@ -19,24 +19,26 @@ The first terms are 2, 3, 7, 43, 13, 53, 5, 6221671, 38709183810571, 139, 2801, 
 
 Two documents, both with clickable links to the Lean source for every formally verified result:
 
-- **Short paper** — [`paper/short/main.pdf`](paper/short/main.pdf) (10 pages, sources in
+- **Short paper** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (10 pages, sources in
   [`paper/short/`](paper/short/)): the mathematics, with proof sketches.  The residue-walk
   reformulations of MC (all equivalent to MC), the composite floor (growth constant, MC ⇒ (C∞),
   Sylvester towers, the invariant ρ), the population laws (head domination, the bag-conditioned
   1/q law, almost-all factor-tree hitting, Karamata and Mertens in progressions), and min versus
   max (Cox–van der Poorten's omission of 5, no congruence invariant under lpf).
-- **Technical report** — [`paper/main.pdf`](paper/main.pdf) (sources in [`paper/`](paper/)):
+- **Technical report** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (sources in [`paper/`](paper/)):
   everything the formalization does — the above plus the variants, the spectral and variance
   routes, the obstruction calculus, the function-field analogue (placeholders marked), the
   complete catalogue of documented dead ends, and the methodology.  Nothing in the short paper
   depends on it.
 
-Both are built with two passes of `lualatex main.tex` in the respective directory; they share
-`paper/preamble.tex`.
+The compiled PDFs are attached to each [release](https://github.com/marcellop71/EM/releases/latest)
+(`EM-short-*.pdf` and `EM-paper-*.pdf`) rather than tracked in the repository, so that clones stay
+small.  To build them yourself, run two passes of `lualatex main.tex` in the respective directory;
+they share `paper/preamble.tex`.
 
 ## Mathlib Candidates
 
-Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`zulip_mathlib_candidates.md`](zulip_mathlib_candidates.md) for a curated list.
+Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`mathlib_candidates.md`](mathlib_candidates.md) for a curated list.
 
 ## Content-Addressed Registry
 
@@ -52,26 +54,19 @@ The registry is regenerated automatically by `lake build`.
 
 ## Building
 
-Requires the pinned Lean toolchain in [`lean-toolchain`](lean-toolchain).  Dependencies:
-Mathlib `v4.33.0`, [CA](https://github.com/marcellop71/CA) `v4.33.0` (the content-addressing
-registry) and LeanArchitect (pinned to `main`) are git requires and are fetched by `lake`; one
-sibling checkout remains a path dependency of the lakefile:
+Requires the pinned Lean toolchain in [`lean-toolchain`](lean-toolchain).  All dependencies are
+git requires fetched by `lake`: Mathlib `v4.33.0`, [CA](https://github.com/marcellop71/CA)
+`v4.33.0` (the content-addressing registry) and LeanArchitect (pinned to `main`).  Then
+`lake build` at the repo root.  Two libraries are built: `EM` (the mathematics; depends only on
+Mathlib) and `EMRegistry` (root `EMRegistry.lean`: `EM` plus the registry tooling
+`EM/Meta/{Registry,Blueprint}.lean`, which need CA and LeanArchitect).
 
-```
-dev/
-├── lean/
-│   └── EM/          (this repo)
-└── proofinity/
-    └── declbuild-meta/   github.com/proofinity-it/declbuild-meta @ 63734c0
-```
-
-Then `lake build` at the repo root.  Two libraries are built: `EM` (the mathematics; depends
-only on Mathlib) and `EMRegistry` (root `EMRegistry.lean`: `EM` plus the registry tooling
-`EM/Meta/{Registry,Strategies,Blueprint}.lean`, which need CA, declbuild-meta and LeanArchitect).
-
-Verified set: no `sorry`, no user axioms, no `native_decide`; run
-`python3 tools/check_axioms.py` after `lake build` to confirm that every published declaration
-depends only on `propext`, `Classical.choice`, `Quot.sound`.
+Verified set: no `sorry`, no user axioms, no `native_decide`.  `python3 tools/check_axioms.py`
+(after `lake build`) walks every declaration in the `EM` library (~5,400) and the
+registry-published set and confirms each depends only on `propext`, `Classical.choice`,
+`Quot.sound`; `python3 tools/check_forbidden.py` is the build-free source lint.  Both run in CI
+(`.github/workflows/ci.yml`) together with `lake build`, the paper-reference check and the
+generated-file drift check.
 
 ## License
 

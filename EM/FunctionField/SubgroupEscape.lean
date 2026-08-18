@@ -96,9 +96,6 @@ variable (p : ℕ) [hp : Fact (Nat.Prime p)]
     So p >= (d-1)^2 + 1 gives the contradiction. -/
 def FFSEThreshold (d : ℕ) : ℕ := (d - 1) ^ 2 + 1
 
-/-- The threshold specification: FFSEThreshold d = (d-1)^2 + 1. -/
-theorem ff_se_threshold_spec (d : ℕ) : FFSEThreshold d = (d - 1) ^ 2 + 1 := rfl
-
 /-- For d = 1, the threshold is 1 (vacuously satisfied for all primes). -/
 theorem ff_se_threshold_one : FFSEThreshold 1 = 1 := by
   simp [FFSEThreshold]
@@ -198,7 +195,8 @@ def WeilCharSumBoundFF : Prop :=
     images {(t-a) mod Q : a in F_p, (t-a) mod Q != 0}.
 
     For large p (relative to deg Q), this follows from the Weil bound.
-    For d = 1, this is trivial (degree-1 images generate all of F_p*). -/
+    For d = 1, this is trivial (degree-1 images generate all of F_p*). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def FFSubgroupEscape (d : ℕ) : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q → Q.natDegree = d →
   -- The images of degree-1 irreducibles modulo Q generate all of
@@ -388,7 +386,8 @@ These consequences are used in the CCSB chain: CME => CCSB => MC. -/
     g -> g^T, which is a proper subgroup. SE prevents this.
 
     This is stated abstractly since the quotient ring infrastructure
-    is not available. -/
+    is not available. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def FFSEImpliesNondegenerate (d : ℕ) : Prop :=
   FFSubgroupEscape p d →
   -- The walk modulo Q is not eventually periodic with period

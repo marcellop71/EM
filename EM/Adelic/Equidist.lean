@@ -172,54 +172,18 @@ theorem cme_implies_mwi (hcme : ConditionalMultiplierEquidist) :
     have h2 := norm_nonneg (∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ))
     linarith⟩
 
+/-- `MultiplierMarginalEquidist` is definitionally the `DecorrelationHypothesis` of
+    EM/Equidist/SelfCorrecting.lean (same quantifiers, same bound); the two names
+    record the two viewpoints (adelic marginal vs. decorrelation). -/
+theorem mme_eq_dec : MultiplierMarginalEquidist = DecorrelationHypothesis := rfl
+
 /-- **CME ⟹ MME**: Conditional multiplier equidistribution implies
-    multiplier marginal equidistribution. Proof: the unconditional sum
+    multiplier marginal equidistribution.  By `mme_eq_dec` this is exactly
+    `cme_implies_dec` (EM/CME/Reduction.lean): the unconditional sum
     decomposes as ∑_a (conditional sum at a), and each piece is o(N). -/
 theorem cme_implies_mme (hcme : ConditionalMultiplierEquidist) :
-    MultiplierMarginalEquidist := by
-  intro q inst hq hne χ hχ ε hε
-  have : Fact (Nat.Prime q) := inst
-  -- Number of walk positions: Fintype.card (ZMod q)ˣ
-  set C := Fintype.card (ZMod q)ˣ with hC_def
-  have hC_pos : (0 : ℝ) < C := Nat.cast_pos.mpr Fintype.card_pos
-  -- Set ε' = ε / C so that C · ε' = ε
-  set ε' := ε / C with hε'_def
-  have hε'_pos : 0 < ε' := div_pos hε hC_pos
-  -- For each walk position a, CME gives N₀(a) such that the conditional sum ≤ ε' * N
-  have hcme_a : ∀ a : (ZMod q)ˣ, ∃ N₀ : ℕ, ∀ N ≥ N₀,
-      ‖∑ n ∈ (Finset.range N).filter (fun n => emWalkUnit q hq hne n = a),
-        (χ (emMultUnit q hq hne n) : ℂ)‖ ≤ ε' * N :=
-    fun a => hcme q hq hne χ hχ a ε' hε'_pos
-  -- Choose N₀(a) for each a
-  choose N₀_fn hN₀_fn using hcme_a
-  -- Take the maximum N₀ over all a
-  set N₀ := Finset.univ.sup N₀_fn with hN₀_def
-  refine ⟨N₀, fun N hN => ?_⟩
-  -- Step 1: Partition the sum by walk position using sum_fiberwise
-  have hdecomp : ∑ n ∈ Finset.range N, (χ (emMultUnit q hq hne n) : ℂ) =
-      ∑ a : (ZMod q)ˣ, ∑ n ∈ (Finset.range N).filter
-        (fun n => emWalkUnit q hq hne n = a),
-        (χ (emMultUnit q hq hne n) : ℂ) := by
-    rw [← Finset.sum_fiberwise (Finset.range N) (emWalkUnit q hq hne)
-      (fun n => (χ (emMultUnit q hq hne n) : ℂ))]
-  rw [hdecomp]
-  -- Step 2: Triangle inequality + CME bound at each fiber + count fibers
-  calc ‖∑ a : (ZMod q)ˣ, ∑ n ∈ (Finset.range N).filter
-        (fun n => emWalkUnit q hq hne n = a),
-        (χ (emMultUnit q hq hne n) : ℂ)‖
-      ≤ ∑ a : (ZMod q)ˣ, ‖∑ n ∈ (Finset.range N).filter
-        (fun n => emWalkUnit q hq hne n = a),
-        (χ (emMultUnit q hq hne n) : ℂ)‖ := norm_sum_le _ _
-    _ ≤ ∑ _a : (ZMod q)ˣ, ε' * N := by
-        apply Finset.sum_le_sum
-        intro a _
-        apply hN₀_fn a N
-        exact le_trans (Finset.le_sup (Finset.mem_univ a)) hN
-    _ = C * (ε' * N) := by
-        rw [Finset.sum_const, nsmul_eq_mul, hC_def, Finset.card_univ]
-    _ = ε * N := by
-        rw [hε'_def]
-        field_simp
+    MultiplierMarginalEquidist :=
+  cme_implies_dec hcme
 
 /-- **Adelic Equidistribution ⟹ CME** -/
 theorem adelic_implies_cme (h : AdelicEquidist) :

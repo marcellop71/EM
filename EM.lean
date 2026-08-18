@@ -3,9 +3,9 @@
 The verified set is exactly this import closure: no `sorry`, no user axioms, no
 `native_decide`; every published declaration depends only on `propext`, `Classical.choice`,
 `Quot.sound` (gate: `python3 tools/check_axioms.py`, run after `lake build`).
-This module depends only on Mathlib.  The registry tooling (`EM/Meta/{Registry,Strategies,
-Blueprint}.lean`, which need CA / declbuild-meta / LeanArchitect) is the separate library
-`EMRegistry` (root `EMRegistry.lean`), built by `lake build` as well. The ONLY files under EM/ deliberately excluded are those in
+This module depends only on Mathlib.  The registry tooling (`EM/Meta/{Registry,Blueprint}.lean`,
+which need CA / LeanArchitect) is the separate library `EMRegistry` (root `EMRegistry.lean`),
+built by `lake build` as well. The ONLY files under EM/ deliberately excluded are those in
 EM/Archive/ — retired mathematics kept for reference, with proof bodies
 stubbed behind `#exit` or preserved whole-file; see EM/Archive/README.md.
 `tools/gen_codebase_table.py` audits this: it warns when a live file is
@@ -22,6 +22,8 @@ import EM.CME.Equivalences
 import EM.ForMathlib.VanDerCorput
 import EM.ForMathlib.ZModDftParseval
 import EM.ForMathlib.CoprimeAffineBlock
+import EM.ForMathlib.PeriodicDensity
+import EM.ForMathlib.CharNormOne
 import EM.CME.Variants
 import EM.Core.Conjectures
 import EM.Core.Defs
@@ -141,11 +143,35 @@ import EM.Population.SizeResidueDecoupling
 import EM.Population.RelativeSize
 import EM.Population.HittingSetStructure
 import EM.Population.InfiniteM
+import EM.Population.LSPlus
+import EM.Population.LemmaD
+import EM.Population.LemmaDBox
+import EM.Population.LargeStepRoughness
+import EM.Population.MertensLower
+import EM.Population.ProfiniteDynamics
+import EM.Population.ProfiniteEnsemble
+import EM.Population.ProfiniteHeadline
 import EM.Population.ReciprocalSum
 import EM.Population.RigidityMaster
+import EM.Population.SeedCapture
+import EM.Population.SeedTypes
+import EM.Population.SelectionLaw
 import EM.Population.SylvesterTower
 import EM.Population.SpectralConspiracy
+import EM.Population.TailEstimate
+import EM.Population.TailAssembly
+import EM.Population.TheoremC
+import EM.Population.FiberTheoremC
+import EM.Population.AlmostAllDensity
+import EM.Population.GrowingRange
+import EM.Population.ProfiniteAttractor
+import EM.Population.GrandOrbit
+import EM.Population.AdelicShadow
+import EM.Population.SquarefreeSeed
+import EM.Population.AlmostAllGenMC
 import EM.Population.TransferStrategy
+import EM.Population.TreeChernoff
+import EM.Population.TypeBadSmall
 import EM.Population.WeakErgodicity
 import EM.Population.WeakMullin
 import EM.Reciprocity.SymbolAlgebra

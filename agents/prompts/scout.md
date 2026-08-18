@@ -15,7 +15,7 @@ DO search for: proof techniques, structural theorems, abstract results that coul
 
 **Before searching any direction, consult the strategy log in `agents/state/strategy_log.md`.**
 
-The authoritative dead-ends catalog is `EM/Meta/DeadEnds.lean` (`docs/dead_ends.md` is only a pointer stub); read the current entry count from `deadEndCount` there. Entries carry a category code (OS/TM/SM/CI/SF/CO/DG/AG) and a weak-MC revival score 0–3. If a proposed search direction maps onto a catalog entry, skip it.
+The authoritative dead-ends catalog is `EM/Meta/DeadEnds.lean`; read the current entry count from `deadEndCount` there. Entries carry a category code (OS/TM/SM/CI/SF/CO/DG/AG) and a weak-MC revival score 0–3. If a proposed search direction maps onto a catalog entry, skip it.
 
 ## Current priority scouting tasks
 
@@ -55,8 +55,30 @@ The authoritative dead-ends catalog is `EM/Meta/DeadEnds.lean` (`docs/dead_ends.
    - **TSD-Hitting(3) PROVED unconditionally** (Session 256, mod-3 parity dichotomy).
    - Full conditional chain: PEAP + TSD ⇒ MC (all bridges proved).
 
+## Standing rule — priority claims (Session 314)
+
+**Never write, or endorse, "first / only formalization in any proof assistant."** Before any such
+claim, check at minimum:
+
+- the **Isabelle/HOL AFP**
+- the Lean project **PrimeNumberTheoremAnd**
+- the Lean project **Carleson**
+- **Metamath `set.mm`**
+- **HOL Light `100/`**
+- **open** mathlib4 PRs (not only merged ones)
+
+Prefer the checkable form: "**not in Mathlib as of \<pin\>**".
+
+**Track record: two claims audited, two failed** — Mertens I (Session 312; in the AFP since 2018, in
+PrimeNumberTheoremAnd, and mathlib4#41394 open) and van der Corput (Session 314).
+
+**The specific trap: a *different* theorem can share the name.** The **oscillatory-integral** van der
+Corput lemma is in the Lean **Carleson** project and in mathlib4 PR **#39406**; the repo proves the
+**discrete Weyl–van der Corput inequality**. Search for the *mathematics*, not the label, and report
+which statement each hit actually proves.
+
 ## Session count
-Current session: 292
+Current session: 314
 
 ## COMPLETED scouting tasks (do not re-search)
 
@@ -75,7 +97,8 @@ Current session: 292
 - **March 2026 full scan #2** (Session 129): ZERO ACTIONABLE FINDINGS across 10 search directions. PNT+ v4.28.0 (Feb 2026), still IK Ch 1-2 (no BV). Gauss AI Strong PNT: irrelevant scope (classical PNT, no sieve/BV/large sieve). Mathlib4 v4.29.0-rc3: no new ANT. Booker-Simon (arXiv:2601.21901): wrong sequence variant (maxFac cyclotomic). No new papers on deterministic walk equidistribution, non-multiplicative character sums, smallest prime factor distribution, or Hilbert inequality formalization. Four-Way Blocker UNCHANGED. **Next scan: June 2026.**
 - **March 2026 full scan #3** (Session 151): Tao-Teräväinen Dec 2025 (arXiv:2512.01739) uses Pilatte correlation estimates — MEDIUM-HIGH but requires multiplicativity (genSeq non-multiplicative). Pham-Sauermann Feb 2026: LOW (existence). Pascadi x^(5/8): LOW (population). Gafni-Tao rough numbers: LOW (catalogued). Booker-Simon Jan 2026: ZERO (wrong variant). PNT+: no BV/sieve progress. Wiener-Ikehara: NOT formalized. Mertens: NOT formalized. Four-Way Blocker UNCHANGED. **Next scan: June 2026.**
 - **Full monitoring sweep** (Session 94): PNT+ still on IK Ch 1-2 (no BV/large sieve). Tao Explicit ANT still explicit PNT. Hilbert inequality still unprecedented in any proof assistant. No new Mathlib analytic NT. Li (arXiv:2602.20917) on Harman sieve — population-level, SieveTransfer gap. Zero actionable findings. Next scout: March 2026.
-- **Abel summation API audit + AbelSummationPNT correctness** (Session 149): Mathlib has complete Abel summation API (`sum_mul_eq_sub_sub_integral_mul`, `tendsto_sum_mul_atTop_nhds_one_sub_integral`, `summable_mul_of_bigO_atTop`). CRITICAL FINDING: AbelSummationPNT does NOT follow from RealWienerIkeharaTauberian via Abel summation. The integral ∫₁ˣ E(t)/t² dt where |E(t)| ≤ C·t/log(t) diverges as C·log(log x). AbelSummationPNT = Mertens' theorem, which requires Siegel-Walfisz error terms. No formalization of Mertens' theorem exists in ANY proof assistant.
+- **Abel summation API audit + AbelSummationPNT correctness** (Session 149): Mathlib has complete Abel summation API (`sum_mul_eq_sub_sub_integral_mul`, `tendsto_sum_mul_atTop_nhds_one_sub_integral`, `summable_mul_of_bigO_atTop`). CRITICAL FINDING: AbelSummationPNT does NOT follow from RealWienerIkeharaTauberian via Abel summation. The integral ∫₁ˣ E(t)/t² dt where |E(t)| ≤ C·t/log(t) diverges as C·log(log x). AbelSummationPNT = Mertens' theorem, which requires Siegel-Walfisz error terms. **CORRECTED Session 312 — this sentence was WRONG.** Explicit two-sided Mertens I has been in the Isabelle/HOL AFP since 2018 (Eberl–Paulson, `Mertens_Theorems.thy`, `𝔐(n) − ln n ∈ (−1 − 9/π², ln 4]`), is in Lean in `PrimeNumberTheoremAnd/IEANTN/Mertens.lean` (`|∑_{p≤x} log p/p − log x| ≤ log 4 + 4`), and is the subject of the open mathlib4#41394. Only "not in Mathlib v4.33.0" is true. See `agents/state/findings_mertens_priorart.md`. **Never write "first/only formalization in any proof assistant" without checking the AFP, PrimeNumberTheoremAnd, Metamath set.mm, HOL Light `100/`, and open Mathlib PRs.**
+- **van der Corput priority audit** (Session 314): the repo's "first van der Corput bound in any proof assistant" claim (`EM/LargeSieve/Analytic.lean`) does **NOT** stand. Cause: name collision between two different theorems. The **oscillatory-integral** van der Corput lemma is in the Lean **Carleson** project and in **mathlib4 PR #39406**; the repo proves the **discrete Weyl–van der Corput inequality**. Second audited priority claim, second failure (after Mertens, Session 312). Do NOT re-search; do restate any surviving claim as "not in Mathlib as of \<pin\>".
 - **Session 97 literature search**: Five topics searched. (1) Alladi (1977): population-level, SieveTransfer gap. (2) Open dynamical systems (Demers-Young 2006, Cipriano-Rams 2025): non-autonomous barrier, Dead Ends #86/#95. (3) Kochen-Stone (1964): MEDIUM relevance — structurally right framework (CME+Dec→Kochen-Stone→MC) but blocked by SieveTransfer. NOT in Mathlib. (4) Products mod q (Kowalski-Soundararajan 2021): Four-Way Blocker item 1. (5) BSZ criterion: wrong direction (Möbius disjointness ≠ CCSB). No result breaks Four-Way Blocker.
 
 - **FF algebraic-geometric literature survey** (Session 292): Seven directions searched: Mason-Stothers landscape, primitive divisors (Ingram-Silverman, Gratton-Nguyen-Tucker, Hindes), factorization of iterated polynomials (GOS, Reis), arboreal Galois (Odoni, Palimar), Drinfeld modules (Ghioca), FF-EM in literature (ZERO papers). Verdict: NO existing algebraic tool gives orbit-pointwise leverage on FF-EM. Mason-Stothers gives trivial per-step bound (deg(rad(P_n+1)) ≥ 1). All orbit-specific tools (primitive divisors, arboreal Galois) require FIXED dynamical systems; FF-EM is non-autonomous. Mason-Stothers IS in Mathlib (`Polynomial.abc` in `Mathlib.NumberTheory.FLT.MasonStothers`). Written to `scoping/ff_literature_report.md` (280 lines). **Do NOT re-search**: Mason-Stothers for FF-EM, primitive divisor applicability, arboreal Galois for non-autonomous systems, Drinfeld module orbit leverage.

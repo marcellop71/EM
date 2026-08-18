@@ -6,6 +6,7 @@ a ProviderBackend implementation.
 
 from __future__ import annotations
 
+import asyncio
 from typing import AsyncIterator
 
 from claude_agent_sdk import (
@@ -26,6 +27,74 @@ from . import AgentSpec, ProviderBackend
 # 50 MB buffer — Claude Code's system context is large.
 _MAX_BUF = 50 * 1024 * 1024
 
+# Transient-failure retry.  The Claude Agent SDK has no resume, so a retry
+# restarts the session from turn 1 — retries are therefore bounded tightly and
+# announced loudly rather than being silent.  Two budgets: an explicit overload
+# / rate-limit signature is worth waiting out, whereas the SDK's opaque
+# "returned an error result" wrapper may equally be a deterministic failure and
+# gets far fewer attempts, since each restart re-bills the whole agent.
+MAX_RETRIES = 5             # explicit 429/529/5xx/timeout signatures
+MAX_RETRIES_OPAQUE = 2      # unclassifiable SDK error wrapper
+INITIAL_BACKOFF_S = 30.0    # first retry waits 30s
+BACKOFF_MULTIPLIER = 2.0    # double each retry
+MAX_BACKOFF_S = 300.0       # cap at 5 min
+
+# Substrings marking a server-side blip that is worth waiting out.
+_TRANSIENT_MARKERS = (
+    "429", "502", "503", "504", "529",
+    "overloaded", "rate limit", "rate_limit",
+    "timeout", "timed out", "connection reset", "connection error",
+    "temporarily unavailable", "service unavailable",
+)
+
+# The SDK raises this for any non-success CLI result, transient or not.
+_OPAQUE_MARKER = "returned an error result"
+
+# Substrings marking a usage / consumption limit on the *current model* — the
+# signal to switch to `spec.fallback_model` rather than wait.  Kept broad on
+# purpose: subscription limits ("You've hit your usage limit"), model quotas,
+# spend caps, and API rate-limit errors all count.
+_LIMIT_MARKERS = (
+    "usage limit", "hit your limit", "reached your limit", "limit reached",
+    "limit will reset", "quota", "spend limit", "budget exceeded",
+    "rate_limit_error", "rate limit", "too many requests", "429",
+    "insufficient credits", "credit balance", "billing",
+    "not available on your plan", "model is not available",
+)
+
+
+class _LimitResult(Exception):
+    """Raised internally when the CLI's ResultMessage reports a limit error."""
+
+
+def _classify_error(exc: BaseException) -> str | None:
+    """Return ``"limit"``, ``"transient"``, ``"opaque"``, or ``None``."""
+    msg = str(exc).lower()
+    if isinstance(exc, _LimitResult) or any(m in msg for m in _LIMIT_MARKERS):
+        return "limit"
+    if any(m in msg for m in _TRANSIENT_MARKERS):
+        return "transient"
+    if _OPAQUE_MARKER in msg:
+        return "opaque"
+    return None
+
+# Short aliases accepted after the ``claude:`` prefix.  The CLI understands
+# ``opus``/``sonnet``/``haiku``/``fable`` natively; ``fable`` is mapped to its
+# full id so ``--model claude:fable`` works regardless of CLI alias support.
+# ``claude:fable`` is a valid COORDINATOR model (``coordinate --model claude:fable``).
+_CLAUDE_MODEL_ALIASES: dict[str, str] = {
+    "fable": "claude-fable-5",
+    "fable-5": "claude-fable-5",
+    "opus": "opus",
+    "sonnet": "sonnet",
+    "haiku": "haiku",
+}
+
+
+def resolve_claude_model(name: str) -> str:
+    """Map a short alias (``fable``, ``opus``, ...) to what the CLI expects."""
+    return _CLAUDE_MODEL_ALIASES.get(name, name)
+
 
 class ClaudeBackend:
     """ProviderBackend for the Claude Agent SDK (claude-agent-sdk)."""
@@ -35,11 +104,15 @@ class ClaudeBackend:
         spec: AgentSpec,
         *,
         agents: dict[str, AgentDefinition] | None = None,
+        model_name: str | None = None,
     ) -> ClaudeAgentOptions:
-        """Build ClaudeAgentOptions from an AgentSpec."""
+        """Build ClaudeAgentOptions from an AgentSpec.
+
+        ``model_name`` overrides ``spec.model_name`` (used after a fallback
+        switch)."""
         tools = spec.tools
         opts = ClaudeAgentOptions(
-            model=spec.model_name,
+            model=resolve_claude_model(model_name or spec.model_name),
             system_prompt=spec.system_prompt,
             allowed_tools=tools,
             agents=agents,
@@ -66,81 +139,167 @@ class ClaudeBackend:
         agents: dict[str, AgentDefinition] | None = None,
     ) -> AsyncIterator[AgentEvent]:
         """Stream AgentEvents from a Claude Code session."""
-        options = self._build_options(spec, agents=agents)
         label = spec.label
+        current_model = spec.model_name
+        fallback = (spec.fallback_model.split(":", 1)[-1]
+                    if spec.fallback_model else None)
+        if fallback == current_model:
+            fallback = None
+        options = self._build_options(spec, agents=agents, model_name=current_model)
         turn = 0
 
         yield AgentEvent(
             kind=EventKind.START,
             label=label,
             provider="claude",
-            model=spec.model_name,
+            model=current_model,
         )
 
-        try:
-            async for message in query(prompt=prompt, options=options):
-                if isinstance(message, ResultMessage):
-                    cost = f"${message.total_cost_usd:.4f}" if message.total_cost_usd else "?"
+        backoff = INITIAL_BACKOFF_S
+        attempt = 0
+        while True:
+            attempt += 1
+            turn = 0
+            retry_after: BaseException | None = None
+            switch_to: str | None = None
+
+            try:
+                async for message in query(prompt=prompt, options=options):
+                    if isinstance(message, ResultMessage):
+                        if message.is_error and _looks_like_limit(message.result):
+                            # Do not surface as a final RESULT: switch model instead.
+                            raise _LimitResult(message.result or "limit error")
+                        cost = f"${message.total_cost_usd:.4f}" if message.total_cost_usd else "?"
+                        yield AgentEvent(
+                            kind=EventKind.RESULT,
+                            label=label,
+                            provider="claude",
+                            model=current_model,
+                            is_error=message.is_error,
+                            num_turns=message.num_turns or 0,
+                            cost=cost,
+                        )
+
+                    elif isinstance(message, AssistantMessage):
+                        turn += 1
+                        for block in message.content:
+                            if isinstance(block, TextBlock) and block.text.strip():
+                                yield AgentEvent(
+                                    kind=EventKind.TEXT,
+                                    label=label,
+                                    provider="claude",
+                                    model=current_model,
+                                    turn=turn,
+                                    text=block.text,
+                                )
+                            elif isinstance(block, ToolUseBlock):
+                                inp = block.input or {}
+                                yield AgentEvent(
+                                    kind=EventKind.TOOL_USE,
+                                    label=label,
+                                    provider="claude",
+                                    model=current_model,
+                                    tool_name=block.name,
+                                    tool_detail=_tool_detail(block.name, inp),
+                                    extra=inp,
+                                )
+
+                    elif isinstance(message, SystemMessage):
+                        subtype = getattr(message, "subtype", "")
+                        data = getattr(message, "data", {})
+                        if subtype == "agent_start":
+                            yield AgentEvent(
+                                kind=EventKind.SUBAGENT_START,
+                                label=label,
+                                provider="claude",
+                                model=current_model,
+                                subagent_name=data.get("agent_name", "?"),
+                            )
+                        elif subtype == "agent_stop":
+                            yield AgentEvent(
+                                kind=EventKind.SUBAGENT_STOP,
+                                label=label,
+                                provider="claude",
+                                model=current_model,
+                                subagent_name=data.get("agent_name", "?"),
+                            )
+            except Exception as exc:  # noqa: BLE001 — classified, then re-reported
+                kind = _classify_error(exc)
+                if kind == "limit" and fallback is not None:
+                    switch_to = fallback
+                    retry_after = exc
+                elif kind == "limit":
+                    kind = "transient"      # no fallback: treat as a wait
+                if switch_to is None and kind is not None:
+                    budget = MAX_RETRIES if kind == "transient" else MAX_RETRIES_OPAQUE
+                    if attempt < budget:
+                        retry_after = exc
+                    elif kind == "transient" and fallback is not None:
+                        # Overloaded past the budget on the primary model:
+                        # last resort, try the fallback once before giving up.
+                        switch_to = fallback
+                        retry_after = exc
+                if retry_after is None:
+                    import traceback
                     yield AgentEvent(
-                        kind=EventKind.RESULT,
+                        kind=EventKind.ERROR,
                         label=label,
                         provider="claude",
-                        model=spec.model_name,
-                        is_error=message.is_error,
-                        num_turns=message.num_turns or 0,
-                        cost=cost,
+                        model=current_model,
+                        text=traceback.format_exc(),
                     )
+                    return
+            except BaseException:
+                # Cancellation and KeyboardInterrupt are never retried.
+                import traceback
+                yield AgentEvent(
+                    kind=EventKind.ERROR,
+                    label=label,
+                    provider="claude",
+                    model=current_model,
+                    text=traceback.format_exc(),
+                )
+                return
+            else:
+                return
 
-                elif isinstance(message, AssistantMessage):
-                    turn += 1
-                    for block in message.content:
-                        if isinstance(block, TextBlock) and block.text.strip():
-                            yield AgentEvent(
-                                kind=EventKind.TEXT,
-                                label=label,
-                                provider="claude",
-                                model=spec.model_name,
-                                turn=turn,
-                                text=block.text,
-                            )
-                        elif isinstance(block, ToolUseBlock):
-                            inp = block.input or {}
-                            yield AgentEvent(
-                                kind=EventKind.TOOL_USE,
-                                label=label,
-                                provider="claude",
-                                model=spec.model_name,
-                                tool_name=block.name,
-                                tool_detail=_tool_detail(block.name, inp),
-                                extra=inp,
-                            )
+            if switch_to is not None:
+                yield AgentEvent(
+                    kind=EventKind.RETRY,
+                    label=label,
+                    provider="claude",
+                    model=current_model,
+                    text=(
+                        f"{type(retry_after).__name__}: {str(retry_after)[:200]} — "
+                        f"SWITCHING MODEL {current_model} → {switch_to} and RESTARTING "
+                        f"the session from turn 1. {turn} turns of work will be redone; "
+                        f"agents that append to state files may double-append."
+                    ),
+                )
+                current_model = switch_to
+                fallback = None                     # one switch only
+                options = self._build_options(spec, agents=agents, model_name=current_model)
+                attempt = 0                         # fresh retry budget on the new model
+                backoff = INITIAL_BACKOFF_S
+                await asyncio.sleep(5)
+                continue
 
-                elif isinstance(message, SystemMessage):
-                    subtype = getattr(message, "subtype", "")
-                    data = getattr(message, "data", {})
-                    if subtype == "agent_start":
-                        yield AgentEvent(
-                            kind=EventKind.SUBAGENT_START,
-                            label=label,
-                            provider="claude",
-                            model=spec.model_name,
-                            subagent_name=data.get("agent_name", "?"),
-                        )
-                    elif subtype == "agent_stop":
-                        yield AgentEvent(
-                            kind=EventKind.SUBAGENT_STOP,
-                            label=label,
-                            provider="claude",
-                            model=spec.model_name,
-                            subagent_name=data.get("agent_name", "?"),
-                        )
-
-        except BaseException:
-            import traceback
             yield AgentEvent(
-                kind=EventKind.ERROR,
+                kind=EventKind.RETRY,
                 label=label,
                 provider="claude",
-                model=spec.model_name,
-                text=traceback.format_exc(),
+                model=current_model,
+                text=(
+                    f"{type(retry_after).__name__}: {retry_after} — waiting "
+                    f"{backoff:.0f}s, then RESTARTING the session from turn 1 "
+                    f"(attempt {attempt + 1}). {turn} turns of work will be "
+                    f"redone; agents that append to state files may double-append."
+                ),
             )
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * BACKOFF_MULTIPLIER, MAX_BACKOFF_S)
+
+
+def _looks_like_limit(text: str | None) -> bool:
+    msg = (text or "").lower()
+    return any(m in msg for m in _LIMIT_MARKERS)

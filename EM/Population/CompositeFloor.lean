@@ -104,15 +104,10 @@ namespace CompositeFloor
 This needs no hypothesis at all: each term of the sequence is prime, hence at least
 `2`, and the accumulator is their product. -/
 
-/-- **Geometric growth**: `2 ^ (n+1) ≤ prod n`, unconditionally. -/
-theorem two_pow_le_prod (n : ℕ) : 2 ^ (n + 1) ≤ prod n := by
-  induction n with
-  | zero => rw [prod_zero]; norm_num
-  | succ n ih =>
-      have h2 : 2 ≤ seq (n + 1) := (seq_isPrime (n + 1)).1
-      calc 2 ^ (n + 1 + 1) = 2 ^ (n + 1) * 2 := by ring
-        _ ≤ prod n * seq (n + 1) := Nat.mul_le_mul ih h2
-        _ = prod (n + 1) := (prod_succ n).symm
+/-- **Geometric growth**: `2 ^ (n+1) ≤ prod n`, unconditionally.  Alias of
+`prod_exponential_growth` (EM/Equidist/Sieve.lean), kept under this name because it is published. -/
+theorem two_pow_le_prod (n : ℕ) : 2 ^ (n + 1) ≤ prod n :=
+  prod_exponential_growth n
 
 /-! ## Part 2: the reciprocal sum converges as soon as the selected primes are large
 

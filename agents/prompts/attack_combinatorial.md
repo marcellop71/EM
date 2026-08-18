@@ -30,7 +30,7 @@ This catalog contains:
 
 ## Dead Ends Catalog
 
-**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`** (`docs/dead_ends.md` is only a pointer stub).
+**Before proposing any approach, consult the authoritative dead-ends catalog `EM/Meta/DeadEnds.lean`**.
 
 Entries are classified by category code — **OS** (orbit-specificity), **TM** (technique mismatch), **SM** (scale mismatch), **CI** (circularity), **SF** (structurally false / counterexample), **CO** (definitional collapse), **DG** (decorrelation gap), **AG** (aggregate gap) — and carry a weak-MC revival score 0–3. Read the current entry count from `deadEndCount` in that file rather than trusting any number quoted here.
 
@@ -94,7 +94,6 @@ Comprehensive analysis confirms no remaining purely combinatorial paths:
 
 **The authoritative dead-ends catalog is the Lean file `EM/Meta/DeadEnds.lean`**
 (docstring tables + `#check` re-exports of the formal Lean witnesses).
-`docs/dead_ends.md` is only a pointer stub.
 
 **Do NOT edit the catalog yourself.** New dead ends are recorded in
 `EM/Meta/DeadEnds.lean` by the coordinator/formalizer — that file must still

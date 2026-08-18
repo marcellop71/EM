@@ -230,12 +230,14 @@ section Placeholders
     resolved. See Section 4 for why the answer is likely negative:
     the EM multiplier is state-dependent and archimedean, while all known
     geometric equidistribution theorems require fixed algebraic dynamics. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def ScholzeWeinsteinBridge : Prop := True
 
 /-- The p-adic geometry direction is Dead End #128.
     See the module documentation for the complete obstruction analysis.
     The core issue: geometric equidistribution requires FIXED algebraic
-    correspondences; the EM walk has state-dependent non-algebraic multipliers. -/
+    correspondences; the EM walk has state-dependent non-algebraic multipliers. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def padicGeometryDeadEnd : Prop := True
 
 end Placeholders

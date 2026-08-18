@@ -369,7 +369,7 @@ theorem marginal_joint_barrier_witness :
   intro q _ hq hne K N threshold χ
   exact exists_class_small_bad_set hq hne K N threshold χ
 
-/-- **Why "some class" is useless for MC**: MC requires hitting -1,
+/-! **Why "some class" is useless for MC**: MC requires hitting -1,
     which means we need density control in the SPECIFIC class c = -1.
     The existential quantifier over classes from pigeonhole does not
     help: the class with small bad density could be any class, and
@@ -386,7 +386,6 @@ theorem marginal_joint_barrier_witness :
     works for ALL classes (it says multipliers escape any proper subgroup),
     but exploiting SE at a specific class still requires knowing WHICH
     class has small bad density -- which requires joint information. -/
-theorem specific_class_needs_joint_info : True := trivial
 
 end CollapseAnalysis
 
@@ -431,10 +430,10 @@ section DeadEndCertificate
 
     This dead end is related to Dead End #106 (VCB -> CCSB without PED = PED
     itself): both arise from trying to extract per-fiber information from
-    aggregate bounds. -/
+    aggregate bounds. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem smsb_se_collapse_certificate : True := trivial
 
-/-- Summary of the infrastructure proved in this file (all zero sorry):
+/-! Summary of the infrastructure proved in this file (all zero sorry):
     - `badVisitsInClass`, `totalBadSet'`, `visitSet'` (definitions)
     - `badVisitsInClass_subset_totalBadSet'` (per-class subset of global)
     - `badVisitsInClass_subset_visitSet'` (per-class subset of visit set)
@@ -452,7 +451,6 @@ theorem smsb_se_collapse_certificate : True := trivial
     - `BadSetEquidistribution` (per-fiber bad density control)
     - `CMEImpliesBSE` (forward direction: CME => BSE)
     - `BSESMSBChainImpliesMC` (chain: BSE + SMSB => MC) -/
-theorem file_summary : True := trivial
 
 end DeadEndCertificate
 

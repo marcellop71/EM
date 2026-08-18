@@ -13,13 +13,9 @@ require LeanArchitect from git
 
 /- CA (content-addressing registry) is pinned to its git tag `v4.33.0`
    (https://github.com/marcellop71/CA; toolchain, batteries and Cli at v4.33.0).
-   declbuild-meta is still a sibling-checkout path require:
-     ../../proofinity/declbuild-meta  https://github.com/proofinity-it/declbuild-meta
-                                      @ 63734c0 + an uncommitted v4.33.0 bump
-   LeanArchitect has no v4.33.0 tag, so it is pinned to main; re-pin to a tag when one
-   appears.  All three declare lean-toolchain v4.33.0.
-   NOTE: EM's mathematics (`lean_lib EM` minus `EM/Meta/{Registry,Strategies,Blueprint}`)
-   depends only on Mathlib; those three files carry the registry tooling. -/
+   LeanArchitect has no v4.33.0 tag, so it is pinned to main; re-pin to a tag when one appears.
+   NOTE: EM's mathematics (`lean_lib EM`) depends only on Mathlib; the registry tooling
+   (`EM/Meta/{Registry,Blueprint}.lean`) is the separate `lean_lib EMRegistry`. -/
 require ca from git
   "https://github.com/marcellop71/CA" @ "v4.33.0"
 
@@ -31,8 +27,6 @@ require zlogLean from git
 require arrowLean from git
   "https://github.com/marcellop71/arrow-lean" @ "v4.33.0"
 
-require declbuildMeta from "../../proofinity/declbuild-meta"
-
 -- `require mathlib` LAST: Mathlib's transitive pins (batteries, Cli, …) must take
 -- precedence, otherwise `lake exe cache get` computes wrong hashes and the Mathlib
 -- olean cache cannot be fetched.
@@ -42,6 +36,6 @@ require mathlib from git
 @[default_target]
 lean_lib EM where
 
-/-- Registry / tooling (needs CA, declbuild-meta, LeanArchitect); `EM` itself needs only Mathlib. -/
+/-- Registry / tooling (needs CA and LeanArchitect); `EM` itself needs only Mathlib. -/
 @[default_target]
 lean_lib EMRegistry where
