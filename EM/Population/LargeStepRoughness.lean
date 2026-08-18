@@ -1391,6 +1391,368 @@ theorem far_band_product_ge (y : ℕ) (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j)
   rw [heq]
   exact far_band_product_ge_of_mass _ y hnd hk hmass
 
+/-! ## 8.  Slice 4 — M3, M4 and the pathwise compensator
+
+Final assembly of the deterministic core of **(LS)**.  Verified statement list
+`agents/state/findings_ls_verification.md` §2.4, §2.5(d), §2.7, §4 Group 5.
+
+The moving cut is the *type-measurable* large-step threshold
+`y_k = Cc · k · log₂ c_k`, where `c_k` is the cofactor accumulated by the first
+`k` multipliers; `stepSurvival` is the survival product at that cut.  The two
+theorems are
+
+* **M4** (`stepSurvival_ge`): on an *admissible* step the survival product is at
+  least the absolute constant `c₁ = e^{-250}`;
+* **M3** (`many_admissible`): at least half of the first `n` steps are
+  admissible;
+
+and together they give **★** (`pathwise_compensator`). -/
+
+/-- The **large-step threshold** `y_k = Cc · k · log₂ (c_k)` (cofactor form:
+`c_k` is type-measurable, so the cut does not peek at the orbit's future). -/
+def bigThreshold (q m Cc k : ℕ) : ℕ := Cc * k * Nat.log 2 (seedCofactorAvoid q m k)
+
+/-- The survival product `S_k` at the moving threshold `y_k`. -/
+noncomputable def stepSurvival (q m Cc k : ℕ) : ℝ := survival q m (bigThreshold q m Cc k) k
+
+/-- The **absolute per-step survival constant** of the deterministic core.
+
+`c₁ = e^{-250}`: `e^{-40}` from the near band (B7 at the admissibility budget
+`T = 20`) times `e^{-210}` from the far band (B5 under the `log Y ≤ n²`
+policy).  Only its positivity and its absoluteness matter downstream. -/
+noncomputable def c₁ : ℝ := Real.exp (-(250 : ℝ))
+
+theorem c₁_def : c₁ = Real.exp (-(250 : ℝ)) := rfl
+
+theorem c₁_pos : 0 < c₁ := Real.exp_pos _
+
+/-- Step `k < n` is **admissible** when it is `n`-good, not too early
+(`n ≤ 100 k`, the cutoff that keeps `log (2k+1) ≥ log n - O(1)`), and its
+near-band escape mass is within the Markov budget `20`. -/
+def Admissible (q m n k : ℕ) : Prop :=
+  Good q m n k ∧ n ≤ 100 * k ∧ nearMass q m k ≤ 20
+
+/-! ### 8.1  Cofactor size micro-lemmas -/
+
+/-- A nondegenerate orbit doubles the cofactor at every step. -/
+theorem two_pow_le_cofactor (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) :
+    2 ^ k ≤ seedCofactorAvoid q m k := by
+  induction k with
+  | zero => simp
+  | succ t ih =>
+      have ht : 2 ^ t ≤ seedCofactorAvoid q m t := ih fun j hj => hnd j (by omega)
+      have h2 : 2 ≤ genSeqAvoid q m t := hnd t (by omega)
+      rw [seedCofactorAvoid_succ, pow_succ]
+      exact Nat.mul_le_mul ht h2
+
+/-- Under the type bound `p̃(j) ≤ Y` the cofactor is at most `Y^k`. -/
+theorem cofactor_le_pow {Y : ℕ} (hY : ∀ j < k, genSeqAvoid q m j ≤ Y) :
+    seedCofactorAvoid q m k ≤ Y ^ k := by
+  induction k with
+  | zero => simp
+  | succ t ih =>
+      have ht : seedCofactorAvoid q m t ≤ Y ^ t := ih fun j hj => hY j (by omega)
+      have h2 : genSeqAvoid q m t ≤ Y := hY t (by omega)
+      rw [seedCofactorAvoid_succ, pow_succ]
+      exact Nat.mul_le_mul ht h2
+
+/-- `k ≤ log₂ c_k` for a nondegenerate orbit. -/
+theorem le_log_cofactor (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) :
+    k ≤ Nat.log 2 (seedCofactorAvoid q m k) :=
+  Nat.le_log_of_pow_le (by norm_num) (two_pow_le_cofactor hnd)
+
+/-! ### 8.2  M4 — the per-step lower bound -/
+
+/-- **M4 — the per-step survival lower bound.**
+
+On an admissible step of a nondegenerate orbit obeying the type bound
+`p̃(j) ≤ Y` and the policy `log Y ≤ n²`, the survival product at the moving
+threshold `y_k = Cc·k·log₂ c_k` is at least the absolute constant `c₁ = e^{-250}`.
+
+Structure: `S_k = (∏ near)·(∏ far)` (B8, applicable because `y_k ≥ k² ≥ 2k+2`),
+the near factor is `≥ e^{-40}` by B7 at `T = 20`, and the far factor is
+`≥ exp(-8 log 4 (2 + log y_k)/log(2k+1)) ≥ e^{-210}` by B5, because the policy
+gives `log y_k ≤ 1 + 5 log n` while the cutoff `n ≤ 100 k` gives
+`log (2k+1) ≥ log n - 49`.
+
+Verified statement list `findings_ls_verification.md` §2.5(d), §4 Group 5. -/
+theorem stepSurvival_ge {Y Cc : ℕ} (hq : q.Prime) (hm : 1 ≤ m) (hCc : 1 ≤ Cc)
+    (hCcap : (Cc : ℝ) ≤ (n : ℝ))
+    (hnd : ∀ j < n, 2 ≤ genSeqAvoid q m j) (hY : ∀ j < n, genSeqAvoid q m j ≤ Y)
+    (hpol : Real.log Y ≤ (n : ℝ) ^ 2) (hn : Real.exp 600 ≤ (n : ℝ))
+    (hkn : k < n) (hadm : Admissible q m n k) :
+    c₁ ≤ stepSurvival q m Cc k := by
+  obtain ⟨hgood, hcut, hmass⟩ := hadm
+  -- size of `n`
+  have hn262 : (262144 : ℝ) ≤ (n : ℝ) := by
+    have he : (2 : ℝ) ≤ Real.exp 1 := by have := Real.add_one_le_exp (1 : ℝ); linarith
+    have hp1 : ((2 : ℝ)) ^ (18 : ℕ) ≤ (Real.exp 1) ^ (18 : ℕ) :=
+      pow_le_pow_left₀ (by norm_num) he 18
+    have hp2 : (Real.exp 1) ^ (18 : ℕ) = Real.exp 18 := by rw [Real.exp_one_pow]; norm_num
+    have hp3 : Real.exp 18 ≤ Real.exp 600 := Real.exp_le_exp.mpr (by norm_num)
+    have hp4 : ((2 : ℝ)) ^ (18 : ℕ) = 262144 := by norm_num
+    linarith
+  have hnnat : 262144 ≤ n := by exact_mod_cast hn262
+  have hn0 : (0 : ℝ) < (n : ℝ) := by linarith
+  have hlogn : (600 : ℝ) ≤ Real.log n := by
+    have h := Real.log_le_log (Real.exp_pos 600) hn
+    rwa [Real.log_exp] at h
+  have hk3 : 3 ≤ k := by omega
+  have hk1 : 1 ≤ k := by omega
+  have hnd' : ∀ j < k, 2 ≤ genSeqAvoid q m j := fun j hj => hnd j (by omega)
+  -- the threshold, unfolded
+  have hbt : bigThreshold q m Cc k = Cc * k * Nat.log 2 (seedCofactorAvoid q m k) := rfl
+  set L := Nat.log 2 (seedCofactorAvoid q m k) with hL
+  have hkL : k ≤ L := le_log_cofactor hnd'
+  -- B8 applies: `y_k ≥ k² ≥ 2k+2`
+  have hyge : 2 * k + 2 ≤ bigThreshold q m Cc k := by
+    have h1 : k * k ≤ Cc * k * L := by
+      calc k * k ≤ k * L := Nat.mul_le_mul_left k hkL
+        _ = 1 * k * L := by ring
+        _ ≤ Cc * k * L := Nat.mul_le_mul_right L (Nat.mul_le_mul_right k hCc)
+    have hkk : 2 * k + 2 ≤ k * k := by nlinarith
+    rw [hbt]; omega
+  have hy1 : (1 : ℝ) ≤ ((bigThreshold q m Cc k : ℕ) : ℝ) := by
+    have : (1 : ℕ) ≤ bigThreshold q m Cc k := by omega
+    exact_mod_cast this
+  -- `log y_k ≤ 1 + 5 log n`
+  have hY2 : 2 ≤ Y := le_trans (hnd 0 (by omega)) (hY 0 (by omega))
+  have hYR : (2 : ℝ) ≤ (Y : ℝ) := by exact_mod_cast hY2
+  have hlogY0 : 0 ≤ Real.log Y := Real.log_nonneg (by linarith)
+  have hc0 : seedCofactorAvoid q m k ≠ 0 := by
+    have := seedCofactorAvoid_pos q m k; omega
+  have hLpow : (2 : ℝ) ^ L ≤ (seedCofactorAvoid q m k : ℝ) := by
+    have := Nat.pow_log_le_self 2 hc0
+    rw [← hL] at this
+    exact_mod_cast this
+  have hcY : (seedCofactorAvoid q m k : ℝ) ≤ (Y : ℝ) ^ k := by
+    have := cofactor_le_pow (Y := Y) (k := k) (fun j hj => hY j (by omega))
+    exact_mod_cast this
+  have hlogc : (L : ℝ) * Real.log 2 ≤ (k : ℝ) * Real.log Y := by
+    have h1 : Real.log ((2 : ℝ) ^ L) ≤ Real.log ((Y : ℝ) ^ k) :=
+      Real.log_le_log (by positivity) (le_trans hLpow hcY)
+    rwa [Real.log_pow, Real.log_pow] at h1
+  have hlog2 : (1 : ℝ) / 2 ≤ Real.log 2 := by
+    have h1 : (1 : ℝ) / 2 ≤ Real.exp (-(1 / 2 : ℝ)) := by
+      have := Real.add_one_le_exp (-(1 / 2 : ℝ)); linarith
+    have h2 : Real.exp (-(1 / 2 : ℝ)) * Real.exp ((1 / 2 : ℝ)) = 1 := by
+      rw [← Real.exp_add]; simp
+    have hpos : (0 : ℝ) < Real.exp ((1 / 2 : ℝ)) := Real.exp_pos _
+    have h3 : Real.exp ((1 / 2 : ℝ)) ≤ 2 := by
+      nlinarith [mul_nonneg (by linarith : (0 : ℝ) ≤ Real.exp (-(1 / 2 : ℝ)) - 1 / 2) hpos.le]
+    have h4 := Real.log_le_log (Real.exp_pos (1 / 2 : ℝ)) h3
+    rwa [Real.log_exp] at h4
+  have hkR : (k : ℝ) ≤ (n : ℝ) := by exact_mod_cast hkn.le
+  have hLnn : (0 : ℝ) ≤ (L : ℝ) := by positivity
+  have hLbound : (L : ℝ) ≤ 2 * (n : ℝ) ^ 3 := by
+    have h1 : (k : ℝ) * Real.log Y ≤ (n : ℝ) * (n : ℝ) ^ 2 :=
+      mul_le_mul hkR hpol hlogY0 (by linarith)
+    have h2 : (L : ℝ) * (1 / 2) ≤ (L : ℝ) * Real.log 2 :=
+      mul_le_mul_of_nonneg_left hlog2 hLnn
+    have h3 : (n : ℝ) * (n : ℝ) ^ 2 = (n : ℝ) ^ 3 := by ring
+    linarith
+  have hyR : ((bigThreshold q m Cc k : ℕ) : ℝ) ≤ 2 * (n : ℝ) ^ 5 := by
+    have hcast : ((bigThreshold q m Cc k : ℕ) : ℝ) = (Cc : ℝ) * (k : ℝ) * (L : ℝ) := by
+      rw [hbt]; push_cast; ring
+    rw [hcast]
+    have h1 : (Cc : ℝ) * (k : ℝ) ≤ (n : ℝ) * (n : ℝ) :=
+      mul_le_mul hCcap hkR (by positivity) (by linarith)
+    calc (Cc : ℝ) * (k : ℝ) * (L : ℝ) ≤ ((n : ℝ) * (n : ℝ)) * (2 * (n : ℝ) ^ 3) :=
+          mul_le_mul h1 hLbound hLnn (by positivity)
+      _ = 2 * (n : ℝ) ^ 5 := by ring
+  have hLY : Real.log ((bigThreshold q m Cc k : ℕ) : ℝ) ≤ 1 + 5 * Real.log n := by
+    have h1 := Real.log_le_log (by linarith : (0 : ℝ) < ((bigThreshold q m Cc k : ℕ) : ℝ)) hyR
+    have h2 : Real.log (2 * (n : ℝ) ^ 5) = Real.log 2 + 5 * Real.log n := by
+      rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow]; push_cast; ring
+    have h3 : Real.log 2 ≤ 1 := by
+      have := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2); linarith
+    linarith
+  -- `log (2k+1) ≥ log n - 49`
+  have hLK : Real.log n - 49 ≤ Real.log ((2 * k + 1 : ℕ) : ℝ) := by
+    have hcutR : (n : ℝ) ≤ 100 * (k : ℝ) := by exact_mod_cast hcut
+    have hkn50 : (n : ℝ) / 50 ≤ ((2 * k + 1 : ℕ) : ℝ) := by push_cast; linarith
+    have h1 := Real.log_le_log (by positivity : (0 : ℝ) < (n : ℝ) / 50) hkn50
+    have h2 : Real.log ((n : ℝ) / 50) = Real.log n - Real.log 50 :=
+      Real.log_div (by linarith) (by norm_num)
+    have h3 : Real.log 50 ≤ 49 := by
+      have := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 50); linarith
+    linarith
+  have hlogKpos : (0 : ℝ) < Real.log ((2 * k + 1 : ℕ) : ℝ) := by linarith
+  -- the far-band exponent is at most `210`
+  have hLYnn : (0 : ℝ) ≤ Real.log ((bigThreshold q m Cc k : ℕ) : ℝ) := Real.log_nonneg hy1
+  have hEbound :
+      8 * Real.log 4 * (2 + Real.log ((bigThreshold q m Cc k : ℕ) : ℝ))
+        / Real.log ((2 * k + 1 : ℕ) : ℝ) ≤ 210 := by
+    rw [div_le_iff₀ hlogKpos]
+    have h4 : Real.log 4 ≤ 2 := log_four_le_two
+    have h5 : 8 * Real.log 4 * (2 + Real.log ((bigThreshold q m Cc k : ℕ) : ℝ))
+        ≤ 16 * (2 + Real.log ((bigThreshold q m Cc k : ℕ) : ℝ)) := by nlinarith
+    linarith
+  -- assemble
+  have hnear := near_band_product_ge 20 hq hm hnd' hkn hgood hmass
+  have hfar := far_band_product_ge (bigThreshold q m Cc k) hnd' hk1
+  have hfar' : Real.exp (-(210 : ℝ))
+      ≤ ∏ r ∈ farBand q (bigThreshold q m Cc k) k, (1 - rho q m r k) :=
+    le_trans (Real.exp_le_exp.mpr (by linarith)) hfar
+  have hnearpos : (0 : ℝ) ≤ ∏ r ∈ nearBand q k, (1 - rho q m r k) :=
+    le_trans (Real.exp_pos _).le hnear
+  have hkey : c₁
+      ≤ (∏ r ∈ nearBand q k, (1 - rho q m r k))
+        * (∏ r ∈ farBand q (bigThreshold q m Cc k) k, (1 - rho q m r k)) := by
+    have hprod : c₁ = Real.exp (-(2 * (20 : ℝ))) * Real.exp (-(210 : ℝ)) := by
+      rw [c₁_def, ← Real.exp_add]; norm_num
+    rw [hprod]
+    exact mul_le_mul hnear hfar' (Real.exp_pos _).le hnearpos
+  rw [stepSurvival, survival_eq_near_mul_far q m k hyge]
+  exact hkey
+
+/-! ### 8.3  M3 — at least half of the steps are admissible -/
+
+/-- **M3 — the admissible count.**  For a nondegenerate `q`-free orbit, at least
+half of the first `n` steps are admissible, once `n` exceeds an absolute
+threshold.
+
+Bookkeeping: `range n` minus three bad sets — non-good steps (`≤ π(2n) ≤ n/50`
+by F2c + F2d), early steps (`≤ n/100 + 1`), and good steps whose near-band mass
+exceeds `20` (`≤ (π(2n) + 2n log 4)/20 ≤ n/1000 + n/5` by the deterministic
+Markov count M2 and the charge budget F1h).  Total bad `≤ 0.232 n + 1 < n/2`.
+
+Verified statement list `findings_ls_verification.md` §2.4, §4 Group 5. -/
+theorem many_admissible :
+    ∃ n₂ : ℕ, ∀ q m n : ℕ, q.Prime → 1 ≤ m → n₂ ≤ n →
+      (∀ j < n, 2 ≤ genSeqAvoid q m j) →
+      (n : ℝ) / 2 ≤ (((Finset.range n).filter (fun k => Admissible q m n k)).card : ℝ) := by
+  classical
+  obtain ⟨n₀, h₀⟩ := primeCount_small
+  refine ⟨max n₀ 262144, fun q m n hq hm hn hnd => ?_⟩
+  have hn₀ : n₀ ≤ n := le_trans (le_max_left _ _) hn
+  have hnbig : 262144 ≤ n := le_trans (le_max_right _ _) hn
+  have hpc := h₀ n hn₀
+  have hnR : (262144 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hnbig
+  set A := (Finset.range n).filter (fun k => Admissible q m n k) with hA
+  set B1 := (Finset.range n).filter (fun k => genSeqAvoid q m k < 2 * n) with hB1
+  set B2 := (Finset.range n).filter (fun k => 100 * k < n) with hB2
+  set B3 := (Finset.range n).filter
+    (fun k => Good q m n k ∧ (20 : ℝ) < nearMass q m k) with hB3
+  -- the complement of the admissible set is covered by the three bad sets
+  have hsub : (Finset.range n).filter (fun k => ¬ Admissible q m n k) ⊆ B1 ∪ B2 ∪ B3 := by
+    intro x hx
+    obtain ⟨hxr, hxa⟩ := Finset.mem_filter.mp hx
+    by_cases hg : Good q m n x
+    · by_cases hc : n ≤ 100 * x
+      · have hmass : (20 : ℝ) < nearMass q m x := by
+          by_contra h
+          exact hxa ⟨hg, hc, le_of_not_gt h⟩
+        exact Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨hxr, hg, hmass⟩)
+      · exact Finset.mem_union_left _
+          (Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨hxr, by omega⟩))
+    · refine Finset.mem_union_left _
+        (Finset.mem_union_left _ (Finset.mem_filter.mpr ⟨hxr, ?_⟩))
+      have hg' : ¬ (2 * n ≤ genSeqAvoid q m x) := hg
+      omega
+  -- the three bad counts
+  have hc1 : (B1.card : ℝ) ≤ (n : ℝ) / 50 := by
+    have h := few_small_multipliers hq hm (2 * n) hnd
+    have h' : (B1.card : ℝ) ≤ (((Finset.range (2 * n)).filter Nat.Prime).card : ℝ) := by
+      exact_mod_cast h
+    linarith
+  have hc2 : (B2.card : ℝ) ≤ (n : ℝ) / 100 + 1 := by
+    have hsub2 : B2 ⊆ Finset.range (n / 100 + 1) := by
+      intro x hx
+      have hx' := Finset.mem_filter.mp hx
+      exact Finset.mem_range.mpr (by omega)
+    have h := Finset.card_le_card hsub2
+    rw [Finset.card_range] at h
+    have hdm : n / 100 * 100 ≤ n := Nat.div_mul_le_self n 100
+    have hdmR : ((n / 100 : ℕ) : ℝ) * 100 ≤ (n : ℝ) := by exact_mod_cast hdm
+    have hcast : (B2.card : ℝ) ≤ ((n / 100 : ℕ) : ℝ) + 1 := by exact_mod_cast h
+    linarith
+  have hc3 : (B3.card : ℝ) ≤ (n : ℝ) / 1000 + (n : ℝ) / 5 := by
+    have hmk := markov_count_le q m n 20
+    have hcb := chargeBudget_le hq hm hnd (2 * n)
+    have h4 : Real.log 4 ≤ 2 := log_four_le_two
+    have hnn : (0 : ℝ) ≤ (n : ℝ) := by linarith
+    have hcast : ((2 * n : ℕ) : ℝ) = 2 * (n : ℝ) := by push_cast; ring
+    have hstep : ((2 * n : ℕ) : ℝ) * Real.log 4 ≤ 4 * (n : ℝ) := by
+      rw [hcast]; nlinarith
+    linarith
+  -- the split
+  have hsplit : A.card + ((Finset.range n).filter (fun k => ¬ Admissible q m n k)).card = n := by
+    have h := Finset.card_filter_add_card_filter_not
+      (s := Finset.range n) (fun k => Admissible q m n k)
+    rw [Finset.card_range] at h
+    exact h
+  have hbad : (((Finset.range n).filter (fun k => ¬ Admissible q m n k)).card : ℝ)
+      ≤ (B1.card : ℝ) + (B2.card : ℝ) + (B3.card : ℝ) := by
+    have h := Finset.card_le_card hsub
+    have h2 := Finset.card_union_le (B1 ∪ B2) B3
+    have h3 := Finset.card_union_le B1 B2
+    have h4 : ((Finset.range n).filter (fun k => ¬ Admissible q m n k)).card
+        ≤ B1.card + B2.card + B3.card := by omega
+    exact_mod_cast h4
+  have hAcard : (A.card : ℝ)
+      = (n : ℝ) - (((Finset.range n).filter (fun k => ¬ Admissible q m n k)).card : ℝ) := by
+    have h : (A.card : ℝ)
+        + (((Finset.range n).filter (fun k => ¬ Admissible q m n k)).card : ℝ) = (n : ℝ) := by
+      exact_mod_cast hsplit
+    linarith
+  linarith
+
+/-! ### 8.4  ★ — the pathwise compensator -/
+
+/-- **★ The pathwise compensator.**
+
+*For every nondegenerate `q`-free greedy orbit whose multipliers obey the type
+bound `p̃(j) ≤ Y` with the policy `log Y ≤ n²`, the survival products at the
+moving large-step threshold `y_k = Cc·k·log₂ c_k` add up to at least `(c₁/2)·n`
+over the first `n` steps, once `n` exceeds one absolute threshold `n₀`.*
+
+This is the headline theorem of the deterministic core of **(LS)**: a *linear*
+lower bound for the compensator `∑_{k<n} S_k` of the large-step martingale.  It
+is entirely **deterministic and per-path** — no probability, no character sums,
+no equidistribution input — and the constant `c₁ = e^{-250}` and the threshold
+`n₀` are absolute (in particular independent of `q`, of the seed `m`, of the
+type bound `Y` and of the threshold constant `Cc`).
+
+Proof: restrict the sum to the admissible steps (all terms are nonnegative,
+`survival_nonneg`), bound each admissible term below by `c₁` (**M4**,
+`stepSurvival_ge`), and count the admissible steps (**M3**,
+`many_admissible`).
+
+Verified statement list `agents/state/findings_ls_verification.md` §2.5(d),
+§2.7, §4 Group 5 (★).  The probabilistic consumption of this bound — the tree
+Chernoff estimate turning the compensator into a large-deviation statement — is
+the next slice; it is *not* used here. -/
+theorem pathwise_compensator :
+    ∃ n₀ : ℕ, ∀ (q m Y Cc n : ℕ), q.Prime → 1 ≤ m → 1 ≤ Cc → (Cc : ℝ) ≤ (n : ℝ) →
+      (∀ j < n, 2 ≤ genSeqAvoid q m j) → (∀ j < n, genSeqAvoid q m j ≤ Y) →
+      Real.log Y ≤ (n : ℝ) ^ 2 → n₀ ≤ n →
+      c₁ / 2 * (n : ℝ) ≤ ∑ k ∈ Finset.range n, stepSurvival q m Cc k := by
+  classical
+  obtain ⟨n₂, h₂⟩ := many_admissible
+  refine ⟨max n₂ ⌈Real.exp 600⌉₊, fun q m Y Cc n hq hm hCc hCcap hnd hY hpol hn => ?_⟩
+  have hn2 : n₂ ≤ n := le_trans (le_max_left _ _) hn
+  have hceil : ⌈Real.exp 600⌉₊ ≤ n := le_trans (le_max_right _ _) hn
+  have hexp : Real.exp 600 ≤ (n : ℝ) :=
+    le_trans (Nat.le_ceil _) (by exact_mod_cast hceil)
+  have hcard := h₂ q m n hq hm hn2 hnd
+  set A := (Finset.range n).filter (fun k => Admissible q m n k) with hA
+  have hAsub : A ⊆ Finset.range n := Finset.filter_subset _ _
+  have hnonneg : ∀ i ∈ Finset.range n, i ∉ A → 0 ≤ stepSurvival q m Cc i := by
+    intro i hi _
+    exact survival_nonneg hq hm (fun j hj => hnd j (lt_trans hj (Finset.mem_range.mp hi))) _
+  have h1 : ∑ k ∈ A, stepSurvival q m Cc k ≤ ∑ k ∈ Finset.range n, stepSurvival q m Cc k :=
+    Finset.sum_le_sum_of_subset_of_nonneg hAsub hnonneg
+  have h2 : ∑ _k ∈ A, c₁ ≤ ∑ k ∈ A, stepSurvival q m Cc k := by
+    refine Finset.sum_le_sum fun k hk => ?_
+    obtain ⟨hkr, hka⟩ := Finset.mem_filter.mp hk
+    exact stepSurvival_ge hq hm hCc hCcap hnd hY hpol hexp (Finset.mem_range.mp hkr) hka
+  rw [Finset.sum_const, nsmul_eq_mul] at h2
+  have h3 : (n : ℝ) / 2 * c₁ ≤ (A.card : ℝ) * c₁ :=
+    mul_le_mul_of_nonneg_right hcard c₁_pos.le
+  have h4 : c₁ / 2 * (n : ℝ) = (n : ℝ) / 2 * c₁ := by ring
+  linarith
+
 end LargeStepRoughness
 
 end
