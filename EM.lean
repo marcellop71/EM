@@ -143,6 +143,7 @@ import EM.Population.HittingSetStructure
 import EM.Population.InfiniteM
 import EM.Population.ReciprocalSum
 import EM.Population.RigidityMaster
+import EM.Population.SeedCapture
 import EM.Population.SeedTypes
 import EM.Population.SylvesterTower
 import EM.Population.SpectralConspiracy
