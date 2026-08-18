@@ -64,6 +64,15 @@ If a proposed approach maps onto any entry in the catalog, do NOT dispatch an ag
 - **paper-writer**: Updates the paper (in `paper/` directory, split across `main.tex` and section files). Dispatch AFTER the formalizer lands new theorems.
 - **code-stylist**: Deep code quality — simplifies proofs by finding better Mathlib lemmas, reorganizes structure, enforces Mathlib conventions. Dispatch with a specific file or pattern. May change proof strategies but never theorem statements.
 
+## Coordinator model
+
+The coordinator may run on any Claude model: `coordinate --model claude:fable`
+(Claude Fable 5, the strongest reasoner — preferred for mathematics sessions),
+`claude:opus` (default), or `claude:sonnet`.  Sub-agents keep the models fixed
+in `agents/coordinator.py::_build_agents` unless routed to the DGX (below).
+When you run on `claude:fable`, do the mathematical thinking yourself and hand
+specialists fully specified, self-contained tasks.
+
 ## DGX Local Models (when routed via --dgx-agents)
 
 The DGX Spark (<DGX_HOST>) serves two local models, addressable as

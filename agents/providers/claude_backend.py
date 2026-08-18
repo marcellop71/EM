@@ -26,6 +26,23 @@ from . import AgentSpec, ProviderBackend
 # 50 MB buffer — Claude Code's system context is large.
 _MAX_BUF = 50 * 1024 * 1024
 
+# Short aliases accepted after the ``claude:`` prefix.  The CLI understands
+# ``opus``/``sonnet``/``haiku``/``fable`` natively; ``fable`` is mapped to its
+# full id so ``--model claude:fable`` works regardless of CLI alias support.
+# ``claude:fable`` is a valid COORDINATOR model (``coordinate --model claude:fable``).
+_CLAUDE_MODEL_ALIASES: dict[str, str] = {
+    "fable": "claude-fable-5",
+    "fable-5": "claude-fable-5",
+    "opus": "opus",
+    "sonnet": "sonnet",
+    "haiku": "haiku",
+}
+
+
+def resolve_claude_model(name: str) -> str:
+    """Map a short alias (``fable``, ``opus``, ...) to what the CLI expects."""
+    return _CLAUDE_MODEL_ALIASES.get(name, name)
+
 
 class ClaudeBackend:
     """ProviderBackend for the Claude Agent SDK (claude-agent-sdk)."""
@@ -39,7 +56,7 @@ class ClaudeBackend:
         """Build ClaudeAgentOptions from an AgentSpec."""
         tools = spec.tools
         opts = ClaudeAgentOptions(
-            model=spec.model_name,
+            model=resolve_claude_model(spec.model_name),
             system_prompt=spec.system_prompt,
             allowed_tools=tools,
             agents=agents,
