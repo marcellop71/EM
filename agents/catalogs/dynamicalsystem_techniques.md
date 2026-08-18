@@ -316,3 +316,25 @@ CORRECTIONS** (C1–C6, full report `agents/state/findings_ls_verification.md`).
   F1f–F1h `chargeBudget_le`; M1/M2). Remaining: B4/B5 (slice 3, dispatched), M3/M4 +
   ★`pathwise_compensator` assembly, Group 6 tree Chernoff, Group 7 tail, then Lemma D +
   Theorem C. All statements per the §4 list in the verification report.
+
+## Session 310 addendum (2026-08-19) — (LS+) IN LEAN; T7.5/T7.6/T7.7 all landed
+
+Commit f391732, four new files, 0 sorry:
+- **T7.5 → FULLY IN LEAN** including ★`pathwise_compensator` (Session 309 slice 4) and now
+  its probabilistic consumption. Lean constant `c₁ = exp(−250)` (absolute, crude; do NOT
+  quote the report's exp(−35/−36) as the Lean value).
+- **T7.6 (type measure / selection law) → PROVED** (`SelectionLaw.lean`): type cells over
+  `modulus q Y = ∏_{r ∈ bandUpTo q Y} r` (q excluded — the q-coordinate stays CRT-free for
+  Lemma C), dependent-family CRT counting `card_filter_crt`, EXACT
+  `selection_law : #(cell ∩ Survives) = survival·#cell`.
+- **T7.7 → PROVED** (`TreeChernoff.lean`, abstract, Mathlib-only): `exp_supermartingale`,
+  `chernoff_quarter` rate `exp(−(3/8)v)`. C6 handled by LOCALIZATION (`chernoff_*_local`
+  — bad set ∩ {v ≤ compensator}; no stopped process needed). The stopped-supermartingale
+  construction in the verification report is thereby unnecessary in Lean.
+- **(LS+) PROVED** (`LSPlus.ls_plus`): `#{m : < (c₁/8)n big steps} ≤ M_Y·e^{−(3/16)c₁n} +
+  #{degenerate-prefix seeds}` over one period, under the Y-policy `log Y ≤ n²` and the
+  threshold hypothesis `y_k ≤ Y` (D5c discharge lemma pending).
+- **Lower Mertens toolbox landed** (`MertensLower.lean`): `mertens_lower` (const 13),
+  `window_recip_lower` (const 16) — TL2/TL3's analytic input is DONE.
+Remaining for a.a. GenMC(q): Group 7 tail ASSEMBLY (bookkeeping + one Markov exclusion),
+D5c, Lemma D, Theorem C. Then §G (q-uniformity) is the genuinely open frontier.

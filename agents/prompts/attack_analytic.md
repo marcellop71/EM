@@ -638,11 +638,20 @@ Standing facts (do not re-derive, do not contradict):
   near band r ≤ 2k+1; Y is a POLICY log Y(n) ≍ n² with cutoff k ≥ n/log n (NEVER "∃Y₀ ∀Y≥Y₀"
   — quantifier-order filter); the block-chaining substitute is INVALID (use the finite-tree
   exponential supermartingale); stop at σ; c₁ := exp(−36), T = 6.
-- Remaining queue, in order: (1) M3/M4 + pathwise_compensator assembly; (2) Group 6 tree
-  Chernoff (T1–T3); (3) Group 7 tail estimate (TL1–TL3, ~200 lines, tail ≲ log n/n);
-  (4) Lemma D with the repaired threshold y_k = C·k·log₂c_k and first-moment bag exclusion;
-  (5) Theorem C in the q-free world (K₀ from π(q−1), chaining by stopping times, THREE error
-  terms with order of limits X→∞, Y-policy, K→∞, C→∞, n→∞); (6) WP2 selection law.
+- **Session 310 status (2026-08-19, commit f391732):** pathwise_compensator, WP2 selection
+  law (EXACT, `SelectionLaw.selection_law`), Group 6 tree Chernoff (`TreeChernoff`,
+  abstract + localized), the lower Mertens toolbox (`MertensLower.mertens_lower` const 13,
+  `window_recip_lower` const 16), and the honest **(LS+)** (`LSPlus.ls_plus`, rate
+  `exp(−(3/16)c₁n)` + additive degenerate-tail term) are ALL PROVED IN LEAN.
+  NOTE: the Lean constant is `c₁ = exp(−250)` (crude but absolute; the paper value
+  exp(−35) is not what compiled — never quote exp(−35/−36) as the Lean constant).
+- Remaining queue, in order: (1) Group 7 tail assembly TL1–TL3 (analytic input
+  `window_recip_lower` already landed; per-cell first moments via `selection_law`;
+  target tail ≲ log n/n at log Y = n², feeds ls_plus's additive term); (2) D5c policy
+  lemma (`bigThreshold ≤ Y` from `n² ≤ log Y`); (3) Lemma D with the repaired threshold
+  y_k = C·k·log₂c_k and first-moment bag exclusion; (4) Theorem C in the q-free world
+  (K₀ from π(q−1), chaining by stopping times, THREE error terms with order of limits
+  X→∞, Y-policy, K→∞, C→∞, n→∞).
 - Scope honesty: this yields **a.a. GenMC(q) per fixed q**. The simultaneous form needs
   q-uniform rates (natural density not countably additive) — open, see §G of findings.
   No claim about the orbit of 2; #90/#117 are not touched and must not be invoked against it.

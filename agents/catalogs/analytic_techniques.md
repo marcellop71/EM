@@ -451,3 +451,17 @@ this as evidence that "decide the Gap, don't hunt Detection" is the productive p
   are only `weightedPNTinAP_asymp_proved` + θ ≤ (log4)x + prime-power stripping; A = 2;
   chaining in the q-free world with K₀ built from π(q−1); statement shape now carries the
   Y-policy (not ∃Y₀∀Y) per C3.
+
+## Session 310 addendum (2026-08-19) — lower Mertens landed; (LS+) proved; queue advanced
+
+- **NEW TOOL (PROVED, `EM/Population/MertensLower.lean`)**: `mertens_lower`
+  (`log n − 13 ≤ Σ_{p≤n} log p/p`, elementary via Legendre + `n^n ≤ eⁿn!`; first lower
+  Mertens in the repo, not in Mathlib) and `window_recip_lower`
+  (`log log Y − log log z − 16 ≤ Σ_{z<r≤Y} 1/r`, discrete Abel against two-sided
+  `M(t) = log t + O(1)`). Use these for ALL windowed reciprocal lower bounds; the
+  two-Mertens rule still governs which FORM applies where.
+- **(LS+) proved** (`LSPlus.ls_plus`, rate `exp(−(3/16)c₁n)`, Lean `c₁ = exp(−250)`),
+  via the exact selection law (`SelectionLaw.selection_law`) + abstract tree Chernoff
+  (`TreeChernoff`, C6 by localization). WP2 and Group 6 are CLOSED.
+- Queue now: Group 7 tail assembly (TL1–TL3, analytic input done), D5c policy lemma,
+  Lemma D (repaired shapes, A = 2), Theorem C ((e-1)/(e-2)/(e-3) shapes with Y-policy).

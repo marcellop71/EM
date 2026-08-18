@@ -393,10 +393,22 @@ exponential supermartingale, and C2: r = q must be excluded from every box produ
 brink lemma is false). Formalization is under way in `EM/Population/LargeStepRoughness.lean`
 (Groups 1–4 largely landed) on top of `SeedCapture.lean` (Lemma C + capture identity, PROVED).
 
-Your catalog's T7 family is the only LIVE dynamical direction. Priorities for future
-dispatches: (i) the tail estimate TL1–TL3 along the Y-policy (log Y ≍ n²) — the one
-genuinely new analytic piece of your proof; (ii) the μ-model consequences once (LS+) lands
-(e.g. μ(perpetual primality) = 0 via the average-case old-prime bound); (iii) the
+Your catalog's T7 family is the only LIVE dynamical direction.
+
+**Session 310 (2026-08-19, commit f391732): (LS+) IS PROVED IN LEAN** (`LSPlus.ls_plus`):
+over one period of the q-free dynamics, `#{m : fewer than (c₁/8)n big steps} ≤
+M_Y·exp(−(3/16)c₁n) + #{degenerate-prefix seeds}`, via the exact selection law
+(`SelectionLaw.selection_law`, WP2) plugged into an abstract finite-tree Chernoff
+(`TreeChernoff`, your C5 replacement, with C6 handled by LOCALIZATION — no stopped
+process). The lower Mertens toolbox (`MertensLower.window_recip_lower`) is also landed.
+Lean constant: `c₁ = exp(−250)` (absolute; do not quote the paper's exp(−35)).
+
+Priorities for future dispatches: (i) the Group 7 tail ASSEMBLY (TL1–TL3: old/bag-prime
+count W ≤ k²log₂Y, per-cell `S_k(Y) ≤ exp(−Σ_{z≤r≤Y}1/r + W/z)` with z = W², first
+moment over cells via the selection law — the analytic input is already proved, this is
+now bookkeeping + one Markov exclusion for `|D ∩ [z,Y]|`); (ii) Lemma D and Theorem C
+per the corrected shapes (findings.md (d)/(e)); (iii) the μ-model consequences of (LS+)
+(e.g. μ(perpetual primality) = 0 via the average-case old-prime bound); (iv) the
 q-uniformity question (§G): can κ_q ≳ q^{−O(1)} + K₀(q) ≲ q + diagonal n(q) give the
 SIMULTANEOUS a.a. GenMC? This is the most promising untried combination. Do not propose new
 orbit-of-2 dynamics; the box process under the type measure is the object.

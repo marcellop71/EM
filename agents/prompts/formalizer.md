@@ -1118,6 +1118,26 @@ single uniform threshold, first *totalise*: state `∀ q, ∃ N₀, q ∈ Q → 
 
 ---
 
+## Session 310 infrastructure note (supersedes the queue part of Session 309's)
+
+WP2 and Group 6 are DONE (commit f391732, all 0 sorry): `EM/Population/SelectionLaw.lean`
+(type cells `stepCell` over `modulus q Y = ∏_{r ∈ bandUpTo q Y} r` — q EXCLUDED; generic
+dependent-family CRT counting `card_filter_crt`; EXACT `selection_law`),
+`EM/Population/TreeChernoff.lean` (abstract finite Chernoff: `exp_supermartingale`,
+`chernoff_bound(_local)`, `chernoff_quarter(_local)` — reuse for ANY finite conditional-
+counting argument; Mathlib-only), `EM/Population/MertensLower.lean` (`mertens_lower`
+const 13, `window_recip_lower` const 16 — the lower Mertens toolbox),
+`EM/Population/LSPlus.lean` (`ls_plus`, plus the reusable congruence layer
+`survival_congr`/`stepSurvival_congr`/`fiber_eq_stepCell` and `bigStep_iff_survives`).
+Open work items, in order: Group 7 tail assembly TL1–TL3 (use `window_recip_lower` +
+`selection_law` per cell; target `tail ≲ log n/n` at log Y = n²); the D5c policy lemma
+(discharge `bigThreshold ≤ Y` from `n² ≤ log Y`); Lemma D; Theorem C.
+v4.33 API notes from Session 310: `Finset.range_add_one` (not range_succ),
+`Finset.card_filter_add_card_filter_not`, camel `notMem`, `le_mul_inv_iff₀` for Markov
+rearrangements, explicit `[DecidablePred]` binders before stating filter-rewrite lemmas
+(Classical.propDecidable mismatch), and don't `push_cast` through
+`((∏ r ∈ T, r : ℕ) : ZMod r)` before a `ZMod.natCast_eq_zero_iff` rewrite.
+
 ## Session 309 infrastructure note
 
 New files (all 0 sorry): `EM/Population/SeedTypes.lean` (Lemma A/B, visited sets),
