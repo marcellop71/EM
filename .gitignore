@@ -20,3 +20,7 @@ EM/Archive/
 .venv/
 .claude/
 texput.log
+
+# detached-job records (agents/jobs.py); logs are per-run scratch
+agents/state/jobs/*
+!agents/state/jobs/.gitkeep

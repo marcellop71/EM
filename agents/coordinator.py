@@ -24,6 +24,7 @@ from .rendering import (
     AGENT_STYLES,
 )
 from .providers import AgentSpec, get_backend
+from . import jobs as _jobs
 from .providers.claude_backend import ClaudeBackend
 
 
@@ -404,7 +405,134 @@ Today's date: {datetime.now().strftime('%Y-%m-%d')}
         budget=_BUDGET_COORDINATOR,
     )
 
-    await _stream_with_backend(spec, prompt, agents=agents)
+    # Never let the harness reap the coordinator while a Task sub-agent is
+    # still running (run 2 on 2026-08-18 died this way at the 600s ceiling).
+    os.environ.setdefault("CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS", "0")
+
+    await _supervise_coordinator(spec, prompt, agents=agents)
+
+
+# Upper bound on "your jobs finished, continue" re-invocations, so a
+# coordinator that keeps spawning and exiting cannot loop forever.
+_MAX_CONTINUATIONS = 6
+
+
+async def _supervise_coordinator(
+    spec: AgentSpec,
+    prompt: str,
+    *,
+    agents: dict[str, AgentDefinition] | None,
+) -> None:
+    """Run the coordinator; refuse to return while jobs it spawned are alive.
+
+    Each time the coordinator's session ends with `agents spawn`-ed jobs still
+    running, wait for them, then re-invoke the coordinator with a continuation
+    prompt carrying the job logs.  Ctrl-C terminates the jobs so nothing is
+    left running behind the operator's back.
+    """
+    stale = _jobs.running_jobs()
+    if stale:
+        console.print(
+            f"[bold yellow]⚠ {len(stale)} job(s) from an earlier run are still "
+            f"running and will be supervised too:[/]"
+        )
+        for j in stale:
+            console.print(f"  [dim]{_jobs.summary_line(j)}[/]")
+
+    seen_before = {j.name for j in _jobs.all_jobs()}
+    current = prompt
+    try:
+        for round_no in range(_MAX_CONTINUATIONS + 1):
+            await _stream_with_backend(spec, current, agents=agents)
+
+            live = _jobs.running_jobs()
+            if not live:
+                new_done = [j for j in _jobs.all_jobs() if j.name not in seen_before]
+                if new_done:
+                    console.print("[bold green]✓ Coordinator exited; all spawned jobs finished:[/]")
+                    for j in new_done:
+                        console.print(f"  [dim]{_jobs.summary_line(j)}[/]")
+                return
+
+            if round_no == _MAX_CONTINUATIONS:
+                console.print(
+                    f"[bold red]Coordinator exited with {len(live)} job(s) running and the "
+                    f"continuation limit ({_MAX_CONTINUATIONS}) is reached. Waiting for the jobs "
+                    f"but NOT re-invoking the coordinator.[/]"
+                )
+                _wait_verbose(live)
+                return
+
+            console.print(
+                f"[bold yellow]⏳ Coordinator exited with {len(live)} spawned job(s) still "
+                f"running — waiting for them before returning control.[/]"
+            )
+            for j in live:
+                console.print(f"  [dim]{_jobs.summary_line(j)}[/]")
+            finished = _wait_verbose(live)
+
+            # Re-invoke with the results.
+            sections = []
+            for j in finished:
+                sections.append(
+                    f"### {j.name}\n\ncommand: `{' '.join(j.cmd)}`\nlog: `{j.log}`\n"
+                    f"last lines of log:\n```\n{_jobs.tail(j, 60)}\n```"
+                )
+            inbox = _read(STATE_DIR / "inbox.md")
+            inbox_section = (
+                f"\n\n## Inbox (live instructions from operator)\n\n{inbox}"
+                if inbox.strip() else ""
+            )
+            current = f"""You are the coordinator for the EM formalization agent swarm, resuming.
+
+Your previous session ended while {len(finished)} job(s) you had spawned with `agents spawn`
+were still running. The supervisor waited for them; they have now all finished. Their
+findings should be in `{STATE_DIR / 'findings.md'}` and `{STATE_DIR / 'strategy_log.md'}`
+(direct-runners append there) — read those files first, then the log tails below.
+
+{chr(10).join(sections)}
+{inbox_section}
+
+## Instructions
+
+1. Read `{STATE_DIR / 'findings.md'}` and the tail of `{STATE_DIR / 'strategy_log.md'}`.
+2. Evaluate the results of the finished jobs against the goal you were pursuing.
+3. Decide and dispatch the next action, or conclude the session.
+4. **Do not end your turn while work you launched is still running.** If you spawn a
+   direct-runner (`{sys.executable} -m agents spawn -- <subcommand> ...`), block on it with
+   `{sys.executable} -m agents wait --timeout 590` (repeat the call until it prints
+   "all jobs finished") before doing anything that depends on its result, and before
+   finishing. If you nevertheless exit with jobs running, this supervisor will wait
+   and re-invoke you (at most {_MAX_CONTINUATIONS} times per launch).
+5. Before finishing, complete the [IN PROGRESS] entry in strategy_log.md and state
+   plainly what landed, what is pending, and what the operator should do next.
+
+Today's date: {datetime.now().strftime('%Y-%m-%d')}
+"""
+    except KeyboardInterrupt:
+        live = _jobs.running_jobs()
+        if live:
+            console.print(
+                f"[bold red]Interrupted — terminating {len(live)} spawned job(s) so nothing "
+                f"is left running:[/]"
+            )
+            for j in _jobs.kill_all():
+                console.print(f"  [dim]killed {j.name} (pid {j.pid})[/]")
+        raise
+
+
+def _wait_verbose(live: list[_jobs.Job]) -> list[_jobs.Job]:
+    """Block until the given jobs finish, printing a status line each minute."""
+    last_print = [0.0]
+
+    def _tick(now_live, elapsed):
+        if elapsed - last_print[0] >= 60 or last_print[0] == 0.0:
+            last_print[0] = elapsed
+            names = ", ".join(j.name for j in now_live)
+            console.print(f"  [dim]waiting {elapsed/60:4.0f} min — running: {names}[/]")
+
+    _jobs.wait(None, poll=15.0, on_tick=_tick)
+    return live
 
 
 # ---------------------------------------------------------------------------
