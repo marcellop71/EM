@@ -1,5 +1,7 @@
 import EM.Population.SeedCapture
 import Mathlib.NumberTheory.Harmonic.Defs
+import Mathlib.NumberTheory.Harmonic.Bounds
+import Mathlib.NumberTheory.Primorial
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 /-!
@@ -544,6 +546,446 @@ theorem two_le_boxCard_of_exposed (hq : q.Prime) (hm : 1 ≤ m) (hr : r.Prime)
   have h1 : boxCard q m r k = 1 := by omega
   have := brink_forces_small_multiplier hq hm hr hrq hrm hbag hnew h1 hnd
   omega
+
+/-! ## 5.  The escape density `ρ`, the two bands and the survival product
+
+Second slice of the deterministic core of **(LS)**: the local escape density,
+the near/far band split (correction **C1**: near band `r ≤ 2k+1`, far band
+`r ≥ 2k+2`, so that the two bands partition `{r ≤ y}`), the survival product,
+the aggregated charge budget (F1f-F1h) and the deterministic Markov count
+(M1, M2).  Verified statement list, `findings_ls_verification.md` §4,
+Groups 3-5.
+
+Everything continues to carry the hypothesis `r ≠ q` (correction **C2**). -/
+
+/-- **Local escape density.**  `ρ_r(k) = 1/|box|` at an *active, new* position —
+the exact conditional probability that the current Euclid number is divisible by
+`r`, given the box data — and `0` when `r` is in the bag or the cofactor residue
+has already been seen. -/
+noncomputable def rho (q m r k : ℕ) : ℝ :=
+  if ¬ inBag q m r k ∧ isNew q m r k then 1 / (boxCard q m r k : ℝ) else 0
+
+/-- The **near band** at step `k`: primes `r ≤ 2k+1`, `r ≠ q` (correction C1). -/
+def nearBand (q k : ℕ) : Finset ℕ :=
+  (Finset.range (2 * k + 2)).filter (fun r => r.Prime ∧ r ≠ q)
+
+/-- The **far band** up to `y` at step `k`: primes `2k+2 ≤ r ≤ y`, `r ≠ q`. -/
+def farBand (q y k : ℕ) : Finset ℕ :=
+  (Finset.Icc (2 * k + 2) y).filter (fun r => r.Prime ∧ r ≠ q)
+
+/-- All primes `r ≤ y` other than `q`. -/
+def bandUpTo (q y : ℕ) : Finset ℕ :=
+  (Finset.range (y + 1)).filter (fun r => r.Prime ∧ r ≠ q)
+
+/-- The **roughness survival product** up to `y`, excluding `q` (correction C2):
+the conditional probability that the next Euclid number has no prime factor
+`≤ y` other than `q`. -/
+noncomputable def survival (q m y k : ℕ) : ℝ :=
+  ∏ r ∈ bandUpTo q y, (1 - rho q m r k)
+
+/-- Step `k` is **`n`-good**: the multiplier is at least `2n`. -/
+def Good (q m n k : ℕ) : Prop := 2 * n ≤ genSeqAvoid q m k
+
+/-- The **near-band escape mass** at step `k`. -/
+noncomputable def nearMass (q m k : ℕ) : ℝ := ∑ r ∈ nearBand q k, rho q m r k
+
+/-- The **cumulative charge budget** over the horizon `n`, primes `< N`, `≠ q`. -/
+noncomputable def chargeBudget (q m N n : ℕ) : ℝ :=
+  ∑ r ∈ (Finset.range N).filter (fun r => r.Prime ∧ r ≠ q),
+    ∑ k ∈ (Finset.range n).filter (fun k => Charged q m r k), (1 : ℝ) / boxCard q m r k
+
+/-! ### 5.1  Basic facts about `ρ` -/
+
+theorem rho_of_active (h : ¬ inBag q m r k ∧ isNew q m r k) :
+    rho q m r k = 1 / (boxCard q m r k : ℝ) := if_pos h
+
+theorem rho_eq_zero_of_inactive (h : ¬ (¬ inBag q m r k ∧ isNew q m r k)) :
+    rho q m r k = 0 := if_neg h
+
+theorem rho_eq_zero_of_inBag (h : inBag q m r k) : rho q m r k = 0 :=
+  if_neg (fun hc => hc.1 h)
+
+theorem rho_eq_zero_of_old (h : ¬ isNew q m r k) : rho q m r k = 0 :=
+  if_neg (fun hc => h hc.2)
+
+theorem rho_nonneg : 0 ≤ rho q m r k := by
+  by_cases h : ¬ inBag q m r k ∧ isNew q m r k
+  · rw [rho_of_active h]; positivity
+  · rw [rho_eq_zero_of_inactive h]
+
+/-- `ρ_r(k) ≤ 1`: box positivity (F1d) at an active position, and `0` otherwise.
+The hypothesis `¬ r ∣ m` is *not* needed: if `r ∣ m` then `r` is in the bag and
+`ρ_r(k) = 0`. -/
+theorem rho_le_one (hq : q.Prime) (hm : 1 ≤ m) (hr : r.Prime) (hrq : r ≠ q)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) : rho q m r k ≤ 1 := by
+  by_cases h : ¬ inBag q m r k ∧ isNew q m r k
+  · rw [rho_of_active h]
+    have hrm : ¬ r ∣ m := fun hd => h.1 (Or.inl hd)
+    have hpos : 0 < boxCard q m r k := boxCard_pos hq hm hr hrq hrm h.1 hnd
+    have h1 : (1 : ℕ) ≤ boxCard q m r k := hpos
+    have h1' : (1 : ℝ) ≤ (boxCard q m r k : ℝ) := by exact_mod_cast h1
+    rw [div_le_one (by linarith)]
+    exact h1'
+  · rw [rho_eq_zero_of_inactive h]; norm_num
+
+/-! ### 5.2  F3b — the near band at a good step -/
+
+/-- **F3b.**  At a good step, an active near-band prime `r ≤ 2k+1`, `r ≠ q`, is
+exposed (`r < 2n ≤ p̃(k)`) and therefore *not* at the brink (F3a), so its box has
+at least two elements and `ρ_r(k) ≤ 1/2`. -/
+theorem rho_le_half_of_good (hq : q.Prime) (hm : 1 ≤ m) (hr : r.Prime) (hrq : r ≠ q)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hkn : k < n) (hgood : Good q m n k)
+    (hnear : r ≤ 2 * k + 1) : rho q m r k ≤ 1 / 2 := by
+  by_cases h : ¬ inBag q m r k ∧ isNew q m r k
+  · rw [rho_of_active h]
+    have hrm : ¬ r ∣ m := fun hd => h.1 (Or.inl hd)
+    have hg : 2 * n ≤ genSeqAvoid q m k := hgood
+    have hexp : r < genSeqAvoid q m k := by omega
+    have h2 : 2 ≤ boxCard q m r k :=
+      two_le_boxCard_of_exposed hq hm hr hrq hrm h.1 h.2 hexp hnd
+    have h2' : (2 : ℝ) ≤ (boxCard q m r k : ℝ) := by exact_mod_cast h2
+    exact one_div_le_one_div_of_le (by norm_num) h2'
+  · rw [rho_eq_zero_of_inactive h]; norm_num
+
+/-! ### 5.3  B1, B2 — the far band, pointwise -/
+
+/-- The visited set at time `k` has at most `k` elements. -/
+theorem card_visitedAt_le (q m r k : ℕ) : (visitedAt q m r k).card ≤ k := by
+  refine le_trans Finset.card_image_le (le_trans (Finset.card_filter_le _ _) ?_)
+  simp
+
+/-- **B1, natural-number form.**  For a far-band prime the box has kept at least
+half of the unit group. -/
+theorem two_mul_boxCard_ge_of_far (hr : r.Prime) (hbag : ¬ inBag q m r k)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hfar : 2 * k + 2 ≤ r) :
+    r ≤ 2 * boxCard q m r k := by
+  have hb := boxCard_eq hr hbag hnd
+  have hv := card_visitedAt_le q m r k
+  omega
+
+/-- **B1.**  `r/2 ≤ |box_k(r)|` for `r ≥ 2k+2`. -/
+theorem boxCard_ge_of_far (hr : r.Prime) (hbag : ¬ inBag q m r k)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hfar : 2 * k + 2 ≤ r) :
+    (r : ℝ) / 2 ≤ (boxCard q m r k : ℝ) := by
+  have h := two_mul_boxCard_ge_of_far hr hbag hnd hfar
+  have h' : (r : ℝ) ≤ 2 * (boxCard q m r k : ℝ) := by exact_mod_cast h
+  linarith
+
+/-- **B2.**  `ρ_r(k) ≤ 2/r` on the far band. -/
+theorem rho_le_far (hr : r.Prime) (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j)
+    (hfar : 2 * k + 2 ≤ r) : rho q m r k ≤ 2 / r := by
+  have hr0 : (0 : ℝ) < r := by exact_mod_cast hr.pos
+  by_cases h : ¬ inBag q m r k ∧ isNew q m r k
+  · rw [rho_of_active h]
+    have hb := boxCard_ge_of_far hr h.1 hnd hfar
+    have hrw : (2 : ℝ) / r = 1 / ((r : ℝ) / 2) := by field_simp
+    rw [hrw]
+    exact one_div_le_one_div_of_le (by linarith) hb
+  · rw [rho_eq_zero_of_inactive h]; positivity
+
+/-- Far-band primes also satisfy `ρ ≤ 1/2` from step `1` on: their box has kept
+at least `k+1 ≥ 2` elements. -/
+theorem rho_le_half_of_far (hr : r.Prime) (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j)
+    (hk : 1 ≤ k) (hfar : 2 * k + 2 ≤ r) : rho q m r k ≤ 1 / 2 := by
+  by_cases h : ¬ inBag q m r k ∧ isNew q m r k
+  · rw [rho_of_active h]
+    have hb := two_mul_boxCard_ge_of_far hr h.1 hnd hfar
+    have h2 : 2 ≤ boxCard q m r k := by omega
+    have h2' : (2 : ℝ) ≤ (boxCard q m r k : ℝ) := by exact_mod_cast h2
+    exact one_div_le_one_div_of_le (by norm_num) h2'
+  · rw [rho_eq_zero_of_inactive h]; norm_num
+
+/-! ### 5.4  The survival product -/
+
+theorem survival_nonneg (hq : q.Prime) (hm : 1 ≤ m)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (y : ℕ) : 0 ≤ survival q m y k := by
+  refine Finset.prod_nonneg fun t ht => ?_
+  rw [bandUpTo, Finset.mem_filter] at ht
+  have := rho_le_one hq hm ht.2.1 ht.2.2 hnd
+  linarith
+
+/-- **F3c.**  At a good step (from step `1` on) the survival product is
+*positive*: every band factor is at least `1/2`.  This is the pathwise form of
+bonus §2.9(i): `S_k = 0` forces a non-good step. -/
+theorem survival_pos_of_good (hq : q.Prime) (hm : 1 ≤ m)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hk : 1 ≤ k) (hkn : k < n)
+    (hgood : Good q m n k) (y : ℕ) : 0 < survival q m y k := by
+  refine Finset.prod_pos fun t ht => ?_
+  rw [bandUpTo, Finset.mem_filter] at ht
+  have hhalf : rho q m t k ≤ 1 / 2 := by
+    by_cases hnear : t ≤ 2 * k + 1
+    · exact rho_le_half_of_good hq hm ht.2.1 ht.2.2 hnd hkn hgood hnear
+    · exact rho_le_half_of_far ht.2.1 hnd hk (by omega)
+  linarith
+
+/-- **F3d.**  Contrapositive of `survival_pos_of_good`. -/
+theorem not_good_of_survival_eq_zero (hq : q.Prime) (hm : 1 ≤ m)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hk : 1 ≤ k) (hkn : k < n) (y : ℕ)
+    (hzero : survival q m y k = 0) : ¬ Good q m n k := fun hgood =>
+  absurd hzero (survival_pos_of_good hq hm hnd hk hkn hgood y).ne'
+
+/-! ### 5.5  B3 — the elementary exponential inequality -/
+
+/-- **B3.**  `e^{-2x} ≤ 1 - x` on `[0, 1/2]`.
+
+From `1 + 2x ≤ e^{2x}` one gets `e^{-2x} ≤ 1/(1+2x)`, and
+`1/(1+2x) ≤ 1 - x ⟺ 1 ≤ (1-x)(1+2x) = 1 + x - 2x² ⟺ 2x² ≤ x ⟺ x ≤ 1/2`. -/
+theorem one_sub_ge_exp {x : ℝ} (hx0 : 0 ≤ x) (hx : x ≤ 1 / 2) :
+    Real.exp (-(2 * x)) ≤ 1 - x := by
+  have hE : Real.exp (-(2 * x)) * Real.exp (2 * x) = 1 := by
+    rw [← Real.exp_add]; simp
+  have h1 : (1 : ℝ) + 2 * x ≤ Real.exp (2 * x) := by
+    have := Real.add_one_le_exp (2 * x); linarith
+  have hpos : 0 < Real.exp (-(2 * x)) := Real.exp_pos _
+  have hE2 : Real.exp (-(2 * x)) * (1 + 2 * x) ≤ 1 := by
+    calc Real.exp (-(2 * x)) * (1 + 2 * x)
+        ≤ Real.exp (-(2 * x)) * Real.exp (2 * x) := by
+          exact mul_le_mul_of_nonneg_left h1 hpos.le
+      _ = 1 := hE
+  nlinarith [hE2, hx0, hx]
+
+/-! ### 5.6  B7 — the near-band product bound
+
+Recorded constant: the verification's `B6` (`4^{-ρ} ≤ 1 - ρ`) is replaced here
+by the weaker but self-contained `B3`, so the near-band product bound reads
+`∏ (1 - ρ) ≥ exp (-2T)` instead of `4^{-T}`.  At the verifier's `T = 6` this is
+`e^{-12}` in place of `4^{-6} = e^{-8.32}`; downstream the safe margin should be
+taken as `c₁ := exp (-36)` rather than `exp (-35)`. -/
+
+/-- **B7.**  If the near-band escape mass at a good step is at most `T`, the
+near-band product is at least `e^{-2T}`. -/
+theorem near_band_product_ge (T : ℝ) (hq : q.Prime) (hm : 1 ≤ m)
+    (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) (hkn : k < n) (hgood : Good q m n k)
+    (hmass : nearMass q m k ≤ T) :
+    Real.exp (-(2 * T)) ≤ ∏ r ∈ nearBand q k, (1 - rho q m r k) := by
+  have hstep : ∀ t ∈ nearBand q k, Real.exp (-(2 * rho q m t k)) ≤ 1 - rho q m t k := by
+    intro t ht
+    rw [nearBand, Finset.mem_filter, Finset.mem_range] at ht
+    exact one_sub_ge_exp rho_nonneg
+      (rho_le_half_of_good hq hm ht.2.1 ht.2.2 hnd hkn hgood (by omega))
+  have hsum : ∑ t ∈ nearBand q k, (-(2 * rho q m t k)) = -(2 * nearMass q m k) := by
+    simp [nearMass, Finset.mul_sum]
+  calc Real.exp (-(2 * T)) ≤ Real.exp (-(2 * nearMass q m k)) := by
+        exact Real.exp_le_exp.mpr (by linarith)
+    _ = ∏ t ∈ nearBand q k, Real.exp (-(2 * rho q m t k)) := by
+        rw [← hsum, Real.exp_sum]
+    _ ≤ ∏ t ∈ nearBand q k, (1 - rho q m t k) :=
+        Finset.prod_le_prod (fun i _ => (Real.exp_pos _).le) hstep
+
+/-! ### 5.7  B8 — the band partition -/
+
+/-- **B8.**  For `y ≥ 2k+2` the near and far bands are disjoint and partition
+`{r ≤ y : r prime, r ≠ q}`, so the survival product factors. -/
+theorem survival_eq_near_mul_far (q m k : ℕ) {y : ℕ} (hy : 2 * k + 2 ≤ y) :
+    survival q m y k
+      = (∏ r ∈ nearBand q k, (1 - rho q m r k))
+        * (∏ r ∈ farBand q y k, (1 - rho q m r k)) := by
+  have hsplit : Finset.range (y + 1) = Finset.range (2 * k + 2) ∪ Finset.Icc (2 * k + 2) y := by
+    ext t
+    simp only [Finset.mem_range, Finset.mem_union, Finset.mem_Icc]
+    omega
+  have hdisj : Disjoint (nearBand q k) (farBand q y k) := by
+    rw [Finset.disjoint_left]
+    intro a ha hb
+    rw [nearBand, Finset.mem_filter, Finset.mem_range] at ha
+    rw [farBand, Finset.mem_filter, Finset.mem_Icc] at hb
+    omega
+  rw [survival, bandUpTo, hsplit, Finset.filter_union]
+  exact Finset.prod_union hdisj
+
+/-! ### 5.8  F1f-F1h — aggregating the charge budget -/
+
+theorem harmonicR_nonneg (N : ℕ) : 0 ≤ harmonicR N :=
+  Finset.sum_nonneg fun i _ => by positivity
+
+/-- **F1f.**  `H_N ≤ 1 + log N`, via Mathlib's `harmonic_le_one_add_log`. -/
+theorem harmonicR_le (N : ℕ) : harmonicR N ≤ 1 + Real.log N := by
+  rw [harmonicR_eq_harmonic]
+  exact harmonic_le_one_add_log N
+
+/-- The inner charge sum vanishes for a prime dividing the seed: such a prime is
+in the bag from time `0`, hence never charged. -/
+theorem charge_sum_eq_zero_of_dvd (hrm : r ∣ m) :
+    ∑ k ∈ (Finset.range n).filter (fun k => Charged q m r k),
+      (1 : ℝ) / boxCard q m r k = 0 :=
+  Finset.sum_eq_zero fun k hk => by
+    rw [Finset.mem_filter] at hk
+    exact absurd (Or.inl hrm) hk.2.1
+
+/-- **F1g.**  The charge budget is bounded by the sum of the per-prime harmonic
+budgets (F1e), the primes dividing the seed contributing nothing. -/
+theorem chargeBudget_le_sum_harmonic (hq : q.Prime) (hm : 1 ≤ m)
+    (hnd : ∀ j < n, 2 ≤ genSeqAvoid q m j) (N : ℕ) :
+    chargeBudget q m N n
+      ≤ ∑ r ∈ (Finset.range N).filter (fun r => r.Prime ∧ r ≠ q), harmonicR (r - 1) := by
+  rw [chargeBudget]
+  refine Finset.sum_le_sum fun t ht => ?_
+  rw [Finset.mem_filter] at ht
+  by_cases htm : t ∣ m
+  · rw [charge_sum_eq_zero_of_dvd htm]
+    exact harmonicR_nonneg _
+  · exact charge_sum_le_harmonic hq hm ht.2.1 ht.2.2 htm hnd
+
+/-- Dropping `r ≠ q` and passing to `1 + log r` (F1f). -/
+theorem sum_harmonic_le (q N : ℕ) :
+    ∑ r ∈ (Finset.range N).filter (fun r => r.Prime ∧ r ≠ q), harmonicR (r - 1)
+      ≤ (((Finset.range N).filter Nat.Prime).card : ℝ)
+        + ∑ r ∈ (Finset.range N).filter Nat.Prime, Real.log r := by
+  have hsub : (Finset.range N).filter (fun r => r.Prime ∧ r ≠ q)
+      ⊆ (Finset.range N).filter Nat.Prime := by
+    intro x hx
+    rw [Finset.mem_filter] at hx ⊢
+    exact ⟨hx.1, hx.2.1⟩
+  have hterm : ∀ t ∈ (Finset.range N).filter Nat.Prime,
+      harmonicR (t - 1) ≤ 1 + Real.log t := by
+    intro t ht
+    rw [Finset.mem_filter] at ht
+    have h2 := ht.2.two_le
+    have hlo : (0 : ℝ) < ((t - 1 : ℕ) : ℝ) := by
+      have : (1 : ℕ) ≤ t - 1 := by omega
+      exact_mod_cast Nat.lt_of_lt_of_le Nat.zero_lt_one this
+    have hle : ((t - 1 : ℕ) : ℝ) ≤ (t : ℝ) := by exact_mod_cast Nat.sub_le t 1
+    calc harmonicR (t - 1) ≤ 1 + Real.log ((t - 1 : ℕ) : ℝ) := harmonicR_le _
+      _ ≤ 1 + Real.log t := by linarith [Real.log_le_log hlo hle]
+  have hnn : ∀ t ∈ (Finset.range N).filter Nat.Prime,
+      t ∉ (Finset.range N).filter (fun r => r.Prime ∧ r ≠ q) → 0 ≤ 1 + Real.log t := by
+    intro t ht _
+    rw [Finset.mem_filter] at ht
+    have : (1 : ℝ) ≤ (t : ℝ) := by exact_mod_cast ht.2.one_lt.le
+    linarith [Real.log_nonneg this]
+  calc ∑ r ∈ (Finset.range N).filter (fun r => r.Prime ∧ r ≠ q), harmonicR (r - 1)
+      ≤ ∑ r ∈ (Finset.range N).filter (fun r => r.Prime ∧ r ≠ q), (1 + Real.log r) :=
+        Finset.sum_le_sum fun t ht => hterm t (hsub ht)
+    _ ≤ ∑ r ∈ (Finset.range N).filter Nat.Prime, (1 + Real.log r) :=
+        Finset.sum_le_sum_of_subset_of_nonneg hsub hnn
+    _ = (((Finset.range N).filter Nat.Prime).card : ℝ)
+          + ∑ r ∈ (Finset.range N).filter Nat.Prime, Real.log r := by
+        rw [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul, mul_one]
+
+/-- **Chebyshev.**  `θ(N) ≤ N log 4`, from Mathlib's `primorial_le_four_pow`. -/
+theorem sum_log_prime_le (N : ℕ) :
+    ∑ r ∈ (Finset.range N).filter Nat.Prime, Real.log r ≤ N * Real.log 4 := by
+  have hsub : (Finset.range N).filter Nat.Prime
+      ⊆ (Finset.range (N + 1)).filter Nat.Prime := by
+    intro x hx
+    rw [Finset.mem_filter, Finset.mem_range] at hx ⊢
+    exact ⟨by omega, hx.2⟩
+  have hprim : primorial N = ∏ r ∈ (Finset.range (N + 1)).filter Nat.Prime, r := rfl
+  have hdvd : (∏ r ∈ (Finset.range N).filter Nat.Prime, r) ∣ primorial N := by
+    rw [hprim]
+    exact Finset.prod_dvd_prod_of_subset _ _ _ hsub
+  have hle : (∏ r ∈ (Finset.range N).filter Nat.Prime, r) ≤ 4 ^ N :=
+    le_trans (Nat.le_of_dvd (primorial_pos N) hdvd) (primorial_le_four_pow N)
+  have hle' : ((∏ r ∈ (Finset.range N).filter Nat.Prime, r : ℕ) : ℝ) ≤ ((4 ^ N : ℕ) : ℝ) := by
+    exact_mod_cast hle
+  have hppos : (0 : ℝ) < ((∏ r ∈ (Finset.range N).filter Nat.Prime, r : ℕ) : ℝ) := by
+    have : 0 < ∏ r ∈ (Finset.range N).filter Nat.Prime, r := by
+      refine Finset.prod_pos fun t ht => ?_
+      rw [Finset.mem_filter] at ht
+      exact ht.2.pos
+    exact_mod_cast this
+  have hlogprod : ∑ r ∈ (Finset.range N).filter Nat.Prime, Real.log r
+      = Real.log ((∏ r ∈ (Finset.range N).filter Nat.Prime, r : ℕ) : ℝ) := by
+    rw [Nat.cast_prod, Real.log_prod]
+    intro x hx
+    rw [Finset.mem_filter] at hx
+    exact_mod_cast hx.2.pos.ne'
+  rw [hlogprod]
+  calc Real.log ((∏ r ∈ (Finset.range N).filter Nat.Prime, r : ℕ) : ℝ)
+      ≤ Real.log ((4 ^ N : ℕ) : ℝ) := Real.log_le_log hppos hle'
+    _ = N * Real.log 4 := by
+        push_cast
+        rw [Real.log_pow]
+
+/-- **F1h.**  The aggregated charge budget: over the horizon `n` and the primes
+`r < N`, `r ≠ q`, the total charge is at most `π(N) + N log 4`.
+
+(The `π(N)` term is carried symbolically; Chebyshev's upper bound
+`π(N) = o(N)` is what turns this into the verification's `Ch_n ≤ 2.8 n` at
+`N = 2n`.)  Verified statement list, `findings_ls_verification.md` §4 (F1f-F1h). -/
+theorem chargeBudget_le (hq : q.Prime) (hm : 1 ≤ m)
+    (hnd : ∀ j < n, 2 ≤ genSeqAvoid q m j) (N : ℕ) :
+    chargeBudget q m N n
+      ≤ (((Finset.range N).filter Nat.Prime).card : ℝ) + N * Real.log 4 := by
+  refine le_trans (chargeBudget_le_sum_harmonic hq hm hnd N) ?_
+  refine le_trans (sum_harmonic_le q N) ?_
+  linarith [sum_log_prime_le N]
+
+/-! ### 5.9  M1, M2 — the deterministic Markov count -/
+
+/-- **M1.**  At a good step the near-band escape mass is *exactly* the charged
+near-band sum: near-band primes are automatically exposed
+(`r ≤ 2k+1 < 2n ≤ p̃(k)`), so "active and new" coincides with "charged". -/
+theorem nearMass_eq_charge_of_good (hkn : k < n) (hgood : Good q m n k) :
+    nearMass q m k
+      = ∑ r ∈ (Finset.range (2 * k + 2)).filter
+            (fun r => r.Prime ∧ r ≠ q ∧ Charged q m r k),
+          (1 : ℝ) / boxCard q m r k := by
+  have hg : 2 * n ≤ genSeqAvoid q m k := hgood
+  have hBA : (Finset.range (2 * k + 2)).filter (fun r => r.Prime ∧ r ≠ q ∧ Charged q m r k)
+      ⊆ nearBand q k := by
+    intro x hx
+    rw [Finset.mem_filter, Finset.mem_range] at hx
+    rw [nearBand, Finset.mem_filter, Finset.mem_range]
+    exact ⟨hx.1, hx.2.1, hx.2.2.1⟩
+  have hzero : ∀ x ∈ nearBand q k,
+      x ∉ (Finset.range (2 * k + 2)).filter (fun r => r.Prime ∧ r ≠ q ∧ Charged q m r k) →
+      rho q m x k = 0 := by
+    intro x hxA hxB
+    by_cases hact : ¬ inBag q m x k ∧ isNew q m x k
+    · exfalso
+      rw [nearBand, Finset.mem_filter, Finset.mem_range] at hxA
+      refine hxB (Finset.mem_filter.mpr ⟨Finset.mem_range.mpr hxA.1,
+        hxA.2.1, hxA.2.2, hact.1, hact.2, ?_⟩)
+      omega
+    · exact rho_eq_zero_of_inactive hact
+  rw [nearMass, ← Finset.sum_subset hBA hzero]
+  refine Finset.sum_congr rfl fun t ht => ?_
+  rw [Finset.mem_filter] at ht
+  exact rho_of_active ⟨ht.2.2.2.1, ht.2.2.2.2.1⟩
+
+/-- **M2 — the deterministic Markov count.**  The number of good steps whose
+near-band escape mass exceeds `T` is at most `chargeBudget / T`: each such step
+consumes more than `T` of the (global, harmonic) budget. -/
+theorem markov_count_le (q m n : ℕ) (T : ℝ) :
+    T * (((Finset.range n).filter
+        (fun k => Good q m n k ∧ T < nearMass q m k)).card : ℝ)
+      ≤ chargeBudget q m (2 * n) n := by
+  classical
+  set R := (Finset.range (2 * n)).filter (fun r => r.Prime ∧ r ≠ q) with hR
+  set g : ℕ → ℝ := fun k =>
+    ∑ r ∈ R.filter (fun r => Charged q m r k), (1 : ℝ) / boxCard q m r k with hg
+  set S := (Finset.range n).filter (fun k => Good q m n k ∧ T < nearMass q m k) with hS
+  have hgnn : ∀ t : ℕ, 0 ≤ g t := fun t =>
+    Finset.sum_nonneg fun _ _ => by positivity
+  have hkey : ∀ t ∈ S, T ≤ g t := by
+    intro t ht
+    rw [hS, Finset.mem_filter, Finset.mem_range] at ht
+    have hM1 := nearMass_eq_charge_of_good ht.1 ht.2.1
+    have hsub : (Finset.range (2 * t + 2)).filter
+        (fun r => r.Prime ∧ r ≠ q ∧ Charged q m r t)
+        ⊆ R.filter (fun r => Charged q m r t) := by
+      intro x hx
+      rw [Finset.mem_filter, Finset.mem_range] at hx
+      rw [hR, Finset.mem_filter, Finset.mem_filter, Finset.mem_range]
+      exact ⟨⟨by omega, hx.2.1, hx.2.2.1⟩, hx.2.2.2⟩
+    have hmono := Finset.sum_le_sum_of_subset_of_nonneg hsub
+      (fun i _ _ => by positivity : ∀ i ∈ R.filter (fun r => Charged q m r t),
+        i ∉ (Finset.range (2 * t + 2)).filter (fun r => r.Prime ∧ r ≠ q ∧ Charged q m r t) →
+        (0 : ℝ) ≤ 1 / boxCard q m i t)
+    rw [← hM1] at hmono
+    have := ht.2.2
+    rw [hg]
+    linarith
+  calc T * (S.card : ℝ) = ∑ _t ∈ S, T := by
+        rw [Finset.sum_const, nsmul_eq_mul]; ring
+    _ ≤ ∑ t ∈ S, g t := Finset.sum_le_sum hkey
+    _ ≤ ∑ t ∈ Finset.range n, g t :=
+        Finset.sum_le_sum_of_subset_of_nonneg
+          (by rw [hS]; exact Finset.filter_subset _ _) (fun i _ _ => hgnn i)
+    _ = chargeBudget q m (2 * n) n := by
+        simp only [hg, chargeBudget, Finset.sum_filter, ← hR]
+        rw [Finset.sum_comm]
 
 end LargeStepRoughness
 
