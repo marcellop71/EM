@@ -161,6 +161,7 @@ import EM.Population.FiberTheoremC
 import EM.Population.AlmostAllGenMC
 import EM.Population.TransferStrategy
 import EM.Population.TreeChernoff
+import EM.Population.TypeBadSmall
 import EM.Population.WeakErgodicity
 import EM.Population.WeakMullin
 import EM.Reciprocity.SymbolAlgebra
