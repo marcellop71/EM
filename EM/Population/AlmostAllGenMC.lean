@@ -237,37 +237,40 @@ theorem uncaptured_decomposition (q Y Cc n : ℕ) :
   · exact Finset.mem_union_left _ (Finset.mem_union_right _
       (Finset.mem_filter.mpr ⟨hmem, hnd⟩))
 
-/-! ## Part 5 — the headline -/
+/-! ## Part 5 — the generic three-type union bound -/
 
-/-- **Almost all seeds capture `q`.**
+/-- **The three-type union bound.**  Let `Gset Y Cc n` be any family of "good seed" sets whose
+members have a nondegenerate `Y`-bounded `(n+1)`-prefix and which obeys a Theorem-C-style
+exponential bound.  Then for every `ε > 0` there are a horizon `n`, a truncation `Y` and an
+exclusion-window constant `Cc ≥ 48 q` such that the good seeds, the degenerate or oversized
+prefixes, and the seeds of heavy window divisor mass together cover at most an `ε`-fraction of
+the period.
 
-*Scope (honest, and load-bearing).*  This is a **population** theorem over the seed
-ensemble `sampleSpace q Y = [1, M_Y]`, one full period of `SelectionLaw.modulus q Y`, at a
-truncation `Y` chosen by the policy window.  It says: for a **fixed** prime `q` and any
-`ε > 0` there are a horizon `n` and a truncation `Y` such that at most an `ε`-fraction of
-the seeds are simultaneously coprime to `q` and *uncaptured* — their genuine greedy orbit
-`genSeq m ·` does not select `q` in its first `n` steps.
+This is the Session-311 assembly isolated from the particular goodness predicate: it serves
+both `TheoremC.GoodSeed` (in `almost_all_genmc`, below) and the fibre-measurable
+`FiberTheoremC.FiberGood` (in `TypeBadSmall.type_bad_small`).
 
-What is **not** claimed:
-
-* nothing about the actual Euclid–Mullin orbit of the seed `2` — the orbit-specificity
-  barrier (dead ends #90, #117) is untouched;
-* nothing simultaneous in `q`: `n` and `Y` depend on `q` and `ε`, and the uniform-in-`q`
-  form remains open;
-* nothing asymptotic: this is finite-horizon counting, with no equidistribution hypothesis
-  anywhere in the chain.
-
-*Proof.*  Split the uncaptured seeds by `uncaptured_decomposition`.  The good seeds are
-exponentially rare by `TheoremC.theorem_C`, whose localization hypothesis is discharged by
-`threshold_sq_le`; the degenerate prefixes are `O(log n / n)` rare by
-`TailAssembly.tail_small` at horizon `n + 1`; the heavy divisor masses are `1/Cc` rare by
-`TailEstimate.markov_divisor_mass`.  Choosing `Cc ≥ 3/ε` and `n` large in three explicit
-ways makes each piece at most `ε/3`. -/
-theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
-    ∀ ε : ℝ, 0 < ε → ∃ n Y : ℕ,
-      (((sampleSpace q Y).filter (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)
-        ≤ ε * ((sampleSpace q Y).card : ℝ) := by
-  intro ε hε
+*Proof.*  Take `Cc = max (48 q) ⌈3/ε⌉₊`, so `1/Cc ≤ ε/3`.  The good seeds are exponentially
+rare by `hGood`, whose localization hypothesis is discharged by `threshold_sq_le`; the
+degenerate prefixes are `O(log n / n)` rare by `TailAssembly.tail_small` at horizon `n + 1`;
+the heavy divisor masses are `1/Cc` rare by `TailEstimate.markov_divisor_mass`.  Choosing `n`
+large in three explicit ways makes each piece at most `ε/3`. -/
+theorem three_type_union_small (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < ε)
+    (Gset : ℕ → ℕ → ℕ → Finset ℕ)
+    (hnd : ∀ Y Cc n : ℕ, ∀ m ∈ Gset Y Cc n,
+      ∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)
+    (hGood : ∀ Cc : ℕ, 48 * q ≤ Cc → ∃ κ : ℝ, 0 < κ ∧ ∃ K₀ n₁ : ℕ, ∀ Y n : ℕ,
+      n₁ ≤ n → (Cc : ℝ) ≤ (n : ℝ) → Real.log Y ≤ (n : ℝ) ^ 2 →
+      (∀ m ∈ sampleSpace q Y, m ∈ Gset Y Cc n → ∀ k < n, (bigThreshold q m Cc k) ^ 2 ≤ Y) →
+      ((Gset Y Cc n).card : ℝ) ≤ ((sampleSpace q Y).card : ℝ)
+          * Real.exp (-(3 / 8) * (κ * (c₁ / 2 * (n : ℝ) - (K₀ : ℝ))))) :
+    ∃ n Y Cc : ℕ, 48 * q ≤ Cc ∧
+      ((((Gset Y Cc n ∪ (sampleSpace q Y).filter (fun m =>
+              ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)))
+          ∪ (sampleSpace q Y).filter (fun m =>
+              (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter (fun r => r.Prime ∧ r ∣ m),
+                (1 : ℝ) / r)).card : ℝ)
+        ≤ ε * ((sampleSpace q Y).card : ℝ)) := by
   classical
   -- the exclusion-window constant
   set Cc : ℕ := max (48 * q) ⌈3 / ε⌉₊ with hCcdef
@@ -284,7 +287,7 @@ theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
       one_div_le_one_div_of_le (by positivity) h1
     rwa [one_div_div] at h2
   -- Theorem C constants
-  obtain ⟨κ, hκpos, K₀, n₁, hC⟩ := theorem_C q Cc hq hCc48
+  obtain ⟨κ, hκpos, K₀, n₁, hC⟩ := hGood Cc hCc48
   obtain ⟨n₀, htail⟩ := tail_small
   -- the exponential threshold
   set A : ℝ := 3 / 8 * (κ * (c₁ / 2)) with hA
@@ -308,14 +311,12 @@ theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
   have hCcRn : (Cc : ℝ) ≤ (n : ℝ) := by exact_mod_cast hnCc
   -- the policy witness
   obtain ⟨Y, hlow, hhigh⟩ := policy_shifted n (by omega)
-  refine ⟨n, Y, ?_⟩
+  refine ⟨n, Y, Cc, hCc48, ?_⟩
   have hlown : ((n : ℝ)) ^ 2 / 2 ≤ Real.log Y := by nlinarith [Nat.cast_nonneg (α := ℝ) n]
   -- ### piece 1 : good seeds
-  have hthr2 : ∀ m ∈ sampleSpace q Y, GoodSeed q Y Cc n m →
-      ∀ k < n, (bigThreshold q m Cc k) ^ 2 ≤ Y := by
-    intro m _ hgood
-    exact threshold_sq_le q Cc Y n hnCc hn4000 hlown m
-      (fun j hj => hgood.2.2.1 j (by omega))
+  have hthr2 : ∀ m ∈ sampleSpace q Y, m ∈ Gset Y Cc n →
+      ∀ k < n, (bigThreshold q m Cc k) ^ 2 ≤ Y := fun m _ hgood =>
+    threshold_sq_le q Cc Y n hnCc hn4000 hlown m fun j _ => hnd Y Cc n m hgood j (by omega)
   have hgoodcount := hC Y n hn₁ hCcRn hhigh hthr2
   have hexp : Real.exp (-(3 / 8) * (κ * (c₁ / 2 * (n : ℝ) - (K₀ : ℝ)))) ≤ ε / 3 := by
     have hkey : Real.log (3 / ε) ≤ A * (n : ℝ) - Bc := by
@@ -332,8 +333,7 @@ theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
       field_simp
     linarith [h2, h3.le, h3.ge]
   have hcard0 : (0 : ℝ) ≤ ((sampleSpace q Y).card : ℝ) := by positivity
-  have hpiece1 : (((sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m)).card : ℝ)
-      ≤ ε / 3 * ((sampleSpace q Y).card : ℝ) := by
+  have hpiece1 : ((Gset Y Cc n).card : ℝ) ≤ ε / 3 * ((sampleSpace q Y).card : ℝ) := by
     refine le_trans hgoodcount ?_
     have := mul_le_mul_of_nonneg_left hexp hcard0
     linarith [this]
@@ -358,7 +358,6 @@ theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
       rw [hE₂, Real.sqrt_sq hnn] at this
       exact this
     have he25 : (0 : ℝ) < Real.exp 25 := Real.exp_pos _
-    have hsne : s ≠ 0 := ne_of_gt hspos
     have hkey : Real.exp 25 * Real.log x / x ≤ 2 * Real.exp 25 / s := by
       rw [div_le_iff₀ hxpos]
       have h1 : Real.exp 25 * Real.log x ≤ Real.exp 25 * (2 * s) :=
@@ -375,9 +374,8 @@ theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
     linarith
   have hpiece2 : (((sampleSpace q Y).filter (fun m =>
       ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y))).card : ℝ)
-      ≤ ε / 3 * ((sampleSpace q Y).card : ℝ) := by
-    refine le_trans htailcount ?_
-    exact mul_le_mul_of_nonneg_right hlogsmall hcard0
+      ≤ ε / 3 * ((sampleSpace q Y).card : ℝ) :=
+    le_trans htailcount (mul_le_mul_of_nonneg_right hlogsmall hcard0)
   -- ### piece 3 : heavy window divisor mass
   have hmk := markov_divisor_mass (Cc ^ 2) Y (modulus q Y) (Nat.one_le_pow _ _ hCc1)
     (show (0:ℝ) < 1 / Cc by positivity)
@@ -399,53 +397,62 @@ theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
     refine le_trans hmk ?_
     have hden : ((Cc : ℝ) ^ 2) * ((1 : ℝ) / Cc) = (Cc : ℝ) := by field_simp
     have hcast : ((Cc ^ 2 : ℕ) : ℝ) = ((Cc : ℝ)) ^ 2 := by push_cast; ring
-    rw [hcast, hden]
-    have hcardeq : ((sampleSpace q Y).card : ℝ) = ((modulus q Y : ℕ) : ℝ) := by
-      rw [card_sampleSpace]
-    rw [hcardeq]
+    rw [hcast, hden, show ((sampleSpace q Y).card : ℝ) = ((modulus q Y : ℕ) : ℝ) from
+      congrArg _ (card_sampleSpace q Y)]
     have hM0 : (0 : ℝ) ≤ ((modulus q Y : ℕ) : ℝ) := by positivity
-    have : ((modulus q Y : ℕ) : ℝ) / (Cc : ℝ) = (1 / (Cc : ℝ)) * ((modulus q Y : ℕ) : ℝ) := by
-      ring
-    rw [this]
+    rw [show ((modulus q Y : ℕ) : ℝ) / (Cc : ℝ)
+      = (1 / (Cc : ℝ)) * ((modulus q Y : ℕ) : ℝ) by ring]
     exact mul_le_mul_of_nonneg_right hCceps hM0
   -- ### assembly
-  have hsub := uncaptured_decomposition q Y Cc n
-  calc (((sampleSpace q Y).filter (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)
-      ≤ ((((sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m)
-            ∪ (sampleSpace q Y).filter (fun m =>
-                ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)))
-          ∪ (sampleSpace q Y).filter (fun m =>
-              (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter
-                (fun r => r.Prime ∧ r ∣ m), (1 : ℝ) / r)).card : ℝ) := by
-        exact_mod_cast Nat.cast_le.mpr (Finset.card_le_card hsub)
-    _ ≤ ε * ((sampleSpace q Y).card : ℝ) := by
-        have h1 := Finset.card_union_le
-          ((sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m)
-            ∪ (sampleSpace q Y).filter (fun m =>
-              ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)))
-          ((sampleSpace q Y).filter (fun m =>
-              (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter
-                (fun r => r.Prime ∧ r ∣ m), (1 : ℝ) / r))
-        have h2 := Finset.card_union_le
-          ((sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m))
-          ((sampleSpace q Y).filter (fun m =>
-              ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)))
-        have hc1 : (((((sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m)
-            ∪ (sampleSpace q Y).filter (fun m =>
-              ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)))
-          ∪ (sampleSpace q Y).filter (fun m =>
-              (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter
-                (fun r => r.Prime ∧ r ∣ m), (1 : ℝ) / r)).card : ℕ) : ℝ)
-            ≤ ((((sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m)).card : ℕ) : ℝ)
-              + ((((sampleSpace q Y).filter (fun m =>
-                  ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j
-                    ∧ genSeqAvoid q m j ≤ Y))).card : ℕ) : ℝ)
-              + ((((sampleSpace q Y).filter (fun m =>
-                  (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter
-                    (fun r => r.Prime ∧ r ∣ m), (1 : ℝ) / r)).card : ℕ) : ℝ) := by
-          have := Nat.le_trans h1 (Nat.add_le_add_right h2 _)
-          exact_mod_cast this
-        linarith [hpiece1, hpiece2, hpiece3, hc1]
+  set Fdeg := (sampleSpace q Y).filter (fun m =>
+    ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)) with hFdeg
+  set Fheavy := (sampleSpace q Y).filter (fun m =>
+    (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter (fun r => r.Prime ∧ r ∣ m),
+      (1 : ℝ) / r) with hFheavy
+  have h1 := Finset.card_union_le (Gset Y Cc n ∪ Fdeg) Fheavy
+  have h2 := Finset.card_union_le (Gset Y Cc n) Fdeg
+  have hc1 : ((((Gset Y Cc n ∪ Fdeg) ∪ Fheavy).card : ℕ) : ℝ)
+      ≤ ((Gset Y Cc n).card : ℝ) + (Fdeg.card : ℝ) + (Fheavy.card : ℝ) := by
+    exact_mod_cast Nat.le_trans h1 (Nat.add_le_add_right h2 _)
+  linarith [hpiece1, hpiece2, hpiece3, hc1]
+
+/-! ## Part 6 — the headline -/
+
+/-- **Almost all seeds capture `q`.**
+
+*Scope (honest, and load-bearing).*  This is a **population** theorem over the seed
+ensemble `sampleSpace q Y = [1, M_Y]`, one full period of `SelectionLaw.modulus q Y`, at a
+truncation `Y` chosen by the policy window.  It says: for a **fixed** prime `q` and any
+`ε > 0` there are a horizon `n` and a truncation `Y` such that at most an `ε`-fraction of
+the seeds are simultaneously coprime to `q` and *uncaptured* — their genuine greedy orbit
+`genSeq m ·` does not select `q` in its first `n` steps.
+
+What is **not** claimed:
+
+* nothing about the actual Euclid–Mullin orbit of the seed `2` — the orbit-specificity
+  barrier (dead ends #90, #117) is untouched;
+* nothing simultaneous in `q`: `n` and `Y` depend on `q` and `ε`, and the uniform-in-`q`
+  form remains open;
+* nothing asymptotic: this is finite-horizon counting, with no equidistribution hypothesis
+  anywhere in the chain.
+
+*Proof.*  Split the uncaptured seeds by `uncaptured_decomposition` and feed
+`TheoremC.theorem_C` to the generic assembly `three_type_union_small`. -/
+theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
+    ∀ ε : ℝ, 0 < ε → ∃ n Y : ℕ,
+      (((sampleSpace q Y).filter (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)
+        ≤ ε * ((sampleSpace q Y).card : ℝ) := by
+  intro ε hε
+  classical
+  obtain ⟨n, Y, Cc, -, hbound⟩ := three_type_union_small q hq hε
+    (fun Y Cc n => (sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m))
+    (fun _ _ _ _ hm => (Finset.mem_filter.mp hm).2.2.2.1)
+    (fun Cc hCc => by
+      obtain ⟨κ, hκ, K₀, n₁, h⟩ := theorem_C q Cc hq hCc
+      exact ⟨κ, hκ, K₀, n₁, fun Y n hn hCcn hpol hthr =>
+        h Y n hn hCcn hpol fun m hm hg => hthr m hm (Finset.mem_filter.mpr ⟨hm, hg⟩)⟩)
+  exact ⟨n, Y, le_trans (Nat.cast_le.mpr
+    (Finset.card_le_card (uncaptured_decomposition q Y Cc n))) hbound⟩
 
 end AlmostAllGenMC
 
