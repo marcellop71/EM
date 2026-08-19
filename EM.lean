@@ -147,6 +147,8 @@ import EM.Population.LemmaD
 import EM.Population.LemmaDBox
 import EM.Population.LargeStepRoughness
 import EM.Population.MertensLower
+import EM.Population.ProfiniteDynamics
+import EM.Population.ProfiniteEnsemble
 import EM.Population.ReciprocalSum
 import EM.Population.RigidityMaster
 import EM.Population.SeedCapture
