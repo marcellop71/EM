@@ -73,9 +73,13 @@ propagating congruence invariant blocks a prime.
 \section{Introduction}
 \label{sec:intro}
 
-Euclid's proof that there are infinitely many primes takes a finite set of
-primes and factors the product plus one.  Mullin~\cite{Mullin1963} made
-the choice canonical: always take the \emph{smallest} prime factor.
+Euclid's proposition~IX.20 of the \emph{Elements} shows that for any finite
+set of distinct primes, \emph{every} prime factor of their product plus one
+lies outside the set: to grow your set of primes you may pick any factor of
+their product plus one
+(\href{https://open.substack.com/pub/marcellop71/p/a-subtle-misreading-of-euclid}{a
+Substack post I wrote on this}).  Mullin~\cite{Mullin1963} made the choice
+canonical: always take the \emph{smallest} prime factor.
 \begin{equation}\label{eq:em}
   a(0)=2, \qquad a(n{+}1)=\lpf\bigl(a(0)a(1)\cdots a(n)+1\bigr).
 \end{equation}
