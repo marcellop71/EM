@@ -49,12 +49,23 @@ uncaptured", which depends on `m` only through `m mod M_Y`.  With that replaceme
 set is genuinely `M_Y`-periodic, and the generic block-counting lemma
 `PeriodicDensity.eventually_density_le` applies verbatim.
 
+## Finitely many primes at a time, and no further
+
+`finite_simultaneous_density` is the strongest simultaneous statement natural density
+supports.  It does *not* extend to all primes: natural density is only finitely additive,
+so there is no Borel–Cantelli, and increasing sets of density `≤ δ` can have union of
+density `1`.  Making the per-`q` failure fractions summable does not help — summability is
+a hypothesis of a theorem about countably additive measures.  The simultaneous-in-`q` form
+therefore needs a genuinely different ambient measure (see
+`docs/analysis/simultaneous_in_q_scoping.md`); it is **OPEN**.
+
 ## Main results
 
 * `uncaptured_in_few_classes` — the covering lemma: the uncaptured seeds coprime to `q`
   live in a set `T` of residue classes modulo a period `M` with `#T ≤ (ε/2) · M`.
 * `almost_all_genmc_density` — the headline, in the `∀ X ≥ X₀` form.
 * `almost_all_genmc_limsup` — the `limsup` restatement.
+* `finite_simultaneous_density` — the finite-union form, uniform over a `Finset` of primes.
 
 Session 312, WP-N Part D.
 -/
@@ -154,6 +165,80 @@ theorem almost_all_genmc_limsup (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < �
   have h := PeriodicDensity.limsup_density_le hM T
     (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q) hP hε hTcard
   convert h using 5
+
+/-! ## 3. Finitely many primes at a time -/
+
+/-- **The finite-union form.**  For any *finite* set `S` of primes and any `ε > 0` there is
+a single horizon `n` and a single threshold `X₀` such that for all `X ≥ X₀` the seeds
+`m ∈ [1, X]` failing to capture *some* `q ∈ S` before depth `n` number at most `ε · X`.
+
+*Proof.*  Apply `almost_all_genmc_density` to each `q ∈ S` with the smaller tolerance
+`ε / #S`, take `n` and `X₀` to be the suprema of the resulting horizons and thresholds
+(the bad predicate is antitone in the horizon, so raising `n` only shrinks the bad set),
+and sum the `#S` bounds.
+
+**Scope.**  `S` is *finite*, and `n`, `X₀` depend on `S`.  This does **not** extend to all
+primes: natural density is only finitely additive, so there is no Borel–Cantelli, and an
+increasing union of sets of density `≤ δ` can have density `1`.  See the module
+docstring — the simultaneous-in-`q` form is **OPEN**. -/
+theorem finite_simultaneous_density (S : Finset ℕ) (hS : ∀ q ∈ S, q.Prime) {ε : ℝ}
+    (hε : 0 < ε) :
+    ∃ n X₀ : ℕ, ∀ X, X₀ ≤ X →
+      (((Finset.Icc 1 X).filter
+          (fun m => ∃ q ∈ S, ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)
+        ≤ ε * (X : ℝ) := by
+  classical
+  rcases S.eq_empty_or_nonempty with rfl | hSne
+  · -- no primes to capture: the bad set is empty
+    refine ⟨0, 0, fun X _ => ?_⟩
+    refine le_trans (le_of_eq ?_) (mul_nonneg hε.le (Nat.cast_nonneg X))
+    simp
+  · have hcard : (0 : ℝ) < (S.card : ℝ) := by
+      exact_mod_cast Finset.card_pos.mpr hSne
+    have hε' : 0 < ε / (S.card : ℝ) := div_pos hε hcard
+    -- totalise before choosing, so that `choose` yields plain functions `ℕ → ℕ`
+    have key : ∀ q : ℕ, ∃ n X₀ : ℕ, q ∈ S → ∀ X, X₀ ≤ X →
+        (((Finset.Icc 1 X).filter
+            (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)
+          ≤ ε / (S.card : ℝ) * (X : ℝ) := by
+      intro q
+      by_cases hq : q ∈ S
+      · obtain ⟨n, X₀, h⟩ := almost_all_genmc_density q (hS q hq) hε'
+        exact ⟨n, X₀, fun _ => h⟩
+      · exact ⟨0, 0, fun h => absurd h hq⟩
+    choose N B hNB using key
+    refine ⟨S.sup N, S.sup B, fun X hX => ?_⟩
+    -- the bad set is covered by the union of the per-`q` bad sets at their own horizons
+    have hsub : ((Finset.Icc 1 X).filter
+        (fun m => ∃ q ∈ S, ¬ q ∣ m ∧ ¬ ∃ j < S.sup N, genSeq m j = q)) ⊆
+        S.biUnion (fun q => (Finset.Icc 1 X).filter
+          (fun m => ¬ q ∣ m ∧ ¬ ∃ j < N q, genSeq m j = q)) := by
+      intro m hm
+      rw [Finset.mem_filter] at hm
+      obtain ⟨hmIcc, q, hqS, hqm, hcap⟩ := hm
+      refine Finset.mem_biUnion.mpr ⟨q, hqS, Finset.mem_filter.mpr ⟨hmIcc, hqm, ?_⟩⟩
+      rintro ⟨j, hj, hjq⟩
+      exact hcap ⟨j, lt_of_lt_of_le hj (Finset.le_sup (f := N) hqS), hjq⟩
+    have h1 : (((Finset.Icc 1 X).filter
+        (fun m => ∃ q ∈ S, ¬ q ∣ m ∧ ¬ ∃ j < S.sup N, genSeq m j = q)).card : ℝ)
+        ≤ ((S.biUnion (fun q => (Finset.Icc 1 X).filter
+            (fun m => ¬ q ∣ m ∧ ¬ ∃ j < N q, genSeq m j = q))).card : ℝ) := by
+      exact_mod_cast Finset.card_le_card hsub
+    have h2 : ((S.biUnion (fun q => (Finset.Icc 1 X).filter
+        (fun m => ¬ q ∣ m ∧ ¬ ∃ j < N q, genSeq m j = q))).card : ℝ)
+        ≤ ∑ q ∈ S, (((Finset.Icc 1 X).filter
+            (fun m => ¬ q ∣ m ∧ ¬ ∃ j < N q, genSeq m j = q)).card : ℝ) := by
+      exact_mod_cast Finset.card_biUnion_le
+    have h3 : ∑ q ∈ S, (((Finset.Icc 1 X).filter
+        (fun m => ¬ q ∣ m ∧ ¬ ∃ j < N q, genSeq m j = q)).card : ℝ)
+        ≤ ∑ _q ∈ S, ε / (S.card : ℝ) * (X : ℝ) :=
+      Finset.sum_le_sum fun q hq =>
+        hNB q hq X (le_trans (Finset.le_sup (f := B) hq) hX)
+    have h4 : ∑ _q ∈ S, ε / (S.card : ℝ) * (X : ℝ) = ε * (X : ℝ) := by
+      have hne : (S.card : ℝ) ≠ 0 := ne_of_gt hcard
+      rw [Finset.sum_const, nsmul_eq_mul]
+      field_simp
+    linarith [h1, h2, h3, h4.le, h4.ge]
 
 end AlmostAllDensity
 
