@@ -526,6 +526,87 @@ theorem captured_of_mem_visited {q m m' M y n : ℕ} (hq : q.Prime)
     exact Nat.find_min hex hj ⟨lt_trans hj hkn, hexp, hhit⟩
   exact ⟨k, hkn, (genSeq_capture_at hq hm hm' hqm' hM hmod hy hkn hkexp hkhit hmin).2⟩
 
+/-! ## 6. The coupling lemma for orbits that miss `q`
+
+The coupling half of Lemma C (`genSeq_prefix_of_no_capture`) is conditioned on
+the *seed residue* `m' mod q` avoiding the death classes `-c_j⁻¹` at the
+`q`-exposed steps of the reference orbit; that is what makes it usable for a
+population argument, where the reference orbit is run once and the seeds vary.
+
+The lemma below is the complementary, purely orbit-local statement: it is
+conditioned directly on the genuine orbit of `m` *never selecting* `q` before
+depth `n`, and concludes that the `q`-free reference dynamics started at the
+same seed reproduces that orbit exactly.  No CRT data, no auxiliary seed, and
+no exposure hypothesis are involved.
+
+This is hygiene for anyone reasoning about `genSeqAvoid`: it says that the
+`q`-free dynamics is a genuine *reference* trajectory, agreeing with the truth
+for as long as `q` is not the greedy choice.  It is **not** a step towards
+Mullin's conjecture — nothing here constrains the missed set of an orbit — and
+must not be advertised as one.  It was identified as missing in
+`docs/analysis/sure_layer_missed_primes.md` §1 (Session 313). -/
+
+/-- If `q` is prime and the least prime factor of `N ≥ 2` is not `q`, then
+deleting the `q`-part of `N` does not change its least prime factor.
+
+This is the one-step engine of the coupling lemma: the two inequalities are
+`minFac_qfreePart_least` (applied to the prime `N.minFac`) and minimality of
+`N.minFac` against the prime `(qfreePart q N).minFac`, which divides `N`. -/
+theorem minFac_qfreePart_eq_minFac {q N : ℕ} (hq : q.Prime) (hN : 2 ≤ N)
+    (hne : N.minFac ≠ q) : (qfreePart q N).minFac = N.minFac := by
+  have hN0 : N ≠ 0 := by omega
+  have hN1 : N ≠ 1 := by omega
+  have hprime : Nat.Prime N.minFac := Nat.minFac_prime hN1
+  -- `N.minFac` is a prime `≠ q` dividing `N`, hence divides the `q`-free part.
+  have hdvd : N.minFac ∣ qfreePart q N :=
+    (prime_dvd_qfreePart_iff hq hprime hne hN0).mpr (Nat.minFac_dvd N)
+  -- In particular the `q`-free part is nondegenerate.
+  have h2 : 2 ≤ qfreePart q N :=
+    le_trans hprime.two_le (Nat.le_of_dvd (qfreePart_pos q hN0) hdvd)
+  refine Nat.le_antisymm (minFac_qfreePart_least hq hN0 hprime hne (Nat.minFac_dvd N)) ?_
+  obtain ⟨hp', hd', -⟩ := minFac_qfreePart_spec hq hN0 h2
+  exact Nat.minFac_le_of_dvd hp'.two_le hd'
+
+/-- **Coupling lemma (accumulators).**  If the genuine orbit of the seed `m`
+never selects the prime `q` at a step `< n`, then the `q`-free reference
+accumulator agrees with the genuine accumulator throughout `[0, n]`. -/
+theorem genProdAvoid_eq_genProd_of_missed {q m n : ℕ} (hq : q.Prime) (hm : 1 ≤ m)
+    (hmiss : ∀ j < n, genSeq m j ≠ q) :
+    ∀ j ≤ n, genProdAvoid q m j = genProd m j := by
+  intro j
+  induction j with
+  | zero => intro _; rfl
+  | succ k ih =>
+    intro hk
+    have hkn : k < n := by omega
+    have hprev : genProdAvoid q m k = genProd m k := ih (by omega)
+    have hstep : (qfreePart q (genProd m k + 1)).minFac = genSeq m k := by
+      rw [genSeq_def]
+      exact minFac_qfreePart_eq_minFac hq
+        (by have := genProd_pos hm k; omega) (genSeq_def m k ▸ hmiss k hkn)
+    rw [genProdAvoid_succ, genProd_succ, genSeqAvoid_def, hprev, hstep]
+
+/-- **Coupling lemma (multipliers).**  If the genuine orbit of the seed `m`
+never selects the prime `q` at a step `< n`, then the `q`-free reference
+multipliers agree with the genuine multipliers throughout `[0, n)`. -/
+theorem genSeqAvoid_eq_genSeq_of_missed {q m n : ℕ} (hq : q.Prime) (hm : 1 ≤ m)
+    (hmiss : ∀ j < n, genSeq m j ≠ q) :
+    ∀ j < n, genSeqAvoid q m j = genSeq m j := by
+  intro j hj
+  rw [genSeqAvoid_def,
+    genProdAvoid_eq_genProd_of_missed hq hm hmiss j (le_of_lt hj), genSeq_def]
+  exact minFac_qfreePart_eq_minFac hq (by have := genProd_pos hm j; omega)
+    (genSeq_def m j ▸ hmiss j hj)
+
+/-- If the genuine orbit of `m` never selects `q` at all, then the `q`-free
+reference dynamics *is* the genuine dynamics, at every depth. -/
+theorem genSeqAvoid_eq_genSeq_of_never {q m : ℕ} (hq : q.Prime) (hm : 1 ≤ m)
+    (hmiss : ∀ j, genSeq m j ≠ q) (k : ℕ) :
+    genProdAvoid q m k = genProd m k ∧ genSeqAvoid q m k = genSeq m k :=
+  ⟨genProdAvoid_eq_genProd_of_missed hq hm (fun j _ => hmiss j) k (Nat.le_succ k),
+   genSeqAvoid_eq_genSeq_of_missed hq hm (n := k + 1) (fun j _ => hmiss j) k
+     (Nat.lt_succ_self k)⟩
+
 /-- **Lemma C (capture identity).**  Under the CRT hypotheses of Lemma C, the
 genuine orbit of the seed `m'` captures the prime `q` within its first `n` steps
 **iff** the seed residue `m' mod q` lies in the negated inverse of the
