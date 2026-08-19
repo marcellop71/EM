@@ -21,9 +21,20 @@ Chebyshev's `θ`.  The tail estimate of Group 7 needs the matching *lower* bound
 log n - 13  ≤  ∑_{p ≤ n, p prime} (log p)/p            (`mertens_lower`)
 ```
 
-which is **not** in Mathlib (Mathlib only has qualitative divergence of `∑ 1/p`,
-`Mathlib.NumberTheory.SumPrimeReciprocals`).  We prove it from scratch, by the
-classical elementary route of Mertens / Chebyshev:
+which is **not** in Mathlib as of the pinned `v4.33.0` (Mathlib only has qualitative
+divergence of `∑ 1/p`, `Mathlib.NumberTheory.SumPrimeReciprocals`); a pull request
+upstreaming the Mertens theorems is open at mathlib4#41394.  We prove it from scratch, by
+the classical elementary route of Mertens / Chebyshev.
+
+**No priority is claimed.**  Sharper formalizations of Mertens' first theorem exist
+elsewhere: the Isabelle/HOL AFP entry *The Prime Number Theorem* (Eberl–Paulson, 2018)
+proves `𝔐(n) − ln n ∈ (−1 − 9/π², ln 4]` in `Mertens_Theorems.thy`, and the Lean project
+`PrimeNumberTheoremAnd` proves `|∑_{p ≤ x} log p / p − log x| ≤ log 4 + 4` in
+`IEANTN/Mertens.lean`.  Our constants are deliberately crude; all that matters here is
+that the bound is elementary, self-contained and sufficient for the tail estimate.  See
+`agents/state/findings_mertens_priorart.md` (Session 312).
+
+The route:
 
 1. **C0** — `n^n ≤ e^n · n!` (elementary induction on `(1+1/k)^k ≤ e`), hence
    `n log n - n ≤ log (n!)`.
