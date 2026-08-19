@@ -17,9 +17,13 @@ reconstructed in full from the session logs into `tools/dead_ends.tsv` (single s
 truth; `python3 tools/gen_dead_ends.py` regenerates the registry block, the paper table
 `paper/dead_ends_table.tex` and `docs/dead_ends_catalog.md`): 160 numbers, 150 entries (#25,
 #64–#72 were never assigned), 29 genuinely witnessed, 10 revivable.**
-**As of 2026-08-19 (Session 312, entries #161–#166: six statement-level near-misses from the
-seed-average programme of sessions 309–311, all repaired in flight): 166 numbers, 156 entries
-(#25, #64–#72 still the only unassigned numbers), 29 genuinely witnessed, 15 revivable.**
+**As of 2026-08-19 (Session 312): 168 numbers, 158 entries (#25, #64–#72 still the only
+unassigned numbers), 31 genuinely witnessed, 15 revivable.**  Entries #161–#166 are six
+statement-level near-misses from the seed-average programme of sessions 309–311, all repaired
+in flight; #167–#168 are the two candidate routes to the simultaneous-in-`q` form, both refuted
+while scoping §G (logarithmic density; summable per-`q` rates).  The witnessed count rose by two
+because #167 and #168 each carry a genuine Lean witness bounding what the refuted route can
+deliver (`SelectionLaw.selection_law`, `AlmostAllDensity.finite_simultaneous_density`).
 
 The `File` column of the tables there was re-verified against disk in
 Session 307. Historical numbering aliases (Session 180's "#136", Session

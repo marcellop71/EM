@@ -51,7 +51,7 @@ the file where it is documented, and whether a formal Lean witness exists.
 
 ## Catalog
 
-**Single source of truth: `tools/dead_ends.tsv`** (one row per number 1–166: category, name,
+**Single source of truth: `tools/dead_ends.tsv`** (one row per number 1–168: category, name,
 approach, rationale, session, witness, revival score, status).  `python3 tools/gen_dead_ends.py`
 regenerates the block below, `paper/dead_ends_table.tex` (the complete catalogue in the paper's
 appendix), `paper/dead_ends_stats.tex` and `docs/dead_ends_catalog.md`, and prints the counts that
@@ -67,7 +67,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 
 <!-- BEGIN GENERATED CATALOGUE -->
 
-166 numbers; 156 catalogued entries; 29 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
+168 numbers; 158 catalogued entries; 31 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
 
 ### Orbit specificity (OS, 8) — population or ensemble statistics do not determine what one orbit does
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -181,7 +181,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 164 | Block-chaining substitute for Freedman | 309 | False on two independent counts: (i) the harmonic charge budget is *global* and admits no per-block version — a middle block may consist entirely of high-exponent steps, so the per-block lower bound fails; (ii) the goodness of step $k$ depends on $\tilde p_{k+1}$, so the block indicator is not block-past-measurable and the chaining is not a martingale. Replaced by a finite-tree exponential supermartingale driven by the *sure* compensator bound (`TreeChernoff.chernoff_quarter_local`), which needs neither stopping nor blocks. | — | 3 |
 | 165 | Omitting $r \ne q$ from the $q$-free box process | 309 | False at $r = q$: the $q$-free selector $\tilde p = \minFac_{\ne q}$ ignores $q$ entirely, so the brink lemma (F3) fails at $r = q$ and the step survival $S_k$ computes the wrong probability. The $q$-free type is a function of $m \bmod M_Y$ with $q \nmid M_Y$; $q$ is not a box coordinate at all, and the $q$-coordinate is carried separately by the capture identity. | — | 1 |
 
-### Technique mismatch (TM, 51) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
+### Technique mismatch (TM, 53) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 4 | Consecutive vs arbitrary subsequences (ordering problem) | 5 | Those theorems concern arbitrary subsequences/subset products or existence of some good ordering; DH needs prefix products of one fixed ordering (the EM walk). Generation/coverage of subsets says nothing about the specific order | — | - |
@@ -235,6 +235,8 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 144 | Reciprocity transfer to min sequence fails | 298 | Max proofs make a real character constant on the finite factor support of the Euclid number; $\minFac$ confines it to a cofinite set, where no nontrivial character is constant (`char_non_constancy`). The invariant is congruential at $\Pi_n=8mP_n$: eviction automatic, fullness at $\Pi_n$, fragment empty. | `Reciprocity.no_reciprocity_induction_proof` | 0 |
 | 147 | Avoidance does not force factor-set diversity | 299 | (F1) `meanCharValue` contracts by averaging over a factor set while the walk selects one factor with $\\|\chi(s)\\|=1$; (F2) the chain concludes some branch reaches $-1$, avoidance constrains one branch; (F3) `productMultiset` fixes factor sets in advance, real ones are path-dependent. | `diverse_steps_imply_vanishing` | 1 |
 | 152 | Support-invisibility of algebraic invariants | 299 | Missingness is a support condition on $\sum_p e_p$, but every computable algebraic invariant factors through $p\mapsto p \bmod m$, hence through the walk, which sees only the product. | — | 0 |
+| 167 | Logarithmic density for the simultaneous-in-$q$ form | 312 | The premise is false: logarithmic density is *also* only finitely additive (singletons have log density $0$ and their union is $\mathbb{N}$), so it supports no Borel–Cantelli. The settings where log density genuinely is better behaved do not apply: Davenport–Erd\H{o}s needs *sets of multiples* (the failure sets $F_q$ are not divisibility conditions — that is exactly what excluding $q$ from `bandUpTo` means, #165), and log-averaged Furstenberg systems gain from *dilation invariance*, which the greedy map lacks and which is orthogonal to simultaneity anyway. Independently, the $1/m$ weights destroy `SelectionLaw.selection_law`: it is an *equality* obtained from CRT surjectivity on a full period and requires a weight constant on residue classes, whereas $\sum_{m\le X,\ m\equiv a (M)} 1/m = (1/M)\log(X/M)+O(1/M)$ is exact only as $X/M\to\infty$ — precisely the regime in which log density coincides with natural density on these $M$-periodic events. Pure loss. | `SelectionLaw.selection_law` | 0 |
+| 168 | Summable per-$q$ rates close the union over all primes | 312 | Summability *is* achievable ($\varepsilon_q=q^{-2}$ with $C_c(q)=\max(48q,3q^2)$ and $n(q)\approx 2e^{250}\exp(8B\varphi(q))$; the $e^{25}\log n/n$ tail is slack, not binding), and the differing sample spaces are *not* an obstruction ($\mathrm{modulus} q Y \mid P(Y')$, and `SelectionLaw.genSeqAvoid_prefix_eq_of_modEq` is stated for an arbitrary multiple of the band primes), so the finite-$S$ union bound is a genuine corollary (`AlmostAllDensity.finite_simultaneous_density`). But at scale $X$ only $q \lesssim \log\log\log X$ are controlled, and Borel–Cantelli is a theorem about *countably additive* measures: under a finitely additive density $\sum_q \varepsilon_q<\infty$ implies nothing about $\bigcup_q F_q$ (increasing sets of density $\le\delta$ can have union of density $1$). The rate is not the obstruction; the additivity is. The repair is a countably additive ambient measure — the profinite ensemble $(\widehat{\mathbb{Z}},\mathrm{Haar})$, in which every event is a cylinder event. | `AlmostAllDensity.finite_simultaneous_density` | 1 |
 
 ### Scale mismatch (SM, 14) — the error term of the tool exceeds the signal on an $O(\log x)$-term or exponentially sparse orbit
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -698,14 +700,16 @@ example := @chebyshev_concentration_proved -- ChebyshevConcentration PROVED (unc
 /-! ## Aggregate statistics -/
 
 /-- Highest catalogued dead-end number.  Numbers are assigned progressively in the session logs
-and cited everywhere by number, so they are never renumbered.  Ten of the 166 numbers (#25,
+and cited everywhere by number, so they are never renumbered.  Ten of the 168 numbers (#25,
 #64–#72) were never assigned to any entry (2026-08-18 reconstruction, `tools/dead_ends.tsv`);
 `deadEndEntryCount` is the number of actual entries.  Session 312 added #161–#166 (six
-statement-level near-misses from the seed-average programme, sessions 309–311). -/
-def deadEndCount : ℕ := 166
+statement-level near-misses from the seed-average programme, sessions 309–311) and #167–#168
+(the two candidate routes to the simultaneous-in-`q` form, both refuted while scoping §G:
+logarithmic density, and summable per-`q` rates). -/
+def deadEndCount : ℕ := 168
 
-/-- Number of catalogued dead-end entries: the 166 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 156
+/-- Number of catalogued dead-end entries: the 168 numbers minus the ten never assigned. -/
+def deadEndEntryCount : ℕ := 158
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -716,8 +720,10 @@ full catalogue found genuine witnesses for entries the old tables did not carry 
 (`dirichlet_residues_independent`), #58 (via #117's counterexample), #93 (`cme_implies_feb`),
 #96 (`prod_superlinear`), #110 (`doeblin_eq_cme`), #119 (`sp_eq_cme`), #120
 (`lyapunov_telescope`) — and #144's `no_reciprocity_induction_proof` (Session 307, a real
-proof), giving 29. -/
-def witnessedDeadEndCount : ℕ := 29
+proof), giving 29.  Session 312's #167 (`SelectionLaw.selection_law`) and #168
+(`AlmostAllDensity.finite_simultaneous_density`) bring it to 31: in both, the refutation of the
+route is witnessed by the theorem that bounds what the route can actually deliver. -/
+def witnessedDeadEndCount : ℕ := 31
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
 #136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
@@ -728,9 +734,9 @@ def revivableDeadEndCount : ℕ := 15
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 166 ∧
-    deadEndEntryCount = 156 ∧
-    witnessedDeadEndCount = 29 ∧
+    deadEndCount = 168 ∧
+    deadEndEntryCount = 158 ∧
+    witnessedDeadEndCount = 31 ∧
     revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival
