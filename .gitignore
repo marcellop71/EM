@@ -3,6 +3,11 @@ __pycache__/
 
 tmp/
 
+# Compiled papers — regenerate with `lualatex main.tex`; published as release
+# assets rather than tracked (they were purged from history 2026-08-19).
+paper/main.pdf
+paper/short/main.pdf
+
 # LaTeX build artifacts
 *.listing
 *.aux
