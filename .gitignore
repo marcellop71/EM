@@ -21,6 +21,9 @@ EM/Archive/
 .claude/
 texput.log
 
-# detached-job records (agents/jobs.py); logs are per-run scratch
-agents/state/jobs/*
-!agents/state/jobs/.gitkeep
+# Private research record and internal reviews: kept on disk, never published.
+# Purged from all history 2026-08-19 (git filter-repo); a copy lives in
+# ../EM-private/ and the pre-rewrite state is in ../EM-full-backup-*.bundle.
+# Subsumes the detached-job records written by agents/jobs.py.
+agents/state/
+docs/reviews/
