@@ -1193,3 +1193,29 @@ and that a `ζ(2) = π²/6` "unprecedented" claim was also false (Mathlib has th
 "Not in Mathlib at pin `vX.Y.Z`" is usually the only defensible form. Record:
 `agents/state/findings_mertens_priorart.md`. One further claim in the repo — "first van der Corput
 bound in any proof assistant" (`EM/LargeSieve/Analytic.lean`) — is **unverified and suspect**.
+
+## Session 313 (2026-08-19) — scoping session, no new Lean; one small target going spare
+
+Session 313 was scoping only (`docs/analysis/sure_layer_missed_primes.md`, verdict **DEAD — budget
+vacuous**). Dead ends #169–#174 were catalogued; `EM/Meta/DeadEnds.lean` is now
+**174 / 164 / 32 / 15** and re-exports `SeedCapture.genSeqAvoid_ne_avoided` as the witness for #171
+(this added `import EM.Population.SeedCapture` to the registry's import surface).
+
+**Target going spare — the Coupling Lemma** (~15 lines, `EM/Population/SeedCapture.lean`). Verified
+absent from the repo; only the unrelated `LemmaDBox.genSeqAvoid_eq_iff` greps nearby.
+
+> If `q` is prime, `m ≥ 2`, and `genSeq m j ≠ q` for all `j < n`, then `genProdAvoid q m j =
+> genProd m j` and `genSeqAvoid q m j = genSeq m j` for all `j < n`.
+
+Proof: induction on `k`. With `P = genProd m k`, `N = P+1 ≥ 3`, `p = minFac N = genSeq m k ≠ q`:
+`p` prime, `p ∣ N`, `p ≠ q`, so `prime_dvd_qfreePart_iff` gives `p ∣ qfreePart q N`, whence
+`(qfreePart q N).minFac ≤ p`. Conversely `qfreePart q N ≥ 2` (else `N` is a power of `q`, forcing
+`minFac N = q`), so `(qfreePart q N).minFac` is a prime dividing `N` via `qfreePart_dvd`, hence
+`≥ minFac N = p`. Equality; accumulators agree at `k+1`.
+
+Useful corollary to state: if `q` is missed by the whole orbit, the `q`-free reference dynamics **is**
+the true dynamics. This is hygiene for anyone reasoning about `genSeqAvoid` — it is *not* a step toward
+MC, and must not be advertised as one.
+
+**Do not** attempt to derive anything about the missed set of a single orbit from
+`LargeStepRoughness`. See #169–#174.

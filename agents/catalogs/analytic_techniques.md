@@ -518,3 +518,45 @@ a better rate; it is a genuine measure.
 | Session | Proposal | Outcome | Advancement |
 |---|---|---|---|
 | 312 | Scoping §G: (i) `q`-uniform rate + union bound; (ii) logarithmic density | (i) **NEEDS-NEW-INPUT** — corrected the dispatch on two points (the `log n/n` tail is *not* binding; the differing moduli are *not* fatal), identified the true obstruction as finite additivity, and extracted the finite-`S` corollary (since PROVED). (ii) **DEAD**, dead end #167. Third route found: **`(Ẑ, Haar)`**, delivering the simultaneous form with no `q`-uniform rate and no new analysis. | **0.6** |
+
+## Session 313 (2026-08-19) — the SURE layer applied to ONE orbit: closed
+
+**New technique family row — T6.6, Sure / pathwise finitary budgets** (it masquerades as a
+probabilistic method, hence the placement under T6):
+
+| ID | Technique | Preconditions | Gives | EM status | Dead ends | Notes |
+|---|---|---|---|---|---|---|
+| T6.6 | Harmonic charge budget / box process (LS) | Fixed seed, `q`-free greedy dynamics, auxiliary prime `r ≠ q`, nondegeneracy | `Σ_{charged} 1/|box| ≤ H_{r−1}`; aggregated `≤ π(N)+N log 4`; compensator `Σ_k S_k ≥ (c₁/2)n` | **PROVED, but VACUOUS for one orbit** | #169–#174, #90, #166 | Per-seed *statement* whose *content* is seed-measure. At a fixed seed the sum telescopes to `H_{r−1} − H_{r−1−C}`, so the theorem ⟺ `C ≤ r−2` (the Lean proof is literally an injection into `range (r−1)`). Session 313. |
+
+**T2 (Sieve Methods) — annotation.** The seed-average box sieve is population-only *by
+construction*. `AlmostAllGenMC.almost_all_genmc` is per fixed `q`, natural density on seeds; do not
+cite it as evidence of orbit-level progress.
+
+**Standing caveat (add near the top when next editing).** `pathwise_compensator`, `ls_plus`, and
+everything downstream carry a *type-bound policy* hypothesis (`log Y ≍ n²`, plus a degenerate-tail
+term). Any dispatch wanting to apply these to the orbit of 2 must first supply an unconditional
+`log p_k ≤ k²` — strictly stronger than (C∞), and unavailable. Dead end #173.
+
+**F-frontier note.** The box process is the first *provable* per-path tool that bypasses all four
+legs of the Four-Way Blocker. Its vacuity at a single seed is evidence about the shape of the
+barrier: **a per-path statement provable without any of the four structural inputs has so far
+invariably been a cardinality statement, and the missed set is not cardinality-controlled.**
+
+**Screening test for any future per-path proposal** (the *sign asymmetry of `minFac`*): does it
+produce a **positive divisibility fact about a prescribed prime**? `minFac(N)=p` yields infinitely
+many non-divisibility facts and exactly one divisibility fact, about a prime captured by definition.
+If the proposal produces no positive fact, it is inert.
+
+### What NOT to do
+
+* Do **not** propose bounding the missed set of a single orbit from `charge_sum_le_harmonic`,
+  `chargeBudget_le`, or `pathwise_compensator`. Their per-orbit content is pigeonhole in `ZMod r`.
+* Do **not** propose "the box stays large" as an attackable branch — it is `¬DynamicalHitting(r)` by
+  definition (#170, mirror of #166). The companion branch "rarely exposed" is refuted by
+  `few_small_multipliers`.
+* Do **not** propose any bound on `missed(x)` or `Σ_{q missed ≤ x} 1/q` — every sure size bound points
+  the wrong way, and any nontrivial bound implies (C∞) (#174).
+
+### Track record
+
+| 313 | Sure-layer bound on the missed set of one orbit (LS box process, seed `m=2`) | **DEAD — budget vacuous.** `charge_sum_le_harmonic` ⟺ pigeonhole `C ≤ r−2` ⟺ the definition of exposure; per-orbit weight is the identically-zero capture indicator (gap = #90). Exposure branch refuted by distinctness; "box stays large" = `¬DH(r)` (circular, mirror of #166). `pathwise_compensator` inapplicable (type bound is a policy). `missed(x)` gated on (C∞). Minimal ingredient (NPLB) ⟺ MC-mod-`q` (collapse). By-product: the **Coupling Lemma** (`q` missed ⟹ `genSeqAvoid q m = genSeq m`) is missing from the repo, ~15 lines. | **0.2** |

@@ -48,6 +48,23 @@
 > `EM/Population/TypeBadSmall.lean` (313, `type_bad_small`),
 > `EM/Population/AlmostAllDensity.lean` (248, the headlines). 0 sorry, build green.
 >
+> **2026-08-19 (Session 313):** scoping only, **no new Lean mathematics**. The seed-average
+> programme's one *orbit-valid* ingredient — the sure, per-path harmonic charge budget
+> `LargeStepRoughness.charge_sum_le_harmonic` — was assessed against the question "can it
+> constrain the primes **missed** by a *single* orbit?". Verdict **DEAD — budget vacuous**,
+> reached independently by two attack agents run blind to each other and by the coordinator.
+> The budget is an *identity*: the box starts at `r−1`, a charge decrements it by exactly one
+> and a non-charge leaves it unchanged, so `Σ 1/|box| = H_{r−1} − H_{r−1−C}` and the theorem
+> is *equivalent* to `C ≤ r−2`, which counting units mod `r` forces anyway. The surviving
+> branch, "the box stays large", is `¬DynamicalHitting(r)` by definition (mirror of #166);
+> and every sure theorem is proved about `genSeqAvoid q m`, which
+> `SeedCapture.genSeqAvoid_ne_avoided` shows **never selects `q`** — so the whole layer is
+> satisfied by a dynamics missing `q` by construction. Dead ends **#169–#174** (counts
+> 168/158/31/15 → **174/164/32/15**; #171 witnessed). New principle recorded: the **sign
+> asymmetry of `minFac`** — it yields infinitely many non-divisibility facts and exactly one
+> divisibility fact, so the sure layer can only ever bound hit counts from *above*.
+> Full record: [`docs/analysis/sure_layer_missed_primes.md`](analysis/sure_layer_missed_primes.md).
+
 > Also: dead ends **#161–#168** (six seed-average near misses; log density for the
 > simultaneous-in-`q` form; summable per-`q` rates). **§G frontier reframed**: simultaneity
 > is an *additivity* problem, not a *rate* problem — natural and logarithmic density are both

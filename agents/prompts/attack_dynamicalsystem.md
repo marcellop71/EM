@@ -422,3 +422,39 @@ deterministic success-count cap (strict-growth ≤ q−1, non-exposed ≤ q−1)
 statements into one Chernoff application — no stopping times, no Freedman, no blocks.
 Open: §G simultaneous-q (needs q-uniformity of κ_q = e⁻¹²⁸/(16φ(q)) — the rate already IS
 explicit in q; the blocker is the order of limits in natural density, not the rate).
+
+## Session 313 update (2026-08-19) — your box process cannot constrain ONE orbit
+
+Read `docs/analysis/sure_layer_missed_primes.md`. Your §F charge budget was verified in Session 309
+and remains a genuine achievement — it evades all four legs of the Four-Way Blocker. Session 313
+established the price of that evasion.
+
+**The layer is symmetric between captured and missed primes, hence inert on one orbit.** It is the
+deductive closure of just two facts: the *non-divisibility* content of `minFac` minimality, and
+multiplier distinctness. Neither discriminates between a prime missed forever and one captured at step
+10^100. Dead ends **#169–#174**; do not re-propose per-orbit consequences of the charge budget, the
+brink lemma, or the pathwise compensator, and never read `1/|box|` as a per-path quantity — its only
+meaning is a conditional probability over the **seed fibre**, which is #90.
+
+Concretely, the `(ℤ/5)^×` witness of #90/#117 **is** a box-process witness: `q=5`, `m=2`, all
+multipliers `≡ 4 (mod 5)` gives `box = {2,3}` forever, exactly two charges in the entire history
+(`Σ 1/|box| = 1/4+1/3 ≪ H₄`), brink never reached, `S_k ≡ 1` — and `5` missed forever. Distinctness
+does not rescue it: it constrains the *primes*, not their *residues*.
+
+**New principle, to sit beside the Session-299 anatomy principle — the sign asymmetry of `minFac`.**
+`p_k = minFac(N_k)` yields infinitely many negative facts and exactly one positive fact, about a prime
+captured by definition. The sure layer can therefore produce only *upper* bounds on hit counts —
+`#{k : q ∣ P(k)+1} ≤ π(q)` for **every** `q` — and never the lower bound of 1 that capture requires.
+**Screening test: does your proposal produce a positive divisibility fact about a prescribed prime? If
+not, it is inert.**
+
+**Where T7 can still go:** only §G, the simultaneous-in-`q` form — a *population* question, unaffected
+by the above. The `(Ẑ, Haar)` route (`docs/analysis/simultaneous_in_q_scoping.md` §4) needs no new
+analysis, only measure-theoretic packaging. Advertise the scope change (`ℕ ⊂ Ẑ` is Haar-null) as loudly
+as the existing population caveat, and never conflate it with dead ends #101 or #155.
+
+**Credit where due:** the model obstruction (#171) — that `SeedCapture.genSeqAvoid_ne_avoided` makes
+the whole sure layer satisfiable by a dynamics missing `q` by construction — was your finding, is the
+strongest single argument of Session 313, and is the only one of the six with a ready-made formal
+witness. Keep looking for arguments of that shape: *identify the model class your theorems actually
+quantify over, then exhibit a member of it that fails the conclusion.*

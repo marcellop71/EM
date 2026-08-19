@@ -349,3 +349,57 @@ D5c, Lemma D, Theorem C. Then §G (q-uniformity) is the genuinely open frontier.
 This is the vector's second and third genuine successes (after S309 pathwise_compensator);
 the catalog's 7% historical success rate applies to CLASSICAL ergodic proposals, which
 remain dead — the live pattern is finite-tree martingale arguments on the type filtration.
+
+## Session 313 (2026-08-19) — T7's orbit direction is CLOSED
+
+**T7 scope — strengthened.** T7 was already capped at a.a. GenMC(q) and not a route to MC (#90,
+non-uniformity in `q`). Session 313 found the stronger and more precise reason: **the sure sub-layer
+of T7 cannot by itself constrain any single orbit at all**, because (a) it is proved about a dynamics
+that misses `q` by construction (`SeedCapture.genSeqAvoid_ne_avoided`, dead end #171), (b) per prime
+it is an identity equivalent to `boxCard_pos` (#169), and (c) its two inequalities point *away* from
+capture (#172). The per-`q` scope cap is **not** a quantitative limitation to be improved — it marks
+where the population statement is doing all the work.
+
+**T7.5 (charge budget) — append.** Per-`r` content is an identity, `= H_{r−1} − H_{r−1−C}`, equivalent
+to `boxCard_pos`, hence to the `minFac` tautology "a declined prime does not divide". Symmetric between
+captured and missed primes. Only the *aggregate* over `r < 2n` (via Chebyshev) is non-tautological,
+and it is saturated to within an absolute constant by generic behaviour. An upper bound on charge
+cannot exclude the zero-charge (capture-free) regime.
+
+**T7.7 (compensator) — append.** `S_k ≡ 1` is the capture-free *extreme*, not evidence of progress.
+The compensator is consumed only through the type measure. Also: its type bound `log Y ≤ n²` is a
+seed-population **policy**; the true orbit permits `log Y ≈ 2^n`, so it cannot be instantiated at
+`m = 2` (#173).
+
+### T7 — what the sure layer cannot do
+
+Dead ends #169 (CO, identity), #170 (CI, `¬DH` circularity, mirror of #166), #171 (SF, model
+obstruction — *witnessed*), #172 (OS, wrong sign), #173 (AG, policy hypothesis), #174 (TM, (C∞) gate).
+
+Plus one **principle**, to sit beside the Session-299 anatomy principle:
+
+> **Sign asymmetry of `minFac`.** `p_k = minFac(N_k)` yields infinitely many *negative* facts
+> (`r ∤ N_k` for `r < p_k`) and exactly **one** positive fact (`p_k ∣ N_k`, about a prime captured by
+> definition). Hence the sure layer produces only *upper* bounds on hit counts — `#{k : q ∣ P(k)+1} ≤
+> π(q)` for **every** `q`, captured or missed — and never the lower bound of 1 that capture requires.
+> **Before proposing any per-path route, ask: does it produce a positive divisibility fact about a
+> prescribed prime? If not, it is inert.**
+
+**The `(ℤ/5)^×` witness of #90/#117 is literally a box-process witness.** With `q=5`, `m=2` and every
+multiplier `≡ 4 (mod 5)`: `box = {2,3}` forever, exactly **two** charges in the whole history
+(`Σ 1/|box| = 1/4+1/3 ≪ H₄`, enormous slack), the brink never reached, `S_k ≡ 1` (compensator
+maximally satisfied) — and `5` missed forever. Distinctness does not rescue it: it constrains the
+*primes*, not their *residues*, and infinitely many distinct primes lie in `4 mod 5`.
+
+### Do NOT re-propose
+
+Per-orbit consequences of the charge budget / brink lemma / pathwise compensator; any attempt to bound
+the missed set of a single Euclid–Mullin orbit from the sure layer; any argument that reads `1/|box|`
+as a per-path quantity.
+
+### Track record
+
+| 313 | Sure layer (charge budget / brink / compensator) applied to a single orbit's missed set | **DEAD — budget vacuous.** Budget is an identity ⟺ `boxCard_pos` ⟺ `minFac` tautology, symmetric in captured/missed; the `q`-free model (`genSeqAvoid_ne_avoided`) satisfies the whole layer while missing `q`; the `r=q` specialisation is `¬DH(q)` (circular, mirror of #166); the `(ℤ/5)^×` #90/#117 witness is literally a box-process witness with maximal slack and `S_k ≡ 1`. Minimal ingredient (NPLB) ⟺ MC-mod-`q`. Six new dead ends (#169–#174), one new principle. | **0.4** |
+
+**F0 frontier item** — keep at 6/10 for its actual target, but annotate: the §G simultaneous-in-`q`
+question is *the last place the box process can go*; the orbit direction is closed by this session.

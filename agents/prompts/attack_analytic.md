@@ -667,3 +667,46 @@ frontier for this program: (i) the simultaneous-in-q form (§G — needs q-unifo
 κ_q ≥ q^{−O(1)} plus diagonalization, or logarithmic density + Borel–Cantelli in q);
 (ii) D5c for ls_plus's own hthr (elementary shepherding). Do not propose block-chaining /
 Freedman variants for tree arguments — chernoff_quarter_local + sure compensator covers them.
+
+## Session 313 update (2026-08-19) — the SURE layer's orbit direction is CLOSED
+
+Read `docs/analysis/sure_layer_missed_primes.md` before proposing anything that touches
+`EM/Population/LargeStepRoughness.lean`.
+
+**Do not re-propose.** Bounding the missed set of a *single* orbit (including the true orbit, seed
+`m = 2`) from the sure, per-path layer — `charge_sum_le_harmonic`, `chargeBudget_le`,
+`brink_forces_small_multiplier`, `pathwise_compensator`. Six independent obstructions, dead ends
+#169–#174, any one sufficient:
+
+* **#169** The charge budget is an **identity**, not an inequality with slack. The box starts at
+  `r−1`, a charge decrements it by *exactly* one, non-charges leave it unchanged; so
+  `Σ_{charged} 1/|box| = H_{r−1} − H_{r−1−C}` and the theorem is *equivalent* to `C ≤ r−2` — forced
+  anyway by counting units mod `r`. The reading "`≈ r log r` declines are permitted" is a lossy
+  relaxation: only *charges* are bounded, declines are not.
+* **#170** "The box stays large" is `¬DynamicalHitting(r)` by definition (`seed_mem_box`'s Lean proof
+  is literally "exposure ⟹ non-divisibility"). Circular — the mirror of #166. The companion branch
+  "`r` rarely exposed" is refuted outright by `few_small_multipliers`.
+* **#171** *(witnessed)* Every sure theorem is about `genSeqAvoid q m`, and
+  `SeedCapture.genSeqAvoid_ne_avoided` proves that dynamics **never selects `q`**.
+* **#172/#173** `pathwise_compensator` has the wrong per-path sign (`S_k ≡ 1` is the capture-free
+  extreme) *and* cannot be instantiated at `m = 2`: its `log Y ≤ n²` is a seed-population **policy**,
+  and the true orbit permits `log Y ≈ 2^n`. Any route needing it must first prove `log p_k ≤ k²` —
+  strictly stronger than (C∞).
+* **#174** Bounds on `missed(x)` or `Σ_{q missed ≤ x} 1/q` need a *lower* bound on the hit count; the
+  only sure size statement is an *upper* bound. Gated on (C∞).
+
+**Collapse on record.** The minimal sufficient extra per-path hypothesis (NPLB: the cofactor residues
+mod `q` at exposed steps exhaust every unit but the death class) is **equivalent to MC-mod-`q`**.
+
+**Screening test — apply before proposing any per-path route.** *Sign asymmetry of `minFac`*:
+`p_k = minFac(N_k)` yields infinitely many non-divisibility facts and exactly **one** divisibility
+fact, about a prime captured by definition. So the sure layer yields only *upper* bounds on hit counts
+(`#{k : q ∣ P(k)+1} ≤ π(q)` for every `q`) and never the lower bound of 1 that capture requires. **Ask:
+does the proposal produce a positive divisibility fact about a prescribed prime? If not, it is inert.**
+
+**Still open, and still the right target:** the `(Ẑ, Haar)` route of
+`docs/analysis/simultaneous_in_q_scoping.md` §4. It is a *population* question and is untouched by the
+above.
+
+**Small formalization target going spare:** the **Coupling Lemma** — if `q` is missed by the orbit then
+`genSeqAvoid q m ≡ genSeq m` — is absent from the repo (~15 lines; proof sketch in §1 of the note).
