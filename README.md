@@ -38,7 +38,7 @@ they share `paper/preamble.tex`.
 
 ## Mathlib Candidates
 
-Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`zulip_mathlib_candidates.md`](zulip_mathlib_candidates.md) for a curated list.
+Several general-purpose results developed in this formalization fill genuine gaps in Mathlib. See [`mathlib_candidates.md`](mathlib_candidates.md) for a curated list.
 
 ## Content-Addressed Registry
 

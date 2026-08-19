@@ -499,7 +499,7 @@ exact.
 paragraph subordinate to its subsection (the "Move 1/2/3" trio is proof structure, not
 accretion). No restructuring needed.
 
-### `zulip_mathlib_candidates.md` rebuilt
+### `mathlib_candidates.md` (then `zulip_mathlib_candidates.md`) rebuilt
 
 Was badly stale: header said 78k lines / 148 files / `v4.29.0-rc1` (now 93k / 180 /
 `v4.29.0`); **every file path predated the reorg**; line numbers throughout (they rot).
