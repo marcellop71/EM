@@ -238,16 +238,28 @@ whatsoever is claimed about the Euclid--Mullin orbit of the seed~$2$, which
 is a single trajectory and therefore invisible to any density statement;
 the orbit-specificity barrier (Dead Ends~\#90 and~\#117) is untouched.
 The prime~$q$ is \emph{fixed}: both $n$ and $X_0$ depend on~$q$ and
-$\varepsilon$, and the simultaneous-in-$q$ form is \textbf{open}, because
-natural density is only finitely additive and the per-$q$ statements
-therefore do not combine.  Finite subadditivity does give a uniform
+$\varepsilon$, and the simultaneous-in-$q$ form is \textbf{open for
+natural density}, because natural density is only finitely additive and
+the per-$q$ statements therefore do not combine.  Finite subadditivity
+does give a uniform
 statement over any \emph{finite} set~$S$ of primes --- one horizon~$n$ such
 that the seeds missing \emph{some} $q \in S$ have upper density
 $\le\varepsilon$
 (\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density})
 --- and that is the strongest simultaneous form natural density supports:
 the countable version would need a Borel--Cantelli argument, which is a
-theorem about countably additive measures.  The horizon $n = n(q,\varepsilon)$ is finite:
+theorem about countably additive measures.  On an ensemble that carries
+such a measure the simultaneous statement is \emph{proved}: on the
+profinite space $\Omega = \prod_r \ZZ/r\ZZ$ with the product uniform
+measure, $\mu$-almost every point captures every prime whose coordinate it
+does not already annihilate (\S\ref{sec:profinite},
+Theorem~\ref{thm:profinite-headline}).  These are not the same statement
+and the profinite one is not a strengthening of
+Theorem~\ref{thm:almost-all-capture}: the integers sit inside $\Omega$ as
+a $\mu$-null set
+(\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_range\_iota\_eq\_zero}),
+so a $\mu$-full event carries no information about any set of integer
+seeds, in either direction.  The horizon $n = n(q,\varepsilon)$ is finite:
 there is no limit in~$n$, no equidistribution hypothesis anywhere in the
 chain, and every analytic input is unconditional.  What the theorem does
 add is a genuinely unconditional dynamical statement about the greedy map
@@ -593,6 +605,172 @@ supermartingale (step~5).  This is why the multiplier/walk gap
 Remark~\ref{rem:almost-all-mc}.  What the route does not and cannot do is
 say anything about the orbit of~$2$: a density-one statement is silent
 about any single trajectory, and Dead End~\#90 stands.
+\end{remark}
+
+\subsection{The Profinite Packaging: Simultaneity Is Additivity}
+\label{sec:profinite}
+
+Theorem~\ref{thm:almost-all-capture} is one prime at a time, and
+Remark~\ref{rem:seed-average-scope} says why.  It is worth being precise
+that the obstruction is \emph{not} a defect of the rates.  Summable per-$q$
+failure fractions are already available --- apply the theorem at
+$\varepsilon_q = q^{-2}$ --- and summability still does not combine the
+statements, because upper natural density is finitely but not countably
+subadditive.  \textbf{Simultaneity in~$q$ was never a rate problem; it is
+an additivity problem}, and the repair is a countably additive ambient
+measure.  This subsection supplies one.  Everything below is
+\emph{packaging}: the mathematics is the finite counting chain of
+\S\ref{sec:seed-average}, and nothing new is proved about the dynamics.
+
+\paragraph{The space, and why it is not $\hat{\ZZ}$.}
+Put
+\[
+  \Omega \;=\; \prod_{r\ \text{prime}} \ZZ/r\ZZ ,
+  \qquad
+  \mu \;=\; \bigotimes_{r\ \text{prime}} \mathrm{unif}\bigl(\ZZ/r\ZZ\bigr),
+\]
+a probability space by Mathlib's \code{Measure.infinitePi}, which needs
+only that each factor is a probability measure --- no Polish or
+standard-Borel hypothesis.  The coordinates are $\ZZ/r\ZZ$, not $\ZZ_r$,
+because the programme only ever conditions a seed on $m \bmod M$ with $M$
+\emph{squarefree}: the selection-law modulus is
+$M_Y = \prod_{r \le Y,\ r \neq q} r$, a product of \emph{distinct} band
+primes (\lean{EM/Population/ProfiniteHeadline.lean}{emModulus\_bandPrimes}),
+so one $\ZZ/r\ZZ$ per prime records everything any statement in the
+programme can see and the extra $r$-adic depth of $\ZZ_r$ is dead weight.
+Including \emph{every} prime as a coordinate --- the prime~$q$ under study
+included --- is what makes the $q$-coordinate a free independent
+coordinate; that is exactly the CRT freedom the selection law exploits by
+\emph{excluding}~$q$ from $M_Y$, and the reason
+Theorem~\ref{thm:capture-identity} treats $m \bmod q$ separately.
+
+The one measure-theoretic input is an \emph{equality}: for a finite set~$P$
+of primes, $M = \prod_{r \in P} r$, and any $T \subseteq \ZZ/M\ZZ$,
+\[
+  \mu\bigl\{\, x \in \Omega \;:\; x \bmod M \in T \,\bigr\}
+    \;=\; \frac{\#T}{M}
+\]
+(\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_residue\_classes};
+the CRT reduction $x \bmod M$ is
+\lean{EM/Population/ProfiniteEnsemble.lean}{redMod}).  The measure of an
+$M$-periodic event is its period fraction, on the nose.  This is the
+bridge the whole programme consumes, and it is the only place the measure
+is touched.
+
+\paragraph{The dynamics, and the agreement gate.}
+A profinite point has no $\minFac$, so the greedy choice is re-expressed
+coordinatewise: the multiplier of $x$ is the \emph{least prime whose
+coordinate of the current Euclid element vanishes}
+(\lean{EM/Population/ProfiniteDynamics.lean}{leastVanishing}), and
+$\Prod{x}$, $\seq{x}$ are defined from it by the same recursion
+(\lean{EM/Population/ProfiniteDynamics.lean}{profProd},
+\lean{EM/Population/ProfiniteDynamics.lean}{profSeq}).  Along the diagonal
+embedding $\iota(m) = (m \bmod r)_r$ this is the integer dynamics:
+
+\begin{theorem}[Agreement gate;
+\lean{EM/Population/ProfiniteDynamics.lean}{profSeq\_iota}]
+\label{thm:profinite-gate}
+For every $m \geq 1$ and every $k$, $\ \seq{\iota(m)}(k) = \seq{m}(k)$.
+\end{theorem}
+
+\noindent Its only hypothesis is $1 \leq m$.  That matters more than it
+looks: without it one would have a lookalike process on $\Omega$ and a
+theorem about that process, whereas the gate makes it \emph{the same}
+dynamics, so that every finite statement proved about integer seeds is
+literally a statement about $\Omega$.  The refinement that is actually
+used is band-local: if two points agree at every prime coordinate $\le Y$
+and the first $n$ multipliers of one lie in $[2,Y]$, then the two orbits
+agree on the band for $n$ steps and have the same multipliers
+(\lean{EM/Population/ProfiniteDynamics.lean}{AgreeUpTo},
+\lean{EM/Population/ProfiniteDynamics.lean}{profProd\_agree\_of\_agree},
+\lean{EM/Population/ProfiniteDynamics.lean}{genSeq\_eq\_profSeq\_of\_agree}).
+
+\paragraph{The transfer.}
+Fix a prime~$q$ and $\varepsilon>0$.  The finite chain supplies a
+horizon~$n$, a truncation $Y \geq q$, the band modulus $M_Y$ and a bad-type
+set~$T$ of residues mod $M_Y$ with $\#T \le (\varepsilon/2)M_Y$.  Given
+$x \in \Omega$ with $x_q \neq 0$ whose profinite orbit misses~$q$ before
+depth~$n$, lift $x$ by CRT to an integer $m'$ agreeing with $x$ at
+\emph{every} prime coordinate $\le Y$, the coordinate~$q$ included.  Then
+$q \nmid m'$; and if the integer orbit of $m'$ selected~$q$ at some minimal
+$j_0 < n$, all its multipliers up to and including $j_0$ would lie in
+$[2,Y]$ --- the earlier ones by the $q$-free coupling
+(\lean{EM/Population/SeedCapture.lean}{genSeqAvoid\_eq\_genSeq\_of\_missed})
+and the residue-determinacy of the $q$-free prefix, the last one because it
+is $q \le Y$ --- so band-local agreement would force $\seq{x}(j_0) = q$, a
+contradiction.  Hence $x \bmod M_Y \in T$
+(\lean{EM/Population/ProfiniteHeadline.lean}{covering\_strong},
+\lean{EM/Population/ProfiniteHeadline.lean}{covering}), and the
+residue-class equality bounds the event by~$\varepsilon$
+(\lean{EM/Population/ProfiniteHeadline.lean}{measure\_missing\_le}), whence
+by $\varepsilon \to 0$ and $n \to \infty$
+\[
+  \mu\bigl\{\, x : x_q \neq 0,\ \seq{x}(j) \neq q\ \text{for all } j \,\bigr\}
+   \;=\; 0
+\]
+(\lean{EM/Population/ProfiniteHeadline.lean}{measure\_missing\_eq\_zero}).
+Two side remarks on the mechanics.  \emph{$q \le Y$ is load-bearing}: the
+modulus deliberately omits~$q$, so the $q$-coordinate of the lift comes
+from CRT, and if $q > Y$ the primes in $(Y,q)$ would be uncorrelated
+between $x$ and $m'$, breaking the agreement exactly at the capture step.
+\emph{Measurability of the missing event is never needed}: a Mathlib
+\code{Measure} is an outer measure, so monotonicity and countable
+subadditivity apply to arbitrary sets, and only the covering cylinder ---
+which depends on finitely many coordinates --- has to be measurable.
+
+\begin{theorem}[Profinite headline;
+\lean{EM/Population/ProfiniteHeadline.lean}{measure\_some\_prime\_missed\_eq\_zero}]
+\label{thm:profinite-headline}
+\[
+  \mu\bigl\{\, x \in \Omega \;:\; \exists q \text{ prime},\
+     x_q \neq 0 \ \text{and}\ \seq{x}(j) \neq q \ \text{for all } j \,\bigr\}
+  \;=\; 0 .
+\]
+That is, $\mu$-almost every profinite point captures \emph{every} prime
+whose coordinate it does not already annihilate.
+\end{theorem}
+
+\noindent The union over~$q$ is taken by countable additivity
+(\code{measure\_iUnion\_null}); for each fixed~$q$ the horizon is sent to
+infinity \emph{separately}, and \textbf{no $q$-uniform rate is used
+anywhere}.  The relativization $x_q \neq 0$ is the profinite analogue of
+the clause $q \nmid m$ in the integer statements and is kept deliberately;
+dropping it would make the sentence prettier and false.
+
+\begin{remark}[Scope, and what is \emph{not} claimed]
+\label{rem:profinite-scope}
+\textbf{$\NN \subset \Omega$ is $\mu$-null}
+(\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_range\_iota\_eq\_zero},
+proved, not asserted: $\mu$ has no atoms
+(\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_singleton\_eq\_zero})
+and $\iota(\NN)$ is countable).  So ``$\mu$-a.e.\ seed'' is \emph{not}
+``almost all integer seeds'': a $\mu$-null set can have upper natural
+density~$1$ in~$\NN$, and a $\mu$-full set can meet $\NN$ in a set of
+density~$0$.  Any transfer must go through the \emph{finite} residue-class
+statements together with a genuine equidistribution input, never through
+``a.e.'' alone.  In particular Theorem~\ref{thm:profinite-headline} is not
+a strengthening of Theorem~\ref{thm:almost-all-capture}; the two live on
+different ensembles.
+
+\smallskip
+\textbf{Mathematically new content: none.}  The finite counting chain
+(Theorem~C, its fibre form, the bad-type bound, the covering lemma) is the
+mathematics; the passage from one prime to all primes is
+Carath\'eodory-extension packaging.  That is a feature --- there is no
+analytic risk in packaging --- and it is stated rather than hidden.
+
+\smallskip
+Nothing here says anything about the orbit of~$2$: Dead Ends~\#90
+and~\#117 are untouched and MC is not approached.  Nor is this Dead
+End~\#101, the bundle-walk and profinite reformulations, which house the
+\emph{walk} itself in a product of unit groups in order to extract orbit
+information (\S\ref{sec:precise-frontier}), or Dead End~\#155, the Loeb
+receptacle, which was vacuous because the hyperfinite orbit is null for
+\emph{every} sequence, avoiding or not.  Here the profinite object is the
+\emph{sample space of a population statement}: it carries no walk and no
+orbit claim, and the nullity of $\NN$ is a declared scope limitation
+rather than a defect that voids the theorem.  No equidistribution
+hypothesis occurs anywhere in the chain.
 \end{remark}
 
 \subsection{The Decorrelation--Variance--Concentration Chain}

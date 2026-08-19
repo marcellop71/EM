@@ -360,12 +360,22 @@ each prime individually and MMCSB jointly.
 \paragraph{Van der Corput and higher-order decorrelation.}
 The van der Corput inequality bounds $|\sum z_n|$ via autocorrelations:
 
-\begin{theorem}[\lean{EM/ForMathlib/VanDerCorput.lean}{van\_der\_corput\_bound}]
+\begin{theorem}[Discrete van der Corput;
+\lean{EM/ForMathlib/VanDerCorput.lean}{van\_der\_corput\_bound}]
 \label{thm:vdc}
-$\left\|\sum_{n \leq N} z_n\right\|^2
-\leq \frac{N + H}{H+1}\bigl(N + 2\sum_{h=1}^{H}
-  |\mathrm{Re}\sum_{n \leq N-h} z_n \overline{z_{n+h}}|\bigr)$.
+Let $\|z_n\| \leq 1$, let $1 \leq H \leq N$ and $\delta > 0$, and suppose
+$\bigl\|\sum_{n < N-h} z_n \overline{z_{n+h}}\bigr\| \leq \delta N$ for
+every $1 \leq h \leq H$.  Then
+\[
+  \Bigl\|\sum_{n < N} z_n\Bigr\|^2
+  \;\leq\; \frac{2N^2}{H+1} \;+\; 2\delta N^2 .
+\]
 \end{theorem}
+
+\noindent This is the \emph{discrete} (Weyl--van der Corput) inequality,
+in the weakened corollary form in which it is used here (the constants of
+Iwaniec--Kowalski relaxed); it is unrelated to the oscillatory-integral
+van der Corput lemma, and is not in Mathlib as of \texttt{v4.33.0}.
 
 For the EM walk, lag-$h$ autocorrelations involve $h$-step multiplier
 products.  At $h = 1$, the autocorrelation equals the multiplier
