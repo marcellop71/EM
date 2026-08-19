@@ -237,7 +237,7 @@
 \code{Population/LargeStepRoughness.lean} & The box process and harmonic charge budget $\mathrm{Ch}_n \le 2.8n$; brink lemma; Mertens upper bound; the pathwise compensator $\sum_{k<n} S_k \ge (c_1/2)n$ & 1758 \\
 \code{Population/SelectionLaw.lean} & WP2: type cells mod $M_Y/q$, CRT product counting, and the exact selection law $\#(\text{cell}\cap\text{Survives}) = S_k\cdot\#\text{cell}$ & 930 \\
 \code{Population/TreeChernoff.lean} & Abstract finite-tree exponential supermartingale and Chernoff lower tail (C5 replacement), localized variants & 616 \\
-\code{Population/MertensLower.lean} & Mertens I lower bound $\sum_{p\le n} \log p/p \ge \log n - 13$; windowed $\log\log$ lower bound (not in Mathlib) & 766 \\
+\code{Population/MertensLower.lean} & Mertens I lower bound $\sum_{p\le n} \log p/p \ge \log n - 13$; windowed $\log\log$ lower bound (not in Mathlib as of v4.33.0) & 766 \\
 \code{Population/LSPlus.lean} & (LS+): the large-step large-deviation bound $\#\{N < (c_1/8)n\} \le M_Y e^{-(3/16)c_1 n} + \mathrm{tail}$ over one period & 469 \\
 \code{Population/TailEstimate.lean} & Group 7 slices: $\omega(N) \le \log_2 N$, old-position prime count $\le k^2(\log_2 Y{+}1)$, per-seed survival upper bound $S_k(y) \le e^{-\sum_{\text{active}} 1/r}$, divisor first moment + Markov mass & 431 \\
 \code{Population/TailAssembly.lean} & C4: the quantitative tail estimate \code{tail\_small} --- degenerate or oversized $n$-prefixes are an $e^{25}\log n/n$ fraction of the period & 558 \\
@@ -250,5 +250,5 @@
 \code{Population/AlmostAllDensity.lean} & \code{almost\_all\_genmc\_density}: the natural-density form of the seed-average theorem ($Y$ eliminated); \code{finite\_simultaneous\_density} over any finite set of primes & 255 \\
 \code{Population/ProfiniteEnsemble.lean} & Ambient profinite ensemble $\Omega=\prod_r \mathbb{Z}/r$ with the product uniform measure; \code{measure\_cylinder} and \code{measure\_residue\_classes} (an $M$-periodic event has measure its period fraction); packaging only, and $\mathbb{N}\subset\Omega$ is $\mu$-null & 271 \\
 \code{Population/ProfiniteDynamics.lean} & The greedy dynamics on a profinite point: the multiplier is the least prime whose coordinate of the current Euclid element vanishes; the agreement gate \code{profSeq\_iota} (hypothesis $1\le m$ only) and band-local agreement & 277 \\
-\code{Population/ProfiniteHeadline.lean} & \code{measure\_some\_prime\_missed\_eq\_zero}: $\mu$-almost every profinite point captures every prime whose coordinate it does not annihilate; the union over $q$ by countable additivity, with no $q$-uniform rate & 390 \\
+\code{Population/ProfiniteHeadline.lean} & \code{measure\_some\_prime\_missed\_eq\_zero}: $\mu$-almost every profinite point captures every prime whose coordinate it does not annihilate; the union over $q$ by countable additivity, with no $q$-uniform rate & 393 \\
 \end{longtable}

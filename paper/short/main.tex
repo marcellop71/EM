@@ -59,7 +59,7 @@ first~$n$ multipliers have upper natural density at most~$\varepsilon$:
 unconditional, with no character sums, and silent about the orbit of~$2$.
 Simultaneity in~$q$ is an additivity question rather than a rate question:
 it stays open for natural density past finite sets of primes, while on the
-profinite ensemble $\prod_r\ZZ/r\ZZ$ with the product uniform measure the
+profinite ensemble $\prod_{r\ \text{prime}}\ZZ/r\ZZ$ with the product uniform measure the
 same counting chain gives $\mu$-almost every point capturing every prime
 whose coordinate it does not annihilate --- a different ensemble, in which
 $\NN$ is null.
@@ -508,7 +508,7 @@ Shanks' ``probability $1/q$'' heuristic~\cite{Shanks1991} made precise at
 the population level; what the orbit inherits from it remains heuristic,
 since $P_n+1$ is one member of the progression, not a random one.
 
-\subsection{The seed-average law: almost all seeds capture $q$}
+\subsection{The seed-average law: almost all seeds coprime to $q$ capture $q$}
 \label{sec:seed-average}
 
 The bag-conditioned law describes one step.  Iterating it gives an
@@ -528,8 +528,8 @@ $\#\{m\le X: q\nmid m,\ p_m(j)\ne q \text{ for all } j<n\}\le\varepsilon X$.
 and says nothing about the Euclid--Mullin orbit of~$2$, which is a single
 trajectory.  The prime~$q$ is \emph{fixed}: $n$ and $X_0$ depend on $q$ and
 $\varepsilon$, and the simultaneous-in-$q$ form is open \emph{for natural
-density}, since natural density is only finitely additive: finite
-subadditivity does give one
+density}, since upper natural density is only finitely \emph{sub}additive:
+finite subadditivity does give one
 horizon uniform over any \emph{finite} set of primes
 (\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density}),
 and that is as far as it goes.  It is proved on a different ensemble,
@@ -543,8 +543,9 @@ unconditional.
 rate problem --- summable per-$q$ failure fractions are available, by
 applying the theorem at $\varepsilon_q=q^{-2}$ --- but an additivity
 problem, and the repair is a countably additive ambient measure.  Take
-$\Omega=\prod_{r}\ZZ/r\ZZ$ over all primes with $\mu$ the product of the
-uniform measures.  Coordinates $\ZZ/r\ZZ$, not $\ZZ_r$: the programme only
+$\Omega=\prod_{r\ \text{prime}}\ZZ/r\ZZ$ with $\mu$ the product of the
+uniform measures.  Write $p_x(j)$ for the $j$-th multiplier of the greedy
+orbit of a point $x\in\Omega$, defined next.  Coordinates $\ZZ/r\ZZ$, not $\ZZ_r$: the programme only
 ever conditions on $m\bmod M$ with $M$ squarefree, so one residue per
 prime records everything it can see, and including \emph{every} prime as a
 coordinate --- $q$ among them --- is what makes the $q$-coordinate the free
@@ -720,7 +721,7 @@ $\sum_{p\le x,\ p\equiv a}1/p\sim\log\log x/\varphi(q)$
 (\lean{EM/IK/Karamata.lean}{weightedPNTinAP\_asymp\_proved},
 \lean{EM/IK/Karamata.lean}{primesEquidistInAP\_asymp\_proved}).  Mathlib has
 neither a Tauberian theorem nor Mertens' theorem, so these are offered as
-infrastructure.\footnote{Mertens' first theorem is not currently available
+infrastructure (neither is in Mathlib as of \texttt{v4.33.0}).\footnote{Mertens' first theorem is not currently available
 in Mathlib (as of \texttt{v4.33.0}); a pull request upstreaming it is open
 at the time of writing~\cite{Mathlib41394}.  The explicit two-sided bounds
 used in \S\ref{sec:seed-average}

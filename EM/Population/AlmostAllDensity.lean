@@ -23,9 +23,9 @@ only inside the proof, as the period of the residue-class covering.
   seed, and no argument here transfers a positive-density conclusion to a fixed orbit.
 * **One prime at a time.**  The prime `q` is *fixed* before `ε`, and the horizon `n` and
   the threshold `X₀` both depend on `q` and `ε`.  The simultaneous-in-`q` form — a single
-  density-one set of seeds capturing *every* prime — is **OPEN** (§G).  Natural density is
-  only finitely additive, so the per-`q` statements do **not** combine into a statement
-  about the intersection over all `q`.
+  density-one set of seeds capturing *every* prime — is **OPEN** (§G).  Upper natural
+  density is only finitely *sub*additive, so the per-`q` statements do **not** combine
+  into a statement about the intersection over all `q`.
 * **Finite horizon.**  For each `ε` there is a horizon `n(q, ε)`; no limit in `n` is taken.
   The result is a finite-horizon counting bound, not a capture theorem.
 * **Unconditional.**  Every input is unconditional: no equidistribution hypothesis occurs
@@ -52,8 +52,8 @@ set is genuinely `M_Y`-periodic, and the generic block-counting lemma
 ## Finitely many primes at a time, and no further
 
 `finite_simultaneous_density` is the strongest simultaneous statement natural density
-supports.  It does *not* extend to all primes: natural density is only finitely additive,
-so there is no Borel–Cantelli, and increasing sets of density `≤ δ` can have union of
+supports.  It does *not* extend to all primes: upper natural density is only finitely
+*sub*additive, so there is no Borel–Cantelli, and increasing sets of density `≤ δ` can have union of
 density `1`.  Making the per-`q` failure fractions summable does not help — summability is
 a hypothesis of a theorem about countably additive measures.  The simultaneous-in-`q` form
 therefore needs a genuinely different ambient measure (see
@@ -188,8 +188,8 @@ a single horizon `n` and a single threshold `X₀` such that for all `X ≥ X₀
 and sum the `#S` bounds.
 
 **Scope.**  `S` is *finite*, and `n`, `X₀` depend on `S`.  This does **not** extend to all
-primes: natural density is only finitely additive, so there is no Borel–Cantelli, and an
-increasing union of sets of density `≤ δ` can have density `1`.  See the module
+primes: upper natural density is only finitely *sub*additive, so there is no
+Borel–Cantelli, and an increasing union of sets of density `≤ δ` can have density `1`.  See the module
 docstring — the simultaneous-in-`q` form is **OPEN**. -/
 theorem finite_simultaneous_density (S : Finset ℕ) (hS : ∀ q ∈ S, q.Prime) {ε : ℝ}
     (hε : 0 < ε) :

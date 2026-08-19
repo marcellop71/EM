@@ -27,8 +27,8 @@ results are:
   `μ { x : ∃ q, x_q ≠ 0 ∧ the orbit of x never selects q } = 0`.
 
 The last step is the whole point of moving to a countably additive measure:
-natural density is only finitely additive, so the per-`q` density statements of
-`AlmostAllDensity` do **not** combine (this is dead end #168).
+upper natural density is only finitely *sub*additive, so the per-`q` density statements
+of `AlmostAllDensity` do **not** combine (this is dead end #168).
 
 ## Scope — read this before quoting anything below
 
@@ -71,9 +71,12 @@ agreeing with `x` at **every** prime coordinate `≤ Y`, `q` included.  Then
 `q`-free prefix, the last one because it is `q ≤ Y`), so the band-local agreement
 lemma `ProfiniteDynamics.profProd_agree_of_agree` would force
 `profSeq x j₀ = q` — contradiction.  Hence `m'` is covered by `T`, and so is `x`.
-The hypothesis `q ≤ Y` is load-bearing: the period `M` deliberately omits `q`, so
-the `q`-coordinate must be supplied separately, and primes in `(Y, q)` would
-otherwise be uncorrelated between `x` and `m'`.
+The hypothesis `q ≤ Y` is load-bearing, and both of its uses are about the prime
+`q` itself.  The period `M` deliberately omits `q`, so the lift is taken modulo
+the *full* band `fullBand Y` and agrees with `x` at every prime coordinate `≤ Y`;
+`q ≤ Y` is what places the coordinate `q` in that band, which is (i) how
+`x_q ≠ 0` yields `¬ q ∣ m'`, and (ii) how the last multiplier of the prefix,
+which is `q`, meets the bound `≤ Y` demanded by `profProd_agree_of_agree`.
 
 Session 314, WP-4.
 -/

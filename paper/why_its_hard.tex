@@ -6,7 +6,8 @@
 
 \noindent\textbf{Original contribution.}\enspace
 The four-way blocker, the selectability analysis, the oracle barrier, and
-the CCSB-as-frontier argument below are new.  Together they explain
+the CCSB-as-frontier argument below are contributions of this work.
+Together they explain
 \emph{why} the remaining hypothesis resists both computation and existing
 analytic tools, and what a proof would have to supply instead.
 
@@ -176,9 +177,10 @@ decrements it by \emph{exactly} one
 and a non-charge leaves it unchanged
 (\lean{EM/Population/LargeStepRoughness.lean}{boxCard\_of\_not\_charged}).
 So with $C$ charges before~$n$ the left-hand side telescopes to
-$H_{r-1} - H_{r-1-C}$, and the inequality is \emph{logically equivalent}
-to $C \leq r-2$ --- which counting the units mod~$r$ forces anyway.  Zero
-orbit-distinguishing content, at every~$r$ and every horizon.
+$H_{r-1} - H_{r-1-C}$, and the only content left in the inequality is that
+$C \leq r-2$, i.e.\ that every term $1/\#B_r(k)$ is well defined --- which
+counting the units mod~$r$ forces anyway.  Zero orbit-distinguishing
+content, at every~$r$ and every horizon.
 
 There is also a model obstruction, and it is the cleanest of the six.
 Every theorem of the layer is proved about the \emph{$q$-free} dynamics
@@ -201,11 +203,11 @@ Behind all of this is one structural fact, worth stating on its own.  The
 definition $\seq{2}(n) = \minFac(\Prod{2}(n)+1)$ yields infinitely many
 \emph{negative} facts --- $r \nmid \Prod{2}(n)+1$ for every prime
 $r < \seq{2}(n)$ --- and exactly \emph{one} positive fact, about a prime
-that is captured by definition.  Every sure ingredient is a deduction
-from these together with multiplier distinctness, hence every one of them
-is a non-divisibility statement about primes that are \emph{not}
-captured.  So the sure layer can produce only \emph{upper} bounds on hit
-counts --- indeed $\#\{n : q \mid \Prod{2}(n)+1\} \leq \pi(q)$ for every
+that is captured by definition.  Every sure ingredient \emph{in this programme} is
+a deduction from these together with multiplier distinctness, hence every
+one of them is a non-divisibility statement about primes that are
+\emph{not} captured.  So this layer produces only \emph{upper} bounds on
+hit counts --- indeed $\#\{n : q \mid \Prod{2}(n)+1\} \leq \pi(q)$ for every
 prime~$q$, missed or captured --- and never the lower bound of~$1$ that
 capture requires.  This is a screening test for any per-path proposal:
 \emph{does it produce a positive divisibility fact about a prescribed

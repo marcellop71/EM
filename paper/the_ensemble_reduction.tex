@@ -14,8 +14,12 @@ the resulting landscape.
 \medskip\noindent\textbf{What is new vs.\ what is infrastructure.}\enspace
 The generalized EM sequences, the CRT propagation framework, and the
 reduction landscape assembled around CME~$\Rightarrow$~MC
-(Theorem~\ref{thm:cme-ccsb}) are original contributions of this
-formalization.  The decorrelation--variance--concentration
+(Theorem~\ref{thm:cme-ccsb}) are contributions of this
+formalization, as are the seed-average law of \S\ref{sec:seed-average} ---
+the one unconditional dynamical statement here about the iterated greedy
+map --- and its profinite packaging (\S\ref{sec:profinite}), which is
+measure-theoretic bookkeeping around that same counting chain rather than
+new mathematics.  The decorrelation--variance--concentration
 chain (\S\ref{sec:decorr-chain}) is proved with explicit constants
 ($C = 2$, Theorem~\ref{thm:variance-bound}).  The sieve density function
 and Buchstab weight (\S\ref{sec:first-moment}) formalize known sieve
@@ -34,7 +38,9 @@ equivalence---hold for every starting point and are used throughout.
 
 \begin{roadmap}
 \begin{enumerate}[nosep,leftmargin=*]
-\item[\S\ref{sec:crt-equidist}] CRT equidistribution and propagation --- ensemble residues equidistribute and propagate across steps.
+\item[\S\ref{sec:crt-equidist}] CRT equidistribution and propagation --- ensemble residues equidistribute and propagate across steps; the bag-conditioned multiplier law.
+\item[\S\ref{sec:seed-average}] The seed-average law --- for each fixed prime~$q$, almost every seed coprime to~$q$ captures~$q$ at a finite horizon, unconditionally and with no character sums.
+\item[\S\ref{sec:profinite}] The profinite packaging --- the same counting chain on a countably additive ensemble, where the union over all~$q$ is legitimate; and why that is a different statement.
 \item[\S\ref{sec:decorr-chain}] Decorrelation--variance--concentration chain --- StepDecorrelation $\Rightarrow$ character sum cancellation for a.a.\ starting points.
 \item[\S\ref{sec:first-moment}] Sieve structure and first moments --- ensemble average of $1/\mathrm{genSeq}$ is positive; parity and CRT bounds.
 \item[\S\ref{sec:dsl-route}] The orbit hypothesis --- CME seen from the ensemble; the retired population layer.
@@ -169,7 +175,6 @@ $\sum_{p \leq x,\, p \equiv a} 1/p \sim (\log\log x)/\varphi(q)$
 (\code{EM/IK/Tauberian.lean}, \code{EM/IK/AbelChain.lean}).
 
 \paragraph{The bag-conditioned multiplier law.}
-\label{sec:bag-law}
 The population that actually contains the Euclid numbers is not the
 $q$-rough integers but the progression $m \equiv 1 \pmod{P}$, $P$ the
 current accumulator; there the least prime factor is automatically outside
@@ -202,19 +207,23 @@ equidistribution was never the relevant object.  What the orbit inherits
 from it remains heuristic: $P_n+1$ is one member of the progression, not
 a random one.
 
-\subsection{The Seed-Average Law and Almost-All Capture}
+\subsection{The Seed-Average Law and Almost-All Capture (Coprime Seeds)}
 \label{sec:seed-average}
 \keymark
 
-The bag-conditioned law of \S\ref{sec:bag-law} describes \emph{one} step
+The bag-conditioned multiplier law of \S\ref{sec:crt-equidist} describes
+\emph{one} step
 of the dynamics on a population.  This subsection iterates it.  Fix a
 prime~$q$ and run the greedy map from an arbitrary seed $m \geq 1$:
 $\Prod{m}(0) = m$, $\Prod{m}(k{+}1) = \Prod{m}(k)\cdot\seq{m}(k)$ with
 $\seq{m}(k) = \minFac(\Prod{m}(k)+1)$.  Say that the seed
 \emph{captures}~$q$ within~$n$ steps if $\seq{m}(j) = q$ for some $j < n$.
 The result of this subsection is that, for each fixed~$q$, almost every
-seed captures~$q$, in natural density, at a finite horizon and with no
-hypotheses at all.
+seed \emph{coprime to~$q$} captures~$q$, in natural density, at a finite
+horizon and with no hypotheses at all.  The coprimality clause is not
+cosmetic: if $q \mid m$ then $q \mid \Prod{m}(k)$ for every~$k$, so
+$q \nmid \Prod{m}(k)+1$ and $q$ is \emph{never} selected --- the seeds that
+provably never capture~$q$ already have density~$1/q$.
 
 \begin{theorem}[Almost-all capture, density form;
 \lean{EM/Population/AlmostAllDensity.lean}{almost\_all\_genmc\_density},
@@ -239,12 +248,15 @@ is a single trajectory and therefore invisible to any density statement;
 the orbit-specificity barrier (Dead Ends~\#90 and~\#117) is untouched.
 The prime~$q$ is \emph{fixed}: both $n$ and $X_0$ depend on~$q$ and
 $\varepsilon$, and the simultaneous-in-$q$ form is \textbf{open for
-natural density}, because natural density is only finitely additive and
-the per-$q$ statements therefore do not combine.  Finite subadditivity
+natural density}, because upper natural density is only finitely
+\emph{sub}additive and the per-$q$ statements therefore do not combine.
+Finite subadditivity
 does give a uniform
 statement over any \emph{finite} set~$S$ of primes --- one horizon~$n$ such
-that the seeds missing \emph{some} $q \in S$ have upper density
-$\le\varepsilon$
+that the seeds~$m$ for which \emph{some} $q \in S$ is both coprime to~$m$
+and missed by the first~$n$ multipliers of~$m$ have upper density
+$\le\varepsilon$ (the coprimality clause sits \emph{inside} the
+existential, as it must)
 (\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density})
 --- and that is the strongest simultaneous form natural density supports:
 the countable version would need a Borel--Cantelli argument, which is a
@@ -263,8 +275,9 @@ seeds, in either direction.  The horizon $n = n(q,\varepsilon)$ is finite:
 there is no limit in~$n$, no equidistribution hypothesis anywhere in the
 chain, and every analytic input is unconditional.  What the theorem does
 add is a genuinely unconditional dynamical statement about the greedy map
-on a population --- the first in this project that is neither an
-equivalence to MC nor conditional on an open hypothesis.
+on a population --- the first result in this project about the
+\emph{iterated} greedy map that is neither an equivalence to MC nor
+conditional on an open hypothesis.
 \end{remark}
 
 The proof runs through nine steps, each of independent interest.  The
@@ -352,13 +365,17 @@ out by one local condition at each prime of the band
 (\lean{EM/Population/SelectionLaw.lean}{mem\_cell\_iff\_local}), so its
 cardinality is a CRT product
 (\lean{EM/Population/SelectionLaw.lean}{stepCell\_card}).  Inside a cell,
-the primes $r \le y$ split three ways: those in the bag (dividing the seed,
+the primes $r \le y$ split two ways: those in the bag (dividing the seed,
 or already used as multipliers) are excluded automatically, and each
 remaining \emph{active} prime carries a \emph{box}
 \[
   B_r(k) \;=\; (\ZZ/r\ZZ)^\times \setminus
     \bigl\{-v^{-1} : v \text{ an } r\text{-exposed visited residue}\bigr\},
-  \qquad \rho_r(k) = 1/\#B_r(k)
+  \qquad
+  \rho_r(k) = \begin{cases}
+    1/\#B_r(k) & \text{$r$ active and the cofactor residue new,}\\
+    0 & \text{otherwise}
+  \end{cases}
 \]
 (\lean{EM/Population/LargeStepRoughness.lean}{box},
 \lean{EM/Population/LargeStepRoughness.lean}{rho}).
@@ -370,18 +387,22 @@ For every type cell at depth~$n$ with a nondegenerate $Y$-bounded reference
 prefix, and every $y \le Y$,
 \[
   \#\bigl(\mathrm{cell} \cap \{\,\text{no prime } r \leq y,\ r \neq q,
-    \text{ divides the next Euclid number}\,\}\bigr)
+    \text{ divides } \tilde{\mathrm{P}}_m(n)+1 \,\}\bigr)
   \;=\; S \cdot \#\,\mathrm{cell},
   \qquad
   S \;=\; \prod_{r \leq y,\ r \neq q} \bigl(1 - \rho_r(n)\bigr) .
 \]
 \end{theorem}
 
-This is an exact identity, not an estimate: the roughness survival product
-is the true proportion, cell by cell.  It is Shanks' heuristic made exact
+\noindent The survival event is stated at the \emph{$q$-free} Euclid number
+$\tilde{\mathrm{P}}_m(n)+1$, not at $\Prod{m}(n)+1$
+(\lean{EM/Population/SelectionLaw.lean}{SurvivesUpTo}); phrasing it without
+reference to the value of the multiplier is what removes the $q$-power
+subtlety.  This is an exact identity, not an estimate: the roughness
+survival product is the true proportion, cell by cell.  It is Shanks' heuristic made exact
 \emph{and conditional} --- conditional on the whole type of the orbit so
-far, which is what a heuristic cannot be.  The bag-conditioned law of
-\S\ref{sec:bag-law} is its $n=0$ case: with no steps taken the type is
+far, which is what a heuristic cannot be.  The bag-conditioned multiplier law of
+\S\ref{sec:crt-equidist} is its $n=0$ case: with no steps taken the type is
 empty, the boxes are all of $(\ZZ/r\ZZ)^\times$, $\rho_r = 1/(r-1)$ is
 replaced by the plain $1/r$ of a progression, and the product collapses to
 $\prod_{r<p,\ r\nmid P}(1-1/r)$ of
@@ -409,9 +430,10 @@ $r \neq q$ not dividing the seed,
 $\sum_{k<n,\ r \text{ charged at } k} 1/\#B_r(k) \leq H_{r-1}$.
 \end{lemma}
 
-\noindent Summing over the near band $r < 2n$ and using
-$\sum_{r<2n} H_{r-1} \le \theta(2n) + \pi(2n) = O(n)$
-(\lean{EM/Population/LargeStepRoughness.lean}{chargeBudget\_le}) gives a
+\noindent Summing the budget over all primes $r < N$, $r \neq q$, gives
+$\mathrm{Ch}(N,n) \le \pi(N) + N\log 4$ for every~$N$
+(\lean{EM/Population/LargeStepRoughness.lean}{chargeBudget\_le}, via
+$\sum_{r<N} H_{r-1}$ and a Chebyshev bound); at $N \asymp n$ this is a
 \emph{linear} total budget for a \emph{linear} number of steps, so only a
 bounded fraction of the steps can have large escape mass.  A Markov
 argument on the budget, the brink lemma --- a prime whose box has shrunk to
@@ -424,18 +446,23 @@ and a crude Mertens bound on the far band assemble into:
 \begin{theorem}[The pathwise compensator;
 \lean{EM/Population/LargeStepRoughness.lean}{pathwise\_compensator}]
 \label{thm:pathwise-compensator}
-There is an absolute $n_0$ such that for every prime~$q$, every seed~$m$,
-every $Y$ with $\log Y \le n^2$ and every nondegenerate $Y$-bounded type
-path of length $n \geq n_0$,
+There is an absolute $n_0$ such that: for every prime~$q$, every seed
+$m \geq 1$, every threshold constant $C_c$ with $1 \le C_c \le n$, every
+$Y$ with $\log Y \le n^2$, and every $n \geq n_0$ whose first $n$ $q$-free
+multipliers are nondegenerate and bounded by~$Y$,
 \[
-  \sum_{k<n} S_k \;\geq\; \frac{c_1}{2}\, n,
-  \qquad c_1 = e^{-250} .
+  \sum_{k<n} S_k(q,m,C_c) \;\geq\; \frac{c_1}{2}\, n,
+  \qquad c_1 = e^{-250},
 \]
+where $S_k(q,m,C_c)$ is the survival product at depth~$k$ against the
+threshold $C_c$
+(\lean{EM/Population/LargeStepRoughness.lean}{stepSurvival}).
 \end{theorem}
 
 The bound is \textbf{deterministic and per-path}: no probability, no
 character sums, no equidistribution, and the constants $c_1$ and $n_0$ do
-not depend on $q$, on the seed, on $Y$ or on the threshold constant.  This
+not depend on $q$, on the seed, on $Y$ or on~$C_c$ (which is constrained
+only by $1 \le C_c \le n$).  This
 is why the Four-Way Blocker of \S\ref{sec:four-way} is evaded: the blocker
 obstructs \emph{ergodic} statements about one orbit, and the compensator
 bound is not ergodic but \emph{sure}.  It holds for every path, including
@@ -477,18 +504,25 @@ not conspiratorial.  Lemma~D says it is not:
 \lean{EM/Population/LemmaDBox.lean}{lemma\_D\_z},
 \lean{EM/Population/LemmaDBox.lean}{lemma\_D}]
 \label{thm:lemma-D}
-For every prime~$q$ and every $C \geq 48q$ there are
-$\kappa = e^{-128}/\bigl(16\,\varphi(q)\bigr) > 0$ and a depth~$k_0$ such
-that, at every depth $k \ge k_0$, in every type cell with nondegenerate
-$Y$-bounded reference prefix and small seed-divisor mass in the exclusion
-window, and for \emph{every} class~$a$ coprime to~$q$, the seeds of the
-cell that take a large step at depth~$k$ land in the class $a$ with
-proportion at least~$\kappa$.
+For every prime~$q$ and every $C_c \geq 48q$ there are a constant
+$\kappa > 0$ and a depth~$k_0$ such that, at every depth $k \ge k_0$, in
+every type cell over a reference seed $m_0 \ge 1$ with nondegenerate
+$Y$-bounded reference prefix, small seed-divisor mass in the exclusion
+window, and window fitting inside the truncation --- $(\text{large-step
+threshold at depth } k)^2 \le Y$ --- and for \emph{every} class~$a$
+coprime to~$q$, the seeds of the cell that take a large step at depth~$k$
+land in the class $a$ with proportion at least~$\kappa$.
 \end{theorem}
 
-The constant is uniform in the cell, in the type and in the seed; only its
-positivity is used downstream.  The analytic input is the mass of a
-\emph{window} of primes in a progression: over $(y, y^2]$ the reciprocal
+The constant $\kappa$ is existentially quantified: only its positivity is
+used downstream, and the witness produced by the proof is
+$e^{-128}/\bigl(16\,\varphi(q)\bigr)$.  It is uniform in the cell, in the
+type and in the seed.  The hypothesis that the window fits inside the
+truncation, $(\mathrm{bigThreshold}\,q\,m_0\,C_c\,k)^2 \le Y$
+(\lean{EM/Population/LargeStepRoughness.lean}{bigThreshold}), is what ties
+the analytic input to the policy on~$Y$.  The analytic input is the mass of a
+\emph{window} of primes in a progression: for all sufficiently large~$y$,
+over $(y, y^2]$ the reciprocal
 sum in a fixed coprime class is at least $1/(8\varphi(q))$
 (\lean{EM/Population/LemmaD.lean}{window\_ap\_recip\_lower}), which is
 Karamata's Tauberian theorem
@@ -524,7 +558,15 @@ No priority is claimed for the bounds proved here.
 \end{remark}
 
 \paragraph{8.  Theorem C.}
-Assembling: on one period $[1,M_Y]$, the \emph{good uncaptured} seeds ---
+Assembling: fix a prime~$q$ and a threshold constant $C_c \ge 48q$.  There
+are $\kappa>0$ and $K_0, n_1$ such that, for every $Y$ and every
+$n \ge n_1$ satisfying the analytic policy
+\[
+  C_c \le n, \qquad \log Y \le n^2,
+  \qquad (\text{large-step threshold at each } k<n)^2 \le Y
+  \text{ on every good seed},
+\]
+the \emph{good uncaptured} seeds of one period $[1,M_Y]$ ---
 coprime to~$q$, with a nondegenerate $Y$-bounded prefix and small divisor
 mass in the exclusion window, whose genuine orbit does \emph{not} select~$q$
 before depth~$n$ --- satisfy
@@ -532,7 +574,10 @@ before depth~$n$ --- satisfy
   \#\{\text{good uncaptured}\}
   \;\leq\; M_Y \cdot \exp\Bigl(-\tfrac38\,\kappa\bigl(\tfrac{c_1}{2}n - K_0\bigr)\Bigr)
 \]
-(\lean{EM/Population/TheoremC.lean}{theorem\_C}) by a single application of
+(\lean{EM/Population/TheoremC.lean}{theorem\_C}).  Those three policy
+hypotheses are not decoration: they are exactly what a single orbit cannot
+be assumed to satisfy, and that is the content of Dead End~\#173.  The
+bound follows by a single application of
 \lean{EM/Population/TreeChernoff.lean}{chernoff\_quarter\_local}.  The
 structural point is the readoff
 \lean{EM/Population/TheoremC.lean}{captured\_of\_visited\_full}: if the
@@ -578,7 +623,9 @@ offending clauses can be weakened to ``\emph{some} seed in the residue
 fibre of~$m$ modulo~$M_Y$ is coprime to~$q$ and uncaptured before
 depth~$n$'' (\lean{EM/Population/FiberTheoremC.lean}{FiberGood}), which is a
 property of the fibre and hence $M_Y$-periodic, and Theorem~C survives
-verbatim with the same $\kappa$, $K_0$, $n_1$
+in the same shape, with the same hypotheses and the same constants in the
+proof (all three of $\kappa$, $K_0$, $n_1$ are existentially quantified in
+both statements)
 (\lean{EM/Population/FiberTheoremC.lean}{theorem\_C\_fiber}).  The three
 bad types are now all fibre-measurable and jointly rare
 (\lean{EM/Population/TypeBadSmall.lean}{type\_bad\_small}); a periodic
@@ -709,10 +756,14 @@ by $\varepsilon \to 0$ and $n \to \infty$
    \;=\; 0
 \]
 (\lean{EM/Population/ProfiniteHeadline.lean}{measure\_missing\_eq\_zero}).
-Two side remarks on the mechanics.  \emph{$q \le Y$ is load-bearing}: the
-modulus deliberately omits~$q$, so the $q$-coordinate of the lift comes
-from CRT, and if $q > Y$ the primes in $(Y,q)$ would be uncorrelated
-between $x$ and $m'$, breaking the agreement exactly at the capture step.
+Two side remarks on the mechanics.  \emph{$q \le Y$ is load-bearing}, and
+both times it is used it is about the prime~$q$ itself.  The selection-law
+modulus deliberately omits~$q$, so the lift is taken modulo the
+\emph{full} band of primes $\le Y$ and agrees with~$x$ at every such
+coordinate; $q \le Y$ is what places the coordinate~$q$ in that band,
+which is (i) how $x_q \neq 0$ becomes $q \nmid m'$, and (ii) how the last
+multiplier of the prefix, which is $q$ itself, meets the bound
+$\seq{m'}(j_0) = q \le Y$ required by band-local agreement.
 \emph{Measurability of the missing event is never needed}: a Mathlib
 \code{Measure} is an outer measure, so monotonicity and countable
 subadditivity apply to arbitrary sets, and only the covering cylinder ---
@@ -730,15 +781,16 @@ That is, $\mu$-almost every profinite point captures \emph{every} prime
 whose coordinate it does not already annihilate.
 \end{theorem}
 
-\noindent The union over~$q$ is taken by countable additivity
-(\code{measure\_iUnion\_null}); for each fixed~$q$ the horizon is sent to
+\noindent The union over~$q$ is taken by countable additivity --- in the
+form actually invoked, \code{measure\_iUnion\_null}, countable
+subadditivity applied to a countable family of null sets, which needs no
+measurability; for each fixed~$q$ the horizon is sent to
 infinity \emph{separately}, and \textbf{no $q$-uniform rate is used
 anywhere}.  The relativization $x_q \neq 0$ is the profinite analogue of
 the clause $q \nmid m$ in the integer statements and is kept deliberately;
 dropping it would make the sentence prettier and false.
 
 \begin{remark}[Scope, and what is \emph{not} claimed]
-\label{rem:profinite-scope}
 \textbf{$\NN \subset \Omega$ is $\mu$-null}
 (\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_range\_iota\_eq\_zero},
 proved, not asserted: $\mu$ has no atoms
@@ -1373,8 +1425,8 @@ cancellation'' chain; that chain is a valid conditional whose
 hypothesis is \emph{false} (Dead End~\#156, \S\ref{sec:decorr-chain}),
 so \textbf{no almost-all statement about CME survives the audit}.  What
 the ensemble does supply is unconditional structure (CRT blindness of
-the multiplier, the tail identity, the bag-conditioned law of
-\S\ref{sec:bag-law}) and the reminder that $2$ is one squarefree seed
+the multiplier, the tail identity, the bag-conditioned multiplier law of
+\S\ref{sec:crt-equidist}) and the reminder that $2$ is one squarefree seed
 among many.  This is a heuristic, not an argument; and CME being
 equivalent to MC (\S\ref{sec:intro}), ``evidence for CME'' is evidence
 for MC.
