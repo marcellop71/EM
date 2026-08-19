@@ -203,4 +203,4 @@ Seed-average program (new)	Population/TheoremC.lean	Theorem C: good uncaptured s
 Seed-average program (new)	Population/AlmostAllGenMC.lean	\code{almost\_all\_genmc}: for fixed $q$ and every $\varepsilon>0$, at most an $\varepsilon$-fraction of one period is coprime to $q$ and uncaptured (period-fraction form)
 Seed-average program (new)	Population/FiberTheoremC.lean	\code{FiberGood} and \code{theorem\_C\_fiber}: Theorem C with the two non-periodic clauses weakened to fibre statements, same constants
 Seed-average program (new)	Population/TypeBadSmall.lean	\code{type\_bad\_small}: the three fibre-measurable bad types are an $\varepsilon$-fraction of the period --- every clause a function of $m \bmod M_Y$
-Seed-average program (new)	Population/AlmostAllDensity.lean	\code{almost\_all\_genmc\_density}: the natural-density form of the seed-average theorem; $Y$ eliminated from the statement
+Seed-average program (new)	Population/AlmostAllDensity.lean	\code{almost\_all\_genmc\_density}: the natural-density form of the seed-average theorem ($Y$ eliminated); \code{finite\_simultaneous\_density} over any finite set of primes
