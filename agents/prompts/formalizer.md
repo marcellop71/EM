@@ -1161,3 +1161,35 @@ via TreeChernoff.chernoff_quarter_local — no new engine), `AlmostAllGenMC` (he
 build state). API notes: `div_le_div_iff₀` (not `div_le_div_iff`); `Finset.le_sup` needs
 explicit `(f := ...)`; `positivity` can't unfold defs; `ZMod.natCast_zmod_surjective`;
 `Finset.card_le_card_of_injOn` goals need `simp only [Finset.mem_coe, ...]` not `rw`.
+
+---
+
+## Session 312 — new infrastructure (seed-average programme, natural-density form)
+
+The seed-average programme (Sessions 308–312) is complete and now delivers a **natural-density**
+statement. Newly available, all 0 `sorry`, axioms `[propext, Classical.choice, Quot.sound]`:
+
+| Name | File | What it gives you |
+|---|---|---|
+| `FiberTheoremC.FiberGood` / `theorem_C_fiber` | `EM/Population/FiberTheoremC.lean` | Theorem C with `GoodSeed`'s two seed-specific clauses replaced by a **fibre existential**; the predicate is then `modulus q Y`-periodic. Use this, not `TheoremC.theorem_C`, whenever you need periodicity. |
+| `PeriodicDensity.periodRep` / `card_filter_le_of_type_bad` / `eventually_density_le` / `limsup_density_le` | `EM/ForMathlib/PeriodicDensity.lean` | Generic, EM-independent: "few bad residue classes mod `M`" ⟹ "small upper natural density". |
+| `TypeBadSmall.type_bad_small` | `EM/Population/TypeBadSmall.lean` | The three type-measurable bad events cover `≤ ε·M_Y` of one period. |
+| `AlmostAllDensity.almost_all_genmc_density` / `almost_all_genmc_limsup` / `finite_simultaneous_density` | `EM/Population/AlmostAllDensity.lean` | The headlines. Upper natural density `≤ ε` of seeds missing `q` in `n` steps; and the finite-`S` uniform version. |
+
+**The lesson worth internalising.** A bound on a *fraction over one period of `M`* is a **diagonal**
+count (each residue class occurs once, so every other coordinate of the seed is determined by
+`m mod M`); a natural-density bound is a **product** count. They are not comparable. Before
+transferring any period bound to density, check that the counted predicate is genuinely a function
+of `m mod M` — and if it is not, look for the fibre weakening that makes it one, rather than
+weakening the statement.
+
+## Standing caution on priority claims
+
+Never write "first / only formalization in any proof assistant" in a docstring or the paper without
+checking, at minimum: the **Isabelle/HOL AFP**, the Lean project **PrimeNumberTheoremAnd**,
+**Metamath set.mm**, **HOL Light `100/`**, and **open Mathlib PRs**. Session 312 found that the
+repo's long-standing "no Mertens theorem in any proof assistant" claim was false (AFP since 2018),
+and that a `ζ(2) = π²/6` "unprecedented" claim was also false (Mathlib has the Basel problem).
+"Not in Mathlib at pin `vX.Y.Z`" is usually the only defensible form. Record:
+`agents/state/findings_mertens_priorart.md`. One further claim in the repo — "first van der Corput
+bound in any proof assistant" (`EM/LargeSieve/Analytic.lean`) — is **unverified and suspect**.
