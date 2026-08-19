@@ -202,6 +202,399 @@ equidistribution was never the relevant object.  What the orbit inherits
 from it remains heuristic: $P_n+1$ is one member of the progression, not
 a random one.
 
+\subsection{The Seed-Average Law and Almost-All Capture}
+\label{sec:seed-average}
+\keymark
+
+The bag-conditioned law of \S\ref{sec:bag-law} describes \emph{one} step
+of the dynamics on a population.  This subsection iterates it.  Fix a
+prime~$q$ and run the greedy map from an arbitrary seed $m \geq 1$:
+$\Prod{m}(0) = m$, $\Prod{m}(k{+}1) = \Prod{m}(k)\cdot\seq{m}(k)$ with
+$\seq{m}(k) = \minFac(\Prod{m}(k)+1)$.  Say that the seed
+\emph{captures}~$q$ within~$n$ steps if $\seq{m}(j) = q$ for some $j < n$.
+The result of this subsection is that, for each fixed~$q$, almost every
+seed captures~$q$, in natural density, at a finite horizon and with no
+hypotheses at all.
+
+\begin{theorem}[Almost-all capture, density form;
+\lean{EM/Population/AlmostAllDensity.lean}{almost\_all\_genmc\_density},
+\lean{EM/Population/AlmostAllDensity.lean}{almost\_all\_genmc\_limsup}]
+\label{thm:almost-all-capture}
+For every prime~$q$ and every $\varepsilon > 0$ there are a horizon~$n$
+and a threshold~$X_0$ such that, for all $X \geq X_0$,
+\[
+  \#\bigl\{\, m \leq X \;:\; q \nmid m,\ \seq{m}(j) \neq q
+     \text{ for all } j < n \,\bigr\}
+  \;\leq\; \varepsilon X .
+\]
+Equivalently, the set of seeds coprime to~$q$ that miss~$q$ in their
+first~$n$ multipliers has upper natural density at most~$\varepsilon$.
+\end{theorem}
+
+\begin{remark}[Scope, and what is \emph{not} claimed]
+\label{rem:seed-average-scope}
+The theorem is a statement about the \emph{seed ensemble}.  Nothing
+whatsoever is claimed about the Euclid--Mullin orbit of the seed~$2$, which
+is a single trajectory and therefore invisible to any density statement;
+the orbit-specificity barrier (Dead Ends~\#90 and~\#117) is untouched.
+The prime~$q$ is \emph{fixed}: both $n$ and $X_0$ depend on~$q$ and
+$\varepsilon$, and the simultaneous-in-$q$ form is \textbf{open}, because
+natural density is only finitely additive and the per-$q$ statements
+therefore do not combine.  Finite subadditivity does give a uniform
+statement over any \emph{finite} set~$S$ of primes --- one horizon~$n$ such
+that the seeds missing \emph{some} $q \in S$ have upper density
+$\le\varepsilon$
+(\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density})
+--- and that is the strongest simultaneous form natural density supports:
+the countable version would need a Borel--Cantelli argument, which is a
+theorem about countably additive measures.  The horizon $n = n(q,\varepsilon)$ is finite:
+there is no limit in~$n$, no equidistribution hypothesis anywhere in the
+chain, and every analytic input is unconditional.  What the theorem does
+add is a genuinely unconditional dynamical statement about the greedy map
+on a population --- the first in this project that is neither an
+equivalence to MC nor conditional on an open hypothesis.
+\end{remark}
+
+The proof runs through nine steps, each of independent interest.  The
+whole of it is elementary plus one Tauberian input, and --- this is the
+structural point --- it contains \emph{no character sums}.
+
+\paragraph{1.  A finite orbit is a CRT function of the seed.}
+The greedy map is not a congruence map, but a truncated one is.  If $M$ is
+divisible by every prime $\le y$, and the first $n$ multipliers of the
+orbit of~$m$ all stay $\le y$, then every seed $m' \equiv m \pmod M$
+produces the same first $n$ multipliers, and the accumulators stay
+congruent mod~$M$:
+\[
+  \seq{m'}(j) = \seq{m}(j) \quad (j<n),
+  \qquad \Prod{m}(n) \equiv \Prod{m'}(n) \pmod M
+\]
+(\lean{EM/Population/SeedTypes.lean}{genSeq\_prefix\_of\_modEq}, ``Lemma
+B'').  The one-step engine is that $\minFac(P+1)$ is determined by
+$P \bmod M$ as long as it does not exceed~$y$
+(\lean{EM/Population/SeedTypes.lean}{minFac\_eq\_of\_modEq\_of\_le}).  The
+companion ``Lemma A'' is a revisit-freeness statement: once the cofactor
+residue mod~$r$ has been seen at an $r$-exposed step, $r$ cannot divide the
+next Euclid number
+(\lean{EM/Population/SeedTypes.lean}{not\_dvd\_succ\_of\_revisit}), so the
+set of visited residues grows by at most one per step and never repeats.
+
+\paragraph{2.  The capture identity.}
+Lemma~B fails exactly at the prime we care about: if $q$ is ever selected,
+the orbit leaves its congruence class.  The repair is to run the
+\emph{$q$-free dynamics}, which selects at every step the least prime
+$\neq q$ dividing the current Euclid number,
+\[
+  \tilde p_m(k) = \minFac\bigl(\mathrm{ordCompl}_q(\tilde{\mathrm{P}}_m(k)+1)\bigr),
+  \qquad \tilde c_m(k) = \prod_{j<k} \tilde p_m(j)
+\]
+(\lean{EM/Population/SeedCapture.lean}{genSeqAvoid},
+\lean{EM/Population/SeedCapture.lean}{genProdAvoid}); this run never
+selects~$q$ and $q$ never divides its accumulator
+(\lean{EM/Population/SeedCapture.lean}{genSeqAvoid\_ne\_avoided},
+\lean{EM/Population/SeedCapture.lean}{not\_dvd\_genProdAvoid}), so it is a
+legitimate CRT reference orbit.  Call a step $j$ \emph{$q$-exposed} if
+$\tilde p_m(j) > q$ --- $q$ was available and declined --- and let
+\[
+  V_q(m,n) \;=\; \bigl\{\, \tilde c_m(j) \bmod q \;:\; j<n,\ \tilde p_m(j) > q \,\bigr\}
+  \;\subseteq\; \ZZ/q\ZZ ,
+  \qquad \#V_q(m,n) \leq n
+\]
+(\lean{EM/Population/SeedCapture.lean}{visitedSetAvoid},
+\lean{EM/Population/SeedCapture.lean}{visitedSetAvoid\_card\_le}).
+
+\begin{theorem}[Capture identity;
+\lean{EM/Population/SeedCapture.lean}{captured\_iff\_mem\_visited}]
+\label{thm:capture-identity}
+Let $q$ be prime, $M$ divisible by every prime $r \le y$ with $r \neq q$,
+$m' \equiv m \pmod M$ with $q \nmid m'$, and suppose the first~$n$ $q$-free
+multipliers of~$m$ are nondegenerate and $\le y$.  Then the genuine orbit
+of~$m'$ captures~$q$ within~$n$ steps if and only if
+\[
+  m' \bmod q \;\in\; -\,V_q(m,n)^{-1} .
+\]
+\end{theorem}
+
+This is the finitary heart of the programme.  Dynamical capture --- an
+$n$-fold iteration of a map with no algebraic structure --- becomes
+membership of a \emph{single residue} in an explicitly enumerated set of
+size at most~$n$, computed from one seed-residue-blind reference orbit.
+The mechanism is the death channel of \S\ref{sec:walk} read
+backwards: the $q$-free run declines~$q$ at an exposed step precisely when
+$m'\tilde c_m(j) \not\equiv -1 \pmod q$, and the genuine orbit of~$m'$
+diverges from the reference exactly at the first exposed step where that
+congruence does hold.
+
+\paragraph{3.  The exact selection law.}
+The counting modulus is
+\[
+  M_Y \;=\; \prod_{r \leq Y,\ r \text{ prime},\ r \neq q} r
+\]
+(\lean{EM/Population/SelectionLaw.lean}{modulus}).  Excluding~$q$ is
+load-bearing: it leaves the coordinate $m \bmod q$ --- the one the capture
+identity reads --- free of the CRT.  Seeds of one period $[1,M_Y]$ are
+partitioned into \emph{type cells}
+(\lean{EM/Population/SelectionLaw.lean}{stepCell}), the fibres of the map
+sending a seed to its first~$n$ $q$-free multipliers, and each cell is cut
+out by one local condition at each prime of the band
+(\lean{EM/Population/SelectionLaw.lean}{mem\_cell\_iff\_local}), so its
+cardinality is a CRT product
+(\lean{EM/Population/SelectionLaw.lean}{stepCell\_card}).  Inside a cell,
+the primes $r \le y$ split three ways: those in the bag (dividing the seed,
+or already used as multipliers) are excluded automatically, and each
+remaining \emph{active} prime carries a \emph{box}
+\[
+  B_r(k) \;=\; (\ZZ/r\ZZ)^\times \setminus
+    \bigl\{-v^{-1} : v \text{ an } r\text{-exposed visited residue}\bigr\},
+  \qquad \rho_r(k) = 1/\#B_r(k)
+\]
+(\lean{EM/Population/LargeStepRoughness.lean}{box},
+\lean{EM/Population/LargeStepRoughness.lean}{rho}).
+
+\begin{theorem}[The selection law;
+\lean{EM/Population/SelectionLaw.lean}{selection\_law}]
+\label{thm:selection-law}
+For every type cell at depth~$n$ with a nondegenerate $Y$-bounded reference
+prefix, and every $y \le Y$,
+\[
+  \#\bigl(\mathrm{cell} \cap \{\,\text{no prime } r \leq y,\ r \neq q,
+    \text{ divides the next Euclid number}\,\}\bigr)
+  \;=\; S \cdot \#\,\mathrm{cell},
+  \qquad
+  S \;=\; \prod_{r \leq y,\ r \neq q} \bigl(1 - \rho_r(n)\bigr) .
+\]
+\end{theorem}
+
+This is an exact identity, not an estimate: the roughness survival product
+is the true proportion, cell by cell.  It is Shanks' heuristic made exact
+\emph{and conditional} --- conditional on the whole type of the orbit so
+far, which is what a heuristic cannot be.  The bag-conditioned law of
+\S\ref{sec:bag-law} is its $n=0$ case: with no steps taken the type is
+empty, the boxes are all of $(\ZZ/r\ZZ)^\times$, $\rho_r = 1/(r-1)$ is
+replaced by the plain $1/r$ of a progression, and the product collapses to
+$\prod_{r<p,\ r\nmid P}(1-1/r)$ of
+\lean{EM/Population/BagConditionedLaw.lean}{tendsto\_bagClass\_div\_ap};
+in particular \lean{EM/Population/BagConditionedLaw.lean}{bagWeight\_least\_missing}
+--- the exact-$1/q$ law for the least missing prime --- is the degenerate
+instance of Theorem~\ref{thm:selection-law}.
+
+\paragraph{4.  The pathwise compensator.}
+The selection law turns the orbit into a process, but a process is useless
+without a lower bound on its predictable compensator: if the survival
+products $S_k$ were summable, the walk would die and nothing could be
+concluded.  They are not, and the reason is a conservation law.  Each
+active prime~$r$ that declines --- that is charged --- shrinks its own box
+by exactly one
+(\lean{EM/Population/LargeStepRoughness.lean}{boxCard\_succ\_of\_charged}),
+and the box never grows, so the reciprocals $1/\#B_r$ paid by~$r$ over any
+stretch are pairwise distinct values in $[1,r-1]$ and sum to at most the
+harmonic number $H_{r-1}$:
+
+\begin{lemma}[Harmonic charge budget;
+\lean{EM/Population/LargeStepRoughness.lean}{charge\_sum\_le\_harmonic}]
+Along any nondegenerate stretch of the $q$-free orbit, and for any prime
+$r \neq q$ not dividing the seed,
+$\sum_{k<n,\ r \text{ charged at } k} 1/\#B_r(k) \leq H_{r-1}$.
+\end{lemma}
+
+\noindent Summing over the near band $r < 2n$ and using
+$\sum_{r<2n} H_{r-1} \le \theta(2n) + \pi(2n) = O(n)$
+(\lean{EM/Population/LargeStepRoughness.lean}{chargeBudget\_le}) gives a
+\emph{linear} total budget for a \emph{linear} number of steps, so only a
+bounded fraction of the steps can have large escape mass.  A Markov
+argument on the budget, the brink lemma --- a prime whose box has shrunk to
+one element forces a small multiplier, and small multipliers are used at
+most once
+(\lean{EM/Population/LargeStepRoughness.lean}{brink\_forces\_small\_multiplier},
+ \lean{EM/Population/LargeStepRoughness.lean}{few\_small\_multipliers}) ---
+and a crude Mertens bound on the far band assemble into:
+
+\begin{theorem}[The pathwise compensator;
+\lean{EM/Population/LargeStepRoughness.lean}{pathwise\_compensator}]
+\label{thm:pathwise-compensator}
+There is an absolute $n_0$ such that for every prime~$q$, every seed~$m$,
+every $Y$ with $\log Y \le n^2$ and every nondegenerate $Y$-bounded type
+path of length $n \geq n_0$,
+\[
+  \sum_{k<n} S_k \;\geq\; \frac{c_1}{2}\, n,
+  \qquad c_1 = e^{-250} .
+\]
+\end{theorem}
+
+The bound is \textbf{deterministic and per-path}: no probability, no
+character sums, no equidistribution, and the constants $c_1$ and $n_0$ do
+not depend on $q$, on the seed, on $Y$ or on the threshold constant.  This
+is why the Four-Way Blocker of \S\ref{sec:four-way} is evaded: the blocker
+obstructs \emph{ergodic} statements about one orbit, and the compensator
+bound is not ergodic but \emph{sure}.  It holds for every path, including
+the paths one would have to exclude by hand.
+
+\paragraph{5.  Tree Chernoff.}
+The probabilistic consumption of the compensator is an abstract finite-tree
+exponential supermartingale: given a finite sample space, a filtration by a
+refining family of maps, step events determined by the filtration, and a
+predicted probability $S_k$ obeying the conditional counting inequality
+$S_k \cdot \#(\text{fibre}) \leq \#(\text{fibre} \cap \text{event})$, at
+most an $e^{-(3/8)v}$ fraction of the space has fewer than $v/4$ hits while
+carrying compensator at least~$v$
+(\lean{EM/Population/TreeChernoff.lean}{chernoff\_quarter\_local}).  The
+development is Mathlib-only: no measure theory, no stopping times, no
+martingale API --- the filtration is a family of finite-valued functions and
+the supermartingale property is a finite sum inequality.  The conditional
+counting hypothesis is supplied verbatim by the selection law.
+
+\paragraph{6.  (LS+) and the tail.}
+Combining the two gives the large-step statement: over one period
+$[1,M_Y]$, apart from an additive tail, all but an
+$\exp(-(3/8)(c_1/2)n)$ fraction of the seeds take at least $(c_1/8)n$ large
+steps in the first~$n$
+(\lean{EM/Population/LSPlus.lean}{ls\_plus}).  The tail --- the seeds whose
+first~$n$ $q$-free multipliers are degenerate or exceed the truncation ---
+is estimated separately, under the policy $n^2/2 \le \log Y \le n^3$, at an
+$e^{25}\log n / n$ fraction of the period
+(\lean{EM/Population/TailAssembly.lean}{tail\_small}), using the
+$\omega(N) \le \log_2 N$ divisor bound, an old-position count, and the
+per-seed survival upper bound of
+\code{EM/Population/TailEstimate.lean}.
+
+\paragraph{7.  Lemma D: large steps land anywhere.}
+Large steps are only useful if the multiplier's residue class mod~$q$ is
+not conspiratorial.  Lemma~D says it is not:
+
+\begin{theorem}[Lemma D;
+\lean{EM/Population/LemmaDBox.lean}{lemma\_D\_z},
+\lean{EM/Population/LemmaDBox.lean}{lemma\_D}]
+\label{thm:lemma-D}
+For every prime~$q$ and every $C \geq 48q$ there are
+$\kappa = e^{-128}/\bigl(16\,\varphi(q)\bigr) > 0$ and a depth~$k_0$ such
+that, at every depth $k \ge k_0$, in every type cell with nondegenerate
+$Y$-bounded reference prefix and small seed-divisor mass in the exclusion
+window, and for \emph{every} class~$a$ coprime to~$q$, the seeds of the
+cell that take a large step at depth~$k$ land in the class $a$ with
+proportion at least~$\kappa$.
+\end{theorem}
+
+The constant is uniform in the cell, in the type and in the seed; only its
+positivity is used downstream.  The analytic input is the mass of a
+\emph{window} of primes in a progression: over $(y, y^2]$ the reciprocal
+sum in a fixed coprime class is at least $1/(8\varphi(q))$
+(\lean{EM/Population/LemmaD.lean}{window\_ap\_recip\_lower}), which is
+Karamata's Tauberian theorem
+(\lean{EM/IK/Karamata.lean}{weightedPNTinAP\_asymp\_proved},
+\S\ref{sec:ant-def}) applied at window scale with $A = 2$, plus a crude
+$\le 32$ upper bound for the same window without the class restriction
+(\lean{EM/Population/LemmaD.lean}{window\_recip\_upper}).  Note what does
+\emph{not} appear: no $O(1)$ Mertens-in-progressions estimate is used
+anywhere.  A window of multiplicative width~$2$ is exactly what the
+asymptotic form of Mertens in progressions delivers with no error-term
+control at all, and the whole design of the exclusion window is arranged
+so that this suffices.
+
+\begin{remark}[On the Mertens bounds]
+\label{rem:mertens-priorart}
+The far-band estimate of step~4 and the window bounds of step~7 need a
+two-sided Mertens first theorem with explicit constants.  Mertens' first
+theorem is not currently available in Mathlib (as of \texttt{v4.33.0}); a
+pull request upstreaming it is open at the time of
+writing~\cite{Mathlib41394}.  We therefore prove the two-sided estimate we
+need from scratch, by an elementary route (Legendre's formula,
+$n^n \le e^n n!$, and telescoping), with deliberately crude constants ---
+$\sum_{p\le n}\log p/p \geq \log n - 13$
+(\lean{EM/Population/MertensLower.lean}{mertens\_lower}) and a windowed
+$\log\log$ lower bound
+(\lean{EM/Population/MertensLower.lean}{window\_recip\_lower}) --- that
+suffice for our application.  Sharper formalizations exist elsewhere:
+Eberl and Paulson's Isabelle/HOL AFP entry gives
+$\mathfrak{M}(n) - \ln n \in (-1 - 9/\pi^2,\ \ln 4]$~\cite{EberlPaulsonPNT},
+and the \texttt{PrimeNumberTheoremAnd} Lean project proves
+$\bigl|\sum_{p \le x} \log p/p - \log x\bigr| \le \log 4 + 4$~\cite{PNTplus}.
+No priority is claimed for the bounds proved here.
+\end{remark}
+
+\paragraph{8.  Theorem C.}
+Assembling: on one period $[1,M_Y]$, the \emph{good uncaptured} seeds ---
+coprime to~$q$, with a nondegenerate $Y$-bounded prefix and small divisor
+mass in the exclusion window, whose genuine orbit does \emph{not} select~$q$
+before depth~$n$ --- satisfy
+\[
+  \#\{\text{good uncaptured}\}
+  \;\leq\; M_Y \cdot \exp\Bigl(-\tfrac38\,\kappa\bigl(\tfrac{c_1}{2}n - K_0\bigr)\Bigr)
+\]
+(\lean{EM/Population/TheoremC.lean}{theorem\_C}) by a single application of
+\lean{EM/Population/TreeChernoff.lean}{chernoff\_quarter\_local}.  The
+structural point is the readoff
+\lean{EM/Population/TheoremC.lean}{captured\_of\_visited\_full}: if the
+exposed visited set fills all of $(\ZZ/q\ZZ)^\times$ then \emph{every} unit
+residue is captured, so the capture clause never needs the value of
+$m \bmod q$, and the $q$-coordinate stays outside the CRT.  Because a hit
+is a hit in \emph{one} class and there are only $q-1$ classes, the hit
+count on an uncaptured path is at most~$2q$ deterministically
+(\lean{EM/Population/TheoremC.lean}{success\_count\_le}) --- a bounded hit
+count against a linear compensator is exactly the Chernoff configuration.
+Discharging the tail and the divisor mass gives the period-fraction
+headline: for every prime~$q$ and $\varepsilon>0$ there are $n$ and $Y$
+with
+\[
+  \#\{\, m \in [1,M_Y] : q \nmid m,\ \seq{m}(j)\ne q \text{ for } j<n \,\}
+    \;\leq\; \varepsilon\, M_Y
+\]
+(\lean{EM/Population/AlmostAllGenMC.lean}{almost\_all\_genmc}).
+
+\paragraph{9.  From a period fraction to a natural density.}
+The last step is not a formality, and it is the most interesting part of
+the argument.  \textbf{A period fraction is a diagonal count; natural
+density is a product count, and no inequality relates the two in general.}
+An $M$-periodic set can have diagonal count~$0$ over $[1,M]$ and product
+count $(q{-}1)M/q$: take $\{m \in [1,M] : q \mid m\}$ intersected with the
+complement of the $q\nmid m$ clause.  So a bound on one period says nothing
+about $[1,X]$ unless every clause of the counted predicate is a function of
+$m \bmod M_Y$.
+
+Two clauses of the Theorem~C predicate are not.  Since $M_Y$ deliberately
+excludes~$q$, neither $q \nmid m$ nor ``$m$ is uncaptured before depth~$n$''
+--- which by Theorem~\ref{thm:capture-identity} is a condition on the fibre
+coordinate $m \bmod q$ --- is determined by $m \bmod M_Y$.  Over one
+$M_Y$-period each residue class occurs once, so $m \bmod q$ is pinned there;
+over $[1,X]$ it is not.
+
+The repair does not touch a single constant.  The Chernoff argument uses
+capture only through two facts, and both are already fibre statements: the
+guard forces the visited set to fill (\S8 above), and
+\lean{EM/Population/SeedCapture.lean}{captured\_of\_mem\_visited} was
+stated for a general seed of the fibre from the outset.  So the two
+offending clauses can be weakened to ``\emph{some} seed in the residue
+fibre of~$m$ modulo~$M_Y$ is coprime to~$q$ and uncaptured before
+depth~$n$'' (\lean{EM/Population/FiberTheoremC.lean}{FiberGood}), which is a
+property of the fibre and hence $M_Y$-periodic, and Theorem~C survives
+verbatim with the same $\kappa$, $K_0$, $n_1$
+(\lean{EM/Population/FiberTheoremC.lean}{theorem\_C\_fiber}).  The three
+bad types are now all fibre-measurable and jointly rare
+(\lean{EM/Population/TypeBadSmall.lean}{type\_bad\_small}); a periodic
+covering of density $\varepsilon/2$ transfers to an upper density
+$\varepsilon$ on $[1,X]$, the factor~$2$ absorbing the incomplete final
+block
+(\lean{EM/ForMathlib/PeriodicDensity.lean}{card\_filter\_le\_of\_type\_bad},
+ \lean{EM/ForMathlib/PeriodicDensity.lean}{eventually\_density\_le}); and
+the covering lemma
+(\lean{EM/Population/AlmostAllDensity.lean}{uncaptured\_in\_few\_classes})
+places every uncaptured seed in the bad-type set --- with the seed itself as
+the existential witness in the fibre clause.  Theorem~\ref{thm:almost-all-capture}
+follows, and the truncation~$Y$ has disappeared from both the hypotheses and
+the conclusion.
+
+\begin{remark}[Why this route reaches almost-all capture]
+The chain above never forms a character sum.  The dynamical question ``does
+this orbit hit~$q$?'' is converted at step~2 into a residue-membership
+question, and from there the argument is counting: an exact CRT identity
+(step~3), a deterministic conservation law (step~4), and a finite
+supermartingale (step~5).  This is why the multiplier/walk gap
+(Dead End~\#117), which blocks the spectral routes of
+\S\ref{sec:spectral-routes}, is not on this path at all --- see
+Remark~\ref{rem:almost-all-mc}.  What the route does not and cannot do is
+say anything about the orbit of~$2$: a density-one statement is silent
+about any single trajectory, and Dead End~\#90 stands.
+\end{remark}
+
 \subsection{The Decorrelation--Variance--Concentration Chain}
 \label{sec:decorr-chain}
 

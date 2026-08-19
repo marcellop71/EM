@@ -345,6 +345,24 @@ This is why the orbit hypothesis is CME rather than multiplier cancellation:
 CME goes directly from conditional multiplier equidistribution to
 walk cancellation (via the fiber decomposition and telescoping),
 bypassing MultCancelToWalkCancel entirely.
+
+Everything above is a statement about \emph{this} route.  A different
+route does reach almost-all capture, unconditionally: the seed-average law
+of \S\ref{sec:seed-average}, which for each fixed prime~$q$ and each
+$\varepsilon>0$ produces a finite horizon~$n$ at which the seeds coprime
+to~$q$ missing~$q$ in their first~$n$ multipliers have upper natural
+density at most~$\varepsilon$
+(Theorem~\ref{thm:almost-all-capture},
+\lean{EM/Population/AlmostAllDensity.lean}{almost\_all\_genmc\_density}).
+It gets there precisely by \textbf{avoiding character sums entirely}:
+capture is converted into membership of one residue in an explicitly
+enumerated set (\lean{EM/Population/SeedCapture.lean}{captured\_iff\_mem\_visited}),
+after which the argument is exact CRT counting against a deterministic
+compensator bound.  The multiplier/walk gap of this remark ---
+Dead End~\#117 --- is therefore not on its path, since no walk character
+sum is ever formed.  What that route does \emph{not} do is say anything
+about the orbit of~$2$: a density-one statement over the seed ensemble is
+silent about any single trajectory, and Dead End~\#90 is untouched.
 \end{remark}
 
 \subsection{Self-Correcting Feedback and the Lyapunov Route}
