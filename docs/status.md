@@ -27,6 +27,43 @@
 > `window_recip_lower`), the D5c policy lemma (convenience), Lemma D, Theorem C.
 > Population scope only; no orbit claim; #90/#117 untouched.
 
+> **2026-08-19 (Session 312): the seed-average theorem in NATURAL-DENSITY form**
+> (`AlmostAllDensity.almost_all_genmc_density`). For every prime `q` and every `ε > 0` there
+> is a horizon `n` such that the seeds `m` coprime to `q` whose greedy Euclid–Mullin orbit
+> misses `q` among its first `n` multipliers have **upper natural density ≤ ε** — genuine
+> "almost all seeds", not a period fraction. Also `almost_all_genmc_limsup` and
+> `finite_simultaneous_density` (uniform over any *finite* set of primes).
+>
+> The conversion was not bookkeeping. `TheoremC.GoodSeed` carries two clauses (`¬ q ∣ m`,
+> `¬ ∃ j < n, genSeq m j = q`) that are **not** functions of `m mod M_Y`, because `M_Y`
+> excludes `q`; by the capture identity, capture is a condition on the *fibre* coordinate
+> `m mod q`. Over one period each class occurs once, so a period fraction is a **diagonal**
+> count, while natural density needs the **product** count — and no inequality relates them.
+> The repair: `guard_of_exposed` already forces the visited set full, and
+> `captured_of_mem_visited` was already stated for a general fibre seed, so the two clauses
+> weaken to "*some* seed in the residue fibre of `m` is coprime to `q` and uncaptured"
+> (`FiberTheoremC.FiberGood`) with every constant unchanged, restoring `M_Y`-periodicity.
+> New files: `EM/Population/FiberTheoremC.lean` (335, `theorem_C_fiber`),
+> `EM/ForMathlib/PeriodicDensity.lean` (174, generic block counting),
+> `EM/Population/TypeBadSmall.lean` (313, `type_bad_small`),
+> `EM/Population/AlmostAllDensity.lean` (248, the headlines). 0 sorry, build green.
+>
+> Also: dead ends **#161–#168** (six seed-average near misses; log density for the
+> simultaneous-in-`q` form; summable per-`q` rates). **§G frontier reframed**: simultaneity
+> is an *additivity* problem, not a *rate* problem — natural and logarithmic density are both
+> only finitely additive, so Borel–Cantelli does not apply; the profinite ensemble
+> `(Ẑ, Haar)` would deliver it with no new analysis, at the cost of a scope change
+> (`ℕ ⊂ Ẑ` is Haar-null). See `docs/analysis/simultaneous_in_q_scoping.md`.
+>
+> **Correction:** the repo does **not** hold priority for its Mertens bounds. Explicit
+> two-sided Mertens I is in the Isabelle/HOL AFP since 2018 and in the Lean project
+> `PrimeNumberTheoremAnd`; mathlib4#41394 is open. Only "not in Mathlib `v4.33.0`" is true.
+> See `agents/state/findings_mertens_priorart.md`.
+>
+> Scope, unchanged: population theorem over the seed ensemble, per **fixed** `q`; the
+> simultaneous-in-`q` form is OPEN; nothing is claimed about the orbit of `2`; #90/#117
+> untouched.
+
 > **2026-08-19 (Session 311): a.a. GenMC(q) IS PROVED IN LEAN**
 > (`AlmostAllGenMC.almost_all_genmc`). The seed-average program (Sessions 308–311) is
 > complete. Five new files, ~3,540 lines, 0 sorry, build green (8,931 jobs):

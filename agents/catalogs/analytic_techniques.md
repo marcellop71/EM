@@ -475,3 +475,46 @@ this as evidence that "decide the Gap, don't hunt Detection" is the productive p
 | Markov divisor exclusion at window start z | PROVED at z = n⁶ (tail) and z = Cc² (Lemma D); FAILS at z = Cc (no log-saving in Σ_{p>z}1/p² without extra Chebyshev work) — scale warning, not a dead end |
 | First-failure ⟹ SurvivesUpTo + per-cell selection law | PROVED — tail_small assembly pattern |
 Success rate for the seed-average campaign remains 100% across S309–S311.
+
+---
+
+## Session 312 (2026-08-19) — simultaneous-in-`q` scoping (§G of the seed-average programme)
+
+Full note: `docs/analysis/simultaneous_in_q_scoping.md`.
+
+### New technique entries
+
+| ID | Technique | Preconditions | What it gives | EM status | Dead ends | Notes |
+|----|-----------|---------------|---------------|-----------|-----------|-------|
+| T2.7 | **Profinite ensemble `(Ẑ, Haar)` as the sample space of the box process** | Cylinder-measurability of every event (`SelectionLaw.genSeqAvoid_prefix_eq_of_modEq` is already stated for an arbitrary multiple of the band primes); a.e. totality of the dynamics (Mertens divergence + multiplier distinctness) | `μ(F_q) = 0` per `q` directly from `almost_all_genmc` by letting `n → ∞`; then **countable additivity** gives `μ(⋃_q F_q) = 0` — the simultaneous form, with **no `q`-uniform rate** | **PROMISING (S312)**; no new analysis, only measure-theoretic packaging | not #101, not #155 | Scope: `ℕ ⊂ Ẑ` is Haar-null, so this is "a.a. *profinite* seed", not "a.a. integer seed"; says nothing about the orbit of `2` (#90/#117 untouched). Distinct from #101 (there `Ẑ` hosted the *walk*, to extract orbit information) and #155 (there the Gap was vacuous; here the null orbit is a declared scope limit) |
+| T2.8 | Logarithmic density for simultaneity in `q` | — | nothing | **DEAD (S312)** — dead end #167 | #167 | Log density is also only finitely additive; on `M_Y`-periodic events it equals natural density once `X/M → ∞`; and `1/m` weights destroy the exact CRT selection law, which needs a weight constant on residue classes |
+
+### New cross-cutting principle
+
+**The additivity/rate distinction.** Before optimizing constants to make a per-parameter failure
+fraction summable, ask whether the ambient "measure" is countably additive. Natural density and
+logarithmic density are both only *finitely* additive; Borel–Cantelli is a theorem about countably
+additive measures. Summability of `ε_q` buys **nothing** for a countable union under a finitely
+additive density (increasing sets of density `≤ δ` can have union of density `1`). The fix is never
+a better rate; it is a genuine measure.
+
+### STATUS changes
+
+| Technique | Old | New (S312) |
+|---|---|---|
+| Seed-average law, simultaneous-in-`q` form (§G) | OPEN, "needs a `q`-uniform rate `κ_q ≥ q^{−O(1)}`" | **Reframed.** The rate is *not* the obstruction: summability is achievable (`ε_q = q^{−2}`, `Cc(q) = max(48q, 3q²)`, `n(q) ≈ 2e^{250}exp(8Bφ(q))`), the `e²⁵ log n/n` tail is slack, and the differing moduli are compatible (`modulus q Y ∣ P(Y')`). The obstruction is finite additivity. **Available now and PROVED**: `AlmostAllDensity.finite_simultaneous_density` (finitely many primes). Available with packaging: the `Ẑ`-Haar simultaneous law. |
+| `k₀(q)` / `K₀(q)` in Lemma D | unremarked | **Exponential and ineffective.** `k₀(q) ≥ exp(8Bφ(q))` (the `exp(8Bφ)` threshold inside `LemmaD.window_ap_recip_lower`), and the other half `x₀(q,b,1/(16φ(q)))` comes from the Karamata input, hence carries no rate (uniformity in `q` is Siegel–Walfisz, ineffective). No explicit `n(q)` can be written down; existence suffices for union bounds, but no "uniform rate" claim may be made. |
+| "Mertens I is unprecedented in a proof assistant" (S149 note) | asserted | **FALSE, corrected S312.** Isabelle AFP has explicit two-sided Mertens I since 2018; `PrimeNumberTheoremAnd` has it in Lean; mathlib4#41394 is open. Only "not in Mathlib v4.33.0" is true. See `agents/state/findings_mertens_priorart.md`. |
+
+### New UNTRIED combinations
+
+- Carathéodory extension of the cylinder content to `lim ℤ/Mℤ`, then `almost_all_genmc` as a Haar
+  bound — the cheapest honest route to a countable statement. `EM/Adelic/Profinite.lean` exists.
+- `genSeq`/`genSeqAvoid` as a.e.-defined maps on `Ẑ` (needs the Mertens-divergence totality
+  argument).
+
+### Track record
+
+| Session | Proposal | Outcome | Advancement |
+|---|---|---|---|
+| 312 | Scoping §G: (i) `q`-uniform rate + union bound; (ii) logarithmic density | (i) **NEEDS-NEW-INPUT** — corrected the dispatch on two points (the `log n/n` tail is *not* binding; the differing moduli are *not* fatal), identified the true obstruction as finite additivity, and extracted the finite-`S` corollary (since PROVED). (ii) **DEAD**, dead end #167. Third route found: **`(Ẑ, Haar)`**, delivering the simultaneous form with no `q`-uniform rate and no new analysis. | **0.6** |

@@ -202,7 +202,7 @@
 \code{Meta/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 447 \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 219 \\
 \code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 785 \\
-\code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 716 \\
+\code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 746 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 309 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 134 \\
 \midrule
@@ -229,6 +229,7 @@
 \code{ForMathlib/VanDerCorput.lean} & The finite van der Corput inequality $\|\sum_{n<N} f(n)\|^2 \le 2N^2/(H{+}1) + 2\delta N^2$ (Mathlib-only imports) & 408 \\
 \code{ForMathlib/ZModDftParseval.lean} & Parseval/Plancherel for \code{ZMod.dft}: $\sum_k \|\hat\Phi(k)\|^2 = N\sum_j \|\Phi(j)\|^2$ & 121 \\
 \code{ForMathlib/CoprimeAffineBlock.lean} & $\#\{t\in[k,k{+}N): \gcd(N, at{+}b)=1\} = \varphi(N)$ for $\gcd(a,N)=1$; $B$ blocks give $B\varphi(N)$ & 93 \\
+\code{ForMathlib/PeriodicDensity.lean} & Transfer of a periodic residue-class covering to an upper natural density bound on $[1,X]$ & 174 \\
 \midrule
 \multicolumn{3}{l}{\emph{Seed-average program (new)}} \\
 \code{Population/SeedTypes.lean} & Lemma A (revisit-freeness), visited-set bounds, Lemma B (CRT prefix invariance) & 259 \\
@@ -236,7 +237,15 @@
 \code{Population/LargeStepRoughness.lean} & The box process and harmonic charge budget $\mathrm{Ch}_n \le 2.8n$; brink lemma; Mertens upper bound; the pathwise compensator $\sum_{k<n} S_k \ge (c_1/2)n$ & 1758 \\
 \code{Population/SelectionLaw.lean} & WP2: type cells mod $M_Y/q$, CRT product counting, and the exact selection law $\#(\text{cell}\cap\text{Survives}) = S_k\cdot\#\text{cell}$ & 905 \\
 \code{Population/TreeChernoff.lean} & Abstract finite-tree exponential supermartingale and Chernoff lower tail (C5 replacement), localized variants & 616 \\
-\code{Population/MertensLower.lean} & Mertens I lower bound $\sum_{p\le n} \log p/p \ge \log n - 13$; windowed $\log\log$ lower bound (not in Mathlib) & 755 \\
+\code{Population/MertensLower.lean} & Mertens I lower bound $\sum_{p\le n} \log p/p \ge \log n - 13$; windowed $\log\log$ lower bound (not in Mathlib) & 766 \\
 \code{Population/LSPlus.lean} & (LS+): the large-step large-deviation bound $\#\{N < (c_1/8)n\} \le M_Y e^{-(3/16)c_1 n} + \mathrm{tail}$ over one period & 469 \\
 \code{Population/TailEstimate.lean} & Group 7 slices: $\omega(N) \le \log_2 N$, old-position prime count $\le k^2(\log_2 Y{+}1)$, per-seed survival upper bound $S_k(y) \le e^{-\sum_{\text{active}} 1/r}$, divisor first moment + Markov mass & 431 \\
+\code{Population/TailAssembly.lean} & C4: the quantitative tail estimate \code{tail\_small} --- degenerate or oversized $n$-prefixes are an $e^{25}\log n/n$ fraction of the period & 558 \\
+\code{Population/LemmaD.lean} & Lemma D, analytic side: the AP window mass from Karamata at window scale ($A=2$), uniform in the class & 278 \\
+\code{Population/LemmaDBox.lean} & Lemma D, box side: \code{lemma\_D\_z} --- large steps land in any prescribed class $a$ coprime to $q$ with proportion $\ge \kappa = e^{-128}/(16\varphi(q))$, uniformly in cell, type and seed & 815 \\
+\code{Population/TheoremC.lean} & Theorem C: good uncaptured seeds are an $\exp(-(3/8)\kappa((c_1/2)n - K_0))$ fraction of one period; \code{captured\_of\_visited\_full} & 719 \\
+\code{Population/AlmostAllGenMC.lean} & \code{almost\_all\_genmc}: for fixed $q$ and every $\varepsilon>0$, at most an $\varepsilon$-fraction of one period is coprime to $q$ and uncaptured (period-fraction form) & 452 \\
+\code{Population/FiberTheoremC.lean} & \code{FiberGood} and \code{theorem\_C\_fiber}: Theorem C with the two non-periodic clauses weakened to fibre statements, same constants & 335 \\
+\code{Population/TypeBadSmall.lean} & \code{type\_bad\_small}: the three fibre-measurable bad types are an $\varepsilon$-fraction of the period --- every clause a function of $m \bmod M_Y$ & 313 \\
+\code{Population/AlmostAllDensity.lean} & \code{almost\_all\_genmc\_density}: the natural-density form of the seed-average theorem; $Y$ eliminated from the statement & 160 \\
 \end{longtable}
