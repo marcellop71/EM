@@ -51,7 +51,7 @@ the file where it is documented, and whether a formal Lean witness exists.
 
 ## Catalog
 
-**Single source of truth: `tools/dead_ends.tsv`** (one row per number 1–160: category, name,
+**Single source of truth: `tools/dead_ends.tsv`** (one row per number 1–166: category, name,
 approach, rationale, session, witness, revival score, status).  `python3 tools/gen_dead_ends.py`
 regenerates the block below, `paper/dead_ends_table.tex` (the complete catalogue in the paper's
 appendix), `paper/dead_ends_stats.tex` and `docs/dead_ends_catalog.md`, and prints the counts that
@@ -67,7 +67,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 
 <!-- BEGIN GENERATED CATALOGUE -->
 
-160 numbers; 150 catalogued entries; 29 with a genuine Lean witness; 10 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
+166 numbers; 156 catalogued entries; 29 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
 
 ### Orbit specificity (OS, 8) — population or ensemble statistics do not determine what one orbit does
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -92,7 +92,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 117 | MultCancel does not force WalkCancel | 128 | Multipliers alternating $\{2,3\}$ mod 5 with $\chi(2)=i$: multiplier sums vanish for even $K$, but $W_K=(K/2)(1+i)$, $\|W_K\|=\Theta(K)$. Compatible with every EM structural property; the transfer is equivalent to CCSB/CME. Sharpens #58. | `OrbitBarrier.mult_cancel_not_walk_cancel` | 0 |
 | 123 | FourPointPCV: cross-time is not cross-modulus | 146 | SCRTI gives cross-modulus independence at one time; FourPointPCV needs cross-time independence at one modulus. Four-time decay is HOD-type mixing (#84), harder than CCSB; the four values are deterministic functions of one seed (#115); pairwise PCV itself open. Superseded: false (#156), DSL vacuous (#160). | — | - |
 
-### Aggregate gap (AG, 5) — an average-case or aggregate bound does not give the per-fibre or per-class bound needed
+### Aggregate gap (AG, 6) — an average-case or aggregate bound does not give the per-fibre or per-class bound needed
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 101 | Bundle Walk / Weak MC / profinite | 70 | BundleGap is weaker than SieveTransfer as a statement but no technique proves it otherwise; product-group characters do not factor (shared minFac index couples moduli), reducing to MMCSB; $\delta(M)\to0$ is population-level. In $(\mathbb Z/11)^\times$ cycling $\{3,4\}$ generates yet visits only $\{1,3\}$. | — | 0 |
@@ -100,6 +100,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 121 | SMSB plus SE per-class escape | 143 | $\|B\|\le\delta N$ gives by pigeonhole some class with small bad density, not all and not $-1$; per-class uniformity needs $P(\mathrm{bad}\mid w=c)\approx P(\mathrm{bad})$, i.e. CME. SE gives generation, not statistics. Superseded: SMSB false at $\chi\equiv1$ (#156). | `marginal_joint_barrier_witness` | 2 |
 | 139 | Backward-dynamics chain broken everywhere | 266 | ETA false at $c=-1$ (#136), DCTA false at $q=3$, SRE mis-stated (#138), CRTPropagationStep false (absorption drains nonzero-class mass each step even with the corrected limit), AEP false (#137), SMLB$(c)$ likely false since absorption forces $\mathrm{genSeq}$ to grow; chain zero-sorry but vacuous. | — | 0 |
 | 153 | Iwasawa / Euler-system receptacle | 299 | Kolyvagin derivatives need classes over the full squarefree lattice; the orbit supplies a single maximal flag $P_0 \mid P_1 \mid \cdots$. No $\mathbb{Z}_p$-tower (layer degrees are not $p$-powers), no motive, no period formula. | — | 0 |
+| 162 | Worst-case bag-prime bound in Lemma D | 309 | Once the threshold is type-determined, the worst-case bound is unbounded on a single type and destroys the uniform-in-$k$ constant: an average-case supply statement is being asked to hold per fibre. Repaired by a first moment, $\mathbb{E}\big[\sum_{r \mid m,\ r > z} 1/r\big] \le 2/(z\log z)$, and a Markov exclusion of a set of relative density $\le 1/C$ (`TailEstimate.seed_divisor_first_moment`, `TailEstimate.markov_divisor_mass`). | — | 3 |
 
 ### Collapse (CO, 27) — the proposed hypothesis is definitionally (or by a short argument) equivalent to an existing one, usually CME, CCSB or MC itself
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -132,7 +133,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 150 | Covering-system congruence obstructions | 299 | Covering systems are finite by definition, so `exists_tail_coprime` at $m=\prod T$ kills fixed-finite-prime-set covering (`no_finite_prime_covering`); assembling at the lcm gives one set at one modulus and `no_cvdp_obstruction` is set-generic. Residual escapes: unbounded/profinite families and anatomy invariants. | `CvdP.no_covering_family_obstruction` | 0 |
 | 159 | $\varepsilon$-interpolation family reformulates MC | 307 | `mullin_iff_exists_failWeight_bound`: for $q\neq 2$, MC at $q$ iff some $(\varepsilon,N,c)$ with $N\varepsilon<c$ has $\mathrm{failWeight}\le 1-c$; outside $N<c/\varepsilon$ no bound exists unless MC holds; if $q$ never occurs, $\mathrm{failWeight}\ge(1-\varepsilon)^N$, compatible with a.s. capture at every fixed $\varepsilon$. MC relocated into a finite window, not weakened. | `mullin_iff_exists_failWeight_bound` | 0 |
 
-### Circularity (CI, 11) — the argument presupposes the conclusion or an equivalent
+### Circularity (CI, 12) — the argument presupposes the conclusion or an equivalent
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 12 | PairDecorrelation is circular | 11 | $h=1$ correlation is just the multiplier sum (`walk_shift_one_correlation`); $h \ge 2$ requires PairDecorrelation, which is equivalent to walk equidistribution / DH itself — circular | — | - |
@@ -146,8 +147,9 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 116 | Sieve-theoretic transfer for DSL circular | 114 | The sieve axiom $\omega(r)\sim1/r$ is EMDirichlet mod $r$, so the argument assumes EMDirichlet for all auxiliaries: circular for $q\le L$, reduces to BVImpliesMMCSB for $q>L$. CRT independence is a scope error (for fixed $r$, $r\equiv a$ mod $q$ is deterministic). Superseded: DSL vacuous (#160). | — | 0 |
 | 132 | L-function factorization is circular | 173 | Controlling $L_{\mathrm{non\text{-}EM}}$ requires knowing which primes are non-EM, i.e. MC itself; the reformulation reduces to the hypothesis it aims to prove (maps to #90). | — | 1 |
 | 134 | No Tauberian lever for $L_{\mathrm{EM}}$ | 173 | $\prod n \ge 2^{n+1}$ makes the series converge for all $s>0$ (`accum_reciprocal_summable`); $L_{\mathrm{EM}}$ is entire on $\Re s>0$ with no pole at $s=1$. The standard PNT route uses $L(s,\chi)$ over all primes, already formalized. | — | 1 |
+| 166 | ``The bag has caught up'' justification of $S_k \asymp 1$ | 309 | Circular: it assumes the small primes have been captured, which is precisely the population form of the conclusion (LS)/Theorem C. Any proof of (LS) routing through ``the bag has caught up'' presupposes its own conclusion. The non-circular route, and the one actually formalized, is the harmonic charge budget $\sum_{r<2n} H_{r-1} \le \theta(2n)+\pi(2n) = O(n)$, which uses only that an *uncaptured* prime pays $1/\|B\|$ into its own finite budget whenever it declines (`LargeStepRoughness.charge_sum_le_harmonic`). | — | 3 |
 
-### Structurally false (SF, 26) — the proposed statement is false: an explicit counterexample or a proved refutation
+### Structurally false (SF, 28) — the proposed statement is false: an explicit counterexample or a proved refutation
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 6 | Direct SE implies DH (generation not coverage) | 5 | Counterexample: in $\mathbb{Z}/6$ steps $2,2,2,\dots$ generate but partial sums cycle $0,2,4$ and miss all odd elements; generation does not imply coverage. Later $\mathbb{Z}/4$ witness | — | - |
@@ -176,6 +178,8 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 156 | Uncentered ensemble character layer false | 307 | Take $\chi\equiv 1$: `ensembleAvg` of $1$ is $1$, so the SD limit is $1$ not $0$; energy $K^2 \not\le CK$; bad density $1$; four-point average $\equiv 1$; $E[E^2]=K^4$. The side conditions ($\chi(0)=0$, $\sum\chi=0$) of `MultCancelToWalkCancel` were never back-ported. Repair: centered per-$\chi$ covariance plus Cesàro drift. | `UncenteredRefutations.not_stepDecorrelation` | 0 |
 | 157 | Fixed-step multiplier equidistribution false | 307 | $\mathrm{genSeq} n 0=2$ for every odd $n$ (`genSeq_zero_of_odd`) and at least half the squarefree $n$ are odd, so mass $\ge 1/2$ sits on $2\bmod q$: false for $q\ge 5$. Not a parity artifact: on the family $2p$ the Dirichlet density of $\{\minFac(2p+1)=3\}$ is $1/2$. Independent of absorption. | `UncenteredRefutations.not_ensembleMultiplierEquidist` | 0 |
 | 160 | PE/MFRE/RoughLPFEquidist false: head domination | - | The density of $\{\minFac m=p\}$ is $w_p=p^{-1}\prod_{r<p}(1-1/r)$; weights telescope, so the class density is the convergent series $\sum_{p\equiv a}w_p$ (`tendsto_classCount_div`) and RoughLPFEquidist is the identity $\sum_{p\equiv a}w_p=c_q/(q-1)$, on which Dirichlet is silent: the class of the least prime above $q$ receives more than its share (about twice for large $q$; the excess at any fixed $q$ is a finite positive-term computation, deliberately not run in Lean). Same for MFRE/PE, UCE. | `HeadDomination.roughLPFEquidist_iff` | 0 |
+| 164 | Block-chaining substitute for Freedman | 309 | False on two independent counts: (i) the harmonic charge budget is *global* and admits no per-block version — a middle block may consist entirely of high-exponent steps, so the per-block lower bound fails; (ii) the goodness of step $k$ depends on $\tilde p_{k+1}$, so the block indicator is not block-past-measurable and the chaining is not a martingale. Replaced by a finite-tree exponential supermartingale driven by the *sure* compensator bound (`TreeChernoff.chernoff_quarter_local`), which needs neither stopping nor blocks. | — | 3 |
+| 165 | Omitting $r \ne q$ from the $q$-free box process | 309 | False at $r = q$: the $q$-free selector $\tilde p = \minFac_{\ne q}$ ignores $q$ entirely, so the brink lemma (F3) fails at $r = q$ and the step survival $S_k$ computes the wrong probability. The $q$-free type is a function of $m \bmod M_Y$ with $q \nmid M_Y$; $q$ is not a box coordinate at all, and the $q$-coordinate is carried separately by the capture identity. | — | 1 |
 
 ### Technique mismatch (TM, 51) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -232,7 +236,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 147 | Avoidance does not force factor-set diversity | 299 | (F1) `meanCharValue` contracts by averaging over a factor set while the walk selects one factor with $\\|\chi(s)\\|=1$; (F2) the chain concludes some branch reaches $-1$, avoidance constrains one branch; (F3) `productMultiset` fixes factor sets in advance, real ones are path-dependent. | `diverse_steps_imply_vanishing` | 1 |
 | 152 | Support-invisibility of algebraic invariants | 299 | Missingness is a support condition on $\sum_p e_p$, but every computable algebraic invariant factors through $p\mapsto p \bmod m$, hence through the walk, which sees only the product. | — | 0 |
 
-### Scale mismatch (SM, 12) — the error term of the tool exceeds the signal on an $O(\log x)$-term or exponentially sparse orbit
+### Scale mismatch (SM, 14) — the error term of the tool exceeds the signal on an $O(\log x)$-term or exponentially sparse orbit
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 11 | BlockDecorrelation for high-order characters | 11 | Works for low-order characters but fails for order $d \sim q-1$: block bound does not scale with the character order | — | - |
@@ -247,6 +251,8 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 108 | Harper BDH / Weil scale mismatch | 81 | BDH needs well-distribution in APs (circular for EM) and non-concentration; EM products are super-exponentially sparse, and it yields variance over most $q$, not pointwise. Weil error $O(p^{n/2})$ per degree is vacuous for an orbit at a single degree per step. | — | 1 |
 | 154 | LSD/Wirsing density along the orbit | 299 | No exponentially-sparse LSD theorem exists; the orbit contributes $O(\log x)$ terms below $x$, far under every LSD error term (Wirsing 1961, Tenenbaum II.5, Serre 1976 checked: nothing for sparse sequences). | — | 1 |
 | 155 | Nonstandard / ultraproduct receptacle | 299 | Detection is honest (Łoś transfers avoidance) but the Loeb measure of the hyperfinite orbit is $0$ for every sequence, avoiding or not; a conservative extension yields no new Gap by definition. | — | 0 |
+| 161 | Seed-magnitude large-step threshold | 309 | $y_k$ is a function of the seed's magnitude, not of its type, so $\{\tilde p_k > y_k\}$ is not measurable for the type $\sigma$-algebra mod $M_Y$; forcing measurability by size-stratification needs $Y \gtrsim (\log X)^A$, i.e.\ modulus $\exp((\log X)^A) \gg X$ — the Bombieri–Vinogradov regime (#96). Independently, the conditional probability of a large step at that threshold is $\asymp 1/\log\log X$, so Theorem C would be vacuous and (LS) false as stated. Repaired by the type-determined $y_k = C k \log_2 c_k$ (cofactor), which keeps the modulus constant and gives $\log y_k = (2+o(1))\log k$, exactly what the far-band estimate needs. | — | 3 |
+| 163 | Truncation quantifier order in Theorem C | 309 | Under that order the far-band constant $c_0$ degenerates as $\log\log Y/\log k \to \infty$, so $c_0$ is not absolute; and simultaneously forcing the degenerate-prefix tail to vanish requires $\log Y \gg n \log n$. The two requirements are incompatible at fixed $n$. Repaired by tying $Y$ to $n$ ($\log Y \asymp n^2$, cutoff $k \ge n/\log n$), which gives $c_0 \ge e^{-23}$ and changes the statement shape of Theorem C. | — | 3 |
 
 ### Methodological rules (MR, 3) — not mathematical obstructions but standing rules of the project (no numerical certificates, no instance-by-instance work), numbered in the earliest sessions
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -465,6 +471,22 @@ wall in front of all of them.
    (infinitely many `Pₙ + 1` composite).  Conditional-on-anatomy statements about MC
    proper are the least-mapped region of the catalogue, not an exhausted one.
 
+## Run X-SeedAverage (Session 312): entries #161–#166
+
+Session 312: #161–#166 added — six statement-level near-misses from the seed-average
+programme (sessions 309–311), all repaired in flight; catalogue counts move
+160/150/29/10 → 166/156/29/15.
+
+None of the six is a barrier to a technique: each is a *statement* that was written down,
+found to be wrong or vacuous, and corrected before anything was formalized (#161 SM the
+seed-magnitude large-step threshold, #162 AG the worst-case bag-prime bound in Lemma D,
+#163 SM the truncation quantifier order in Theorem C, #164 SF the block-chaining substitute
+for Freedman, #165 SF omitting `r ≠ q` from the q-free box process, #166 CI the "the bag has
+caught up" justification of `S_k ≍ 1`).  All carry witness `—`, and five of the six carry
+revival score 3 precisely *because* the repaired forms are what the seed-average programme
+actually proved: they are catalogued so the swarm does not re-introduce the broken version
+when it re-derives the same lemmas.
+
 ## Numbering aliases (do NOT add these twice)
 
 Some session notes predate the current numbering. The tables above are the ground truth;
@@ -494,6 +516,10 @@ the following historical labels are aliases of rows already present:
 - #90 via ensemble averaging (AlmostAllRSD route)
 - #125 via pairwise-only variance (second moment suffices)
 - #129 via abelian Galois = Dirichlet (FF weak MC)
+- #161, #162, #163, #164, #166 — the *repaired* forms are the seed-average programme's own
+  lemmas (type-determined threshold, first-moment bag bound, the `log Y ≍ n²` policy window,
+  the finite-tree supermartingale, the harmonic charge budget), so each near-miss points
+  directly at a proved weak-MC ingredient
 
 **Tier B — Medium revival (score 2)**
 - #86 via ensemble quasi-randomness
@@ -505,7 +531,8 @@ the following historical labels are aliases of rows already present:
 - #146 via weak MC on the density-1/2 set q ≡ 1 mod 3 (the autonomous map has a fixed point)
 
 **Tier C — Marginal (score 1)**
-- #20, #108, #128, #130, #132, #134, #135, #137, #138, #140, #145, #147, #148, #154, GaussOS
+- #20, #108, #128, #130, #132, #134, #135, #137, #138, #140, #145, #147, #148, #154, #165,
+  GaussOS
 
 **Tier D — Stays dead (score 0)**
 - #58, #81, #93, #95, #96, #101, #109, #110, #115, #116, #117, #131, #133, #139, #141,
@@ -671,13 +698,14 @@ example := @chebyshev_concentration_proved -- ChebyshevConcentration PROVED (unc
 /-! ## Aggregate statistics -/
 
 /-- Highest catalogued dead-end number.  Numbers are assigned progressively in the session logs
-and cited everywhere by number, so they are never renumbered.  Ten of the 160 numbers (#25,
+and cited everywhere by number, so they are never renumbered.  Ten of the 166 numbers (#25,
 #64–#72) were never assigned to any entry (2026-08-18 reconstruction, `tools/dead_ends.tsv`);
-`deadEndEntryCount` is the number of actual entries. -/
-def deadEndCount : ℕ := 160
+`deadEndEntryCount` is the number of actual entries.  Session 312 added #161–#166 (six
+statement-level near-misses from the seed-average programme, sessions 309–311). -/
+def deadEndCount : ℕ := 166
 
-/-- Number of catalogued dead-end entries: the 160 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 150
+/-- Number of catalogued dead-end entries: the 166 numbers minus the ten never assigned. -/
+def deadEndEntryCount : ℕ := 156
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -692,16 +720,18 @@ proof), giving 29. -/
 def witnessedDeadEndCount : ℕ := 29
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
-#136, #146). -/
-def revivableDeadEndCount : ℕ := 10
+#136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
+near-misses: their repaired forms are proved ingredients of the a.a. GenMC(q) chain, which is
+why they score high on the weak-MC axis despite being catalogued as errors. -/
+def revivableDeadEndCount : ℕ := 15
 
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 160 ∧
-    deadEndEntryCount = 150 ∧
+    deadEndCount = 166 ∧
+    deadEndEntryCount = 156 ∧
     witnessedDeadEndCount = 29 ∧
-    revivableDeadEndCount = 10 ∧
+    revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival
     (∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
