@@ -422,7 +422,7 @@ private theorem vonMangoldt_eq_log_minFac {n : ℕ} (hn_pp : IsPrimePow n) :
 
 /-- For any `Finset u`, the sum of `Lambda(n)/n` over non-prime prime powers in `u`
     is bounded by a universal constant (the tsum of `2 log p / p^2` over primes). -/
-private theorem nonprime_pp_sum_bounded_by_tsum (u : Finset ℕ) :
+theorem nonprime_pp_sum_bounded_by_tsum (u : Finset ℕ) :
     ∑ n ∈ u.filter (fun n => IsPrimePow n ∧ ¬Nat.Prime n), (Λ n : ℝ) / n ≤
     ∑' p, (if Nat.Prime p then
       2 * Real.log p / (p : ℝ) ^ 2 else 0) := by

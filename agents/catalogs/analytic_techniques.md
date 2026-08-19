@@ -465,3 +465,13 @@ this as evidence that "decide the Gap, don't hunt Detection" is the productive p
   (`TreeChernoff`, C6 by localization). WP2 and Group 6 are CLOSED.
 - Queue now: Group 7 tail assembly (TL1–TL3, analytic input done), D5c policy lemma,
   Lemma D (repaired shapes, A = 2), Theorem C ((e-1)/(e-2)/(e-3) shapes with Y-policy).
+
+## Track record — Session 311 (2026-08-19)
+| Technique | Outcome |
+|---|---|
+| Karamata window subtraction (weighted PNT at x=y,y²; ε=1/(16φ)) | PROVED — window_ap_recip_lower, the program's κ_q source |
+| Prime-power stripping reuse (de-privatize vs duplicate) | PROVED — prime_power_tail_bound |
+| Crude Chebyshev window upper bound (Σ_{y<r≤y²}1/r ≤ 32) | PROVED — window_recip_upper |
+| Markov divisor exclusion at window start z | PROVED at z = n⁶ (tail) and z = Cc² (Lemma D); FAILS at z = Cc (no log-saving in Σ_{p>z}1/p² without extra Chebyshev work) — scale warning, not a dead end |
+| First-failure ⟹ SurvivesUpTo + per-cell selection law | PROVED — tail_small assembly pattern |
+Success rate for the seed-average campaign remains 100% across S309–S311.

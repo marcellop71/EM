@@ -142,6 +142,8 @@ import EM.Population.RelativeSize
 import EM.Population.HittingSetStructure
 import EM.Population.InfiniteM
 import EM.Population.LSPlus
+import EM.Population.LemmaD
+import EM.Population.LemmaDBox
 import EM.Population.LargeStepRoughness
 import EM.Population.MertensLower
 import EM.Population.ReciprocalSum
@@ -152,6 +154,9 @@ import EM.Population.SelectionLaw
 import EM.Population.SylvesterTower
 import EM.Population.SpectralConspiracy
 import EM.Population.TailEstimate
+import EM.Population.TailAssembly
+import EM.Population.TheoremC
+import EM.Population.AlmostAllGenMC
 import EM.Population.TransferStrategy
 import EM.Population.TreeChernoff
 import EM.Population.WeakErgodicity

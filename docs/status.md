@@ -27,6 +27,25 @@
 > `window_recip_lower`), the D5c policy lemma (convenience), Lemma D, Theorem C.
 > Population scope only; no orbit claim; #90/#117 untouched.
 
+> **2026-08-19 (Session 311): a.a. GenMC(q) IS PROVED IN LEAN**
+> (`AlmostAllGenMC.almost_all_genmc`). The seed-average program (Sessions 308–311) is
+> complete. Five new files, ~3,540 lines, 0 sorry, build green (8,931 jobs):
+> `EM/Population/TailAssembly.lean` (558 — `tail_small` ≤ e²⁵·log n/n at policy
+> `n²/2 ≤ log Y ≤ n³`; `policy_satisfiable`; `ls_plus_with_tail`);
+> `EM/Population/LemmaD.lean` (278 — **`window_ap_recip_lower`**: primes ≡ a mod q in
+> `(y,y²]` carry 1/p-mass ≥ 1/(8φ(q)), Karamata-only, A = 2; `window_recip_upper` ≤ 32);
+> `EM/Population/LemmaDBox.lean` (815 — **`lemma_D_z`**: cell-form conditional multiplier
+> bound κ·#(cell ∩ bigStep) ≤ #(cell ∩ bigStep ∩ {mult ≡ a}), κ = e⁻¹²⁸/(16φ(q)), via the
+> exact hit-count identity `hitCell_card_mul`);
+> `EM/Population/TheoremC.lean` (719 — **`theorem_C`**: #{uncaptured good seeds} ≤
+> M·e^{−(3/8)κ((c₁/2)n−K₀)}, one application of `chernoff_quarter_local`, deterministic
+> success cap ≤ 2q, no new probabilistic engine);
+> `EM/Population/AlmostAllGenMC.lean` (452 — **`almost_all_genmc`**: ∀ q prime ∀ ε > 0
+> ∃ n Y, #{m : q∤m ∧ q ∉ first n multipliers}/M_Y ≤ ε; D5c discharge `threshold_sq_le`).
+> **Scope:** population theorem over the seed ensemble, per fixed q (simultaneous-in-q
+> OPEN, §G); finite-horizon counting, no equidistribution hypothesis; nothing claimed
+> about the orbit of 2 — #90/#117 untouched.
+
 # EM Formalization — Status
 
 > Maintained by the coordinator agent. Update **only when Lean code

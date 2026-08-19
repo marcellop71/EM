@@ -657,3 +657,13 @@ Standing facts (do not re-derive, do not contradict):
 - Scope honesty: this yields **a.a. GenMC(q) per fixed q**. The simultaneous form needs
   q-uniform rates (natural density not countably additive) — open, see §G of findings.
   No claim about the orbit of 2; #90/#117 are not touched and must not be invoked against it.
+
+## Session 311 update (2026-08-19)
+Queue items CLOSED: Group 7 tail assembly (TailAssembly.lean), Lemma D (LemmaD.lean +
+LemmaDBox.lean, analytic input = Karamata asymptotic only, A = 2), Theorem C
+(TheoremC.lean, via TreeChernoff reuse — the (e-2) block-chaining plan was superseded by
+the coordinator's success-prescription design; see findings.md Session 311). Remaining
+frontier for this program: (i) the simultaneous-in-q form (§G — needs q-uniform rate
+κ_q ≥ q^{−O(1)} plus diagonalization, or logarithmic density + Borel–Cantelli in q);
+(ii) D5c for ls_plus's own hthr (elementary shepherding). Do not propose block-chaining /
+Freedman variants for tree arguments — chernoff_quarter_local + sure compensator covers them.

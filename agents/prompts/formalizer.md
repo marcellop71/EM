@@ -1149,3 +1149,15 @@ campaign; statement list in `agents/state/findings_ls_verification.md` §4. Tool
 v4.33.0 API notes are in the Session-309 agent reports quoted in state/strategy_log.md
 (range_add_one, unconditional card_sdiff, one_div_le_one_div_of_le, no IsUnit inside
 Finset.filter under open Classical, Real.log_le_log argument shape).
+
+## Session 311 update (2026-08-19)
+Infrastructure now available (all 0 sorry): `TailAssembly.tail_small` + `ls_plus_with_tail`
+(quantitative tail at policy n²/2 ≤ log Y; note the vacuity lesson: never intersect
+hypothesis windows into an unsatisfiable point — check ∃ Y), `LemmaD.window_ap_recip_lower`
+(window AP 1/p-mass ≥ 1/(8φ(q)), Karamata-only), `LemmaD.window_recip_upper` (≤ 32),
+`LemmaD.lemma_D_z` (cell-form conditional multiplier bound, κ = e⁻¹²⁸/(16φ(q)), window
+start z a free parameter), `TheoremC.theorem_C` (#GoodSeed ≤ M·e^{−(3/8)κ((c₁/2)n−K₀)}
+via TreeChernoff.chernoff_quarter_local — no new engine), `AlmostAllGenMC` (headline, check
+build state). API notes: `div_le_div_iff₀` (not `div_le_div_iff`); `Finset.le_sup` needs
+explicit `(f := ...)`; `positivity` can't unfold defs; `ZMod.natCast_zmod_surjective`;
+`Finset.card_le_card_of_injOn` goals need `simp only [Finset.mem_coe, ...]` not `rw`.

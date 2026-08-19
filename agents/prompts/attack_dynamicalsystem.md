@@ -412,3 +412,13 @@ per the corrected shapes (findings.md (d)/(e)); (iii) the μ-model consequences 
 q-uniformity question (§G): can κ_q ≳ q^{−O(1)} + K₀(q) ≲ q + diagonal n(q) give the
 SIMULTANEOUS a.a. GenMC? This is the most promising untried combination. Do not propose new
 orbit-of-2 dynamics; the box process under the type measure is the object.
+
+## Session 311 update (2026-08-19)
+The seed-average program's probabilistic layer is COMPLETE: selection law → lemma_D_z →
+theorem_C all landed via the finite-tree Chernoff engine (TreeChernoff), with the sure
+pathwise compensator (Session 309 §F) as the only lower-bound input. Key structural lesson
+for future proposals: prescribed-class successes with per-cell conditional bounds + a
+deterministic success-count cap (strict-growth ≤ q−1, non-exposed ≤ q−1) turn coverage
+statements into one Chernoff application — no stopping times, no Freedman, no blocks.
+Open: §G simultaneous-q (needs q-uniformity of κ_q = e⁻¹²⁸/(16φ(q)) — the rate already IS
+explicit in q; the blocker is the order of limits in natural density, not the rate).

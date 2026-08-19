@@ -338,3 +338,14 @@ Commit f391732, four new files, 0 sorry:
   `window_recip_lower` (const 16) — TL2/TL3's analytic input is DONE.
 Remaining for a.a. GenMC(q): Group 7 tail ASSEMBLY (bookkeeping + one Markov exclusion),
 D5c, Lemma D, Theorem C. Then §G (q-uniformity) is the genuinely open frontier.
+
+## Track record — Session 311 (2026-08-19)
+| Technique | Outcome |
+|---|---|
+| TreeChernoff reuse with prescribed-class successes (no new engine) | PROVED — theorem_C; supersedes the (e-2) block-chaining/Freedman plan |
+| Deterministic success cap via strict-growth + multiplier distinctness | PROVED — success_count_le ≤ 2q |
+| "V full ⟹ all residues captured" (kills the q-coordinate CRT issue) | PROVED — captured_of_visited_full; the theorem lives on the M_Y period |
+| Guard-failure-at-exposed-step forces capture (compensator bookkeeping) | PROVED — guard_of_exposed |
+This is the vector's second and third genuine successes (after S309 pathwise_compensator);
+the catalog's 7% historical success rate applies to CLASSICAL ergodic proposals, which
+remain dead — the live pattern is finite-tree martingale arguments on the type filtration.
