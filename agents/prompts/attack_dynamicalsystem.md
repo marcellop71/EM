@@ -458,3 +458,52 @@ the whole sure layer satisfiable by a dynamics missing `q` by construction — w
 strongest single argument of Session 313, and is the only one of the six with a ready-made formal
 witness. Keep looking for arguments of that shape: *identify the model class your theorems actually
 quantify over, then exhibit a member of it that fails the conclusion.*
+
+## Session 314 update (2026-08-19) — T7's §G direction is DONE; the box process now has a genuine measure
+
+The one place Session 313 left open for T7 — the simultaneous-in-`q` form via `(Ẑ, Haar)` — is now
+**proved in Lean** (full build green, 0 `sorry`). Three new files in `EM/Population/`:
+
+- `ProfiniteEnsemble.lean` — the ambient space `Ω = Π (r : Nat.Primes), ZMod r` with
+  `μ = MeasureTheory.Measure.infinitePi` of uniform measures; `measure_residue_classes` (an
+  `M`-periodic event has measure equal to its period fraction), `measure_cylinder`, `redMod_iota`,
+  and `measure_range_iota_eq_zero` (**`ℕ ⊂ Ω` is μ-null**, proved).
+- `ProfiniteDynamics.lean` — the greedy dynamics on a profinite point via `leastVanishing` (a
+  profinite point has no `minFac`). Agreement with the integer dynamics is **unconditional**, needing
+  only `1 ≤ m`: `profSeq (iota m) k = genSeq m k`. Band-local agreement:
+  `profProd_agree_of_agree`, `genSeq_eq_profSeq_of_agree`.
+- `ProfiniteHeadline.lean` — `measure_some_prime_missed_eq_zero : μ {x | ∃ q : Nat.Primes, x q ≠ 0 ∧
+  ¬ ∃ j, profSeq x j = q} = 0`. **μ-almost every profinite seed captures every prime.**
+
+Also landed: `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` (**the Coupling Lemma** — if the genuine
+orbit misses `q` before depth `n`, the `q`-free reference dynamics coincides with it there; no
+nondegeneracy hypothesis needed), the `q ≤ Y` and band structure of the modulus exported through
+`three_type_union_small` / `type_bad_small` / `uncaptured_in_few_classes`, and
+`SelectionLaw.modulus_squarefree`, `coprime_modulus_self`, `prime_dvd_modulus`.
+
+**The transferable lesson, and it is a dynamical-systems lesson — the additivity heuristic.**
+Simultaneity in `q` was an **additivity** problem, not a **rate** problem. Dead end #168 said so;
+Session 314 confirmed it by *building the countably additive measure* and letting
+`measure_iUnion_null` do the union over `q`. **No `q`-uniform rate is used anywhere** — `κ_q`,
+`K₀(q)`, `n(q)` never appear. This is the same move that made T7 legitimate in the first place
+(Session 308: "is there a population-level process with an honest measure"), pushed one step further:
+
+> **When a per-parameter statement refuses to combine, ask whether the ambient notion of size is
+> countably additive before hunting for a uniform rate.** Natural and logarithmic density are only
+> finitely additive; a summable `ε_q` buys nothing under them.
+
+**Modelling choice worth reusing:** prefer `Π ZMod r` over `Ẑ = Π ℤ_p` **when the moduli in play are
+squarefree**. The EM programme only ever conditions on `m mod M` with `M` a product of *distinct*
+band primes, so the extra `p`-adic levels are dead weight.
+
+**Scope caveats — state these every time; do not soften them.**
+- `ℕ ⊂ Ω` is **μ-null**. "μ-a.e. seed" is **not** "almost all integer seeds".
+- The result says **nothing** about the orbit of `2`. Dead ends **#90** and **#117** are untouched;
+  MC is not approached. T7's orbit direction remains closed by #169–#174.
+- **Mathematically new content: none** — the finite counting chain is the mathematics, the passage to
+  all `q` is packaging. A feature, not a defect, but it must be stated.
+- **Not dead end #101** (`Ẑ` as a home for the *walk*) and **not #155** (Loeb receptacle).
+- Every statement in this arc remains a **population** statement.
+
+**No new dead ends this session.** `EM/Meta/DeadEnds.lean` stays at 174/164/32/15; #167 and #168
+remain correct as written.

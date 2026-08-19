@@ -1,5 +1,63 @@
 > **2026-08-17:** the population layer PE / MFRE / DSL is retired (Dead End #160, false by head domination); the headline is now CME ⇒ CCSB ⇒ MC.  Full record: [`docs/pe_dsl_retirement.md`](pe_dsl_retirement.md).
 
+> **2026-08-19 (Session 314): the profinite ensemble — μ-almost every profinite seed
+> captures EVERY prime** (`ProfiniteHeadline.measure_some_prime_missed_eq_zero`:
+> `μ {x : Ω | ∃ q : Nat.Primes, x q ≠ 0 ∧ ¬ ∃ j, profSeq x j = q} = 0`). Session 312 recorded
+> (dead ends #167/#168) that the per-`q` seed-average law does **not** combine over all
+> primes, because natural density is only finitely additive; that the obstruction is **not** a
+> rate problem (summable per-`q` failure fractions are achievable); and that the repair is a
+> **countably additive ambient measure**. Session 314 builds that measure and performs the
+> union. Three new files, 938 lines, 0 sorry, full build green (8,938 jobs), axioms
+> `propext, Classical.choice, Quot.sound`:
+> `EM/Population/ProfiniteEnsemble.lean` (271 — the ambient space
+> `Ω = Π (r : Nat.Primes), ZMod r` with `μ = MeasureTheory.Measure.infinitePi` of the uniform
+> measures, `IsProbabilityMeasure`; the key lemmas are all **equalities**: `measure_cylinder`
+> and **`measure_residue_classes`**: `μ {x | redMod P x ∈ T} = #T / ∏_{r ∈ P} r`, i.e. the
+> measure of an `M`-periodic event *is* its period fraction; `redMod_iota`; and
+> `measure_singleton_eq_zero`, **`measure_range_iota_eq_zero`** — `ℕ ⊂ Ω` is μ-null, proved.
+> `Π ZMod r` and not `Ẑ = Π ℤ_p` because the programme only ever conditions on `m mod M` with
+> `M` squarefree — `SelectionLaw.modulus q Y` is a product of distinct band primes — so
+> `ZMod r` suffices per coordinate);
+> `EM/Population/ProfiniteDynamics.lean` (277 — the greedy dynamics defined directly on a
+> profinite point: a profinite point has no `minFac`, so the multiplier is `leastVanishing`,
+> the least prime whose coordinate of the current Euclid element vanishes. The **agreement
+> theorem**, proved unconditionally (only `1 ≤ m`): `profSeq (iota m) k = genSeq m k` and
+> `profProd (iota m) k = iota (genProd m k)` — the profinite dynamics *is* the integer
+> dynamics on the image of `ℕ`; plus band-local agreement `profProd_agree_of_agree`,
+> `genSeq_eq_profSeq_of_agree`);
+> `EM/Population/ProfiniteHeadline.lean` (390 — the headline, via
+> `covering_strong → covering → measure_missing_le → measure_missing_eq_zero`, then countable
+> additivity `measure_iUnion_null` over the primes).
+> Also: the **Coupling Lemma** in `EM/Population/SeedCapture.lean`
+> (`genSeqAvoid_eq_genSeq_of_missed`, `genProdAvoid_eq_genProd_of_missed`,
+> `minFac_qfreePart_eq_minFac`); and `q ≤ Y` plus the band structure of the modulus exported
+> through `AlmostAllGenMC.three_type_union_small`, `TypeBadSmall.type_bad_small`,
+> `AlmostAllDensity.uncaptured_in_few_classes`, with new `SelectionLaw` lemmas
+> `modulus_squarefree`, `coprime_modulus_self`, `prime_dvd_modulus`.
+> **No `q`-uniform rate is used** anywhere: for each fixed `q` the horizon is sent to infinity
+> separately. Simultaneity in `q` is an *additivity* question, not a *rate* question.
+>
+> **SCOPE — as prominent as the result itself.**
+> * `ℕ ⊂ Ω` is **μ-null**. "μ-a.e. seed" is **not** "almost all integer seeds"; a μ-null set
+>   can have upper density `1` in `ℕ`. This is a statement about a **random model**, and no
+>   transfer to the integers is claimed or available.
+> * It says **nothing** about the Euclid–Mullin orbit of the seed `2`. The orbit-specificity
+>   dead ends **#90** and **#117** are **untouched**. Mullin's Conjecture is **not**
+>   approached.
+> * **Mathematically new content: none.** The already-proved finite counting chain
+>   (`theorem_C → theorem_C_fiber → type_bad_small → uncaptured_in_few_classes`) is the
+>   mathematics; the passage to all `q` is measure-theoretic packaging. That is a feature —
+>   there is no analytic risk in packaging — and it must be **said, not hidden**.
+> * Not to be conflated with dead end **#101** (`Ẑ` as a home for the *walk*) or **#155**
+>   (the Loeb-measure receptacle). Here `Ω` is the sample space of a population statement: it
+>   carries no walk and no orbit claim.
+> * **Unconditional** — no equidistribution hypothesis anywhere in the chain.
+>
+> **Correction (audited this session):** the repo does **not** hold "the first van der Corput
+> bound in any proof assistant"; that claim is **retracted**. The accurate description is
+> "discrete (Weyl–van der Corput) inequality, `EM/ForMathlib/VanDerCorput.lean`, not in
+> Mathlib as of `v4.33.0`". Record: `agents/state/findings_vdc_priorart.md`.
+
 > **2026-08-18/19 (Session 309):** the seed-average program's (LS) frontier is now a
 > **verified theorem with its deterministic core fully in Lean**. New files
 > `EM/Population/SeedCapture.lean` (q-free dynamics, Lemma C coupling+capture, capture
@@ -111,35 +169,42 @@
 > only — it is not published with the repository. The tracked, shareable
 > summaries are `registry/*.json` and `paper/`.
 
-## Snapshot (2026-08-15)
+## Snapshot (2026-08-19)
 
-- **175 Lean files under `EM/`, 86,368 lines** — 164 files / 84,107 lines
+- **227 Lean files under `EM/`, 111,179 lines** — 208 files / 106,839 lines
   outside `EM/Archive/` (which holds stubs and is not imported by
   `EM.lean`).
-- **Zero `sorry` in the built library.** `EM.lean` imports 163 modules;
-  every non-Archive file is in that closure except
-  `EM/Reciprocity/NoInvariant.lean`, a work-in-progress draft that does
-  contain `sorry`s and is deliberately left out.
-- Registry (`registry/meta.json`): **178 tagged declarations — 111 proved,
-  35 conditional, 32 open points**, 146 published. Open points include the
+- **Zero `sorry` in the built library.** `EM.lean` imports 206 modules;
+  the only non-Archive files outside that list are `EM/Meta/Registry.lean`
+  and `EM/Meta/Blueprint.lean`, which belong to the separate `EMRegistry`
+  `lean_lib` and are imported by `EMRegistry.lean`.
+- Registry (`registry/meta.json`): **358 declarations — 269 proved,
+  68 conditional, 21 open points**, 337 published. Open points include the
   targets `MullinConjecture` and `HittingHypothesis` themselves.
-- Headline machine-verified chain (`full_chain_dsl`,
-  `EM/Reduction/Master.lean`):
-  **DSL ⇒ CME ⇒ CCSB ⇒ MC**, with DSL (PE → CME) the sole remaining
-  hypothesis modulo standard ANT (`WeightedPNTinAP` = Wiener–Ikehara).
+- Headline machine-verified chain: **CME ⇒ CCSB ⇒ MC**
+  (`cme_implies_mc`, `EM/CME/Reduction.lean`). CME is
+  *equivalent* to MC (`EM/CME/Equivalences.lean`), so it is never to be
+  described as a weaker hypothesis. The DSL rung (PE → CME) is retired —
+  PE is false, Dead End #160.
 - Sources are organized in subject subdirectories under `EM/`:
-  Adelic, Archive, CME, Core, Ensemble, Equidist, FunctionField, GaussEM,
-  Group, IK, LargeSieve, Meta, Obstruction, Population, Reciprocity,
-  Reduction, SDDS, Stochastic, Transfer. Grep for theorem names rather
-  than trusting old flat filenames.
-- Dead ends (`EM/Meta/DeadEnds.lean`, authoritative; `docs/dead_ends.md`
-  is a pointer stub): **159 documented, 27 with formal Lean witnesses,
-  10 with weak-MC revival score ≥ 2** — read `deadEndCount`,
-  `witnessedDeadEndCount`, `revivableDeadEndCount` from the Lean file
-  rather than trusting these figures. Session 307 added #156–#159
-  (Run T-MC-Proper), corrected every stale `File` entry to the post-reorg
-  layout, and added an **MC-proper ledger** section mapping each route to
-  MC itself against the entries that constrain it.
+  Adelic, Archive, CME, Core, Ensemble, Equidist, ForMathlib,
+  FunctionField, GaussEM, Group, IK, LargeSieve, Meta, Obstruction,
+  Population, Reciprocity, Reduction, SDDS, Stochastic, Transfer. Grep for
+  theorem names rather than trusting old flat filenames.
+- Dead ends (`tools/dead_ends.tsv` is the single source of truth;
+  `EM/Meta/DeadEnds.lean` carries the generated block; `docs/dead_ends.md`
+  is a pointer stub): **174 numbers documented, 164 entries, 32 with formal
+  Lean witnesses, 15 with weak-MC revival score ≥ 2** — read
+  `deadEndCount`, `deadEndEntryCount`, `witnessedDeadEndCount`,
+  `revivableDeadEndCount` from the Lean file rather than trusting these
+  figures. Session 307 added #156–#159 (Run T-MC-Proper), corrected every
+  stale `File` entry to the post-reorg layout, and added an **MC-proper
+  ledger** section mapping each route to MC itself against the entries that
+  constrain it; Session 312 added #161–#166 (seed-average near misses) and
+  #167–#168 (the two refuted routes to the simultaneous-in-`q` form:
+  logarithmic density, and summable per-`q` rates — the two that Session
+  314's ambient measure replaces); Session 313 added #169–#174, closing the
+  *orbit* direction for the sure (per-path) layer.
 - Paper: `paper/main.tex` + section files, compiled with **lualatex**.
 
 ## Recent changes

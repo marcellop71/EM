@@ -403,3 +403,68 @@ as a per-path quantity.
 
 **F0 frontier item** — keep at 6/10 for its actual target, but annotate: the §G simultaneous-in-`q`
 question is *the last place the box process can go*; the orbit direction is closed by this session.
+
+---
+
+## Session 314 (2026-08-19) — T7's §G direction DELIVERED; the box process gets an honest measure
+
+The one remaining place for T7 identified in Session 313 — the simultaneous-in-`q` form — is now
+**proved in Lean** (full build green, 0 `sorry`). Three new files in `EM/Population/`:
+`ProfiniteEnsemble.lean`, `ProfiniteDynamics.lean`, `ProfiniteHeadline.lean`.
+
+### New technique entry
+
+| ID | Technique | Preconditions | What it gives | EM status | Dead ends | Notes |
+|----|-----------|---------------|---------------|-----------|-----------|-------|
+| T7.9 | **Profinite ensemble as the sample space** (`Ω = Π (r : Nat.Primes), ZMod r`, `μ = Measure.infinitePi` of uniform measures) | Per-coordinate `IsProbabilityMeasure` only; the finite counting chain of S310–S312 | `measure_residue_classes` turns an `M`-periodic counting bound into a measure bound; then per-`q` nullity, then `measure_iUnion_null` over `q`. Headline `ProfiniteHeadline.measure_some_prime_missed_eq_zero` — **μ-a.e. profinite seed captures every prime** | **PROVED (S314)** | not #101, not #155; #90/#117 untouched | Choose `Π ZMod r` over `Ẑ = Π ℤ_p`: the programme only conditions on `m mod M` with `M` a product of *distinct* band primes, so `p`-adic levels are dead weight. Dynamics on a profinite point has no `minFac` — selection is `leastVanishing`. Agreement with the integer dynamics is **unconditional** (`profSeq (iota m) k = genSeq m k`, only `1 ≤ m`); band-local agreement via `profProd_agree_of_agree` / `genSeq_eq_profSeq_of_agree` |
+
+### STATUS changes
+
+| Technique | Old | New (S314) |
+|---|---|---|
+| T7 **scope**, simultaneous-in-`q` (§G) | "caps at a.a. GenMC(q) for each fixed `q`… no `q`-uniformity, natural density is not countably additive; the simultaneous statement is open" | **Closed in the μ-model.** The union over `q` is one `measure_iUnion_null`. **No `q`-uniform rate is used anywhere** — `κ_q`, `K₀(q)`, `n(q)` never appear. Still open and not attempted: any simultaneous statement in *natural density on `ℕ`*. |
+| T7.5 / T7.6 / T7.7 (charge budget, brink, compensator) | PROVED; orbit direction closed by #169–#174 | **Unchanged.** S314 is entirely on the population side. It neither revives nor further damages the sure layer. |
+| Coupling Lemma (`q` missed ⟹ `genSeqAvoid q m = genSeq m`) | flagged S313 as missing from the repo | **LANDED** as `SeedCapture.genSeqAvoid_eq_genSeq_of_missed`, with **no** nondegeneracy hypothesis. |
+
+### New cross-cutting principle — the additivity heuristic (a dynamical lesson)
+
+> **When a per-parameter statement refuses to combine, ask whether the ambient notion of size is
+> countably additive *before* hunting for a uniform rate.**
+
+Dead end #168 already said simultaneity in `q` was an additivity problem, not a rate problem. S314
+confirmed it by *building* the countably additive measure. This is the S308 lesson pushed one step:
+S308 asked "is there a population-level process with an **honest measure**"; S314 shows that when the
+honest measure is genuinely countably additive, countable unions come free.
+
+### Newly available infrastructure (flag for reuse)
+
+`ProfiniteEnsemble.measure_residue_classes` (period-fraction bridge — `μ {x | redMod P x ∈ T} =
+#T / ∏_{r∈P} r`), `measure_cylinder`, `redMod_iota`, `measure_range_iota_eq_zero` (**`ℕ ⊂ Ω` is
+μ-null**, proved); `ProfiniteDynamics.profSeq_iota` and the band-local agreement lemmas;
+`SeedCapture.genSeqAvoid_eq_genSeq_of_missed`; `q ≤ Y` and the band structure of the modulus now
+exported through `three_type_union_small` / `type_bad_small` / `uncaptured_in_few_classes`; and
+`SelectionLaw.modulus_squarefree`, `coprime_modulus_self`, `prime_dvd_modulus`.
+
+### Scope caveats — binding, do not soften
+
+* `ℕ ⊂ Ω` is **μ-null**; "μ-a.e. seed" is **not** "almost all integer seeds".
+* Says **nothing** about the orbit of `2`; **#90** and **#117** untouched; MC not approached; T7's
+  orbit direction stays closed by #169–#174.
+* **Mathematically new content: none** — the finite counting chain is the mathematics, the passage to
+  all `q` is packaging. A feature, not a defect, but it must be stated.
+* **Not #101** (`Ẑ` as a home for the *walk*), **not #155** (Loeb receptacle).
+* Every population statement in this arc remains a **population** statement.
+
+**No new dead ends.** `EM/Meta/DeadEnds.lean` stays at **174 / 164 / 32 / 15**; #167 and #168 remain
+correct as written.
+
+### Track record
+
+| 314 | Package the box process in a countably additive ambient measure and take the union over `q` | **PROVED — `measure_some_prime_missed_eq_zero`.** `Ω = Π ZMod r` with `Measure.infinitePi`; `measure_residue_classes` transports the S310–S312 counting chain; `measure_iUnion_null` gives simultaneity with **no `q`-uniform rate**. T7's §G direction is delivered; the orbit direction remains closed. Population scope only, and the write-up says so. | **0.8** |
+
+**Pattern update.** The catalog's standing diagnosis — "the home domain fails because EM lacks
+randomness and stationarity" — still holds for the *orbit*. But the vector's three successes
+(S309 `pathwise_compensator`, S311 finite-tree Chernoff, S314 the profinite ensemble) share one shape:
+**change the object to a population process, then ask what kind of measure it carries.** S314 adds the
+sharpest form of the question — *is the measure countably additive?* — because that, not any rate, is
+what lets per-parameter results combine.

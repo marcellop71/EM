@@ -560,3 +560,68 @@ If the proposal produces no positive fact, it is inert.
 ### Track record
 
 | 313 | Sure-layer bound on the missed set of one orbit (LS box process, seed `m=2`) | **DEAD — budget vacuous.** `charge_sum_le_harmonic` ⟺ pigeonhole `C ≤ r−2` ⟺ the definition of exposure; per-orbit weight is the identically-zero capture indicator (gap = #90). Exposure branch refuted by distinctness; "box stays large" = `¬DH(r)` (circular, mirror of #166). `pathwise_compensator` inapplicable (type bound is a policy). `missed(x)` gated on (C∞). Minimal ingredient (NPLB) ⟺ MC-mod-`q` (collapse). By-product: the **Coupling Lemma** (`q` missed ⟹ `genSeqAvoid q m = genSeq m`) is missing from the repo, ~15 lines. | **0.2** |
+
+---
+
+## Session 314 (2026-08-19) — §G delivered: the profinite ensemble, in Lean
+
+Everything below is **proved in Lean, full build green, 0 `sorry`**. Three new files in
+`EM/Population/`: `ProfiniteEnsemble.lean`, `ProfiniteDynamics.lean`, `ProfiniteHeadline.lean`.
+
+### STATUS changes
+
+| Technique | Old | New (S314) |
+|---|---|---|
+| **T2.7** Profinite ensemble as the sample space of the box process | **PROMISING (S312)** — "no new analysis, only measure-theoretic packaging" | **PROVED.** Realised concretely as `Ω = Π (r : Nat.Primes), ZMod r`, `μ = MeasureTheory.Measure.infinitePi` of uniform measures — *not* as `Ẑ = Π ℤ_p`. Headline `ProfiniteHeadline.measure_some_prime_missed_eq_zero : μ {x \| ∃ q : Nat.Primes, x q ≠ 0 ∧ ¬ ∃ j, profSeq x j = q} = 0`. The packaging estimate was correct: no new analysis was needed. Scope caveats below are binding. |
+| Seed-average law, **simultaneous-in-`q`** form (§G) | OPEN; reframed S312 as "the obstruction is finite additivity" | **CLOSED in the μ-model.** The union over `q` is one application of `measure_iUnion_null`. **No `q`-uniform rate is used anywhere** — `κ_q`, `K₀(q)`, `n(q)` never appear. The S312 diagnosis is vindicated exactly. Still open, and not attempted: any simultaneous statement in *natural density on `ℕ`*. |
+| T6.6 sure / pathwise budgets | PROVED but VACUOUS for one orbit (#169–#174) | **Unchanged.** S314 is entirely on the population side; it neither revives nor further damages T6.6. |
+| "First van der Corput bound in any proof assistant" (`EM/LargeSieve/Analytic.lean`) | flagged unverified/suspect (S312) | **FALSE.** Name collision: the *oscillatory-integral* van der Corput lemma is in the Lean Carleson project and mathlib4 PR **#39406**; this repo proves the *discrete Weyl–van der Corput inequality*. Second audited priority claim, second failure. |
+
+### Cross-cutting principle — the additivity/rate distinction, now confirmed by construction
+
+The S312 principle stands and is upgraded from diagnosis to method:
+
+> **When a per-parameter statement refuses to combine, ask whether the ambient notion of size is
+> countably additive *before* hunting for a uniform rate.** Natural and logarithmic density are only
+> finitely additive; making `ε_q` summable buys nothing under them. The fix is never a better rate;
+> it is a genuine measure — and S314 shows that *building* the measure can be cheap.
+
+### Newly available infrastructure (flag for reuse)
+
+- `ProfiniteEnsemble.measure_residue_classes` — an `M`-periodic event has measure equal to its period
+  fraction, `μ {x | redMod P x ∈ T} = #T / ∏_{r∈P} r`. **This is the bridge** from any finite counting
+  bound in the seed-average programme to a measure bound. Also `measure_cylinder`, `redMod_iota`.
+- `ProfiniteEnsemble.measure_range_iota_eq_zero` — `ℕ ⊂ Ω` is μ-null (proved, not assumed).
+- `ProfiniteDynamics.profSeq_iota` — agreement `profSeq (iota m) k = genSeq m k`, **unconditional**
+  (only `1 ≤ m`); plus band-local `profProd_agree_of_agree`, `genSeq_eq_profSeq_of_agree`.
+- `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` — the **Coupling Lemma** flagged as going spare in
+  S313, landed with **no nondegeneracy hypothesis**.
+- `q ≤ Y` and the band structure of the modulus are now exported through
+  `AlmostAllGenMC.three_type_union_small` / `TypeBadSmall.type_bad_small` /
+  `AlmostAllDensity.uncaptured_in_few_classes`; plus `SelectionLaw.modulus_squarefree`,
+  `coprime_modulus_self`, `prime_dvd_modulus`.
+- Two formalization techniques worth borrowing (recorded in `agents/prompts/formalizer.md`): the
+  **outer-measure trick** (a Mathlib `Measure` is an outer measure, so `measure_mono` /
+  `measure_iUnion_null` apply to *arbitrary* sets — only the covering sets need be measurable), and
+  the fact that `Measure.infinitePi` needs only `IsProbabilityMeasure` per coordinate, **no Polish /
+  standard-Borel hypothesis**.
+
+### Scope caveats — binding, do not soften
+
+* `ℕ ⊂ Ω` is **μ-null**; "μ-a.e. seed" is **not** "almost all integer seeds".
+* Says **nothing** about the orbit of `2`; **#90** and **#117** untouched; MC not approached.
+* **Mathematically new content: none** — the finite counting chain is the mathematics, the passage to
+  all `q` is packaging. A feature, not a defect, but it must be stated.
+* **Not #101** (`Ẑ` as a home for the *walk*), **not #155** (Loeb receptacle).
+* Every population statement in this arc remains a **population** statement; the orbit direction was
+  closed in S313 (#169–#174).
+
+**No new dead ends.** `EM/Meta/DeadEnds.lean` stays at **174 / 164 / 32 / 15**. **#167 and #168 remain
+correct as written** — they concern what natural and logarithmic density *cannot* do, and S314 used
+neither.
+
+### Track record
+
+| Session | Proposal | Outcome | Advancement |
+|---|---|---|---|
+| 314 | Build the countably additive ambient measure for the box process and take the union over `q` | **PROVED.** `Ω = Π ZMod r` with `Measure.infinitePi`; `measure_residue_classes` transports the finite counting chain; `measure_iUnion_null` gives the simultaneous form. The S312 reframing ("additivity, not rate") was exactly right — **no `q`-uniform rate was needed or used**. Two reusable formalization techniques extracted (outer-measure trick; `infinitePi` without Polish hypotheses). Priority-claim audit #2 (van der Corput) failed. Scope is unchanged: population/profinite only. | **0.8** (closes §G in the μ-model; no new mathematics, and says so) |

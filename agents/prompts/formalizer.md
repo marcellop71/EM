@@ -1191,8 +1191,15 @@ checking, at minimum: the **Isabelle/HOL AFP**, the Lean project **PrimeNumberTh
 repo's long-standing "no Mertens theorem in any proof assistant" claim was false (AFP since 2018),
 and that a `ζ(2) = π²/6` "unprecedented" claim was also false (Mathlib has the Basel problem).
 "Not in Mathlib at pin `vX.Y.Z`" is usually the only defensible form. Record:
-`agents/state/findings_mertens_priorart.md`. One further claim in the repo — "first van der Corput
-bound in any proof assistant" (`EM/LargeSieve/Analytic.lean`) — is **unverified and suspect**.
+`agents/state/findings_mertens_priorart.md`.
+
+**Score so far: two claims audited, two failed** (Mertens, Session 312; van der Corput, Session 314).
+Session 314 resolved the flagged "first van der Corput bound in any proof assistant" claim in
+`EM/LargeSieve/Analytic.lean`: it does **not** stand. Note the trap that made it survive so long — a
+*different* theorem can share the name. The **oscillatory-integral** van der Corput lemma is in the
+Lean **Carleson** project and in mathlib4 PR **#39406**, while this repo proves the **discrete
+Weyl–van der Corput inequality**. Search the mathematics, not the label, and check **open** mathlib4
+PRs as well as merged ones.
 
 ## Session 313 (2026-08-19) — scoping session, no new Lean; one small target going spare
 
@@ -1219,3 +1226,65 @@ MC, and must not be advertised as one.
 
 **Do not** attempt to derive anything about the missed set of a single orbit from
 `LargeStepRoughness`. See #169–#174.
+
+**LANDED Session 314** as `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` — and it needed **no**
+nondegeneracy hypothesis, only `q.Prime`, `1 ≤ m`, and `∀ j < n, genSeq m j ≠ q`.
+
+---
+
+## Session 314 (2026-08-19) — the profinite ensemble; new infrastructure and two reusable techniques
+
+Three new files in `EM/Population/`, all 0 `sorry`, full build green:
+
+| Name | File | What it gives you |
+|---|---|---|
+| `Ω`, `μ`, `measure_cylinder`, `measure_residue_classes`, `redMod`, `redMod_iota`, `measure_range_iota_eq_zero` | `EM/Population/ProfiniteEnsemble.lean` | The ambient space `Ω = Π (r : Nat.Primes), ZMod r` with `μ = MeasureTheory.Measure.infinitePi` of the uniform measures. `measure_residue_classes` is the workhorse: an `M`-periodic event has measure exactly its period fraction, `μ {x | redMod P x ∈ T} = #T / ∏_{r∈P} r` — this is how a finite counting bound becomes a measure bound. `measure_range_iota_eq_zero` proves **`ℕ ⊂ Ω` is μ-null**. |
+| `leastVanishing`, `profProd`, `profSeq`, `profSeq_iota`, `AgreeUpTo`, `profProd_agree_of_agree`, `genSeq_eq_profSeq_of_agree` | `EM/Population/ProfiniteDynamics.lean` | Greedy dynamics on a profinite point. A profinite point has no `minFac`, so selection is by `leastVanishing` (least prime coordinate `≡ −1`). Agreement with the integer dynamics is **unconditional** — only `1 ≤ m`: `profSeq (iota m) k = genSeq m k`. Band-local agreement lets you compare two points that agree below `Y`. |
+| `MissingEvent`, `covering`, `measure_missing_le`, `measure_missing_eq_zero`, `measure_some_prime_missed_eq_zero` | `EM/Population/ProfiniteHeadline.lean` | The headline: `μ {x | ∃ q : Nat.Primes, x q ≠ 0 ∧ ¬ ∃ j, profSeq x j = q} = 0`. μ-almost every profinite seed captures every prime. |
+
+Also landed: `SeedCapture.genSeqAvoid_eq_genSeq_of_missed` (the Coupling Lemma, above); the `q ≤ Y`
+and band structure of the modulus exported through `AlmostAllGenMC.three_type_union_small`,
+`TypeBadSmall.type_bad_small` and `AlmostAllDensity.uncaptured_in_few_classes`; and
+`SelectionLaw.modulus_squarefree`, `SelectionLaw.coprime_modulus_self`,
+`SelectionLaw.prime_dvd_modulus`.
+
+### Reusable technique 1 — the outer-measure trick
+
+A Mathlib `Measure` **is an outer measure**: `measure_mono` and `measure_iUnion_null` apply to
+**arbitrary** sets, measurable or not. So a null-set claim about a complicated event needs only the
+*covering* sets to be measurable. Concretely, `measure_missing_le` never proves `MissingEvent` is
+measurable — it exhibits a measurable cylinder `{x | redMod P x ∈ T}` containing it and applies
+`measure_mono`, then `measure_residue_classes`. This removed what looked like Session 314's main
+formalization risk. **Reach for it whenever you are about to build a measurability argument for an
+event you only need to bound above.**
+
+### Reusable technique 2 — `Measure.infinitePi` needs no Polish hypothesis
+
+`MeasureTheory.Measure.infinitePi` (Mathlib `Probability/ProductMeasure.lean`) requires only
+`IsProbabilityMeasure` on each coordinate — **no Polish / standard-Borel hypothesis**, and no bespoke
+Carathéodory extension. The cylinder formula comes from `Measure.isProjectiveLimit_infinitePi` /
+`Measure.infinitePi_map_restrict`. Provide the per-coordinate `IsProbabilityMeasure` instance and the
+product measure is immediate.
+
+### Modelling note — `Π ZMod r`, not `Ẑ = Π ℤ_p`
+
+Choose `Π (r : Nat.Primes), ZMod r` over `Ẑ` **when the moduli in play are squarefree**. The EM
+programme only ever conditions on `m mod M` with `M` a product of *distinct* band primes, so the
+`p`-adic levels of `ℤ_p` are dead weight and every CRT statement stays at `ZMod` of a squarefree
+modulus.
+
+### Scope caveats — reproduce these in any docstring or paper text that mentions the result
+
+- `ℕ ⊂ Ω` is **μ-null**. "μ-a.e. seed" is **not** "almost all integer seeds".
+- The result says **nothing** about the orbit of `2`; dead ends **#90** and **#117** are untouched;
+  MC is not approached.
+- **Mathematically new content: none** — the finite counting chain is the mathematics, the passage to
+  all `q` is packaging. A feature, not a defect, but it must be stated.
+- **Not dead end #101** (`Ẑ` as a home for the *walk*), **not #155** (Loeb receptacle).
+- Every statement in this arc remains a **population** statement; the orbit direction was closed in
+  Session 313 (#169–#174).
+- Simultaneity in `q` was an **additivity** problem, not a rate problem (#168): the union over `q` is
+  `measure_iUnion_null`, and no `q`-uniform rate appears anywhere.
+
+**No new dead ends.** `EM/Meta/DeadEnds.lean` stays at **174 / 164 / 32 / 15**; #167 and #168 remain
+correct as written.

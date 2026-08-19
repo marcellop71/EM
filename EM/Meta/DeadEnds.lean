@@ -713,7 +713,7 @@ example := @chebyshev_concentration_proved -- ChebyshevConcentration PROVED (unc
 /-! ## Aggregate statistics -/
 
 /-- Highest catalogued dead-end number.  Numbers are assigned progressively in the session logs
-and cited everywhere by number, so they are never renumbered.  Ten of the 168 numbers (#25,
+and cited everywhere by number, so they are never renumbered.  Ten of the 174 numbers (#25,
 #64–#72) were never assigned to any entry (2026-08-18 reconstruction, `tools/dead_ends.tsv`);
 `deadEndEntryCount` is the number of actual entries.  Session 312 added #161–#166 (six
 statement-level near-misses from the seed-average programme, sessions 309–311) and #167–#168

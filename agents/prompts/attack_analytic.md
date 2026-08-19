@@ -710,3 +710,50 @@ above.
 
 **Small formalization target going spare:** the **Coupling Lemma** — if `q` is missed by the orbit then
 `genSeqAvoid q m ≡ genSeq m` — is absent from the repo (~15 lines; proof sketch in §1 of the note).
+*(LANDED Session 314 as `SeedCapture.genSeqAvoid_eq_genSeq_of_missed`, with no nondegeneracy hypothesis.)*
+
+## Session 314 update (2026-08-19) — §G is DONE in the profinite model; it was never a rate problem
+
+The `(Ẑ, Haar)` route flagged as "still open, and still the right target" above is now **proved in
+Lean** (full build green, 0 `sorry`), in the concrete form `Ω = Π (r : Nat.Primes), ZMod r` with
+`μ = MeasureTheory.Measure.infinitePi` of the uniform measures. Three new files in `EM/Population/`:
+`ProfiniteEnsemble.lean`, `ProfiniteDynamics.lean`, `ProfiniteHeadline.lean`. Headline:
+
+> `ProfiniteHeadline.measure_some_prime_missed_eq_zero` — `μ {x | ∃ q : Nat.Primes, x q ≠ 0 ∧ ¬ ∃ j,
+> profSeq x j = q} = 0`. **μ-almost every profinite seed captures every prime.**
+
+**The transferable lesson — the additivity heuristic.** Simultaneity in `q` was an **additivity**
+problem, not a **rate** problem. Dead end #168 said exactly this; Session 314 confirmed it by
+building a countably additive measure and letting `measure_iUnion_null` perform the union over `q`.
+**No `q`-uniform rate is used anywhere** — `κ_q`, `K₀(q)`, `n(q)` never appear. Generalize this:
+
+> **When a per-parameter statement refuses to combine, ask whether the ambient notion of size is
+> countably additive *before* hunting for a uniform rate.** Natural and logarithmic density are only
+> finitely additive; optimizing constants to make `ε_q` summable buys nothing there.
+
+Supporting results you may cite: `measure_residue_classes` (an `M`-periodic event has measure equal
+to its period fraction — the bridge from the finite counting chain), `measure_cylinder`, `redMod_iota`,
+`ProfiniteDynamics.profSeq_iota` (agreement `profSeq (iota m) k = genSeq m k`, **unconditional**,
+needing only `1 ≤ m`), `profProd_agree_of_agree` / `genSeq_eq_profSeq_of_agree` (band-local agreement),
+`SeedCapture.genSeqAvoid_eq_genSeq_of_missed` (**the Coupling Lemma**, no nondegeneracy hypothesis),
+and the newly exported `q ≤ Y` + band structure of the modulus through `three_type_union_small` /
+`type_bad_small` / `uncaptured_in_few_classes`, plus `SelectionLaw.modulus_squarefree`,
+`coprime_modulus_self`, `prime_dvd_modulus`.
+
+**Scope caveats — state these every time you mention the result; do not soften them.**
+- `ℕ ⊂ Ω` is **μ-null** (`ProfiniteEnsemble.measure_range_iota_eq_zero`, proved). "μ-a.e. seed" is
+  **not** "almost all integer seeds"; no transfer to `ℕ` is claimed or available.
+- The result says **nothing** about the orbit of `2`. Dead ends **#90** and **#117** are untouched.
+  MC is **not** approached.
+- **Mathematically new content: none.** The finite counting chain (Theorem C → fibre form →
+  `type_bad_small` → `uncaptured_in_few_classes`) is the mathematics; the passage to all `q` is
+  packaging. A feature, not a defect — but it must be stated, not hidden.
+- **Not dead end #101** (`Ẑ` as a home for the *walk*, to extract orbit information) and **not #155**
+  (Loeb receptacle, vacuous Gap). Here `Ω` is the sample space of a *population* statement, and the
+  nullity of `ℕ` is a declared scope limitation.
+- Every statement in this arc remains a **population** statement. The orbit direction was closed in
+  Session 313 (dead ends #169–#174) and stays closed.
+
+**No new dead ends this session.** `EM/Meta/DeadEnds.lean` stays at 174/164/32/15. #167 and #168
+remain correct as written — they concern what natural and logarithmic density *cannot* do, and
+Session 314 did not use either.
