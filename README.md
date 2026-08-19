@@ -19,20 +19,22 @@ The first terms are 2, 3, 7, 43, 13, 53, 5, 6221671, 38709183810571, 139, 2801, 
 
 Two documents, both with clickable links to the Lean source for every formally verified result:
 
-- **Short paper** — [`paper/short/main.pdf`](paper/short/main.pdf) (10 pages, sources in
+- **Short paper** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (10 pages, sources in
   [`paper/short/`](paper/short/)): the mathematics, with proof sketches.  The residue-walk
   reformulations of MC (all equivalent to MC), the composite floor (growth constant, MC ⇒ (C∞),
   Sylvester towers, the invariant ρ), the population laws (head domination, the bag-conditioned
   1/q law, almost-all factor-tree hitting, Karamata and Mertens in progressions), and min versus
   max (Cox–van der Poorten's omission of 5, no congruence invariant under lpf).
-- **Technical report** — [`paper/main.pdf`](paper/main.pdf) (sources in [`paper/`](paper/)):
+- **Technical report** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (sources in [`paper/`](paper/)):
   everything the formalization does — the above plus the variants, the spectral and variance
   routes, the obstruction calculus, the function-field analogue (placeholders marked), the
   complete catalogue of documented dead ends, and the methodology.  Nothing in the short paper
   depends on it.
 
-Both are built with two passes of `lualatex main.tex` in the respective directory; they share
-`paper/preamble.tex`.
+The compiled PDFs are attached to each [release](https://github.com/marcellop71/EM/releases/latest)
+(`EM-short-*.pdf` and `EM-paper-*.pdf`) rather than tracked in the repository, so that clones stay
+small.  To build them yourself, run two passes of `lualatex main.tex` in the respective directory;
+they share `paper/preamble.tex`.
 
 ## Mathlib Candidates
 
