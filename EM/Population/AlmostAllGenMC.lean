@@ -244,7 +244,10 @@ members have a nondegenerate `Y`-bounded `(n+1)`-prefix and which obeys a Theore
 exponential bound.  Then for every `ε > 0` there are a horizon `n`, a truncation `Y` and an
 exclusion-window constant `Cc ≥ 48 q` such that the good seeds, the degenerate or oversized
 prefixes, and the seeds of heavy window divisor mass together cover at most an `ε`-fraction of
-the period.
+the period.  The truncation moreover satisfies `q ≤ Y`: the horizon `n` is taken above `Cc ≥
+48 q`, and the policy window gives `q ≤ n ≤ n²/2 ≤ log Y ≤ Y`.  (Downstream this says that
+`SelectionLaw.modulus q Y` sees every prime `≤ Y` except `q`, a band containing `q`'s own
+size — the fact the profinite layer needs.)
 
 This is the Session-311 assembly isolated from the particular goodness predicate: it serves
 both `TheoremC.GoodSeed` (in `almost_all_genmc`, below) and the fibre-measurable
@@ -264,7 +267,7 @@ theorem three_type_union_small (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < ε
       (∀ m ∈ sampleSpace q Y, m ∈ Gset Y Cc n → ∀ k < n, (bigThreshold q m Cc k) ^ 2 ≤ Y) →
       ((Gset Y Cc n).card : ℝ) ≤ ((sampleSpace q Y).card : ℝ)
           * Real.exp (-(3 / 8) * (κ * (c₁ / 2 * (n : ℝ) - (K₀ : ℝ))))) :
-    ∃ n Y Cc : ℕ, 48 * q ≤ Cc ∧
+    ∃ n Y Cc : ℕ, 48 * q ≤ Cc ∧ q ≤ Y ∧
       ((((Gset Y Cc n ∪ (sampleSpace q Y).filter (fun m =>
               ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)))
           ∪ (sampleSpace q Y).filter (fun m =>
@@ -311,8 +314,14 @@ theorem three_type_union_small (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < ε
   have hCcRn : (Cc : ℝ) ≤ (n : ℝ) := by exact_mod_cast hnCc
   -- the policy witness
   obtain ⟨Y, hlow, hhigh⟩ := policy_shifted n (by omega)
-  refine ⟨n, Y, Cc, hCc48, ?_⟩
   have hlown : ((n : ℝ)) ^ 2 / 2 ≤ Real.log Y := by nlinarith [Nat.cast_nonneg (α := ℝ) n]
+  -- the truncation dominates `q`: `q ≤ n ≤ n²/2 ≤ log Y ≤ Y`
+  have hqY : q ≤ Y := by
+    have hqn : (q : ℝ) ≤ (n : ℝ) := by exact_mod_cast (by omega : q ≤ n)
+    have hnn : (n : ℝ) ≤ ((n : ℝ)) ^ 2 / 2 := by nlinarith [hnR4]
+    have hlogY : Real.log Y ≤ (Y : ℝ) := Real.log_le_self (by positivity)
+    exact_mod_cast (by linarith : (q : ℝ) ≤ (Y : ℝ))
+  refine ⟨n, Y, Cc, hCc48, hqY, ?_⟩
   -- ### piece 1 : good seeds
   have hthr2 : ∀ m ∈ sampleSpace q Y, m ∈ Gset Y Cc n →
       ∀ k < n, (bigThreshold q m Cc k) ^ 2 ≤ Y := fun m _ hgood =>
@@ -444,7 +453,7 @@ theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
         ≤ ε * ((sampleSpace q Y).card : ℝ) := by
   intro ε hε
   classical
-  obtain ⟨n, Y, Cc, -, hbound⟩ := three_type_union_small q hq hε
+  obtain ⟨n, Y, Cc, -, -, hbound⟩ := three_type_union_small q hq hε
     (fun Y Cc n => (sampleSpace q Y).filter (fun m => GoodSeed q Y Cc n m))
     (fun _ _ _ _ hm => (Finset.mem_filter.mp hm).2.2.2.1)
     (fun Cc hCc => by

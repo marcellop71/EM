@@ -316,6 +316,31 @@ theorem dvd_modulus {q Y r : ℕ} (hr : r.Prime) (hrY : r ≤ Y) (hrq : r ≠ q)
 theorem modulus_pos (q Y : ℕ) : 0 < modulus q Y :=
   Finset.prod_pos fun _ hr => (mem_bandUpTo.mp hr).2.1.pos
 
+/-- The modulus is a product of **distinct primes**, hence squarefree.  (Exported for the
+profinite/CRT layer, which needs to know that `modulus q Y` factors with multiplicity one.) -/
+theorem modulus_squarefree (q Y : ℕ) : Squarefree (modulus q Y) := by
+  rw [modulus]
+  refine Finset.squarefree_prod_of_pairwise_isCoprime (fun r hr s hs hrs => ?_)
+    (fun r hr => (mem_bandUpTo.mp hr).2.1.squarefree)
+  simp only [← Nat.coprime_iff_isRelPrime]
+  exact (Nat.coprime_primes (mem_bandUpTo.mp (Finset.mem_coe.mp hr)).2.1
+    (mem_bandUpTo.mp (Finset.mem_coe.mp hs)).2.1).mpr hrs
+
+/-- Every prime factor of `modulus q Y` differs from `q`, so the modulus is coprime to `q`.
+This is the load-bearing "`q`-coordinate stays CRT-free" fact, in divisibility form. -/
+theorem coprime_modulus_self {q : ℕ} (hq : q.Prime) (Y : ℕ) :
+    Nat.Coprime (modulus q Y) q := by
+  rw [modulus, Nat.coprime_comm]
+  refine Nat.Coprime.prod_right fun r hr => ?_
+  exact (Nat.coprime_primes hq (mem_bandUpTo.mp hr).2.1).mpr
+    (Ne.symm (mem_bandUpTo.mp hr).2.2)
+
+/-- Restatement of `dvd_modulus` in the naming convention of the profinite layer: every
+prime `r ≤ Y` other than `q` divides the modulus. -/
+theorem prime_dvd_modulus {q Y r : ℕ} (hr : r.Prime) (hrY : r ≤ Y) (hrq : r ≠ q) :
+    r ∣ modulus q Y :=
+  dvd_modulus hr hrY hrq
+
 /-! ### Multipliers are neither in the bag nor divide their own cofactor -/
 
 /-- A nondegenerate multiplier never divides the seed: it divides the Euclid

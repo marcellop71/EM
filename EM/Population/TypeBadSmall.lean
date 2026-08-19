@@ -77,6 +77,8 @@ exclusion-window constant `Cc` such that the seeds of one period `sampleSpace q 
 *any* of the three bad types — degenerate/oversized `(n+1)`-prefix, heavy window divisor mass
 in `(Cc², Y]`, or `FiberTheoremC.FiberGood` — number at most an `ε`-fraction of the period.
 
+The truncation satisfies `q ≤ Y`, inherited from `AlmostAllGenMC.three_type_union_small`.
+
 Unlike `AlmostAllGenMC.almost_all_genmc`, **every** clause here is determined by
 `m mod (modulus q Y)`: there is no `¬ q ∣ m` and no genuine-orbit capture clause.  That is
 exactly what the transfer from a one-period count to a natural-density statement needs, and
@@ -87,7 +89,7 @@ it is why `Cc` is reported.
 asks for is the first clause of `FiberGood`.  The three-type containment is
 `bad_type_decomposition`. -/
 theorem type_bad_small (q : ℕ) (hq : q.Prime) (ε : ℝ) (hε : 0 < ε) :
-    ∃ n Y Cc : ℕ, 1 ≤ SelectionLaw.modulus q Y ∧
+    ∃ n Y Cc : ℕ, q ≤ Y ∧ 1 ≤ SelectionLaw.modulus q Y ∧
       (((sampleSpace q Y).filter (fun m =>
           ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)
           ∨ (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter (fun r => r.Prime ∧ r ∣ m),
@@ -95,14 +97,14 @@ theorem type_bad_small (q : ℕ) (hq : q.Prime) (ε : ℝ) (hε : 0 < ε) :
           ∨ FiberTheoremC.FiberGood q Y Cc n m)).card : ℝ)
         ≤ ε * ((sampleSpace q Y).card : ℝ) := by
   classical
-  obtain ⟨n, Y, Cc, -, hbound⟩ := AlmostAllGenMC.three_type_union_small q hq hε
+  obtain ⟨n, Y, Cc, -, hqY, hbound⟩ := AlmostAllGenMC.three_type_union_small q hq hε
     (fun Y Cc n => (sampleSpace q Y).filter (fun m => FiberTheoremC.FiberGood q Y Cc n m))
     (fun _ _ _ _ hm => (Finset.mem_filter.mp hm).2.1)
     (fun Cc hCc => by
       obtain ⟨κ, hκ, K₀, n₁, h⟩ := FiberTheoremC.theorem_C_fiber q Cc hq hCc
       exact ⟨κ, hκ, K₀, n₁, fun Y n hn hCcn hpol hthr =>
         h Y n hn hCcn hpol fun m hm hg => hthr m hm (Finset.mem_filter.mpr ⟨hm, hg⟩)⟩)
-  exact ⟨n, Y, Cc, modulus_pos q Y, le_trans (Nat.cast_le.mpr
+  exact ⟨n, Y, Cc, hqY, modulus_pos q Y, le_trans (Nat.cast_le.mpr
     (Finset.card_le_card (bad_type_decomposition q Y Cc n))) hbound⟩
 
 /-! ## 3. Sanity check: the Session-311 headline is recovered -/
@@ -116,7 +118,7 @@ theorem almost_all_genmc_of_type_bad (q : ℕ) (hq : q.Prime) :
       (((sampleSpace q Y).filter (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)
         ≤ ε * ((sampleSpace q Y).card : ℝ) := by
   intro ε hε
-  obtain ⟨n, Y, Cc, _, hbound⟩ := type_bad_small q hq ε hε
+  obtain ⟨n, Y, Cc, -, -, hbound⟩ := type_bad_small q hq ε hε
   refine ⟨n, Y, le_trans (Nat.cast_le.mpr (Finset.card_le_card ?_)) hbound⟩
   intro m hm
   rw [Finset.mem_filter] at hm ⊢

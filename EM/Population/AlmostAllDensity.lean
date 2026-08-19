@@ -62,7 +62,8 @@ therefore needs a genuinely different ambient measure (see
 ## Main results
 
 * `uncaptured_in_few_classes` — the covering lemma: the uncaptured seeds coprime to `q`
-  live in a set `T` of residue classes modulo a period `M` with `#T ≤ (ε/2) · M`.
+  live in a set `T` of residue classes modulo a period `M` with `#T ≤ (ε/2) · M`.  The
+  period is exported in band form, `M = ∏ {r ≤ Y : r prime, r ≠ q}` with `q ≤ Y`.
 * `almost_all_genmc_density` — the headline, in the `∀ X ≥ X₀` form.
 * `almost_all_genmc_limsup` — the `limsup` restatement.
 * `finite_simultaneous_density` — the finite-union form, uniform over a `Finset` of primes.
@@ -91,18 +92,27 @@ This is the whole content of the density transfer.  `M` is `SelectionLaw.modulus
 `T` is the three-bad-type filter of `TypeBadSmall.type_bad_small`; the point is that each
 of the three types is a function of the residue alone, the third one because
 `FiberTheoremC.FiberGood` quantifies existentially over the residue fibre — and the seed
-`m` itself is available as that witness. -/
+`m` itself is available as that witness.
+
+The **band structure of the period** is exported too: `M = ∏ r ∈ bandUpTo q Y, r` for some
+truncation `Y ≥ q`, so `M` is a product of the distinct primes `≤ Y` other than `q`.  See
+`SelectionLaw.modulus_squarefree`, `SelectionLaw.coprime_modulus_self` and
+`SelectionLaw.prime_dvd_modulus` for the three consequences a caller usually wants:
+`M` is squarefree, `M` is coprime to `q`, and every prime `r ≤ Y` with `r ≠ q` divides
+`M`. -/
 theorem uncaptured_in_few_classes (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < ε) :
-    ∃ (n M : ℕ) (T : Finset ℕ), 1 ≤ M ∧ (T.card : ℝ) ≤ ε / 2 * (M : ℝ) ∧
-      ∀ m, 1 ≤ m → (¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q) →
-        PeriodicDensity.periodRep M m ∈ T := by
+    ∃ (n M Y : ℕ) (T : Finset ℕ), 1 ≤ M ∧ q ≤ Y ∧
+      M = ∏ r ∈ LargeStepRoughness.bandUpTo q Y, r ∧
+      (T.card : ℝ) ≤ ε / 2 * (M : ℝ) ∧
+      (∀ m, 1 ≤ m → (¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q) →
+        PeriodicDensity.periodRep M m ∈ T) := by
   classical
-  obtain ⟨n, Y, Cc, hM, hT⟩ := TypeBadSmall.type_bad_small q hq (ε / 2) (by positivity)
-  refine ⟨n, modulus q Y, (sampleSpace q Y).filter (fun m =>
+  obtain ⟨n, Y, Cc, hqY, hM, hT⟩ := TypeBadSmall.type_bad_small q hq (ε / 2) (by positivity)
+  refine ⟨n, modulus q Y, Y, (sampleSpace q Y).filter (fun m =>
       ¬ (∀ j < n + 1, 2 ≤ genSeqAvoid q m j ∧ genSeqAvoid q m j ≤ Y)
       ∨ (1 : ℝ) / Cc ≤ ∑ r ∈ (Finset.Ioc (Cc ^ 2) Y).filter (fun r => r.Prime ∧ r ∣ m),
             (1 : ℝ) / r
-      ∨ FiberTheoremC.FiberGood q Y Cc n m), hM, ?_, ?_⟩
+      ∨ FiberTheoremC.FiberGood q Y Cc n m), hM, hqY, rfl, ?_, ?_⟩
   · -- the cardinality bound, with `#(sampleSpace q Y) = modulus q Y`
     rw [card_sampleSpace] at hT
     exact hT
@@ -142,7 +152,7 @@ theorem almost_all_genmc_density (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < 
       (((Finset.Icc 1 X).filter (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)
         ≤ ε * (X : ℝ) := by
   classical
-  obtain ⟨n, M, T, hM, hTcard, hP⟩ := uncaptured_in_few_classes q hq hε
+  obtain ⟨n, M, -, T, hM, -, -, hTcard, hP⟩ := uncaptured_in_few_classes q hq hε
   obtain ⟨X₀, hX₀⟩ := PeriodicDensity.eventually_density_le hM T
     (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q) hP hε hTcard
   refine ⟨n, X₀, fun X hX => ?_⟩
@@ -160,7 +170,7 @@ theorem almost_all_genmc_limsup (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < �
           (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ) / (X : ℝ))
       Filter.atTop ≤ ε := by
   classical
-  obtain ⟨n, M, T, hM, hTcard, hP⟩ := uncaptured_in_few_classes q hq hε
+  obtain ⟨n, M, -, T, hM, -, -, hTcard, hP⟩ := uncaptured_in_few_classes q hq hε
   refine ⟨n, ?_⟩
   have h := PeriodicDensity.limsup_density_le hM T
     (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q) hP hε hTcard
