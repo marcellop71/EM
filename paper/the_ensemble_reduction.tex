@@ -396,9 +396,11 @@ prefix, and every $y \le Y$,
 
 \noindent The survival event is stated at the \emph{$q$-free} Euclid number
 $\tilde{\mathrm{P}}_m(n)+1$, not at $\Prod{m}(n)+1$
-(\lean{EM/Population/SelectionLaw.lean}{SurvivesUpTo}); phrasing it without
-reference to the value of the multiplier is what removes the $q$-power
-subtlety.  This is an exact identity, not an estimate: the roughness
+(\lean{EM/Population/SelectionLaw.lean}{SurvivesUpTo}); phrasing the event
+as a non-divisibility statement, without reference to the value of the
+multiplier, is what keeps the $q$-part stripping in
+$\tilde p_m = \minFac(\mathrm{qfreePart}_q(\tilde{\mathrm{P}}_m(n)+1))$ out
+of the counting.  This is an exact identity, not an estimate: the roughness
 survival product is the true proportion, cell by cell.  It is Shanks' heuristic made exact
 \emph{and conditional} --- conditional on the whole type of the orbit so
 far, which is what a heuristic cannot be.  The bag-conditioned multiplier law of
@@ -455,8 +457,10 @@ multipliers are nondegenerate and bounded by~$Y$,
   \qquad c_1 = e^{-250},
 \]
 where $S_k(q,m,C_c)$ is the survival product at depth~$k$ against the
-threshold $C_c$
-(\lean{EM/Population/LargeStepRoughness.lean}{stepSurvival}).
+\emph{moving} threshold $y_k = C_c\,k\log_2 \tilde c_m(k)$
+(\lean{EM/Population/LargeStepRoughness.lean}{stepSurvival},
+\lean{EM/Population/LargeStepRoughness.lean}{bigThreshold}): $C_c$ is a
+scale factor in the threshold, not the threshold itself.
 \end{theorem}
 
 The bound is \textbf{deterministic and per-path}: no probability, no
