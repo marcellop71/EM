@@ -83,3 +83,45 @@ Sections 2–4 use the "first missing prime" framing: for the smallest missing p
 
 Counts (dead ends, codebase lines) come from the generated macros `\DEnumbers`, `\DEentries`,
 `\DEwitnessed`, `\DErevivable` — never hard-code a number that a macro already provides.
+
+## Accuracy rules (Session 315 — from the first adversarial audit of a `\keymark` section)
+
+The repository is **public** and tagged releases carry both PDFs. A paper defect is a visible
+defect. The Session-315 audit of `sec:seed-average` — written in Session 312, released in `v0.1.0`,
+and never audited until three sessions later — found **two false sentences** and a *systematic*
+pattern of hypothesis-dropping. These rules exist because of what it found.
+
+1. **A docstring is not evidence.** Before writing or citing any `\lean{}` target, open the file
+   and read the `theorem` line, binders and hypotheses included. The audit found wrong claims that
+   had been copied *from* Lean docstrings — and then had to fix the docstrings too.
+2. **Never drop an analytic hypothesis from an informal display.** `q ≤ Y`, nondegeneracy, `q ∤ m`,
+   fixed `q`, finite horizon, the policy window `n²/2 ≤ log Y ≤ n²` — these are not clutter. In
+   this project the hypotheses are frequently *the reason a layer cannot reach the orbit* (the
+   `log Y ≤ n²` policy is dead end #173 precisely because the true orbit does not satisfy it), so
+   eliding them erases the paper's own argument. If a constant like `κ`, `K₀`, `n₁` is
+   existentially quantified in Lean, attribute any explicit value to the proof's witness, not to
+   the theorem.
+3. **Do not let a number silently improve a theorem.** A table asserted a charge budget
+   `Ch_n ≤ 2.8n` where `chargeBudget_le` proves `π(N) + N log 4` — true asymptotically at `N = 2n`,
+   not what the theorem says. State the proved bound.
+4. **Density is finitely SUB-additive, not additive.** This error reached four places including two
+   Lean docstrings. Relatedly, `measure_iUnion_null` is countable *sub*additivity applied to null
+   sets — which is exactly why the profinite argument needs no measurability of the missing event.
+5. **Priority and novelty language: retract by default.** Three claims have now been audited across
+   three sessions — Mertens (S312), van der Corput (S314), and the S315 sweep (five more) — and
+   **every one failed or had to be scoped**. Never write "first / only / not previously formalized"
+   without checking the AFP, PrimeNumberTheoremAnd, Carleson, Metamath `set.mm`, HOL Light `100/`
+   **and open mathlib4 PRs**. Prefer the checkable form: "not in Mathlib as of v4.33.0", pinned.
+6. **Population scope is not negotiable.** Every statement in the seed-average arc — profinite
+   packaging included — is a **population** statement. No sentence may be readable, even
+   uncharitably, as a claim about the orbit of `2`, about MC, about almost all *integer* seeds, or
+   about a simultaneous **natural-density** result. When the profinite headline appears, `ℕ ⊂ Ω`
+   being μ-null (`measure_range_iota_eq_zero`) must appear with equal prominence, as must
+   "mathematically new content: none".
+7. **Simultaneity in `q` is an additivity question, not a rate question.** Open for natural density;
+   proved for the profinite model; these are different statements and the prose must say why.
+8. **Check the roadmap paragraphs.** The §6 roadmap had been omitting two subsections, including the
+   `\keymark` one, for several sessions. When you add a section, grep for the roadmap that lists it.
+
+When a section carries `\keymark`, assume it will be read hostilely and audited eventually; write it
+so the audit is boring.
