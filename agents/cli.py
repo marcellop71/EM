@@ -36,6 +36,17 @@ def main() -> None:
         help="Provider-qualified model (e.g. claude:opus, claude:fable, openai:gpt-5.2, dgx:qwen, dgx:ornith)",
     )
     p_coord.add_argument(
+        "--fallback-model", type=str, default="claude:opus",
+        help="Model the COORDINATOR switches to if --model hits a usage/consumption limit "
+             "(or stays overloaded past the retry budget). Session restarts from turn 1 on "
+             "the new model. 'none' disables. Default: claude:opus.",
+    )
+    p_coord.add_argument(
+        "--agents-model", type=str, default="opus",
+        help="SDK model alias for EVERY Task-dispatched sub-agent (opus, sonnet, haiku, "
+             "inherit) — independent of the coordinator's own --model. Default: opus.",
+    )
+    p_coord.add_argument(
         "--dgx-agents", type=str, default="",
         help=(
             "Route specialists to the DGX models. Comma-separated "
@@ -280,6 +291,9 @@ def main() -> None:
                 goal=goal,
                 no_paper=args.no_paper,
                 model=args.model,
+                agents_model=args.agents_model,
+                fallback_model=(None if args.fallback_model.lower() == 'none'
+                                else args.fallback_model),
                 qwen_agents=qwen_agents,
                 dgx_agents=dgx_agents,
             ))

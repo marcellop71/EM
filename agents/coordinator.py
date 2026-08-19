@@ -71,7 +71,10 @@ def _load_prompt(name: str) -> str:
 # Agent definitions (used as SUB-agents by the coordinator via Claude SDK)
 # ---------------------------------------------------------------------------
 
-def _build_agents() -> dict[str, AgentDefinition]:
+def _build_agents(agent_model: str = "opus") -> dict[str, AgentDefinition]:
+    """Sub-agent registry.  ``agent_model`` is the SDK model alias
+    ("opus", "sonnet", "haiku", "inherit") given to EVERY sub-agent —
+    independent of the coordinator's own --model."""
     return {
         "lean-formalizer": AgentDefinition(
             description=(
@@ -80,7 +83,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("formalizer"),
             tools=["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-            model="opus",
+            model=agent_model,
         ),
         "literature-scout": AgentDefinition(
             description=(
@@ -89,7 +92,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("scout"),
             tools=["WebSearch", "WebFetch", "Read", "Write", "Edit", "Glob", "Grep"],
-            model="sonnet",
+            model=agent_model,
         ),
         "attack-analytic": AgentDefinition(
             description=(
@@ -98,7 +101,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_analytic"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "attack-algebraic": AgentDefinition(
             description=(
@@ -107,7 +110,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_algebraic"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "attack-combinatorial": AgentDefinition(
             description=(
@@ -116,7 +119,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_combinatorial"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "attack-dynamicalsystem": AgentDefinition(
             description=(
@@ -125,7 +128,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("attack_dynamicalsystem"),
             tools=["Read", "Glob", "Grep", "WebSearch", "WebFetch"],
-            model="opus",
+            model=agent_model,
         ),
         "paper-writer": AgentDefinition(
             description=(
@@ -134,7 +137,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("paper"),
             tools=["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-            model="sonnet",
+            model=agent_model,
         ),
         "code-stylist": AgentDefinition(
             description=(
@@ -144,7 +147,7 @@ def _build_agents() -> dict[str, AgentDefinition]:
             ),
             prompt=_load_prompt("stylist"),
             tools=["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-            model="opus",
+            model=agent_model,
         ),
     }
 
@@ -210,10 +213,16 @@ async def run_coordinator(
     *,
     no_paper: bool = False,
     model: str = "claude:opus",
+    agents_model: str = "opus",
+    fallback_model: str | None = "claude:opus",
     qwen_agents: tuple[str, ...] = (),
     dgx_agents: dict[str, str] | None = None,
 ) -> None:
     """Launch the coordinator agent.
+
+    `model` is the COORDINATOR's model (e.g. claude:fable); `agents_model` is
+    the SDK alias every Task-dispatched sub-agent runs on (default opus), and
+    the default `--model` for direct-runners the coordinator spawns.
 
     `dgx_agents` maps specialist name → provider-qualified DGX model
     (e.g. {"lean-formalizer": "dgx:ornith", "attack-analytic": "dgx:qwen"}).
@@ -342,7 +351,19 @@ async def run_coordinator(
             "the ABSOLUTE RULE (no computation) in force for yourself and them."
         )
 
+    models_note = (
+        f"\n\n## Models\n\nYou run on `{model}`"
+        + (f" (falls back to `{fallback_model}` if that model hits a usage limit — the "
+           f"session then restarts from turn 1, so keep state files current)"
+           if fallback_model and fallback_model != model else "")
+        + f". Every Task sub-agent runs on `{agents_model}`. "
+        f"When you spawn a direct-runner (`agents spawn -- attack ...`, `agents attack ...`, "
+        f"`agents formalize ...`), pass `--model claude:{agents_model}` explicitly so it "
+        f"matches the sub-agents."
+    )
+
     prompt = f"""You are the coordinator for the EM formalization agent swarm.
+{models_note}
 
 ## Current State
 
@@ -381,7 +402,7 @@ Update public status (only if Lean code changed): {ROOT / 'docs' / 'status.md'}
 Today's date: {datetime.now().strftime('%Y-%m-%d')}
 """
 
-    agents = _build_agents()
+    agents = _build_agents(agents_model)
     if no_paper:
         agents.pop("paper-writer", None)
 
@@ -403,6 +424,7 @@ Today's date: {datetime.now().strftime('%Y-%m-%d')}
         tools=_TOOLS_COORDINATOR,
         max_turns=30,
         budget=_BUDGET_COORDINATOR,
+        fallback_model=fallback_model,
     )
 
     # Never let the harness reap the coordinator while a Task sub-agent is

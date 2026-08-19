@@ -50,10 +50,28 @@ _TRANSIENT_MARKERS = (
 # The SDK raises this for any non-success CLI result, transient or not.
 _OPAQUE_MARKER = "returned an error result"
 
+# Substrings marking a usage / consumption limit on the *current model* — the
+# signal to switch to `spec.fallback_model` rather than wait.  Kept broad on
+# purpose: subscription limits ("You've hit your usage limit"), model quotas,
+# spend caps, and API rate-limit errors all count.
+_LIMIT_MARKERS = (
+    "usage limit", "hit your limit", "reached your limit", "limit reached",
+    "limit will reset", "quota", "spend limit", "budget exceeded",
+    "rate_limit_error", "rate limit", "too many requests", "429",
+    "insufficient credits", "credit balance", "billing",
+    "not available on your plan", "model is not available",
+)
+
+
+class _LimitResult(Exception):
+    """Raised internally when the CLI's ResultMessage reports a limit error."""
+
 
 def _classify_error(exc: BaseException) -> str | None:
-    """Return ``"transient"``, ``"opaque"``, or ``None`` (do not retry)."""
+    """Return ``"limit"``, ``"transient"``, ``"opaque"``, or ``None``."""
     msg = str(exc).lower()
+    if isinstance(exc, _LimitResult) or any(m in msg for m in _LIMIT_MARKERS):
+        return "limit"
     if any(m in msg for m in _TRANSIENT_MARKERS):
         return "transient"
     if _OPAQUE_MARKER in msg:
@@ -86,11 +104,15 @@ class ClaudeBackend:
         spec: AgentSpec,
         *,
         agents: dict[str, AgentDefinition] | None = None,
+        model_name: str | None = None,
     ) -> ClaudeAgentOptions:
-        """Build ClaudeAgentOptions from an AgentSpec."""
+        """Build ClaudeAgentOptions from an AgentSpec.
+
+        ``model_name`` overrides ``spec.model_name`` (used after a fallback
+        switch)."""
         tools = spec.tools
         opts = ClaudeAgentOptions(
-            model=resolve_claude_model(spec.model_name),
+            model=resolve_claude_model(model_name or spec.model_name),
             system_prompt=spec.system_prompt,
             allowed_tools=tools,
             agents=agents,
@@ -117,32 +139,42 @@ class ClaudeBackend:
         agents: dict[str, AgentDefinition] | None = None,
     ) -> AsyncIterator[AgentEvent]:
         """Stream AgentEvents from a Claude Code session."""
-        options = self._build_options(spec, agents=agents)
         label = spec.label
+        current_model = spec.model_name
+        fallback = (spec.fallback_model.split(":", 1)[-1]
+                    if spec.fallback_model else None)
+        if fallback == current_model:
+            fallback = None
+        options = self._build_options(spec, agents=agents, model_name=current_model)
         turn = 0
 
         yield AgentEvent(
             kind=EventKind.START,
             label=label,
             provider="claude",
-            model=spec.model_name,
+            model=current_model,
         )
 
         backoff = INITIAL_BACKOFF_S
-
-        for attempt in range(1, MAX_RETRIES + 1):
+        attempt = 0
+        while True:
+            attempt += 1
             turn = 0
             retry_after: BaseException | None = None
+            switch_to: str | None = None
 
             try:
                 async for message in query(prompt=prompt, options=options):
                     if isinstance(message, ResultMessage):
+                        if message.is_error and _looks_like_limit(message.result):
+                            # Do not surface as a final RESULT: switch model instead.
+                            raise _LimitResult(message.result or "limit error")
                         cost = f"${message.total_cost_usd:.4f}" if message.total_cost_usd else "?"
                         yield AgentEvent(
                             kind=EventKind.RESULT,
                             label=label,
                             provider="claude",
-                            model=spec.model_name,
+                            model=current_model,
                             is_error=message.is_error,
                             num_turns=message.num_turns or 0,
                             cost=cost,
@@ -156,7 +188,7 @@ class ClaudeBackend:
                                     kind=EventKind.TEXT,
                                     label=label,
                                     provider="claude",
-                                    model=spec.model_name,
+                                    model=current_model,
                                     turn=turn,
                                     text=block.text,
                                 )
@@ -166,7 +198,7 @@ class ClaudeBackend:
                                     kind=EventKind.TOOL_USE,
                                     label=label,
                                     provider="claude",
-                                    model=spec.model_name,
+                                    model=current_model,
                                     tool_name=block.name,
                                     tool_detail=_tool_detail(block.name, inp),
                                     extra=inp,
@@ -180,7 +212,7 @@ class ClaudeBackend:
                                 kind=EventKind.SUBAGENT_START,
                                 label=label,
                                 provider="claude",
-                                model=spec.model_name,
+                                model=current_model,
                                 subagent_name=data.get("agent_name", "?"),
                             )
                         elif subtype == "agent_stop":
@@ -188,21 +220,32 @@ class ClaudeBackend:
                                 kind=EventKind.SUBAGENT_STOP,
                                 label=label,
                                 provider="claude",
-                                model=spec.model_name,
+                                model=current_model,
                                 subagent_name=data.get("agent_name", "?"),
                             )
             except Exception as exc:  # noqa: BLE001 — classified, then re-reported
                 kind = _classify_error(exc)
-                budget = MAX_RETRIES if kind == "transient" else MAX_RETRIES_OPAQUE
-                if kind is not None and attempt < budget:
+                if kind == "limit" and fallback is not None:
+                    switch_to = fallback
                     retry_after = exc
-                else:
+                elif kind == "limit":
+                    kind = "transient"      # no fallback: treat as a wait
+                if switch_to is None and kind is not None:
+                    budget = MAX_RETRIES if kind == "transient" else MAX_RETRIES_OPAQUE
+                    if attempt < budget:
+                        retry_after = exc
+                    elif kind == "transient" and fallback is not None:
+                        # Overloaded past the budget on the primary model:
+                        # last resort, try the fallback once before giving up.
+                        switch_to = fallback
+                        retry_after = exc
+                if retry_after is None:
                     import traceback
                     yield AgentEvent(
                         kind=EventKind.ERROR,
                         label=label,
                         provider="claude",
-                        model=spec.model_name,
+                        model=current_model,
                         text=traceback.format_exc(),
                     )
                     return
@@ -213,18 +256,39 @@ class ClaudeBackend:
                     kind=EventKind.ERROR,
                     label=label,
                     provider="claude",
-                    model=spec.model_name,
+                    model=current_model,
                     text=traceback.format_exc(),
                 )
                 return
             else:
                 return
 
+            if switch_to is not None:
+                yield AgentEvent(
+                    kind=EventKind.RETRY,
+                    label=label,
+                    provider="claude",
+                    model=current_model,
+                    text=(
+                        f"{type(retry_after).__name__}: {str(retry_after)[:200]} — "
+                        f"SWITCHING MODEL {current_model} → {switch_to} and RESTARTING "
+                        f"the session from turn 1. {turn} turns of work will be redone; "
+                        f"agents that append to state files may double-append."
+                    ),
+                )
+                current_model = switch_to
+                fallback = None                     # one switch only
+                options = self._build_options(spec, agents=agents, model_name=current_model)
+                attempt = 0                         # fresh retry budget on the new model
+                backoff = INITIAL_BACKOFF_S
+                await asyncio.sleep(5)
+                continue
+
             yield AgentEvent(
                 kind=EventKind.RETRY,
                 label=label,
                 provider="claude",
-                model=spec.model_name,
+                model=current_model,
                 text=(
                     f"{type(retry_after).__name__}: {retry_after} — waiting "
                     f"{backoff:.0f}s, then RESTARTING the session from turn 1 "
@@ -234,3 +298,8 @@ class ClaudeBackend:
             )
             await asyncio.sleep(backoff)
             backoff = min(backoff * BACKOFF_MULTIPLIER, MAX_BACKOFF_S)
+
+
+def _looks_like_limit(text: str | None) -> bool:
+    msg = (text or "").lower()
+    return any(m in msg for m in _LIMIT_MARKERS)

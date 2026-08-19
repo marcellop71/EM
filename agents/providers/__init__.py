@@ -26,6 +26,10 @@ class AgentSpec:
     tools: list[str] = field(default_factory=list)
     max_turns: int = 20
     budget: float = 25.0
+    # Provider-qualified model to switch to if `model` hits a usage /
+    # consumption limit (or stays overloaded past the retry budget), e.g.
+    # "claude:opus" behind "claude:fable".  None = no fallback.
+    fallback_model: str | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
     @property
