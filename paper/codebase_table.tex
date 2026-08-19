@@ -229,4 +229,14 @@
 \code{ForMathlib/VanDerCorput.lean} & The finite van der Corput inequality $\|\sum_{n<N} f(n)\|^2 \le 2N^2/(H{+}1) + 2\delta N^2$ (Mathlib-only imports) & 408 \\
 \code{ForMathlib/ZModDftParseval.lean} & Parseval/Plancherel for \code{ZMod.dft}: $\sum_k \|\hat\Phi(k)\|^2 = N\sum_j \|\Phi(j)\|^2$ & 121 \\
 \code{ForMathlib/CoprimeAffineBlock.lean} & $\#\{t\in[k,k{+}N): \gcd(N, at{+}b)=1\} = \varphi(N)$ for $\gcd(a,N)=1$; $B$ blocks give $B\varphi(N)$ & 93 \\
+\midrule
+\multicolumn{3}{l}{\emph{Seed-average program (new)}} \\
+\code{Population/SeedTypes.lean} & Lemma A (revisit-freeness), visited-set bounds, Lemma B (CRT prefix invariance) & 259 \\
+\code{Population/SeedCapture.lean} & $q$-free dynamics via \code{ordCompl}; Lemma C coupling (shielding); capture identity \code{captured\_iff\_mem\_visited} & 549 \\
+\code{Population/LargeStepRoughness.lean} & The box process and harmonic charge budget $\mathrm{Ch}_n \le 2.8n$; brink lemma; Mertens upper bound; the pathwise compensator $\sum_{k<n} S_k \ge (c_1/2)n$ & 1758 \\
+\code{Population/SelectionLaw.lean} & WP2: type cells mod $M_Y/q$, CRT product counting, and the exact selection law $\#(\text{cell}\cap\text{Survives}) = S_k\cdot\#\text{cell}$ & 905 \\
+\code{Population/TreeChernoff.lean} & Abstract finite-tree exponential supermartingale and Chernoff lower tail (C5 replacement), localized variants & 616 \\
+\code{Population/MertensLower.lean} & Mertens I lower bound $\sum_{p\le n} \log p/p \ge \log n - 13$; windowed $\log\log$ lower bound (not in Mathlib) & 755 \\
+\code{Population/LSPlus.lean} & (LS+): the large-step large-deviation bound $\#\{N < (c_1/8)n\} \le M_Y e^{-(3/16)c_1 n} + \mathrm{tail}$ over one period & 469 \\
+\code{Population/TailEstimate.lean} & Group 7 slices: $\omega(N) \le \log_2 N$, old-position prime count $\le k^2(\log_2 Y{+}1)$, per-seed survival upper bound $S_k(y) \le e^{-\sum_{\text{active}} 1/r}$, divisor first moment + Markov mass & 431 \\
 \end{longtable}
