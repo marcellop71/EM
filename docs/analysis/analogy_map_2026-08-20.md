@@ -80,3 +80,88 @@ obstruction, both now in Lean:
    exceptional set).  Closed before it starts: by a box-sieve/Dirichlet construction the
    exceptional set contains integer-like points with genuine small prime multipliers, so no
    every-orbit theorem (unique ergodicity, Ratner) can be true here.
+
+## Session 318 — the geometry behind `minFac`, and the transfer principle (`EM/Population/GrandOrbit.lean`)
+
+### Geometry behind `minFac`: four readings, one placement
+
+1. **Piecewise dilation.**  In Euclid coordinates `E = P+1`, on the sieve stratum
+   `S_p = {minFac = p} = pℤ ∖ ⋃_{r<p} rℤ` the map is `E ↦ p(E−1)+1`, a dilation by `p`
+   centred at the fixed point `1`; the class `1 + pℤ` is forward-invariant under *every*
+   branch and `F(S_p) ⊂ 1 + pℤ`.  MC = the orbit enters every absorbing class.
+2. **The Collatz / FRACTRAN class.**  Truncating the sieve at `Y` makes `F` one of Conway's
+   generalized Collatz functions (affine on residue classes mod `Y#`); `F` is their limit.
+   Conway: orbit problems in this class are undecidable in general; Lagarias: the 2-adic
+   conjugacy for 3x+1 says nothing about integers.  Known theory there is population-only
+   (Terras, Tao) — exactly the shape this project has.  This is the honest placement.
+3. **Adelic.**  `T(P) = λP` with `λ = p` a principal idele: dilation at ∞, contraction at `p`,
+   isometry elsewhere; the product formula equates archimedean growth with total local
+   contraction.  MC = every local coordinate contracted once.  A height argument would need
+   a second functional; none visible.
+4. **Function fields are the one literal geometry.**  Over `𝔽_q[t]`, "least factor degree
+   `= d`" is constructible (resultants against `t^{q^k} − t`), so the min-degree dynamics is
+   piecewise algebraic.  Unasked: is the *backward* tree algebraic there?
+
+### Descent beyond `T`: the question becomes a density question
+
+`Misses q` and `GenMC` are invariants of the grand-orbit relation `m ≈ m'` ⟺ orbits
+eventually coincide (`misses_congr`, `genMC_congr`).  Descent along `≈` bottoms out at class
+minima, so emptiness would need orbit merging with a known-good seed — open and implausible.
+But invariance gives the **transfer principle** (`transfer_principle`): for *any* relation
+under which `Misses q` is invariant, a positive-upper-density class of `2` proves MC (the class
+would otherwise sit inside the density-zero set of the seed-average law).  This is the precise
+Heath-Brown coupling: "descent relation beyond `T`" = "GenMC-preserving relation with a fat
+class of `2`".  For the grand orbit itself: preimages of `N` are `N/p`, `p ∣ N`, with the
+square condition `p² ∣ N + p` (`preimage_iff`, `preimage_cond_iff_sq`), so extra branches of
+the backward tree are mod-`p²` events of heuristic probability `1/p` — the class of `2` is
+expected to be polylogarithmic and the instance vacuous.  Not proved; proving thinness is a
+mod-`p²` orbit statement.  The open question isolated: does *any* GenMC-preserving relation
+have a fat class of `2`?
+
+### Condensed mathematics — a home, not a tool (assessed 2026-08-20)
+
+`Ω = ∏_r ℤ/r` is a *light* condensed set; `Ω ∖ U = ⨆_p S_p` (clopens on which `T` is
+multiplication by `p`) makes `T` a map of light condensed sets, band locality
+(`profProd_agree_of_agree`) is its pro-structure, and the Haar/cylinder measure theory of
+Sessions 314 and 317 is the solid module `ℤ[Ω]^■ = lim ℤ[Ω_Y]`.  All of that is exposition.
+Condensed mathematics is a foundation for algebra with topology; its number-theoretic results are
+cohomological and about spaces of algebraic origin.  It supplies no dynamical invariants, treats
+the discrete subobject `ℕ_disc → Ω` exactly as classical topology does (the first coincidence
+applies to solid measures verbatim), and `minFac` is not algebraic (#128).  The one apt angle is
+the liquid/solid = archimedean/non-archimedean split: an eventual "height along the orbit"
+argument would be written in the language of the adelic analytic ring (`T` = multiplication by a
+principal idele, product formula balancing dilation at `∞` against contraction at `p`).  The
+framework would be notation for such an argument, not a source of it.  **Verdict: no theorem
+expected; recast for clarity only.**
+
+### The adelic angle, developed (`EM/Population/AdelicShadow.lean`)
+
+**Formalism.**  `T(P) = λP` with `λ = p_{n+1}` a principal idele: `|λ|_∞ = p`, `|λ|_p = 1/p`,
+`|λ|_v = 1` otherwise; `∏_v |λ|_v = 1`.  Along the orbit, `log P_n = Σ_k log p_k` is the total
+local contraction.  The divisor of the Euclid number, `div E_n = Σ_{p} v_p(E_n)[p]`, has degree
+`log E_n` (product formula); the greedy rule keeps its *least* point and discards the rest.
+
+**What the bookkeeping proves (Lean, orbit-level, unconditional).**
+* *Local side.*  Hits `{n : q ∣ E_n}` inject into the primes `≤ q` via the multiplier
+  (distinctness), hence are finite (`hits_finite`); more than `π(q−1)` hits force selection of
+  `q` (`captured_of_many_hits`); so **every finite place is eventually a unit** on the Euclid
+  numbers (`eventually_unit`), captured or not.  The failure of MC at `q` is therefore exactly
+  "`P_n` and, eventually, `E_n` are `q`-adic units" (`misses_iff_eventually_unit_both`): the two
+  classical failure modes collapse into the first up to finitely many steps.
+* *Archimedean side.*  The defect `δ_n = log P_n − log p_{n+1}` of the growth telescope is,
+  up to `log(1+1/P_n)`, the log of the discarded cofactor `E_n/p_{n+1}`
+  (`defect_eq_log_cofactor`): the telescope is the product formula summed along the orbit with
+  the chosen place removed at each step.  The growth constant `C` is the archimedean shadow of
+  how much divisor the greedy rule throws away.
+
+**What it would need.**  An inequality localising archimedean height at a *fixed small* place
+`q` along the orbit.  The product formula yields totals dominated by huge primes.  `S`-unit and
+subspace theorems (Mahler, Størmer, Corvaja–Zannier) localise at finitely many places but for a
+*fixed* support; `P_n` is an `S_n`-unit with `S_n` growing, so every fixed-`S` statement is
+exhausted after finitely many `n` — technique mismatch of the #134 type.  The strongest local
+statement the bookkeeping yields, `eventually_unit`, is symmetric between capture and failure.
+
+**Verdict.**  The adelic language is the right one for stating the dichotomy (and the Lean
+above is the cleanest orbit-level formulation of MC-failure the project has), but it localises
+nothing.  The condensed/analytic-stack framework would host a height argument; the argument
+itself still does not exist.  Closed as a *source*; kept as *language*.

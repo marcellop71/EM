@@ -339,6 +339,31 @@ hence so do $\mathrm{WM}$, $\mathrm{MissingFinite}$ and $\MC$.
 \end{enumerate}
 \end{keyresult}
 
+\paragraph{The adelic reading.}
+The greedy step multiplies by the principal idele $p_{n+1}$: it dilates
+the archimedean coordinate by $p_{n+1}$ and contracts the $p_{n+1}$-adic
+one by the same factor, the product formula balancing the two.  In that
+language the defect is, up to $\log(1 + 1/\Prod{2}(n))$, the logarithm of
+the \emph{discarded cofactor} $(\Prod{2}(n)+1)/p_{n+1}$
+(\lean{EM/Population/AdelicShadow.lean}{defect\_eq\_log\_cofactor}): the
+archimedean size of the part of the divisor of the Euclid number that the
+rule throws away.  The telescope is the product formula summed along the
+orbit with the chosen place removed at each step, and $C$ measures
+discard, not location --- which is why the growth axis is a complete
+invariant of perpetual primality and of nothing finer.  On the local side
+the same bookkeeping gives, for every seed $m \ge 1$ and prime~$q$, that
+the Euclid numbers are divisible by~$q$ at only finitely many steps
+(\lean{EM/Population/AdelicShadow.lean}{hits\_finite}; the multipliers at
+the hits are distinct primes $\le q$), that more than $\pi(q-1)$ hits force
+the selection of~$q$
+(\lean{EM/Population/AdelicShadow.lean}{captured\_of\_many\_hits}), and
+hence that the failure of $\MC$ at~$q$ is exactly ``$\Prod{}(n)$ and,
+eventually, $\Prod{}(n)+1$ are $q$-adic units''
+(\lean{EM/Population/AdelicShadow.lean}{misses\_iff\_eventually\_unit\_both}).
+This is the cleanest orbit-level form of the failure of $\MC$ we have; it
+is also symmetric between capture and failure, which is the precise sense
+in which the product formula localises nothing.
+
 \noindent
 Item (1) is what the previous subsection could only gesture at.  The
 criterion that looked merely sufficient for $(\mathrm{C}\infty)$ is

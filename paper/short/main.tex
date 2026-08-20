@@ -538,7 +538,12 @@ and a diagonal argument lets the range grow with the seed: for some
 ineffective nondecreasing $Q\to\infty$, almost every seed~$m$ selects every
 prime $q\le Q(m)$ coprime to it
 (\lean{EM/Population/GrowingRange.lean}{seed\_range\_never\_density}).
-That is as far as it goes.  It is proved on a different ensemble,
+That is as far as it goes, and the only bridge to a single orbit is a
+theorem: if some relation on seeds preserves ``$m$ misses~$q$'' for every
+$q$ and its class of~$2$ has positive upper density, then $\MC$ holds
+(\lean{EM/Population/GrandOrbit.lean}{transfer\_principle}); for the
+natural relation ``orbits eventually coincide'' the class is presumably
+thin.  It is proved on a different ensemble,
 which carries a countably additive measure (next paragraph); the
 two are not comparable, because the integers are null there.  The horizon
 is finite; there is no

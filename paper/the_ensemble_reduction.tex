@@ -270,7 +270,42 @@ natural density supports: the countable version would need a Borel--Cantelli
 argument, which is a theorem about countably additive measures, and the
 ``tail-of-primes'' input that would replace it is, if demanded uniformly in
 the scale, an orbit statement (it implies a cofinite Mullin conjecture for
-the seed~$2$; dead end~\#176).  On an ensemble that carries
+the seed~$2$; dead end~\#176).
+
+One modest orbit-existence statement does follow by counting alone: for
+every prime~$q$ there is a \emph{squarefree} seed coprime to~$q$ whose
+greedy orbit selects~$q$
+(\lean{EM/Population/SquarefreeSeed.lean}{exists\_squarefree\_seed\_selects}),
+because the seeds failing to select~$q$, the multiples of~$q$, and the
+non-squarefree integers (density $\le 1/2$, from $\sum_p p^{-2} \le 1/2$)
+cannot together exhaust $[1,X]$.  The same count gives that \emph{almost
+all} squarefree seeds coprime to~$q$ select~$q$ --- the failing ones are
+$\le \varepsilon$ times all of them for large $X$
+(\lean{EM/Population/SquarefreeSeed.lean}{almost\_all\_squarefree\_select})
+--- and hence infinitely many do
+(\lean{EM/Population/SquarefreeSeed.lean}{infinite\_squarefree\_seeds\_select}).
+No seed is exhibited; one statement per prime, not one seed for all primes.
+
+There is exactly one way a population statement of this kind can reach a
+single orbit, and it is worth stating as a theorem.  Call a relation~$R$
+on seeds \emph{admissible} if ``$m$ misses~$q$'' is $R$-invariant for every
+prime~$q$; the relation ``the forward orbits of $m$ and $m'$ eventually
+coincide'' is admissible
+(\lean{EM/Population/GrandOrbit.lean}{misses\_congr}), and so is any
+coarsening of it.  \textbf{Transfer principle}
+(\lean{EM/Population/GrandOrbit.lean}{transfer\_principle}): if the
+$R$-class of the seed~$2$ has positive upper natural density, then Mullin's
+conjecture holds --- for otherwise the whole class would sit inside the
+density-zero set of seeds missing some~$q$.  So ``population $\Rightarrow$
+orbit'' is equivalent to exhibiting an admissible relation with a fat class
+of~$2$.  For the orbit-merging relation itself the class is presumably
+thin: a $T$-preimage of $N$ other than the obvious one exists only when
+$p^2 \mid N + p$ for a prime $p \mid N$
+(\lean{EM/Population/GrandOrbit.lean}{preimage\_cond\_iff\_sq}), a
+mod-$p^2$ event, so the backward tree of the Euclid--Mullin orbit branches
+rarely.  Nothing about that density is proved in either direction.
+
+On an ensemble that carries
 such a measure the simultaneous statement is \emph{proved}: on the
 profinite space $\Omega = \prod_r \ZZ/r\ZZ$ with the product uniform
 measure, $\mu$-almost every point captures every prime whose coordinate it

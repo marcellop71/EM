@@ -165,6 +165,9 @@ import EM.Population.FiberTheoremC
 import EM.Population.AlmostAllDensity
 import EM.Population.GrowingRange
 import EM.Population.ProfiniteAttractor
+import EM.Population.GrandOrbit
+import EM.Population.AdelicShadow
+import EM.Population.SquarefreeSeed
 import EM.Population.AlmostAllGenMC
 import EM.Population.TransferStrategy
 import EM.Population.TreeChernoff

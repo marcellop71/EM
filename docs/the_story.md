@@ -200,6 +200,16 @@ heuristic.  What survives: archimedean size (the eventual constancy of an intege
 coordinates), i.e. heights — the one theory built for coincidence sets — and the descent shape
 (`descent_empty`), unusable as stated because `T(ℕ) ⊆ 2ℕ`.
 
+Session 318 made the descent question precise (`EM/Population/GrandOrbit.lean`).  `GenMC` is
+an invariant of "orbits eventually coincide", and for *any* such invariant relation the
+**transfer principle** holds: a positive-upper-density class of `2` proves MC, because the
+class would otherwise sit inside the density-zero set of the seed-average law.  So
+"descent beyond `T`" = "a GenMC-preserving relation with a fat class of `2`" — the Heath-Brown
+coupling, stated as a theorem.  The grand orbit's backward tree branches only at the square
+condition `p² ∣ P_b + p`, so its class of `2` is presumably polylogarithmic; the geometry
+behind `minFac` is piecewise dilation on sieve strata — Conway's generalized-Collatz class,
+where no general theory exists and the known results are population-only.
+
 ## Where the retelling points next (after pass 4)
 
 * The bag law makes the **rate** question precise: writing `q_n` for the least prime outside
