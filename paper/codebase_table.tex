@@ -202,7 +202,7 @@
 \code{Meta/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 451 \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 219 \\
 \code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 785 \\
-\code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 778 \\
+\code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 782 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 309 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 129 \\
 \midrule
@@ -249,6 +249,8 @@
 \code{Population/FiberTheoremC.lean} & \code{FiberGood} and \code{theorem\_C\_fiber}: Theorem C with the two non-periodic clauses weakened to fibre statements, same constants & 335 \\
 \code{Population/TypeBadSmall.lean} & \code{type\_bad\_small}: the three fibre-measurable bad types are an $\varepsilon$-fraction of the period --- every clause a function of $m \bmod M_Y$ & 137 \\
 \code{Population/AlmostAllDensity.lean} & \code{almost\_all\_genmc\_density}: the natural-density form of the seed-average theorem ($Y$ eliminated); \code{finite\_simultaneous\_density} over any finite set of primes & 302 \\
+\code{Population/GrowingRange.lean} & \code{growing\_range\_density}, \code{seed\_range\_never\_density}: the growing-range (Tao--Collatz shape) form of the seed-average law; \code{genMC\_genProd\_iff}: GenMC is invariant under the greedy map; \code{scaleUniformTail\_cofinite\_mc}: the ``(N2)'' input is an orbit statement (\#176) & 325 \\
+\code{Population/ProfiniteAttractor.lean} & \code{mc\_iff\_tendsto\_zero}: MC is ``$\Prod{}(n)\to 0$ in $\Omega$''; \code{measure\_divisorFinite\_eq\_zero}: a.e.\ point has infinitely many vanishing coordinates while every integer is divisor-finite (the first coincidence); \code{descent\_empty}: the Vieta-jumping shape, unusable as stated since $T(\mathbb N)\subseteq 2\mathbb N$ & 317 \\
 \code{Population/ProfiniteEnsemble.lean} & Ambient profinite ensemble $\Omega=\prod_r \mathbb{Z}/r$ with the product uniform measure; \code{measure\_cylinder} and \code{measure\_residue\_classes} (an $M$-periodic event has measure its period fraction); packaging only, and $\mathbb{N}\subset\Omega$ is $\mu$-null & 271 \\
 \code{Population/ProfiniteDynamics.lean} & The greedy dynamics on a profinite point: the multiplier is the least prime whose coordinate of the current Euclid element vanishes; the agreement gate \code{profSeq\_iota} (hypothesis $1\le m$ only) and band-local agreement & 277 \\
 \code{Population/ProfiniteHeadline.lean} & \code{measure\_some\_prime\_missed\_eq\_zero}: $\mu$-almost every profinite point captures every prime whose coordinate it does not annihilate; the union over $q$ by countable additivity, with no $q$-uniform rate & 393 \\

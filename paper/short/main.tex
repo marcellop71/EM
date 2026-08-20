@@ -534,7 +534,11 @@ density}, since upper natural density is only finitely \emph{sub}additive:
 finite subadditivity does give one
 horizon uniform over any \emph{finite} set of primes
 (\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density}),
-and that is as far as it goes.  It is proved on a different ensemble,
+and a diagonal argument lets the range grow with the seed: for some
+ineffective nondecreasing $Q\to\infty$, almost every seed~$m$ selects every
+prime $q\le Q(m)$ coprime to it
+(\lean{EM/Population/GrowingRange.lean}{seed\_range\_never\_density}).
+That is as far as it goes.  It is proved on a different ensemble,
 which carries a countably additive measure (next paragraph); the
 two are not comparable, because the integers are null there.  The horizon
 is finite; there is no
@@ -579,7 +583,11 @@ No $q$-uniform rate is used anywhere: at each fixed~$q$ the horizon goes to
 infinity separately.  \emph{Scope.}  $\NN\subset\Omega$ is $\mu$-null
 (\lean{EM/Population/ProfiniteEnsemble.lean}{measure\_range\_iota\_eq\_zero},
 proved), so ``$\mu$-a.e.\ seed'' is not ``almost all integer seeds'' --- a
-$\mu$-null set can have upper density~$1$ in~$\NN$ --- and transfer must go
+$\mu$-null set can have upper density~$1$ in~$\NN$; structurally, $\mu$-a.e.\ point
+has infinitely many vanishing coordinates while an integer has finitely many
+(\lean{EM/Population/ProfiniteAttractor.lean}{measure\_divisorFinite\_eq\_zero}),
+and MC itself reads ``$\Prod{}(n)\to0$ in the profinite topology''
+(\lean{EM/Population/ProfiniteAttractor.lean}{mc\_iff\_tendsto\_zero}) --- and transfer must go
 through the finite residue-class statements plus a genuine
 equidistribution input, never through ``a.e.'' alone.  Mathematically new
 content: none; the finite counting chain is the mathematics and this is

@@ -257,10 +257,20 @@ that the seeds~$m$ for which \emph{some} $q \in S$ is both coprime to~$m$
 and missed by the first~$n$ multipliers of~$m$ have upper density
 $\le\varepsilon$ (the coprimality clause sits \emph{inside} the
 existential, as it must)
-(\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density})
---- and that is the strongest simultaneous form natural density supports:
-the countable version would need a Borel--Cantelli argument, which is a
-theorem about countably additive measures.  On an ensemble that carries
+(\lean{EM/Population/AlmostAllDensity.lean}{finite\_simultaneous\_density}).
+Because that density is exactly zero for every finite range, a diagonal
+argument lets the range \emph{grow with the seed}: there is a nondecreasing
+$Q\colon\NN\to\NN$ with $Q\to\infty$ such that the seeds~$m$ which never
+select some prime $q\le Q(m)$, $q\nmid m$, have natural density zero
+(\lean{EM/Population/GrowingRange.lean}{seed\_range\_never\_density}) ---
+the analogue, for this dynamics, of Tao's ``almost all Collatz orbits attain
+almost bounded values''.  The function~$Q$ is ineffective (it inherits the
+Karamata threshold of Lemma~D), and that is the strongest simultaneous form
+natural density supports: the countable version would need a Borel--Cantelli
+argument, which is a theorem about countably additive measures, and the
+``tail-of-primes'' input that would replace it is, if demanded uniformly in
+the scale, an orbit statement (it implies a cofinite Mullin conjecture for
+the seed~$2$; dead end~\#176).  On an ensemble that carries
 such a measure the simultaneous statement is \emph{proved}: on the
 profinite space $\Omega = \prod_r \ZZ/r\ZZ$ with the product uniform
 measure, $\mu$-almost every point captures every prime whose coordinate it
@@ -807,6 +817,23 @@ statements together with a genuine equidistribution input, never through
 ``a.e.'' alone.  In particular Theorem~\ref{thm:profinite-headline} is not
 a strengthening of Theorem~\ref{thm:almost-all-capture}; the two live on
 different ensembles.
+
+\smallskip
+\textbf{Why $\NN$ is null, structurally.}  The nullity is not merely
+countability.  $\mu$-almost every point of $\Omega$ has \emph{infinitely
+many} vanishing coordinates --- the events $x_r+1=0$ are independent with
+$\sum_r 1/r=\infty$ ---
+(\lean{EM/Population/ProfiniteAttractor.lean}{measure\_divisorFinite\_eq\_zero}),
+whereas an integer $m$ has finitely many, the prime divisors of $m+1$
+(\lean{EM/Population/ProfiniteAttractor.lean}{iota\_mem\_divisorFinite}).
+The same Borel--Cantelli event recurs at every step of the orbit, so an
+integer orbit is an infinite sequence of measure-zero coincidences, and no
+product-type measure on the coordinates can charge it.  In the same
+language Mullin's conjecture reads: $\Prod{}(n)\to 0$ in the profinite
+topology, i.e.\ the seed~$2$ lies in the basin of the attractor~$0$
+(\lean{EM/Population/ProfiniteAttractor.lean}{mc\_iff\_tendsto\_zero});
+the headline above says the basin has full measure, and the remark says why
+that is silent about the diagonal.
 
 \smallskip
 \textbf{Mathematically new content: none.}  The finite counting chain

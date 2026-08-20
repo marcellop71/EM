@@ -174,6 +174,32 @@ that this is structural (`C` sees only the floor; MC is invisible from it):
   **MC ⇒ RD ⇒ ρ(2)=0 ⇒ ρ(2) ≤ 1/2 ⟺ (C∞)**.  Open: is `ρ(2)=0` strictly between RD and (C∞)?
   ((S) sits between RD and `ρ(2)=0`.)
 
+## The growing range, by analogy (2026-08-20, Session 317)
+
+Asked where the situation is *workable*, the answer came from matching shapes: (C∞) on the
+autonomous branch is Fermat/Sylvester compositeness (open); MC for one orbit is Artin for one
+base (open without GRH); §G is "almost all Collatz orbits reach 1" (open) — but Tao's
+*growing-range* theorem ("almost bounded values") had no counterpart here, and it is cheap:
+the per-range density is exactly zero, so a diagonal gives a nondecreasing `Q → ∞` with
+almost every seed `m` selecting every prime `q ≤ Q(m)` coprime to it
+(`EM/Population/GrowingRange.lean`).  `Q` is ineffective (Karamata).  Two by-products: `GenMC`
+is invariant under `T m = m·minFac(m+1)`, the only cross-seed coupling; and the §G scoping's
+"(N2)" input, demanded for all `X`, implies a *cofinite MC for seed 2* (#176) — the honest
+input has a threshold.  Heath-Brown's Artin theorem says what an existence statement
+`∃ m, GenMC m` would need: failures coupled across distinct `T`-orbits at the same prime.
+None is visible.  See `docs/analysis/analogy_map_2026-08-20.md`.
+
+Then the question "what theory could work?" (`EM/Population/ProfiniteAttractor.lean`).  First a
+reformulation: **MC ⟺ `prod n → 0` in the profinite topology** — `0` is the attractor of the
+greedy map on `Ω`, the profinite headline says its basin has full measure, MC says `2` is in it.
+Then the obstruction, sharpened: μ-a.e. point of `Ω` has *infinitely many* vanishing
+coordinates (`Σ 1/r = ∞`), while an integer has finitely many — and this recurs at every step.
+An integer orbit is an infinite sequence of measure-zero coincidences; no product measure on
+the coordinates can charge it.  That is #90 as a theorem about measures rather than a
+heuristic.  What survives: archimedean size (the eventual constancy of an integer's
+coordinates), i.e. heights — the one theory built for coincidence sets — and the descent shape
+(`descent_empty`), unusable as stated because `T(ℕ) ⊆ 2ℕ`.
+
 ## Where the retelling points next (after pass 4)
 
 * The bag law makes the **rate** question precise: writing `q_n` for the least prime outside

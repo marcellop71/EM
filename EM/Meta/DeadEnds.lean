@@ -18,6 +18,7 @@ import EM.GaussEM.GaussWalkStructure
 import EM.Population.ReciprocalSum
 import EM.Population.AutonomousBranch
 import EM.Population.SeedCapture
+import EM.Population.GrowingRange
 import EM.Stochastic.FactorDiversity
 import EM.Stochastic.EpsilonDegeneration
 import EM.Obstruction.NoInvariant
@@ -68,9 +69,9 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 
 <!-- BEGIN GENERATED CATALOGUE -->
 
-175 numbers; 165 catalogued entries; 33 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
+176 numbers; 166 catalogued entries; 34 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
 
-### Orbit specificity (OS, 9) — population or ensemble statistics do not determine what one orbit does
+### Orbit specificity (OS, 10) — population or ensemble statistics do not determine what one orbit does
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 9 | Chebotarev / Kummer route | 10 | Chebotarev not in Mathlib ($\sim$5000 lines); even if available it gives population density (SieveEquidistribution), not orbit-specific SieveTransfer. Abelian case degenerates to Dirichlet in APs (Session 298) | — | - |
@@ -82,6 +83,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 148 | Consumption ledger is one-sided | 299 | The ledger only yields caps (`hittingSet_ncard_le_appearing`, starvation); a contradiction needs a lower bound on spending, which requires orbit control, exactly what the consumption discipline forbids. Detection strength is zero (tail class $0$ unconditionally via `exists_tail_coprime`); the Gap is false, not hard. | `hittingSet_ncard_le` | 1 |
 | 158 | Tail-identity Borel–Cantelli is #90 again | 307 | `standard_tail_not_bad` needs the bad set to have $\mathrm{card}=0$, not density $\to 0$; a density-zero bad set may contain the sparse sequence $\{\prod M\}$ at no cost. The identity turns an orbit statement into an ensemble-member statement, but specificity reappears as which members are good (#58/#117). | — | 0 |
 | 172 | Sure compensator as evidence of coverage progress | 313 | Wrong sign. $S_k = \prod_r (1-\rho_r)$ is *maximal* ($\equiv 1$) exactly when no position is ever new — i.e. for the orbits that capture nothing. Per-path, ``large $S_k$'' means ``no progress toward coverage''; the opposite (ensemble) reading requires the seed residue to be uniform in its box, which is #90. Both proved sure bounds — charge $\le$, survival $\ge$ — constrain the half-line *opposite* to capture-freeness: the configurations satisfying the whole layer are downward-closed in charge, and the capture-free ones sit at the extreme point (zero charge, $S_k\equiv 1$, boxes frozen). No upper bound on charge can exclude zero charge. | — | 0 |
+| 176 | The scale-uniform tail bound ``(N2)'' as the missing \S G input | 317 | Not a population statement. With $X=m$ and $\delta<1/m$ the bound leaves no room for the seed $m$ itself, so (N2) forces *every* seed to miss only finitely many primes coprime to it (`GrowingRange.scaleUniformTail_cofinite`); at $m=2$ it says the Euclid–Mullin sequence contains every sufficiently large prime (`scaleUniformTail_cofinite_mc`), far above the known floor MC $\Rightarrow$ RD $\Rightarrow$ (S) $\Rightarrow$ (C$\infty$). The honest input is (N2$'$), the same bound for $X\ge X_0(\delta)$; at scale $X$ it concerns the primes $q>X$, for which the seeds $m\le X$ are $X$ distinct points of $\mathbb{Z}/q$ and no period $M\le X$ sees the event — orbit-specificity in the sense of #90. What the population method does give is the growing-range form: some ineffective $Q\to\infty$ with a.a.\ seeds $m$ selecting every prime $q\le Q(m)$, $q\nmid m$ (`seed_range_never_density`), the exact analogue of Tao's ``almost bounded values'' for Collatz. | `scaleUniformTail_cofinite_mc` | 1 |
 
 ### Decorrelation gap (DG, 7) — multiplier-level cancellation or independence does not transfer to the walk
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -727,10 +729,10 @@ inapplicable to the orbit of 2 (#173), and missed-prime counting is gated on (C�
 Session 316 (2026-08-20 codebase review) added #175: the unrestricted generalized conjecture
 `GenMC(n)` over *all* primes is false for every `n ≥ 2` (a prime dividing `n` is never selected),
 so the old `GenMC(2) ⇒ MC` was vacuous; repaired in `EM/Ensemble/WeylChain.lean`. -/
-def deadEndCount : ℕ := 175
+def deadEndCount : ℕ := 176
 
 /-- Number of catalogued dead-end entries: the 175 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 165
+def deadEndEntryCount : ℕ := 166
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -748,8 +750,10 @@ adds #171 (`SeedCapture.genSeqAvoid_ne_avoided`: the `q`-free dynamics provably 
 `q`, so the whole sure layer is satisfied by a dynamics that misses `q` by construction),
 giving 32.  The other five Session-313 entries are deliberately left unwitnessed: the
 declarations they cite are the objects being critiqued, not formal certificates.  Session 316
-adds #175 (`gen_mc_unrestricted_false`), giving 33. -/
-def witnessedDeadEndCount : ℕ := 33
+adds #175 (`gen_mc_unrestricted_false`), giving 33.  Session 317 adds #176
+(`GrowingRange.scaleUniformTail_cofinite_mc`: the "(N2)" input of the §G scoping implies a
+cofinite MC, so it is an orbit statement), giving 34. -/
+def witnessedDeadEndCount : ℕ := 34
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
 #136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
@@ -760,9 +764,9 @@ def revivableDeadEndCount : ℕ := 15
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 175 ∧
-    deadEndEntryCount = 165 ∧
-    witnessedDeadEndCount = 33 ∧
+    deadEndCount = 176 ∧
+    deadEndEntryCount = 166 ∧
+    witnessedDeadEndCount = 34 ∧
     revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival

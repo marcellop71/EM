@@ -92,11 +92,21 @@ Borel–Cantelli is a theorem about countably additive measures.
 ### 2.5 Verdict
 
 **NEEDS-NEW-INPUT**, the input being either **(N1)** a countably additive ambient measure (§4 —
-the cheap one, which makes the rate question moot), or **(N2)** a scale-uniform tail-of-primes
-bound: for every `δ` a `Q` with `#{m ≤ X : ∃ q > Q, m misses q} ≤ δX` **for all `X`**. (N2) is a
-genuinely new statement, uniform in `q` *and* in the scale, at least as strong as everything the
-programme proves; no route to it is visible, and it would additionally need the ineffective
-`k₀(q)` of (K2) replaced by Siegel–Walfisz-quality input.
+the cheap one, which makes the rate question moot), or **(N2′)** a scale-uniform tail-of-primes
+bound: for every `δ` there are `Q` and `X₀` with `#{m ≤ X : ∃ q > Q, m misses q} ≤ δX` for all
+`X ≥ X₀`. (N2′) is a genuinely new statement, uniform in `q` *and* in the scale; at scale `X` it
+concerns the primes `q > X`, for which the seeds `m ≤ X` are `X` distinct points of `ℤ/q` and no
+period `M ≤ X` sees the event — orbit-specificity in the sense of #90. No route is visible.
+
+> **Correction (Session 317, 2026-08-20).** This section originally stated the input as "(N2):
+> for every `δ` a `Q` with the bound **for all `X`**". That version is not a population statement:
+> with `X = m`, `δ < 1/m` it forces the seed `m` itself to miss no prime `> Q`, so it implies that
+> every seed misses only finitely many primes coprime to it, and at `m = 2` a cofinite MC
+> (`GrowingRange.scaleUniformTail_cofinite_mc`, dead end #176). The threshold `X₀(δ)` is
+> essential. What the population method *does* give is the growing-range form — some ineffective
+> `Q → ∞` with a.a. seeds `m` selecting every prime `q ≤ Q(m)`, `q ∤ m`
+> (`GrowingRange.seed_range_never_density`) — the analogue of Tao's "almost bounded values" for
+> Collatz; see `docs/analysis/analogy_map_2026-08-20.md`.
 
 ## 3. Route (ii): logarithmic density — DEAD
 
