@@ -73,17 +73,12 @@ namespace BagInformation
 /-! ## The orthogonal-bag property, in Lean
 
 Euclid's argument: a prime already in the bag divides the accumulator, hence cannot divide
-the accumulator plus one. -/
+the accumulator plus one.  This is `Mullin.seq_not_dvd_prod_succ` (EM/Core/Conjectures.lean). -/
 
-/-- **No prime already collected divides the next Euclid number.** -/
-theorem seq_not_dvd_prod_succ {k n : ℕ} (h : k ≤ n) : ¬ (seq k ∣ prod n + 1) := by
-  intro hdvd
-  have hk : seq k ∣ prod n := seq_dvd_prod k n h
-  have h1 : seq k ∣ 1 := by simpa using Nat.dvd_sub hdvd hk
-  have h2 : Nat.Prime (seq k) := (isPrime_iff_natPrime _).mp (seq_isPrime k)
-  have := Nat.le_of_dvd one_pos h1
-  have := h2.two_le
-  omega
+/-- **No prime already collected divides the next Euclid number.**  Alias of
+`Mullin.seq_not_dvd_prod_succ`, kept under this name because the paper cites it here. -/
+theorem seq_not_dvd_prod_succ {k n : ℕ} (h : k ≤ n) : ¬ (seq k ∣ prod n + 1) :=
+  Mullin.seq_not_dvd_prod_succ h
 
 /-! ## The landscape -/
 

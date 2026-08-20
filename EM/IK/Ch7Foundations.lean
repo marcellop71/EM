@@ -215,7 +215,8 @@ section ExponentialBilinearForms
     the former duplicate `IK.eAN` has been removed). -/
 
 /-- **Lemma 7.1** — IK (7.14): For any α_m and real x_m,
-    ∫_{-Y}^{Y} |∑_m α_m e(x_m y)|² dy ≤ 5Y ∑∑_{2Y|x_{m₁}-x_{m₂}|<1} |α_{m₁} α_{m₂}|. -/
+    ∫_{-Y}^{Y} |∑_m α_m e(x_m y)|² dy ≤ 5Y ∑∑_{2Y|x_{m₁}-x_{m₂}|<1} |α_{m₁} α_{m₂}|. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def Lemma7_1 : Prop :=
   ∀ (M : ℕ) (_α : Fin M → ℂ) (_x : Fin M → ℝ) (Y : ℝ), 0 < Y →
     True -- integral bound via Fourier analysis

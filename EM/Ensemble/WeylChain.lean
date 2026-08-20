@@ -9,7 +9,7 @@ JSE → MC chain via the Weyl test function argument.
 ## Main Results
 
 ### Definitions
-* `GenMullinConjecture`              -- every prime in generalized EM from n
+* `GenMullinConjecture`              -- every prime q ∤ n in generalized EM from n
 * `GenHittingImpliesGenMC`           -- cofinal hitting → gen MC (PROVED)
 * `PerChiCancellationBridge`         -- per-chi SD → per-chi cancellation (PROVED)
 * `WeylHittingBridge`                -- walk char cancellation → cofinal hitting (PROVED)
@@ -17,7 +17,7 @@ JSE → MC chain via the Weyl test function argument.
 ### Proved Theorems
 * `gen_captures_target`              -- generalized captures_target (PROVED)
 * `gen_hitting_implies_gen_mc_proved` -- cofinal walk hitting → gen MC (PROVED)
-* `gen_mc_two_implies_mc`            -- GenMC(2) → MC (PROVED)
+* `gen_mc_two_implies_mc`            -- GenMC(2) → MC (PROVED); `gen_mc_two_iff_mc`
 * `per_chi_cancellation_bridge_proved` -- PerChiCancellationBridge (PROVED)
 * `weyl_hitting_bridge_proved`       -- WeylHittingBridge (PROVED)
 * `jse_implies_nontrivial_cancellation` -- JSE + PCB → nontrivial cancellation (PROVED)
@@ -38,15 +38,23 @@ open Mullin Euclid MullinGroup RotorRouter
 
 section GenMC
 
-/-- **Generalized Mullin Conjecture for starting point n**: every prime
-    appears in the generalized EM sequence from n. -/
+/-- **Generalized Mullin Conjecture for starting point n**: every prime **not dividing n**
+    appears in the generalized EM sequence from n.
+
+    The coprimality restriction is forced: `n ∣ genProd n k` for every `k`
+    (`start_dvd_genProd`), so a prime `p ∣ n` is coprime to `genProd n k + 1` and is never
+    selected. The earlier version of this definition quantified over *all* primes and was
+    therefore false for every `n ≥ 2` (dead end #175); in particular its `n = 2` instance
+    was false because `2` is never re-selected, so the old `gen_mc_two_implies_mc` was
+    `False → MC`. -/
 def GenMullinConjecture (n : Nat) : Prop :=
-  ∀ q : Nat, Nat.Prime q → ∃ k : Nat, genSeq n k = q
+  ∀ q : Nat, Nat.Prime q → ¬ q ∣ n → ∃ k : Nat, genSeq n k = q
 
 /-- **Walk hitting (cofinal) implies generalized MC.**
-    If the generalized walk hits -1 mod q cofinally for every prime q
+    If the generalized walk hits -1 mod q cofinally for every prime q ∤ n
     (meaning for every N, there exists k >= N with q | genProd n k + 1),
-    then every prime q appears in the generalized EM sequence from n.
+    then every prime q ∤ n appears in the generalized EM sequence from n.
+    (For q ∣ n the walk is identically 0 mod q, so the hypothesis must exclude those q.)
 
     This is the generalized analogue of `conjectureA_implies_mullin`.
     The cofinal hitting hypothesis is necessary: a single hit might occur
@@ -57,41 +65,41 @@ def GenMullinConjecture (n : Nat) : Prop :=
     **Status**: PROVED (gen_hitting_implies_gen_mc_proved). -/
 def GenHittingImpliesGenMC : Prop :=
   ∀ (n : Nat), Squarefree n → 1 ≤ n →
-    (∀ q : Nat, Nat.Prime q → ∀ N : Nat, ∃ k : Nat, N ≤ k ∧ genWalkZ n q k = -1) →
+    (∀ q : Nat, Nat.Prime q → ¬ q ∣ n → ∀ N : Nat, ∃ k : Nat, N ≤ k ∧ genWalkZ n q k = -1) →
     GenMullinConjecture n
 
 /-- Helper: if every prime below q appears in genSeq n, there exists a
     uniform bound N such that they all appear by step N.
     This is the generalized analogue of `exists_bound`. -/
 private theorem gen_exists_bound (n : Nat) (q : Nat)
-    (h : ∀ p, Nat.Prime p → p < q → ∃ k, genSeq n k = p) :
-    ∃ N, ∀ p, Nat.Prime p → p < q → ∃ m, m < N ∧ genSeq n m = p := by
+    (h : ∀ p, Nat.Prime p → ¬ p ∣ n → p < q → ∃ k, genSeq n k = p) :
+    ∃ N, ∀ p, Nat.Prime p → ¬ p ∣ n → p < q → ∃ m, m < N ∧ genSeq n m = p := by
   induction q with
-  | zero => exact ⟨0, fun p _ hp => absurd hp (by omega)⟩
+  | zero => exact ⟨0, fun p _ _ hp => absurd hp (by omega)⟩
   | succ q' ih =>
-    have h' : ∀ p, Nat.Prime p → p < q' → ∃ k, genSeq n k = p :=
-      fun p hp hpq => h p hp (by omega)
+    have h' : ∀ p, Nat.Prime p → ¬ p ∣ n → p < q' → ∃ k, genSeq n k = p :=
+      fun p hp hpn hpq => h p hp hpn (by omega)
     obtain ⟨N', hN'⟩ := ih h'
-    if hprime : Nat.Prime q' then
-      obtain ⟨m, hm⟩ := h q' hprime (by omega)
-      refine ⟨Nat.max N' (m + 1), fun p hp hpq => ?_⟩
+    if hgood : Nat.Prime q' ∧ ¬ q' ∣ n then
+      obtain ⟨m, hm⟩ := h q' hgood.1 hgood.2 (by omega)
+      refine ⟨Nat.max N' (m + 1), fun p hp hpn hpq => ?_⟩
       match Nat.lt_or_ge p q' with
       | .inl hlt =>
-        obtain ⟨j, hj, hjseq⟩ := hN' p hp hlt
+        obtain ⟨j, hj, hjseq⟩ := hN' p hp hpn hlt
         exact ⟨j, lt_of_lt_of_le hj (Nat.le_max_left N' (m + 1)), hjseq⟩
       | .inr hge =>
         have : p = q' := by omega
         subst this
         exact ⟨m, lt_of_lt_of_le (Nat.lt_succ_self m) (Nat.le_max_right N' (m + 1)), hm⟩
     else
-      refine ⟨N', fun p hp hpq => ?_⟩
+      refine ⟨N', fun p hp hpn hpq => ?_⟩
       match Nat.lt_or_ge p q' with
-      | .inl hlt => exact hN' p hp hlt
+      | .inl hlt => exact hN' p hp hpn hlt
       | .inr hge =>
         exfalso
         have : p = q' := by omega
         subst this
-        exact hprime hp
+        exact hgood ⟨hp, hpn⟩
 
 /-- **Generalized captures_target**: if q divides genProd n k + 1 and all
     primes p < q have appeared in genSeq n at steps < k, then genSeq n k = q.
@@ -136,6 +144,36 @@ theorem gen_captures_target {n : Nat} (hn : Squarefree n)
       exact not_dvd_consec hprime_s.two_le h_dvd_prod h_dvd_succ
   omega
 
+/-- **Coprime form of `gen_captures_target`.** Only the primes `p < q` with `p ∤ n` need to
+    have appeared: a prime dividing `n` divides `genProd n k` and so can never equal
+    `genSeq n k = minFac (genProd n k + 1)`. -/
+theorem gen_captures_target_coprime {n : Nat} (hn : Squarefree n)
+    {q : Nat} (hq : Nat.Prime q) {k : Nat}
+    (hdvd : q ∣ genProd n k + 1)
+    (hall : ∀ p, Nat.Prime p → ¬ p ∣ n → p < q → ∃ j, j < k ∧ genSeq n j = p) :
+    genSeq n k = q := by
+  have hn_pos : 1 ≤ n := Nat.pos_of_ne_zero (Squarefree.ne_zero hn)
+  have hle : genSeq n k ≤ q := by
+    rw [genSeq_def]
+    exact Nat.minFac_le_of_dvd hq.two_le hdvd
+  have hprime_s := genSeq_prime hn_pos k
+  have h_dvd_succ := genSeq_dvd_genProd_succ n k
+  -- `genSeq n k` does not divide `n`: it would then divide `genProd n k` and `genProd n k + 1`.
+  have hnd : ¬ genSeq n k ∣ n := fun h =>
+    not_dvd_consec hprime_s.two_le (h.trans (start_dvd_genProd n k)) h_dvd_succ
+  have hge : q ≤ genSeq n k := by
+    match Nat.lt_or_ge (genSeq n k) q with
+    | .inr hge => exact hge
+    | .inl hlt =>
+      exfalso
+      obtain ⟨j, hjk, hseqj⟩ := hall (genSeq n k) hprime_s hnd hlt
+      have h_dvd_prod : genSeq n j ∣ genProd n k := by
+        obtain ⟨d, hd⟩ := Nat.exists_eq_add_of_le (Nat.succ_le_of_lt hjk)
+        rw [hd]; exact genSeq_dvd_genProd_later n j d
+      rw [hseqj] at h_dvd_prod
+      exact not_dvd_consec hprime_s.two_le h_dvd_prod h_dvd_succ
+  omega
+
 /-- **Cofinal walk hitting implies generalized MC.** PROVED.
 
     The proof follows the same pattern as `conjectureA_implies_mullin`:
@@ -143,42 +181,74 @@ theorem gen_captures_target {n : Nat} (hn : Squarefree n)
     choosing a hit past the bound, and applying gen_captures_target. -/
 theorem gen_hitting_implies_gen_mc_proved : GenHittingImpliesGenMC := by
   intro n hn hn_pos hhit
-  -- Prove ∀ q, Nat.Prime q → ∃ k, genSeq n k = q by strong induction on q
+  -- Prove ∀ q, Nat.Prime q → ¬ q ∣ n → ∃ k, genSeq n k = q by strong induction on q
   unfold GenMullinConjecture
-  suffices ∀ B q, q ≤ B → Nat.Prime q → ∃ k, genSeq n k = q by
-    intro q hq; exact this q q (Nat.le_refl q) hq
+  suffices ∀ B q, q ≤ B → Nat.Prime q → ¬ q ∣ n → ∃ k, genSeq n k = q by
+    intro q hq hqn; exact this q q (Nat.le_refl q) hq hqn
   intro B
   induction B with
-  | zero => intro q hle hq; exact absurd hq.two_le (by omega)
+  | zero => intro q hle hq _; exact absurd hq.two_le (by omega)
   | succ B ih =>
-    intro q hle hq
+    intro q hle hq hqn
     match Nat.lt_or_ge q (B + 1) with
-    | .inl hlt => exact ih q (by omega) hq
+    | .inl hlt => exact ih q (by omega) hq hqn
     | .inr _ =>
-      -- q = B + 1. By IH, every prime p < q appears in genSeq n.
-      have appears : ∀ p, Nat.Prime p → p < q → ∃ k, genSeq n k = p :=
-        fun p hp hpq => ih p (by omega) hp
+      -- q = B + 1. By IH, every prime p < q with p ∤ n appears in genSeq n.
+      have appears : ∀ p, Nat.Prime p → ¬ p ∣ n → p < q → ∃ k, genSeq n k = p :=
+        fun p hp hpn hpq => ih p (by omega) hp hpn
       -- Collect witnesses into a uniform bound N
       obtain ⟨N, hN⟩ := gen_exists_bound n q appears
       -- By cofinal hitting, get k >= N with q | genProd n k + 1
-      obtain ⟨k, hk_ge, hhit_k⟩ := hhit q hq N
+      obtain ⟨k, hk_ge, hhit_k⟩ := hhit q hq hqn N
       rw [genWalkZ_eq_neg_one_iff] at hhit_k
-      -- All primes < q appeared at steps < k (since k >= N >= each witness)
-      have hall : ∀ p, Nat.Prime p → p < q → ∃ j, j < k ∧ genSeq n j = p := by
-        intro p hp hpq
-        obtain ⟨m, hm, hseqm⟩ := hN p hp hpq
+      -- All primes p < q, p ∤ n, appeared at steps < k (since k >= N >= each witness)
+      have hall : ∀ p, Nat.Prime p → ¬ p ∣ n → p < q → ∃ j, j < k ∧ genSeq n j = p := by
+        intro p hp hpn hpq
+        obtain ⟨m, hm, hseqm⟩ := hN p hp hpn hpq
         exact ⟨m, by omega, hseqm⟩
-      -- gen_captures_target: genSeq n k = q. Done!
-      exact ⟨k, gen_captures_target hn hq hhit_k hall⟩
+      exact ⟨k, gen_captures_target_coprime hn hq hhit_k hall⟩
+
+/-- **Refutation of the unrestricted generalized conjecture** (dead end #175): for `n ≥ 2`
+    it is *not* the case that every prime appears in `genSeq n`, because `minFac n` divides
+    every `genProd n k` and so never divides `genProd n k + 1`. This is why
+    `GenMullinConjecture` quantifies over primes `q ∤ n`. -/
+theorem gen_mc_unrestricted_false {n : Nat} (hn : 2 ≤ n) :
+    ¬ (∀ q : Nat, Nat.Prime q → ∃ k, genSeq n k = q) := by
+  intro h
+  obtain ⟨k, hk⟩ := h n.minFac (Nat.minFac_prime (by omega))
+  have h1 : genSeq n k ∣ genProd n k + 1 := genSeq_dvd_genProd_succ n k
+  have h2 : genSeq n k ∣ genProd n k := hk ▸ (Nat.minFac_dvd n).trans (start_dvd_genProd n k)
+  exact not_dvd_consec (genSeq_prime (by omega) k).two_le h2 h1
 
 /-- **Standard EM is a special case of generalized EM.**
-    GenMullinConjecture 2 is equivalent to MullinConjecture
-    (modulo the index shift genSeq 2 k = seq (k+1)). -/
+    `GenMullinConjecture 2` (every odd prime appears in `genSeq 2`) is equivalent to
+    `MullinConjecture`: `seq 0 = 2` handles `q = 2`, and `genSeq 2 k = seq (k+1)` handles
+    the rest. -/
 theorem gen_mc_two_implies_mc
     (h : GenMullinConjecture 2) : MullinConjecture := by
   intro q hq
-  obtain ⟨k, hk⟩ := h q (IsPrime.toNatPrime hq)
-  exact ⟨k + 1, by rwa [← genSeq_two_eq_seq_succ]⟩
+  by_cases hq2 : q = 2
+  · exact ⟨0, by subst hq2; rfl⟩
+  · have hqp := IsPrime.toNatPrime hq
+    have hndvd : ¬ q ∣ 2 := fun hd => by
+      have := Nat.le_of_dvd (by norm_num) hd; have := hqp.two_le; omega
+    obtain ⟨k, hk⟩ := h q hqp hndvd
+    exact ⟨k + 1, by rwa [← genSeq_two_eq_seq_succ]⟩
+
+/-- Converse: `MullinConjecture` gives `GenMullinConjecture 2` (index shift). -/
+theorem mc_implies_gen_mc_two (h : MullinConjecture) : GenMullinConjecture 2 := by
+  intro q hq hqn
+  obtain ⟨m, hm⟩ := h q hq.toIsPrime
+  have hm_pos : 0 < m := by
+    by_contra h0
+    have : m = 0 := by omega
+    subst this; change seq 0 = q at hm; rw [seq_zero] at hm
+    exact hqn ⟨1, by omega⟩
+  exact ⟨m - 1, by rw [genSeq_two_eq_seq_succ, show m - 1 + 1 = m from by omega, hm]⟩
+
+/-- `GenMullinConjecture 2 ↔ MullinConjecture`. -/
+theorem gen_mc_two_iff_mc : GenMullinConjecture 2 ↔ MullinConjecture :=
+  ⟨gen_mc_two_implies_mc, mc_implies_gen_mc_two⟩
 
 end GenMC
 

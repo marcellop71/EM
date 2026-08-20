@@ -437,17 +437,6 @@ theorem sgrowth_two : sgrowth 2 = DefectTelescope.growthConstant := by
     slogProd DefectTelescope.logProd
   rw [genProd_two_eq_prod]
 
-/-- The mixed walk with the pure `minFac` selection is the seeded EM orbit. -/
-theorem mixedWalkProd_minFacMixed (acc n : ℕ) :
-    mixedWalkProd acc minFacMixed n = genProd acc n := by
-  induction n with
-  | zero => rfl
-  | succ n ih =>
-    rw [mixedWalkProd_succ, genProd_succ, genSeq_def]
-    have hf : mixedWalkFactor acc minFacMixed n = (mixedWalkProd acc minFacMixed n + 1).minFac := by
-      simp [mixedWalkFactor, minFacMixed]
-    rw [hf, ih]
-
 /-- **The registered open point `MixedDiversity` is `{m ≥ 2 : C(m) > 0} = ∅`.**  Every seed
 has vanishing growth constant iff every seed has infinitely many composite Euclid numbers. -/
 theorem mixedDiversity_iff_sgrowth_zero :
@@ -458,10 +447,10 @@ theorem mixedDiversity_iff_sgrowth_zero :
     refine sgrowth_eq_zero_of_seedInfinitelyManyComposite hacc ?_
     intro N
     obtain ⟨n, hn, hc⟩ := h acc hacc N
-    exact ⟨n, hn, by rwa [mixedWalkProd_minFacMixed] at hc⟩
+    exact ⟨n, hn, by rwa [mixedWalkProd_minFac_eq_genProd] at hc⟩
   · intro h acc hacc N
     obtain ⟨n, hn, hc⟩ := seedInfinitelyManyComposite_of_sgrowth_eq_zero hacc (h acc hacc) N
-    exact ⟨n, hn, by rwa [mixedWalkProd_minFacMixed]⟩
+    exact ⟨n, hn, by rwa [mixedWalkProd_minFac_eq_genProd]⟩
 
 /-- **The seeded landscape.** -/
 theorem seeded_growth_landscape :

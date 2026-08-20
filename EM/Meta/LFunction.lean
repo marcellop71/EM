@@ -311,11 +311,9 @@ section DeadEnds
     for nontrivial Dirichlet characters chi mod q (for all q).
 
     This is recorded as True because it is a conceptual observation,
-    not a new mathematical content that can be leveraged. -/
+    not a new mathematical content that can be leveraged. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def EMZeroFreeReformulation : Prop := True
-
-/-- The zero-free reformulation is trivially witnessed. -/
-theorem em_zero_free_reformulation_trivial : EMZeroFreeReformulation := trivial
 
 /-- The L-function factorization `L(s, chi) = L_{EM}(s, chi) * L_{non-EM}(s, chi)`
     leads to circularity: proving `L_{non-EM} ne 0` on Re(s) = 1 requires
@@ -329,9 +327,11 @@ theorem em_zero_free_reformulation_trivial : EMZeroFreeReformulation := trivial
     shows L(1+it, chi) ne 0 for the FULL L-function. Factoring into
     "EM primes" and "non-EM primes" would require showing the non-EM
     factor is nonvanishing, which is equivalent to showing non-EM primes
-    have positive density in each residue class -- i.e., MC. -/
+    have positive density in each residue class -- i.e., MC. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def LFunctionFactorizationCircular : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem dead_end_132_witness : LFunctionFactorizationCircular := trivial
 
 /-- The self-similar functional equation from the tail identity is a
@@ -346,9 +346,11 @@ theorem dead_end_132_witness : LFunctionFactorizationCircular := trivial
     The self-referential structure is proved (`em_self_similar_decomposition`)
     but the Lapidus connection is a framework mismatch.
 
-    Dead End #133: Self-similar FE framework mismatch. -/
+    Dead End #133: Self-similar FE framework mismatch. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def SelfSimilarFrameworkMismatch : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem dead_end_133_witness : SelfSimilarFrameworkMismatch := trivial
 
 /-- The EM accumulator Dirichlet series has a natural boundary phenomenon:
@@ -365,9 +367,11 @@ theorem dead_end_133_witness : SelfSimilarFrameworkMismatch := trivial
     because the series converges too fast. However, the standard Dirichlet
     L-function L(s, chi) (summing over ALL primes) still has the pole structure,
     so the ANT chain (OneSidedTauberian.lean, AbelChain.lean) attacks DSL
-    via the standard L-function route, not via L_{EM}. -/
+    via the standard L-function route, not via L_{EM}. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def TauberianLeverAbsent : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem tauberian_lever_absent_witness : TauberianLeverAbsent := trivial
 
 end DeadEnds

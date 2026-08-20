@@ -69,7 +69,7 @@ def MullinConjecture : Prop :=
 
     Equivalently: the running product Pₙ hits −1 mod q infinitely often.
 
-    This is weaker than Mullin's Conjecture (it doesn't say q *appears*
+    This *looks* weaker than Mullin's Conjecture (it doesn't say q *appears*
     in the sequence, only that q divides the "Euclid number" at infinitely
     many stages). But combined with the Euclid argument, it implies
     Mullin's Conjecture — see `conjectureA_implies_mullin` below.

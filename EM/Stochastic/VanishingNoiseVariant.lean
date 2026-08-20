@@ -200,11 +200,6 @@ def treeCharSum (q : ℕ) [Fact (Nat.Prime q)] [NeZero q]
     (1 - ε 0) * chiAt q chi p₁ * treeCharSum q chi N (acc * p₁) (ε ∘ Nat.succ)
     + ε 0 * chiAt q chi p₂ * treeCharSum q chi N (acc * p₂) (ε ∘ Nat.succ)
 
-/-- The tree character sum at depth 0 is 1. -/
-theorem treeCharSum_zero (q : ℕ) [Fact (Nat.Prime q)] [NeZero q]
-    (chi : (ZMod q)ˣ →* ℂˣ) (acc : ℕ) (ε : ℕ → ℝ) :
-    treeCharSum q chi 0 acc ε = 1 := rfl
-
 /-- The tree character sum has norm at most 1 when 0 ≤ ε(k) ≤ 1 for all k.
 
     Proof by induction on N:

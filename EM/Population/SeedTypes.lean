@@ -81,10 +81,6 @@ theorem seedCofactor_dvd_of_le {m j k : ℕ} (hjk : j ≤ k) :
 theorem seedCofactor_dvd_genProd (m k : ℕ) : seedCofactor m k ∣ genProd m k :=
   ⟨m, by rw [genProd_eq_seed_mul_cofactor]; ring⟩
 
-/-- The seed divides the accumulator. -/
-theorem seed_dvd_genProd (m k : ℕ) : m ∣ genProd m k :=
-  ⟨seedCofactor m k, genProd_eq_seed_mul_cofactor m k⟩
-
 /-! ## 2. Exposedness -/
 
 /-- **Exposedness.**  If the multiplier chosen at step `k` exceeds the prime
@@ -149,7 +145,7 @@ theorem card_visitedSet_le_sub_two {r m k : ℕ} (_hm : 1 ≤ m) (hr : Nat.Prime
   have : NeZero r := ⟨hr.ne_zero⟩
   have hm0 : (m : ZMod r) ≠ 0 := by
     rw [Ne, ZMod.natCast_eq_zero_iff]
-    exact fun h => hndvd (h.trans (seed_dvd_genProd m k))
+    exact fun h => hndvd (h.trans (start_dvd_genProd m k))
   set t : ZMod r := -(m : ZMod r)⁻¹ with ht
   have ht0 : t ≠ 0 := by
     rw [ht, neg_ne_zero, Ne, inv_eq_zero]

@@ -168,11 +168,6 @@ theorem populationCharEnergySquared_nonneg (q : Nat) (χ : Nat → ℂ) (K X : N
       intro n _
       exact genSeqCharEnergySquared_nonneg n K q χ
 
-/-- The squared energy decomposes: E(n,K)^2 = (genSeqCharEnergy n K q χ)^2. -/
-theorem genSeqCharEnergySquared_eq_sq (n K q : Nat) (χ : Nat → ℂ) :
-    genSeqCharEnergySquared n K q χ = (genSeqCharEnergy n K q χ) ^ 2 :=
-  rfl
-
 /-- When E(n,K) = 0, the squared energy is also 0. -/
 theorem genSeqCharEnergySquared_of_energy_zero {n K q : Nat} {χ : Nat → ℂ}
     (h : genSeqCharEnergy n K q χ = 0) :

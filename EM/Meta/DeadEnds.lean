@@ -68,7 +68,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 
 <!-- BEGIN GENERATED CATALOGUE -->
 
-174 numbers; 164 catalogued entries; 32 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
+175 numbers; 165 catalogued entries; 33 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
 
 ### Orbit specificity (OS, 9) — population or ensemble statistics do not determine what one orbit does
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -154,7 +154,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 166 | ``The bag has caught up'' justification of $S_k \asymp 1$ | 309 | Circular: it assumes the small primes have been captured, which is precisely the population form of the conclusion (LS)/Theorem C. Any proof of (LS) routing through ``the bag has caught up'' presupposes its own conclusion. The non-circular route, and the one actually formalized, is the harmonic charge budget $\sum_{r<2n} H_{r-1} \le \theta(2n)+\pi(2n) = O(n)$, which uses only that an *uncaptured* prime pays $1/\|B\|$ into its own finite budget whenever it declines (`LargeStepRoughness.charge_sum_le_harmonic`). | — | 3 |
 | 170 | ``The box has not collapsed'' as a usable branch | 313 | Circular. `seed_mem_box`'s Lean proof is literally ``exposure $\Rightarrow$ non-divisibility'' (it ends in `not_dvd_succ_of_exposed_avoid`), so $\|B_k(r)\|\ge 1$ unwinds to ``$r \nmid \Prod{m}(j) + 1$ at every $r$-exposed $j<k$'', i.e. the walk mod $r$ avoids the death class — which is $\neg\mathrm{DynamicalHitting}(r)$, the hypothesis one is trying to contradict. The other branch (``$r$ rarely exposed'') is refuted outright by `few_small_multipliers`: at least $n-\pi(r)$ of the first $n$ steps are $r$-exposed regardless. Nor can the circle be broken by weakening: the only nonvacuous quantitative negation, $C \ge r-1$, *is* MC($r$). Exact mirror of #166 — #166 blocks the entrance to (LS), this blocks the exit. | — | 0 |
 
-### Structurally false (SF, 29) — the proposed statement is false: an explicit counterexample or a proved refutation
+### Structurally false (SF, 30) — the proposed statement is false: an explicit counterexample or a proved refutation
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 6 | Direct SE implies DH (generation not coverage) | 5 | Counterexample: in $\mathbb{Z}/6$ steps $2,2,2,\dots$ generate but partial sums cycle $0,2,4$ and miss all odd elements; generation does not imply coverage. Later $\mathbb{Z}/4$ witness | — | - |
@@ -186,6 +186,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 164 | Block-chaining substitute for Freedman | 309 | False on two independent counts: (i) the harmonic charge budget is *global* and admits no per-block version — a middle block may consist entirely of high-exponent steps, so the per-block lower bound fails; (ii) the goodness of step $k$ depends on $\tilde p_{k+1}$, so the block indicator is not block-past-measurable and the chaining is not a martingale. Replaced by a finite-tree exponential supermartingale driven by the *sure* compensator bound (`TreeChernoff.chernoff_quarter_local`), which needs neither stopping nor blocks. | — | 3 |
 | 165 | Omitting $r \ne q$ from the $q$-free box process | 309 | False at $r = q$: the $q$-free selector $\tilde p = \minFac_{\ne q}$ ignores $q$ entirely, so the brink lemma (F3) fails at $r = q$ and the step survival $S_k$ computes the wrong probability. The $q$-free type is a function of $m \bmod M_Y$ with $q \nmid M_Y$; $q$ is not a box coordinate at all, and the $q$-coordinate is carried separately by the capture identity. | — | 1 |
 | 171 | Sure layer can force a capture ($q$-free model obstruction) | 313 | Structurally impossible. Every theorem of the sure layer is proved *about* $`genSeqAvoid` q m$, and `SeedCapture.genSeqAvoid_ne_avoided` proves that this dynamics *never selects* $q$. So at every finite horizon on which the $q$-free orbit is nondegenerate, the entire layer is satisfied by a dynamics that misses $q$ by construction; no consequence of the layer alone can force any capture. Stated precisely so as not to overclaim: capture *is* recoverable per-orbit via `captured_iff_mem_visited` at $m'=m$, but nothing sure forces `visitedSetAvoid` to grow so as to contain a *prescribed* class. The single cleanest reason the orbit direction is closed, and the only one with a ready-made formal witness. | `SeedCapture.genSeqAvoid_ne_avoided` | 0 |
+| 175 | Unrestricted generalized Mullin conjecture $\mathrm{GenMC}(n)$ over all primes | 316 | False for every $n\ge 2$: $n \mid \Prod{n}(k)$ for all $k$ (`start_dvd_genProd`), so a prime $p\mid n$ is coprime to $\Prod{n}(k)+1$ and is never selected. In particular $2$ never re-appears in $\seq{2}$, so the old $\mathrm{GenMC}(2)\Rightarrow\mathrm{MC}$ was $\bot\Rightarrow\mathrm{MC}$, and the cofinal-hitting premise was unsatisfiable for every $n\ge1$ (the walk is identically $0$ mod $p\mid n$; for $n=1$ the $q=2$ clause fails). Same defect as Conjecture A (#1). Repaired 2026-08-20: $\mathrm{GenMC}(n)$ now quantifies over primes $q\nmid n$, the hitting hypothesis likewise, and $\mathrm{GenMC}(2)\iff\mathrm{MC}$ (`gen_mc_two_iff_mc`). | `gen_mc_unrestricted_false` | 0 |
 
 ### Technique mismatch (TM, 54) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -713,7 +714,7 @@ example := @chebyshev_concentration_proved -- ChebyshevConcentration PROVED (unc
 /-! ## Aggregate statistics -/
 
 /-- Highest catalogued dead-end number.  Numbers are assigned progressively in the session logs
-and cited everywhere by number, so they are never renumbered.  Ten of the 174 numbers (#25,
+and cited everywhere by number, so they are never renumbered.  Ten of the 175 numbers (#25,
 #64–#72) were never assigned to any entry (2026-08-18 reconstruction, `tools/dead_ends.tsv`);
 `deadEndEntryCount` is the number of actual entries.  Session 312 added #161–#166 (six
 statement-level near-misses from the seed-average programme, sessions 309–311) and #167–#168
@@ -722,11 +723,14 @@ logarithmic density, and summable per-`q` rates).  Session 313 added #169–#174
 obstructions closing the *orbit* direction for the sure (per-path) layer: the charge budget is
 an identity (#169), "the box has not collapsed" is `¬DynamicalHitting` (#170), the `q`-free
 model never selects `q` (#171), the compensator has the wrong per-path sign (#172) and is
-inapplicable to the orbit of 2 (#173), and missed-prime counting is gated on (C∞) (#174). -/
-def deadEndCount : ℕ := 174
+inapplicable to the orbit of 2 (#173), and missed-prime counting is gated on (C∞) (#174).
+Session 316 (2026-08-20 codebase review) added #175: the unrestricted generalized conjecture
+`GenMC(n)` over *all* primes is false for every `n ≥ 2` (a prime dividing `n` is never selected),
+so the old `GenMC(2) ⇒ MC` was vacuous; repaired in `EM/Ensemble/WeylChain.lean`. -/
+def deadEndCount : ℕ := 175
 
-/-- Number of catalogued dead-end entries: the 174 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 164
+/-- Number of catalogued dead-end entries: the 175 numbers minus the ten never assigned. -/
+def deadEndEntryCount : ℕ := 165
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -743,8 +747,9 @@ route is witnessed by the theorem that bounds what the route can actually delive
 adds #171 (`SeedCapture.genSeqAvoid_ne_avoided`: the `q`-free dynamics provably never selects
 `q`, so the whole sure layer is satisfied by a dynamics that misses `q` by construction),
 giving 32.  The other five Session-313 entries are deliberately left unwitnessed: the
-declarations they cite are the objects being critiqued, not formal certificates. -/
-def witnessedDeadEndCount : ℕ := 32
+declarations they cite are the objects being critiqued, not formal certificates.  Session 316
+adds #175 (`gen_mc_unrestricted_false`), giving 33. -/
+def witnessedDeadEndCount : ℕ := 33
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
 #136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
@@ -755,9 +760,9 @@ def revivableDeadEndCount : ℕ := 15
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 174 ∧
-    deadEndEntryCount = 164 ∧
-    witnessedDeadEndCount = 32 ∧
+    deadEndCount = 175 ∧
+    deadEndEntryCount = 165 ∧
+    witnessedDeadEndCount = 33 ∧
     revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival

@@ -293,7 +293,7 @@ theorem confinement_landscape :
 -- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def NormOneCharTrivialOnIntegerWalk : Prop := True
 
-/-- The norm-1 character triviality is a structural observation. -/
+/-- The norm-1 character triviality is a structural observation. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem norm_one_char_trivial_on_integer_walk : NormOneCharTrivialOnIntegerWalk := trivial
 
 /-! ## Section 10: Confinement for Arbitrary Number Fields -/
@@ -318,7 +318,7 @@ theorem norm_one_char_trivial_on_integer_walk : NormOneCharTrivialOnIntegerWalk 
 -- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def GeneralConfinementPrinciple : Prop := True
 
-/-- The general confinement principle is a structural observation. -/
+/-- The general confinement principle is a structural observation. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem general_confinement_principle : GeneralConfinementPrinciple := trivial
 
 /-! ## Section 11: Summary and Dead End Certificate -/

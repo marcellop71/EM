@@ -53,9 +53,6 @@ theorem two_le_genSeq (hm : 2 ≤ m) (n : ℕ) : 2 ≤ genSeq m n := by
   have h := SeededGrowth.two_le_genProd hm n
   exact (Nat.minFac_prime (by omega : genProd m n + 1 ≠ 1)).two_le
 
-theorem genSeq_le_succ (m n : ℕ) : genSeq m n ≤ genProd m n + 1 :=
-  Nat.minFac_le (by omega)
-
 theorem two_pow_le_genProd (hm : 2 ≤ m) (n : ℕ) : 2 ^ n ≤ genProd m n := by
   induction n with
   | zero => simp [genProd]; omega
@@ -73,7 +70,7 @@ theorem ratio_le_two (hm : 2 ≤ m) (n : ℕ) : ratio m n ≤ 2 := by
   rw [div_le_iff₀ (log_genProd_pos hm n)]
   have hP : (2 : ℝ) ≤ genProd m n := by exact_mod_cast SeededGrowth.two_le_genProd hm n
   have h1 : (genSeq m n : ℝ) ≤ (genProd m n : ℝ) ^ 2 := by
-    have := genSeq_le_succ m n
+    have := SeededGrowth.genSeq_le_genProd_add_one m n
     have : (genSeq m n : ℝ) ≤ (genProd m n : ℝ) + 1 := by exact_mod_cast this
     nlinarith
   calc Real.log (genSeq m n) ≤ Real.log ((genProd m n : ℝ) ^ 2) :=

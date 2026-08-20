@@ -130,7 +130,7 @@ def FFPopulationEquidist : Prop :=
 
 /-- The Weil bound implies population equidistribution.
     This is the function field analog of WeightedPNTinAP,
-    but UNCONDITIONAL (no Riemann Hypothesis needed). -/
+    but UNCONDITIONAL (no Riemann Hypothesis needed). PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem weil_implies_population_equidist :
     WeilBound p → FFPopulationEquidist p := by
   intro _ _ _ _ _

@@ -27,7 +27,6 @@ infrastructure from `FactorTree.lean`.
 * `weil_implies_weak_fmcd` -- Weil => weak first moment condition
 * `ff_factor_pool_degree_grows` -- degree of acc(n)+1 tends to infinity (PROVED)
 * `ff_acc_degree_grows` / `ff_standard_degree_grows` -- accumulator degree growth (PROVED)
-* `ff_omega_le_degree_standard` -- FFOmegaLeDegree holds (PROVED)
 * `ff_population_equidist_landscape` -- summary landscape theorem
 
 ## Key mathematical content
@@ -87,24 +86,18 @@ def FFPopMixedDiversity : Prop :=
     Proof: both have True bodies. The mathematical content is that the
     Weil bound controls character sums over monic polynomials, which
     gives equidistribution of residues modulo Q, which in turn gives
-    that approximately 1/p^d of monic polynomials f satisfy Q | f+1. -/
+    that approximately 1/p^d of monic polynomials f satisfy Q | f+1. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem weil_implies_pop_mixed_diversity :
     WeilBound p → FFPopMixedDiversity p := by
   intro _ _ _ _; trivial
 
-/-- Given population diversity, for any monic irreducible Q and
+/-! Given population diversity, for any monic irreducible Q and
     sufficiently large degree n, there exists a monic squarefree f
     of degree n with Q | f+1.
 
     This is weaker than FFPopMixedDiversity (existential rather than
     density), but sufficient for establishing the factor tree has
     Q-divisible nodes at every depth. -/
-theorem pop_diversity_implies_factor_exists :
-    FFPopMixedDiversity p →
-    ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q →
-    -- For large enough degree, ∃ monic squarefree f with Q | f+1.
-    True := by
-  intro _ _ _ _; trivial
 
 /-! ## Section 2: Mixed Walk Population Equidistribution -/
 
@@ -144,7 +137,7 @@ def FFMixedPopEquidist : Prop :=
     The gap: the accumulated products are not GENERIC monic polynomials;
     they are products of specific irreducibles. The population diversity
     statement applies to all monic polynomials, but the tree produces
-    only a SUBSET. This is again the orbit-specificity barrier. -/
+    only a SUBSET. This is again the orbit-specificity barrier. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem pop_diversity_implies_mixed_pop_equidist :
     FFPopMixedDiversity p → FFMixedPopEquidist p := by
   intro _ _ _ _ _ _ _; trivial
@@ -185,7 +178,7 @@ def FFWeakFMCD : Prop :=
     growth + UFD structure), without needing the Weil bound. The Weil
     bound gives the STRONGER quantitative statement that the number of
     factors of degree d is approximately p^d/d. We state the Weil
-    implication for consistency with the landscape structure. -/
+    implication for consistency with the landscape structure. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem weil_implies_weak_fmcd :
     WeilBound p → FFWeakFMCD p := by
   intro _ _ _ _ _ _; trivial
@@ -242,16 +235,13 @@ theorem ff_acc_degree_grows {start : Polynomial (ZMod p)}
     We state it as a True-bodied Prop since fully formalizing the
     connection between irreducible factorization and degree requires
     the UniqueFactorizationMonoid API + monic normalization. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def FFOmegaLeDegree (p : ℕ) [Fact (Nat.Prime p)] : Prop :=
   ∀ (f : Polynomial (ZMod p)), f.Monic → 0 < f.natDegree →
   -- The number of distinct monic irreducible factors of f is at most f.natDegree.
   -- This follows from: each monic irred factor has degree >= 1,
   -- factors are pairwise coprime, and degrees add in a monic product.
   True
-
-/-- The omega-le-degree bound is standard algebra. -/
-theorem ff_omega_le_degree_standard : FFOmegaLeDegree p := by
-  intro _ _ _; trivial
 
 /-! ## Section 5: Connection to Standard FF-EM Sequence -/
 
@@ -297,7 +287,8 @@ theorem ff_standard_degree_grows (d : FFEMData p) :
 
     The gap: having Q-divisible nodes in the tree (POPULATION statement)
     does NOT mean the GREEDY path hits them (ORBIT statement). This is
-    the FF-DSL barrier, identical to the integer case. -/
+    the FF-DSL barrier, identical to the integer case. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def PopulationTreeBridge (p : ℕ) [Fact (Nat.Prime p)] : Prop :=
   FFPopMixedDiversity p →
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q →
@@ -306,11 +297,6 @@ def PopulationTreeBridge (p : ℕ) [Fact (Nat.Prime p)] : Prop :=
   -- For large enough n, Q divides acc(n)+1 for SOME valid continuation
   -- of the tree (not necessarily the greedy one, not necessarily sigma).
   True
-
-/-- The population-to-tree bridge follows from population diversity
-    and degree growth. -/
-theorem population_tree_bridge : PopulationTreeBridge p := by
-  intro _ _ _ _ _ _ _ _ _; trivial
 
 /-! ## Section 7: Comparison with Integer Case -/
 
@@ -327,13 +313,12 @@ theorem population_tree_bridge : PopulationTreeBridge p := by
     for some constant c > 0.
 
     But this is a POPULATION statement. For the SPECIFIC f = ffProd(n)+1,
-    the expected minimum factor degree could be different. -/
+    the expected minimum factor degree could be different. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def FFFirstMomentComparison (_p : ℕ) [Fact (Nat.Prime _p)] : Prop :=
   -- The population-level first moment is bounded below by a positive constant.
   -- This is unconditional from the prime polynomial theorem over F_p[t].
   True
-
-theorem ff_first_moment_comparison : FFFirstMomentComparison p := trivial
 
 /-! ## Section 8: Landscape -/
 

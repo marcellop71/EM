@@ -1,4 +1,5 @@
 import EM.Reduction.Master
+import EM.ForMathlib.CharNormOne
 
 /-!
 # DSL Infrastructure: Algebraic Backbone for DSL Proof Approaches
@@ -131,17 +132,11 @@ section CrossTermBounds
 variable {q : Nat} [Fact (Nat.Prime q)]
   (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
 
-/-- Character values on finite groups have norm 1.
-    For χ : G →* ℂˣ with G finite, every g ∈ G has finite order d,
-    so (χ g)^d = χ(g^d) = χ(1) = 1, meaning χ(g) is a d-th root of
-    unity, hence ‖χ(g)‖ = 1. -/
+/-- Character values on `(ZMod q)ˣ` have norm 1.  Alias of the generic
+    `char_norm_one_of_hom` (EM/ForMathlib/CharNormOne.lean); kept because the paper cites it. -/
 theorem char_value_norm_one (χ : (ZMod q)ˣ →* ℂˣ) (u : (ZMod q)ˣ) :
-    ‖(χ u : ℂ)‖ = 1 := by
-  have hpow : (χ u : ℂ) ^ Fintype.card (ZMod q)ˣ = 1 := by
-    have h : (χ u : ℂˣ) ^ Fintype.card (ZMod q)ˣ = 1 := by
-      rw [← map_pow, pow_card_eq_one, map_one]
-    rw [← Units.val_pow_eq_pow_val, h, Units.val_one]
-  exact Complex.norm_eq_one_of_pow_eq_one hpow Fintype.card_ne_zero
+    ‖(χ u : ℂ)‖ = 1 :=
+  char_norm_one_of_hom χ u
 
 /-- When character values have norm 1, the energy telescoping simplifies:
     ‖S(N)‖² = N + 2·∑ crossTerms. -/
@@ -150,7 +145,7 @@ theorem char_sum_energy_eq_N_plus_cross (χ : (ZMod q)ˣ →* ℂˣ) (N : Nat) :
     N + 2 * ∑ k ∈ Finset.range N, charSumCrossTerm hq hne χ k := by
   rw [char_sum_energy_telescoping hq hne χ N]
   congr 1
-  simp only [char_value_norm_one, one_pow, Finset.sum_const, Finset.card_range,
+  simp only [char_norm_one_of_hom, one_pow, Finset.sum_const, Finset.card_range,
     nsmul_eq_mul, mul_one]
 
 /-- **Cross term bound gives energy bound.**

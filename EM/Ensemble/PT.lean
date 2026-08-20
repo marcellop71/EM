@@ -787,7 +787,7 @@ end SDToCancellation
 
 Sections GenMC (Generalized MC from Walk Hitting) and JSEToGenMC (JSE → GenMC Master Chain)
 have been moved to `EM/Ensemble/WeylChain.lean`. Key exports there:
-* `GenMullinConjecture` — every prime in generalized EM from n
+* `GenMullinConjecture` — every prime q ∤ n in generalized EM from n
 * `gen_hitting_implies_gen_mc_proved` — cofinal walk hitting → gen MC (PROVED)
 * `per_chi_cancellation_bridge_proved` — PerChiCancellationBridge (PROVED)
 * `weyl_hitting_bridge_proved` — WeylHittingBridge (PROVED)

@@ -86,7 +86,8 @@ def MultiplicativeLargeSievePrime : Prop :=
 
 /-- The strengthened form — IK (7.32):
     ∑_{rs≤Q,(r,s)=1} (s/φ(rs)) ∑*_χ |∑_n a_n χ̄(n) c_r(n)|² ≤ (Q²+N−1) ‖a‖².
-    Open: requires Ramanujan sum infrastructure. -/
+    Open: requires Ramanujan sum infrastructure. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def MultiplicativeLargeSieveStrengthened : Prop :=
   ∀ (N Q : ℕ), 1 ≤ N → 1 ≤ Q →
     ∀ (_ : Fin N → ℂ),

@@ -61,9 +61,12 @@ git requires fetched by `lake`: Mathlib `v4.33.0`, [CA](https://github.com/marce
 Mathlib) and `EMRegistry` (root `EMRegistry.lean`: `EM` plus the registry tooling
 `EM/Meta/{Registry,Blueprint}.lean`, which need CA and LeanArchitect).
 
-Verified set: no `sorry`, no user axioms, no `native_decide`; run
-`python3 tools/check_axioms.py` after `lake build` to confirm that every published declaration
-depends only on `propext`, `Classical.choice`, `Quot.sound`.
+Verified set: no `sorry`, no user axioms, no `native_decide`.  `python3 tools/check_axioms.py`
+(after `lake build`) walks every declaration in the `EM` library (~5,400) and the
+registry-published set and confirms each depends only on `propext`, `Classical.choice`,
+`Quot.sound`; `python3 tools/check_forbidden.py` is the build-free source lint.  Both run in CI
+(`.github/workflows/ci.yml`) together with `lake build`, the paper-reference check and the
+generated-file drift check.
 
 ## License
 

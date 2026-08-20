@@ -15,7 +15,7 @@ DO search for: proof techniques, structural theorems, abstract results that coul
 
 **Before searching any direction, consult the strategy log in `agents/state/strategy_log.md`.**
 
-The authoritative dead-ends catalog is `EM/Meta/DeadEnds.lean` (`docs/dead_ends.md` is only a pointer stub); read the current entry count from `deadEndCount` there. Entries carry a category code (OS/TM/SM/CI/SF/CO/DG/AG) and a weak-MC revival score 0–3. If a proposed search direction maps onto a catalog entry, skip it.
+The authoritative dead-ends catalog is `EM/Meta/DeadEnds.lean`; read the current entry count from `deadEndCount` there. Entries carry a category code (OS/TM/SM/CI/SF/CO/DG/AG) and a weak-MC revival score 0–3. If a proposed search direction maps onto a catalog entry, skip it.
 
 ## Current priority scouting tasks
 

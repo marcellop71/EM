@@ -163,7 +163,7 @@ theorem weil_implies_char_cancel :
 
     FFDirichletEquidist (from WeakMC.lean) states that irreducibles are
     equidistributed in residue classes mod Q. This is a consequence of
-    FFPNTInAPs. -/
+    FFPNTInAPs. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem ff_pnt_implies_dirichlet_equidist :
     FFPNTInAPs p → FFDirichletEquidist p := by
   intro _ _ _ _ _; trivial

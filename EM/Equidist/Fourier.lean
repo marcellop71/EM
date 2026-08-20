@@ -472,10 +472,8 @@ theorem mult_equidist_implies_global_tail_se
 /-- **MultiplierEquidistribution → SubgroupEscape**: equidistribution trivially
     gives the one-shot escape needed by SE. -/
 theorem mult_equidist_implies_se
-    (hme : MultiplierEquidistribution) : SubgroupEscape := by
-  intro q _ hq hne H hH
-  obtain ⟨n, _, hesc⟩ := mult_equidist_implies_global_tail_se hme q hq hne H hH 0
-  exact ⟨n, hesc⟩
+    (hme : MultiplierEquidistribution) : SubgroupEscape :=
+  me_implies_se hme
 
 /-- **MultiplierEquidistribution + TailSEImpliesDH → MC**: the two-Prop
     reduction from the analytic program.

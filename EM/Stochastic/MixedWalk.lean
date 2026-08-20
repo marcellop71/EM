@@ -85,6 +85,17 @@ def mixedWalkFactor (acc : ℕ) (σ : MixedSelection) (n : ℕ) : ℕ :=
   | none => (P + 1).minFac
   | some p => p
 
+/-- The all-minFac mixed walk from starting point m equals the generalized
+    EM accumulator genProd m k. Both start at m and multiply by minFac(P+1)
+    at each step. -/
+theorem mixedWalkProd_minFac_eq_genProd (m : ℕ) (k : ℕ) :
+    mixedWalkProd m minFacMixed k = genProd m k := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    simp only [mixedWalkProd, minFacMixed, genProd_succ, genSeq]
+    rw [ih]
+
 /-- Validity: every random choice is a prime dividing the current accumulator + 1.
     For deterministic steps (none), no condition is imposed. -/
 def ValidMixedSelection (acc : ℕ) (σ : MixedSelection) : Prop :=

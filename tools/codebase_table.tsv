@@ -188,6 +188,7 @@ For Mathlib (extracted, Mathlib-only)	ForMathlib/VanDerCorput.lean	The finite va
 For Mathlib (extracted, Mathlib-only)	ForMathlib/ZModDftParseval.lean	Parseval/Plancherel for \code{ZMod.dft}: $\sum_k \|\hat\Phi(k)\|^2 = N\sum_j \|\Phi(j)\|^2$
 For Mathlib (extracted, Mathlib-only)	ForMathlib/CoprimeAffineBlock.lean	$\#\{t\in[k,k{+}N): \gcd(N, at{+}b)=1\} = \varphi(N)$ for $\gcd(a,N)=1$; $B$ blocks give $B\varphi(N)$
 For Mathlib (extracted, Mathlib-only)	ForMathlib/PeriodicDensity.lean	Transfer of a periodic residue-class covering to an upper natural density bound on $[1,X]$
+For Mathlib (extracted, Mathlib-only)	ForMathlib/CharNormOne.lean	$\|\chi(g)\|=1$ for every homomorphism $\chi:G\to\mathbb{C}^\times$ from a finite group (single home for the fact)
 Seed-average program (new)	Population/SeedTypes.lean	Lemma A (revisit-freeness), visited-set bounds, Lemma B (CRT prefix invariance)
 Seed-average program (new)	Population/SeedCapture.lean	$q$-free dynamics via \code{ordCompl}; Lemma C coupling (shielding); capture identity \code{captured\_iff\_mem\_visited}
 Seed-average program (new)	Population/LargeStepRoughness.lean	The box process and harmonic charge budget $\mathrm{Ch}(N,n) \le \pi(N) + N\log 4$; brink lemma; Mertens upper bound; the pathwise compensator $\sum_{k<n} S_k \ge (c_1/2)n$

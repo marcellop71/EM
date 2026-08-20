@@ -27,7 +27,9 @@ only inside the proof, as the period of the residue-class covering.
   density is only finitely *sub*additive, so the per-`q` statements do **not** combine
   into a statement about the intersection over all `q`.
 * **Finite horizon.**  For each `ε` there is a horizon `n(q, ε)`; no limit in `n` is taken.
-  The result is a finite-horizon counting bound, not a capture theorem.
+  The counting bounds are finite-horizon statements.  Letting `ε → 0` does give the capture
+  corollary `never_captures_limsup_eq_zero`: the coprime seeds that *never* select `q` have
+  upper natural density `0` — again per fixed `q`, on the population.
 * **Unconditional.**  Every input is unconditional: no equidistribution hypothesis occurs
   anywhere in the chain `TheoremC.theorem_C → FiberTheoremC.theorem_C_fiber →
   TypeBadSmall.type_bad_small → almost_all_genmc_density`.
@@ -175,6 +177,51 @@ theorem almost_all_genmc_limsup (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 0 < �
   have h := PeriodicDensity.limsup_density_le hM T
     (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q) hP hε hTcard
   convert h using 5
+
+/-- Density ratios are bounded in `[0,1]`. -/
+private theorem ratio_le_one (P : ℕ → Prop) [DecidablePred P] (X : ℕ) :
+    (((Finset.Icc 1 X).filter P).card : ℝ) / (X : ℝ) ≤ 1 := by
+  rcases Nat.eq_zero_or_pos X with h | h
+  · simp [h]
+  · rw [div_le_one (by exact_mod_cast h)]
+    calc (((Finset.Icc 1 X).filter P).card : ℝ) ≤ ((Finset.Icc 1 X).card : ℝ) := by
+          exact_mod_cast Finset.card_filter_le _ _
+      _ = X := by simp
+
+open Filter in
+/-- **Seeds that never capture `q` have upper natural density zero.**
+
+The set `{m : q ∤ m ∧ ∀ j, genSeq m j ≠ q}` is contained in every finite-horizon bad set, so
+`almost_all_genmc_limsup` for every `ε > 0` gives `limsup = 0`.  This is the literal content
+of the label "almost all seeds capture `q`" — still *population* and *one prime at a time*:
+the statement is about the density of seeds, not about any individual orbit, and the
+simultaneous-in-`q` form remains OPEN (§G). -/
+theorem never_captures_limsup_eq_zero (q : ℕ) (hq : q.Prime) :
+    Filter.limsup
+      (fun X : ℕ => (((Finset.Icc 1 X).filter
+          (fun m => ¬ q ∣ m ∧ ∀ j, genSeq m j ≠ q)).card : ℝ) / (X : ℝ))
+      Filter.atTop = 0 := by
+  set f : ℕ → ℝ := fun X => (((Finset.Icc 1 X).filter
+      (fun m => ¬ q ∣ m ∧ ∀ j, genSeq m j ≠ q)).card : ℝ) / (X : ℝ) with hf
+  have f_nonneg : ∀ X, 0 ≤ f X := fun X => by positivity
+  have f_le_one : ∀ X, f X ≤ 1 := fun X => ratio_le_one _ X
+  have hbdd : IsBoundedUnder (· ≤ ·) atTop f := isBoundedUnder_of ⟨1, f_le_one⟩
+  have hcob : IsCoboundedUnder (· ≤ ·) atTop f :=
+    (isBoundedUnder_of ⟨0, f_nonneg⟩ : IsBoundedUnder (· ≥ ·) atTop f).isCoboundedUnder_flip
+  apply le_antisymm
+  · refine le_of_forall_pos_le_add fun ε hε => ?_
+    rw [zero_add]
+    obtain ⟨n, hn⟩ := almost_all_genmc_limsup q hq hε
+    refine le_trans ?_ hn
+    apply limsup_le_limsup _ hcob (isBoundedUnder_of ⟨1, fun X => ratio_le_one _ X⟩)
+    refine Eventually.of_forall fun X => ?_
+    show f X ≤ _
+    rw [hf]
+    apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg X)
+    exact_mod_cast Finset.card_le_card fun m hm => by
+      simp only [Finset.mem_filter] at hm ⊢
+      exact ⟨hm.1, hm.2.1, fun ⟨j, _, hj⟩ => hm.2.2 j hj⟩
+  · exact le_limsup_of_frequently_le (Frequently.of_forall f_nonneg) hbdd
 
 /-! ## 3. Finitely many primes at a time -/
 

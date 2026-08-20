@@ -202,25 +202,9 @@ theorem seq_succ_not_dvd_prod (n : ℕ) : ¬(seq (n + 1) ∣ prod n) := by
   simp at h3
   exact absurd h3 (by have := (seq_isPrime (n + 1)).1; omega)
 
-/-- **Euclid.IsPrime implies Nat.Prime**: bridge between the two primality notions. -/
-theorem isPrime_implies_natPrime {p : ℕ} (hp : IsPrime p) : Nat.Prime p := by
-  have hge : 2 ≤ p := hp.1
-  rw [Nat.prime_def_minFac]
-  refine ⟨hge, ?_⟩
-  -- Goal: p.minFac = p
-  -- p.minFac ∣ p and p.minFac ≥ 2 (since p ≥ 2)
-  -- By IsPrime: p.minFac = 1 ∨ p.minFac = p
-  -- Since p.minFac ≥ 2, it must be p.minFac = p
-  have hmf_dvd := Nat.minFac_dvd p
-  rcases hp.2 p.minFac hmf_dvd with h | h
-  · -- p.minFac = 1, contradiction with p.minFac ≥ 2
-    have := (Nat.minFac_prime (show p ≠ 1 by omega)).two_le
-    omega
-  · exact h
-
 /-- **seq values are Nat.Prime**: bridge for seq values. -/
 theorem seq_natPrime (n : ℕ) : (seq n).Prime :=
-  isPrime_implies_natPrime (seq_isPrime n)
+  MullinGroup.IsPrime.toNatPrime (seq_isPrime n)
 
 /-- **New prime factor theorem**: `seq(k+1)` is prime, divides `prod(k) + 1`,
     and does NOT divide `prod(k)`. This means `seq(k+1)` is a genuinely new
@@ -250,14 +234,6 @@ section DivisibilityChain
 theorem seq_succ_dvd_later_prod (k n : ℕ) (h : k + 1 ≤ n) :
     seq (k + 1) ∣ prod n :=
   seq_dvd_prod (k + 1) n h
-
-/-- **Different orbit elements introduce distinct primes**: if `j ≠ k`, then
-    `seq(j + 1) ≠ seq(k + 1)`. This is immediate from `seq_injective`. -/
-theorem orbit_new_primes_distinct {j k : ℕ} (h : j ≠ k) :
-    seq (j + 1) ≠ seq (k + 1) := by
-  intro heq
-  have := seq_injective _ _ heq
-  omega
 
 /-- **Earlier primes do not divide later orbit elements**: for `j < k`,
     `seq(j + 1)` does not divide `T^k(3) = prod(k) + 1`.

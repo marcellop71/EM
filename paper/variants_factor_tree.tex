@@ -61,7 +61,7 @@ enough freedom to steer residues mod~$q$.  The standard EM sequence
 ($\minFac$, always using the full product) has no such freedom: the
 accumulator is deterministic, and the gap between population
 equidistribution (Booker's Lemma~2) and orbit-specific
-equidistribution (CME) is exactly the open hypothesis.
+equidistribution (CME, itself equivalent to MC) is exactly the gap.
 \end{remark}
 
 \begin{remark}[Quantifier structure]
@@ -668,7 +668,8 @@ via \code{concatMixedSelection} and using Regeneration to obtain
 fresh good accumulators past each existing hit.
 \end{itemize}
 Regeneration is the sole open hypothesis in this layer; it is
-strictly weaker than CME (which implies MC outright) and concerns
+implied by CME (equivalently by MC; whether the implication is strict is
+not known) and concerns
 the persistence of a qualitative property (full reachability) along
 the walk, not a quantitative equidistribution statement.
 

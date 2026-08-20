@@ -305,7 +305,7 @@ def FFDSLImpliesFFDH : Prop :=
 
       |sum_{f irred, deg f = e} chi(f mod Q)| <= (d-1) * p^{e/2}
 
-    which gives o(p^e / e) cancellation as e -> infinity. -/
+    which gives o(p^e / e) cancellation as e -> infinity. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem weil_implies_population_mult_ccsb :
     WeilBound p → PopulationMultCCSB p := by
   intro _ _ _ _ _
@@ -321,7 +321,7 @@ theorem weil_implies_population_mult_ccsb :
     The proof: let S_M = sum_{n<M} chi(ffSeq(n+1) mod Q) be the orbit sum.
     The population sum P_e = sum_{f irred, deg f = e} chi(f mod Q) cancels
     (PopulationMultCCSB). SelectionBiasNeutral says the orbit sum tracks
-    the population sum up to o(M). Therefore S_M = o(M). -/
+    the population sum up to o(M). Therefore S_M = o(M). PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem selection_bias_chain :
     PopulationMultCCSB p → SelectionBiasNeutral p → FFMultiplierCCSB p := by
   intro _hpop _hsbn _d Q hQm hQi hQd hQseq
@@ -348,7 +348,7 @@ theorem selection_bias_chain :
     Caveat: this argument works for "generic" f but the FF-EM walk
     produces SPECIFIC f = ffProd(n) + 1. This is the orbit-specificity
     barrier (#90) in disguise. The formal implication holds because both
-    hypotheses have True bodies. -/
+    hypotheses have True bodies. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem conditional_equidist_implies_selection_neutral :
     ConditionalCharEquidist p → SelectionBiasNeutral p := by
   intro _hce _d Q hQm hQi hQd hQseq

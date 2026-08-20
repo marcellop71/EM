@@ -33,7 +33,7 @@ epsilon-process. No measure theory on infinite sequences is needed.
 * `stochastic_mc_implies_mixed_mc` -- StochasticMC implies MixedMC (weaker)
 
 ### Part 4: Phase Transition at epsilon = 0
-* `deterministic_walk_norm_one` -- at epsilon=0, character values have norm 1 (no contraction)
+* (at epsilon=0, character values have norm 1 -- `char_norm_one_of_hom`, no contraction)
 * `stochastic_walk_contraction` -- at epsilon>0, diverse factor sets give strict contraction
 * `phase_transition_summary` -- sharp transition at epsilon=0
 
@@ -177,17 +177,6 @@ epsilon > 0 perturbation creates exponential decay. -/
 
 section PhaseTransition
 
-/-- At epsilon = 0, the walk is deterministic: the "factor" chosen at each step
-    is minFac(P+1), and the character value at a single element has norm 1.
-
-    This means there is no spectral contraction at epsilon = 0:
-    the walk maintains unit-modulus character products forever. -/
-theorem deterministic_walk_norm_one
-    {G : Type*} [CommGroup G] [Fintype G]
-    (chi : G →* ℂˣ) (g : G) :
-    ‖(chi g : ℂ)‖ = 1 :=
-  char_norm_one_of_hom chi g
-
 /-- At epsilon > 0, if the factor set S has at least 2 elements with distinct
     chi-values, the mean character value (= expected chi-value over S) has
     norm strictly < 1.
@@ -226,7 +215,7 @@ theorem phase_transition_summary (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q) :
     -- (c) TSD implies positive capture for all epsilon > 0
     (TreeSieveDecay q →
       ∀ (ε : ℝ), 0 < ε → ε ≤ 1 → StochasticMC ε q) :=
-  ⟨fun chi g => deterministic_walk_norm_one chi g,
+  ⟨fun chi g => char_norm_one_of_hom chi g,
    fun chi S hcard hs => stochastic_walk_contraction chi S hcard hs,
    fun hTSD ε hε hε1 => stochastic_mc_of_tsd q hq hq2 hTSD ε hε hε1⟩
 
@@ -339,7 +328,7 @@ theorem stochastic_em_landscape
    stochastic_mc_three 1 one_pos le_rfl,
    fun hTSD ε hε hε1 => stochastic_mc_of_tsd q hq hq2 hTSD ε hε hε1,
    fun ε h => stochastic_mc_implies_mixed_mc ε q h,
-   fun chi g => deterministic_walk_norm_one chi g,
+   fun chi g => char_norm_one_of_hom chi g,
    fun hTSD => tsd_implies_stochastic_mullin hTSD 1⟩
 
 end Landscape

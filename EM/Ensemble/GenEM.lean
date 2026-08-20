@@ -37,6 +37,13 @@ def genSeq (n k : Nat) : Nat := Nat.minFac (genProd n k + 1)
 /-- genSeq n k = Nat.minFac (genProd n k + 1). -/
 theorem genSeq_def (n k : Nat) : genSeq n k = Nat.minFac (genProd n k + 1) := rfl
 
+/-- **The starting value divides the accumulator**: `n ∣ genProd n k` for every `k`,
+    since `genProd n 0 = n` and each later step multiplies. -/
+theorem start_dvd_genProd (n : Nat) (k : Nat) : n ∣ genProd n k := by
+  induction k with
+  | zero => exact dvd_refl n
+  | succ k ih => exact dvd_mul_of_dvd_left ih _
+
 /-- The generalized accumulator is positive when starting from n >= 1. -/
 theorem genProd_pos {n : Nat} (hn : 1 ≤ n) (k : Nat) : 1 ≤ genProd n k := by
   induction k with

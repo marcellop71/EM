@@ -396,7 +396,7 @@ def FFDirichletEquidist : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
     True
 
-/-- The Weil bound implies FFDirichletEquidist. -/
+/-- The Weil bound implies FFDirichletEquidist. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem weil_implies_dirichlet_equidist :
     WeilBound p → FFDirichletEquidist p := by
   intro _ _ _ _ _; trivial

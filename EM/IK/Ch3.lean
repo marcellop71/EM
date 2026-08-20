@@ -162,7 +162,8 @@ def AdditiveCharFourierExpansion : Prop :=
       ∃ (S : ℂ), ψ (a : ZMod m) = (1 / (Nat.totient m : ℂ)) * S
 
 /-- Gauss sum for induced character — IK Lemma 3.1 (3.13):
-    `τ(χ) = μ(m/m*) χ*(m/m*) τ(χ*)`. -/
+    `τ(χ) = μ(m/m*) χ*(m/m*) τ(χ*)`. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def GaussSumInduced : Prop :=
   ∀ (m : ℕ) [NeZero m] (_χ : DirichletCharacter ℂ m)
     (ψ : AddChar (ZMod m) ℂ), ψ.IsPrimitive →
@@ -180,7 +181,8 @@ def GaussSumProduct : Prop :=
     ∀ (ψ : AddChar (ZMod m) ℂ), ψ.IsPrimitive →
       gaussSum χ ψ * gaussSum χ⁻¹ ψ = χ (-1) * m
 
-/-- Gauss sum factorization for coprime moduli — IK (3.16). -/
+/-- Gauss sum factorization for coprime moduli — IK (3.16). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def GaussSumFactorization : Prop :=
   ∀ (m₁ m₂ : ℕ), Nat.Coprime m₁ m₂ → 0 < m₁ → 0 < m₂ →
     ∀ (χ₁ : DirichletCharacter ℂ m₁) (χ₂ : DirichletCharacter ℂ m₂),
@@ -378,7 +380,8 @@ def QuarticResidueSymbolExists : Prop :=
       (∀ α, ¬(π ∣ α) → χ α ^ 4 = 1)
 
 /-- The law of quartic reciprocity — IK Theorem 3.6 (3.56):
-    `(π₁/π₂)(π₂/π₁) = (-1)^{(p₁-1)/4 · (p₂-1)/4}` for distinct primary primes. -/
+    `(π₁/π₂)(π₂/π₁) = (-1)^{(p₁-1)/4 · (p₂-1)/4}` for distinct primary primes. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def QuarticReciprocity : Prop :=
   ∀ (π₁ π₂ : GaussianInt),
     Irreducible π₁ → Irreducible π₂ → π₁ ≠ π₂ →
@@ -388,7 +391,8 @@ def QuarticReciprocity : Prop :=
     p₁ % 4 = 1 → p₂ % 4 = 1 →
     True  -- (π₁/π₂)₄(π₂/π₁)₄ = (-1)^{(p₁-1)/4·(p₂-1)/4}
 
-/-- The square of the quartic character is the Legendre symbol — IK (3.60). -/
+/-- The square of the quartic character is the Legendre symbol — IK (3.60). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def QuarticSquareIsQuadratic : Prop :=
   ∀ (π : GaussianInt), Irreducible π →
     let p := (Zsqrtd.norm π).natAbs
@@ -396,7 +400,8 @@ def QuarticSquareIsQuadratic : Prop :=
     True  -- χ_π(n)² = (n/p) for all n coprime to p
 
 /-- Quartic Gauss sum squared — IK (3.58):
-    `g(π)² = -(-1)^{(p-1)/4} π √p` for primary `π`. -/
+    `g(π)² = -(-1)^{(p-1)/4} π √p` for primary `π`. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def QuarticGaussSumSquare : Prop :=
   ∀ (π : GaussianInt), Irreducible π → GaussianInt.IsPrimary π →
     let p := (Zsqrtd.norm π).natAbs
@@ -493,50 +498,58 @@ theorem unitsConsistency_of_lt {D : ℤ} (hD : D < -4) (ℓ : ℤ) :
   have h2 : D ≠ -3 := by omega
   simp [h1, h2]
 
-/-- Hecke L-function `L(s,ψ) = ∑ ψ(𝔞)(N𝔞)⁻ˢ` — IK §3.8. -/
+/-- Hecke L-function `L(s,ψ) = ∑ ψ(𝔞)(N𝔞)⁻ˢ` — IK §3.8. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def HeckeLFunction : Prop :=
   ∀ (D : ℤ), IsImagQuadDiscriminant D →
     ∀ (ψ : HeckeCharData D), ψ.isPrimitive →
     True  -- L(s,ψ) exists with Euler product for Re(s) > 1
 
-/-- Hecke's functional equation `Λ(s,ψ) = W(ψ) Λ(1-s,ψ̄)` — IK Theorem 3.8 (3.84). -/
+/-- Hecke's functional equation `Λ(s,ψ) = W(ψ) Λ(1-s,ψ̄)` — IK Theorem 3.8 (3.84). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def HeckeFunctionalEquation : Prop :=
   ∀ (D : ℤ), IsImagQuadDiscriminant D →
     ∀ (ψ : HeckeCharData D), ψ.isPrimitive →
     True  -- Λ(s,ψ) = W(ψ) Λ(1-s,ψ̄) with W(ψ) = i^{-ℓ} τ(ψ) (N𝔪)^{-1/2}
 
-/-- `|τ(ψ)| = (N𝔪)^{1/2}` for primitive Hecke character — IK Exercise 12 (3.88). -/
+/-- `|τ(ψ)| = (N𝔪)^{1/2}` for primitive Hecke character — IK Exercise 12 (3.88). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def HeckeGaussSumNorm : Prop :=
   ∀ (D : ℤ), IsImagQuadDiscriminant D →
     ∀ (ψ : HeckeCharData D), ψ.isPrimitive →
     True  -- |τ(ψ)| = √(N𝔪)
 
 /-- Trivial Hecke character gives Dedekind zeta: `ζ_K(s) = ζ(s) L(s,χ_D)`.
-    Residue: `res_{s=1} Λ(s,ψ₀) = h w⁻¹` — IK Theorem 3.8. -/
+    Residue: `res_{s=1} Λ(s,ψ₀) = h w⁻¹` — IK Theorem 3.8. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def DedekindZetaDecomposition : Prop :=
   ∀ (D : ℤ), IsImagQuadDiscriminant D →
     True  -- ζ_K(s) = ζ(s) L(s, χ_D)
 
-/-- Hecke characters of conductor `(1)` and frequency `0` ↔ class group characters — IK §3.8. -/
+/-- Hecke characters of conductor `(1)` and frequency `0` ↔ class group characters — IK §3.8. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def ClassGroupCharCorrespondence : Prop :=
   ∀ (D : ℤ), IsImagQuadDiscriminant D →
     True  -- bijection
 
 /-- Automorphic form from Hecke character — IK (3.89):
-    cusp form of weight `ℓ+1` on `Γ₀(|D| N𝔪)` when `ℓ > 0`. -/
+    cusp form of weight `ℓ+1` on `Γ₀(|D| N𝔪)` when `ℓ > 0`. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def HeckeCharModularForm : Prop :=
   ∀ (D : ℤ), IsImagQuadDiscriminant D →
     ∀ (ψ : HeckeCharData D), ψ.isPrimitive → 0 < ψ.frequency →
     True  -- f is a cusp form
 
-/-- Gauss sum for norm composition — IK Example 5 (3.96)/(3.97). -/
+/-- Gauss sum for norm composition — IK Example 5 (3.96)/(3.97). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def HeckeCharNormComposition : Prop :=
   ∀ (D : ℤ), IsImagQuadDiscriminant D →
     ∀ (q : ℕ), 0 < q → Int.gcd D q = 1 →
     True  -- τ(χ ∘ N) = χ_D(q) χ(|D|) τ(χ)²
 
 /-- Dedekind's determinant formula — IK Exercise 1:
-    `∏_{ψ ∈ Ĝ} ⟨f,ψ⟩ = det_{g,h}(f(gh⁻¹))`. -/
+    `∏_{ψ ∈ Ĝ} ⟨f,ψ⟩ = det_{g,h}(f(gh⁻¹))`. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def DedekindDeterminant : Prop :=
   ∀ (G : Type*) [CommGroup G] [Fintype G] [DecidableEq G]
     (_f : G → ℂ), True  -- ∏_ψ ⟨f,ψ⟩ = det(f(gh⁻¹))

@@ -75,7 +75,8 @@ theorem weak_additive_large_sieve
 
 /-- **Theorem 7.11**: Large sieve at Farey fractions — IK (7.28).
     ∑_{q≤Q} ∑*_{a mod q} |∑_n a_n e(an/q)|² ≤ (Q² + N − 1) ‖a‖².
-    This follows from Theorem 7.7 because Farey fractions are Q⁻²-spaced. -/
+    This follows from Theorem 7.7 because Farey fractions are Q⁻²-spaced. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def FareyLargeSieve : Prop :=
   ∀ (N : ℕ) (Q : ℕ) (_a : Fin N → ℂ),
     1 ≤ N → 1 ≤ Q →

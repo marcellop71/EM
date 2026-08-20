@@ -175,7 +175,8 @@ theorem SDDS.coprimeCascade (S : SDDS) : CoprimeCascade S := by
     avoid certain residue classes mod q. The precise formulation involves
     density of orbits landing in each residue class, but we state it as
     an abstract Prop depending on the SDDS to avoid formalizing counting
-    functions at this stage. -/
+    functions at this stage. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def SieveRegularity (_S : SDDS) : Prop :=
   True  -- Abstract placeholder: the factoring rule is unbiased mod q
 

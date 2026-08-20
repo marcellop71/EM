@@ -1,4 +1,4 @@
-# The story of the EM formalization, told from above (2026-08-17)
+# The story of the EM formalization, told from above (2026-08-17, updated 2026-08-20)
 
 *This is the narrative the paper is now organized around.  It was written after the day on
 which the population layer (PE / DSL) was found to be false and archived, and after the
@@ -53,7 +53,7 @@ of three fates:
 Below MC: weak MC, reciprocal divergence, (S) "least factor < 2^{n−c} i.o.", (C∞) — all
 implications proved.  (C∞) is Sylvester-tower primality (Fermat-shaped).  The arboreal
 levels: the classical `Φ₃` death equation is level one of a finite ladder; the Chebotarev
-input is free; the residual gap is a size condition on one integer's factorization.  **MC is
+input is free; the residual gap is a size condition on one integer's factorization.  **MC
 implies "no infinite prime tower for a doubly-exponential sequence", which is open (a statement
 of shape, not a difficulty lower bound — review 2026-08-18).**
 
@@ -75,10 +75,31 @@ not the problem, the deterministic choice of its least element is.  Over `𝔽_p
 statements in Lean are `True` placeholders (marked; badged `[placeholder]` in the paper); the
 real FF content is the exact degree telescope, `Φ₃` exclusion, `FFDirichletDensity`.
 
-## 7. Dead ends as the coastline
+## 7. The population, done properly: the seed-average law (2026-08-19)
 
-160 entries, 24 witnessed after the audit; #90/#117 carry the thesis and are witnessed in
-`(ℤ/5)^×`; the rest are peripheral instances of the four-way blocker or of head domination.
+If nothing population-level can settle the orbit of `2`, the population can still be
+understood on its own terms, unconditionally.  Seeds `m` coprime to a fixed prime `q`, run
+under `T`: for every `ε > 0` there is a horizon `n` such that the seeds in `[1, X]` that have
+not selected `q` within `n` steps number at most `εX` for all large `X`
+(`AlmostAllDensity.almost_all_genmc_density`, `_limsup`); hence the coprime seeds that *never*
+select `q` have upper natural density `0` (`never_captures_limsup_eq_zero`).  Inputs: the
+box-sieve selection law (`SelectionLaw`), the large-step roughness / charge budget, Theorem C
+and its fibre form; no equidistribution hypothesis anywhere.  Per fixed `q`, and finitely many
+`q` at a time (`finite_simultaneous_density`); the simultaneous-in-`q` natural-density form is
+**open** because natural density is only finitely additive (#167/#168 — it is not a rate
+problem).  The repair is a countably additive ambient measure: on the profinite ensemble
+`Ω = ∏_q ℤ/q` with Haar measure, μ-almost every profinite seed captures every prime whose
+coordinate it does not annihilate (`ProfiniteHeadline.measure_some_prime_missed_eq_zero`);
+the integers are μ-null in `Ω`, so this says nothing about any integer orbit — #90/#117 stand.
+The *orbit* direction of the sure (per-path) layer is closed (#169–#174).
+
+## 8. Dead ends as the coastline
+
+175 numbers, 165 entries, 33 witnessed (`EM/Meta/DeadEnds.lean`, generated from
+`tools/dead_ends.tsv`); #90/#117 carry the thesis and are witnessed in `(ℤ/5)^×`; the rest
+are peripheral instances of the four-way blocker or of head domination.  #175 (2026-08-20)
+is a reminder that statements about the generalized sequence must exclude the primes dividing
+the seed.
 
 ---
 
@@ -86,9 +107,10 @@ real FF content is the exact degree telescope, `Φ₃` exclusion, `FFDirichletDe
 
 The project is not "a reduction of MC to a hypothesis" — that framing died with DSL.  It is
 **a complete map of what one orbit of `T` provably inherits from the structure of `T`**:
-exact projections (walk, growth), a sufficient condition at the top (CME), a Fermat-shaped
-floor at the bottom ((C∞)), obstruction theorems on both sides, and a comparison class
-isolating selection as the culprit.  The abstract and introduction now say it that way.
+exact projections (walk, growth), an equivalent reformulation at the top (CME ⟺ MC), a
+Fermat-shaped floor at the bottom ((C∞)), obstruction theorems on both sides, a comparison
+class isolating selection as the culprit, and — on the population rather than the orbit — the
+unconditional seed-average law.  The abstract and introduction now say it that way.
 
 ## The paper's flow (as of 2026-08-17)
 

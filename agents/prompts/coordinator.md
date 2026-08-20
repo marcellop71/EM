@@ -23,7 +23,7 @@ When dispatching the lean-formalizer, ALWAYS include this reminder:
 
 ## Dead Ends Catalog
 
-**Before dispatching any agent on a new direction, consult `EM/Meta/DeadEnds.lean` (authoritative catalog; `docs/dead_ends.md` is a pointer stub).**
+**Before dispatching any agent on a new direction, consult `EM/Meta/DeadEnds.lean` (authoritative catalog).**
 
 Read the current entry count from `deadEndCount` in that file rather than trusting a number quoted here. Entries are organized by category code:
 - **OS** — Orbit-Specificity: population statistics ≠ orbit statistics
@@ -150,8 +150,8 @@ When choosing what to do next:
 
 **You are responsible for keeping the dead ends catalog up to date.** The
 authoritative catalog is the Lean file `EM/Meta/DeadEnds.lean` (docstring
-tables + `#check` re-exports of formal witnesses); `docs/dead_ends.md` is a
-pointer stub. After each session:
+tables + `#check` re-exports of formal witnesses), generated from `tools/dead_ends.tsv`
+by `tools/gen_dead_ends.py`. After each session:
 
 1. **Collect new dead ends** from all dispatched agents. If an attack agent reports a failed approach with a clear reason, it is a new dead end.
 2. **Assign the next number** in sequence (read the current maximum from `EM/Meta/DeadEnds.lean` — do not trust a hardcoded count).

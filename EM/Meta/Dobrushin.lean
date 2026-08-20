@@ -145,9 +145,11 @@ def MultiplierUniformityBound : Prop :=
     4. In the EM setting, we don't know which holds (both are open).
 
     The key point: even if MUB held, Dobrushin's theorem is inapplicable
-    (Section 2), so MUB provides no route to MC. -/
+    (Section 2), so MUB provides no route to MC. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def MUBWeakerThanCME : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem mub_weaker_than_cme_documented : MUBWeakerThanCME := trivial
 
 end MultiplierUniformityBound
@@ -207,11 +209,12 @@ section DobrushinCoefficientForDeterministic
 
     The formal statement is trivialized to True because the Dobrushin coefficient
     is not a formal object in this codebase (we don't define transition kernels
-    or the coefficient). The mathematical content is in the docstring. -/
+    or the coefficient). The mathematical content is in the docstring. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def DobrushinCoefficientOne : Prop := True
 
 /-- The Dobrushin coefficient being 1 is a trivial structural fact about
-    deterministic walks. -/
+    deterministic walks. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem dobrushin_coefficient_one : DobrushinCoefficientOne := trivial
 
 /-- **Dobrushin's theorem is inapplicable to the EM walk.**
@@ -228,9 +231,11 @@ theorem dobrushin_coefficient_one : DobrushinCoefficientOne := trivial
     Formally trivialized since Dobrushin's theorem is not formalized in this
     codebase. The analysis is fully contained in the docstring.
 
-    Dead End #131. -/
+    Dead End #131. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def DobrushinInapplicable : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem dobrushin_inapplicable : DobrushinInapplicable := trivial
 
 /-- **The spectral gap approach faces the same obstruction.**
@@ -245,9 +250,11 @@ theorem dobrushin_inapplicable : DobrushinInapplicable := trivial
     a gap only if the time-averaged operator mixes, which is exactly CME.
 
     Dead End #95: Spectral gap for deterministic walks.
-    See also SpectralGapForEMAverage in MarkovSieveSynthesis.lean. -/
+    See also SpectralGapForEMAverage in MarkovSieveSynthesis.lean. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def SpectralGapInapplicable : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem spectral_gap_inapplicable : SpectralGapInapplicable := trivial
 
 end DobrushinCoefficientForDeterministic
@@ -377,17 +384,18 @@ def FirstHitAfter (r : ℕ) (n₀ : ℕ) : Prop :=
       for all primes r not in the sequence.
     - DSL is NOT simplified by this reformulation.
 
-    Dead End #131. -/
+    Dead End #131. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def StoppingTimeReformulation : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem stopping_time_is_reformulation : StoppingTimeReformulation := trivial
 
 /-- **DH is equivalent to "every active prime eventually wins the race".**
     This is the same statement as DynamicalHitting, just rephrased in
-    stopping-time language. No new mathematical content. -/
+    stopping-time language. No new mathematical content. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def DHAsRace : Prop := True
-
-theorem dh_as_race_documented : DHAsRace := trivial
 
 end StoppingTimePerspective
 
@@ -417,10 +425,9 @@ section ActiveSetComplement
     Only active primes can divide prod(n) + 1 (by prod_succ_mod_emSupport).
     Therefore seq(n+1) is always an active prime.
 
-    This is already formalized in SieveConstraint.lean (seq_succ_not_mem_emSupport). -/
+    This is already formalized in SieveConstraint.lean (seq_succ_not_mem_emSupport). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def ActiveSetIsComplement : Prop := True
-
-theorem active_set_is_complement : ActiveSetIsComplement := trivial
 
 /-- **The sieve gap forces large multipliers.**
     After the first n primes are consumed, the smallest active prime is large.
@@ -429,10 +436,9 @@ theorem active_set_is_complement : ActiveSetIsComplement := trivial
 
     In the stopping-time language: as the race progresses, the pool of
     competitors shrinks, forcing the winner to be a large prime.
-    But this says nothing about WHICH large prime wins, which is the DSL question. -/
+    But this says nothing about WHICH large prime wins, which is the DSL question. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def SieveGapForcesLargeMultipliers : Prop := True
-
-theorem sieve_gap_forces_large : SieveGapForcesLargeMultipliers := trivial
 
 end ActiveSetComplement
 
@@ -483,9 +489,11 @@ section SEDoesNotImplyMUB
     no quantitative information about HOW OFTEN each group element appears
     as a multiplier in each walk-position fiber.
 
-    Dead End #130 + #131. -/
+    Dead End #130 + #131. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def SEDoesNotControlDistribution : Prop := True
 
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem se_does_not_control_distribution : SEDoesNotControlDistribution := trivial
 
 /-- **The complete failure chain:**
@@ -496,10 +504,9 @@ theorem se_does_not_control_distribution : SEDoesNotControlDistribution := trivi
     CME ==> MC: proved (cme_implies_mc)
 
     The only viable route through this section is CME -> MUB (the wrong direction).
-    MUB by itself provides no route to MC. -/
+    MUB by itself provides no route to MC. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def FailureChainSummary : Prop := True
-
-theorem failure_chain_summary : FailureChainSummary := trivial
 
 end SEDoesNotImplyMUB
 
@@ -694,10 +701,9 @@ theorem dead_end_131_witness :
     | Stopping-time            | reformulation| (no new content)|
     | SE -> MUB                | gap         | Dead End #130   |
 
-    All roads lead to CME (or something harder). No shortcut exists. -/
+    All roads lead to CME (or something harder). No shortcut exists. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
+-- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
 def MarkovMixingSynthesisComplete : Prop := True
-
-theorem markov_mixing_synthesis_complete : MarkovMixingSynthesisComplete := trivial
 
 end DeadEndDocumentation
 

@@ -9,7 +9,6 @@ primitive root checks, plus:
 * Concrete mixing: walkZ mod 5/139/443/248867 hit -1
 * `walk_periodic_implies_mult_periodic`: walk periodicity → mult periodicity
 * `walkZ_hits_iff_target`: w(n+1) = -1 ↔ w(n) = -(m(n))⁻¹
-* `isPrime_minFac_self`: prime n implies minFac n = n
 -/
 
 namespace MullinGroup
@@ -347,19 +346,5 @@ theorem walkZ_hit_of_target {q : Nat} [Fact (Nat.Prime q)]
     (htarget : walkZ q n = -(multZ q n)⁻¹) :
     walkZ q (n + 1) = -1 :=
   (walkZ_hits_iff_target hq hne n).mpr htarget
-
-/-! ## Helper: IsPrime implies minFac self
-
-When n is prime, our `minFac` function returns n itself (since n has
-no divisors other than 1 and n, and minFac finds the smallest ≥ 2). -/
-
-/-- **Primes are their own minFac**: if n is prime, minFac n = n. -/
-theorem isPrime_minFac_self {n : Nat} (hp : IsPrime n) : minFac n = n := by
-  have h2 : 2 ≤ n := hp.1
-  have hdvd : minFac n ∣ n := minFac_dvd n h2
-  rcases hp.2 (minFac n) hdvd with h | h
-  · have := (minFac_isPrime n h2).1; omega
-  · exact h
-
 
 end MullinGroup

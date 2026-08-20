@@ -23,7 +23,7 @@ master proof strategy (Steps 6–7). The key objects are:
 * `VarianceBound`            — Var[S_K] = O(K) over squarefree starting points
 
 ### Proved Theorems
-* `start_dvd_genProd`        — n ∣ genProd n k for all k (PROVED)
+* `start_dvd_genProd`        — n ∣ genProd n k for all k (PROVED; now lives in EM/Ensemble/GenEM.lean)
 * `start_dvd_genProd_succ`   — n ∣ genProd n k + 1 - 1 (PROVED)
 * `ensembleAvg_nonneg`       — ensembleAvg X f ≥ 0 when f ≥ 0 on squarefree (PROVED)
 * `first_moment_variance_implies_concentration` — FM + VB → RecipSumConcentration (PROVED)
@@ -73,19 +73,6 @@ open Mullin Euclid MullinGroup RotorRouter
 /-! ## Starting Point Divisibility -/
 
 section StartingDivisibility
-
-/-- The starting point n divides every generalized accumulator genProd n k.
-    This is because genProd n 0 = n, and genProd n (k+1) = genProd n k · genSeq n k,
-    so n ∣ genProd n k by induction.
-
-    This means the starting point is **recoverable** from the accumulator at any
-    step, making the map n ↦ genProd n k injective on squarefree integers
-    (since genProd n k is squarefree and n is its unique squarefree divisor
-    with the right structure). -/
-theorem start_dvd_genProd (n : Nat) (k : Nat) : n ∣ genProd n k := by
-  induction k with
-  | zero => exact dvd_refl n
-  | succ k ih => exact dvd_mul_of_dvd_left ih _
 
 /-- Restatement: n divides genProd n k, which we can use to write
     genProd n k = n * (genProd n k / n). -/

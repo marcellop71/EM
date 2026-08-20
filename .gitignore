@@ -32,3 +32,6 @@ texput.log
 # Subsumes the detached-job records written by agents/jobs.py.
 agents/state/
 docs/reviews/
+
+# declbuild daemon state (oleans, traces, log) — local only
+.declbuild/

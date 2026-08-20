@@ -296,8 +296,6 @@ theorem exists_death_level_two {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 `13 ≡ 1 (mod 4)`, so the reciprocity sign is trivial and the criterion of Part 3 depends
 only on `ℓ mod 13`. -/
 
-instance : Fact (Nat.Prime 13) := ⟨by norm_num⟩
-
 /-- **Quadratic reciprocity.**  Whether `13` is a residue modulo `ℓ` is decided by
 `ℓ mod 13`; the non-residues mod `13` are `{2,5,6,7,8,11}`, a set of density `1/2`. -/
 theorem isSquare_thirteen_iff {ℓ : ℕ} [Fact (Nat.Prime ℓ)] (h2 : ℓ ≠ 2) :
