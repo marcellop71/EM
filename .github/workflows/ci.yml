@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lean:
+    name: build + axiom gate + generated-file drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://github.com/leanprover/elan/releases/latest/download/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Cache .lake
+        uses: actions/cache@v4
+        with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+          restore-keys: lake-${{ runner.os }}-
+
+      - name: Fetch Mathlib oleans
+        run: lake exe cache get
+
+      - name: Build (EM + EMRegistry)
+        run: lake build
+
+      - name: Forbidden constructs (source level)
+        run: python3 tools/check_forbidden.py
+
+      - name: Placeholders are marked
+        run: python3 tools/check_placeholders.py
+
+      - name: Axiom gate (whole library + registry)
+        run: python3 tools/check_axioms.py
+
+      - name: Paper references resolve
+        run: python3 tools/check_lean_refs.py
+
+      - name: Generated files are up to date
+        run: |
+          python3 tools/gen_codebase_table.py
+          python3 tools/gen_dead_ends.py
+          python3 tools/update_l1_hashes.py
+          git diff --exit-code -- paper/codebase_table.tex paper/codebase_stats.tex \
+            paper/dead_ends_table.tex paper/dead_ends_stats.tex docs/dead_ends_catalog.md EM/Meta/DeadEnds.lean \
+            paper/the_Lean_formalization.tex registry/declarations.json registry/meta.json
+
+  paper:
+    name: papers compile
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tools/check_paper_builds.sh

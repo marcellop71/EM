@@ -19,6 +19,10 @@
   generated-file drift check; the papers compile in a second job.
 - **Registry** (`registry/meta.json`): 358 declarations — 269 proved, 68 conditional,
   21 open points (including the targets `MullinConjecture`, `HittingHypothesis`); 337 published.
+  CA pinned to its release `v0.1.0` (2026-08-21; the `v4.33.0` tag no longer exists upstream):
+  SHA-256 type hashes, real `type_deps`/`pp_type`.  The paper's L1 column is refreshed by
+  `tools/update_l1_hashes.py`, which CI runs in the drift check; four rows citing archived
+  declarations are now marked "(archived)" with no hash.
 - **Dead ends.** `tools/dead_ends.tsv` is the single source of truth; `EM/Meta/DeadEnds.lean`,
   `paper/dead_ends_table.tex`, `docs/dead_ends_catalog.md` are generated.  177 numbers,
   167 entries, 35 with a Lean witness, 15 with revival score ≥ 2 (read the `deadEndCount`

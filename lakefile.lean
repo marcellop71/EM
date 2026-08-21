@@ -11,13 +11,13 @@ package em where
 require LeanArchitect from git
   "https://github.com/hanwenzhu/LeanArchitect.git" @ "main"
 
-/- CA (content-addressing registry) is pinned to its git tag `v4.33.0`
+/- CA (content-addressing registry) is pinned to its release tag `v0.1.0`
    (https://github.com/marcellop71/CA; toolchain, batteries and Cli at v4.33.0).
    LeanArchitect has no v4.33.0 tag, so it is pinned to main; re-pin to a tag when one appears.
    NOTE: EM's mathematics (`lean_lib EM`) depends only on Mathlib; the registry tooling
    (`EM/Meta/{Registry,Blueprint}.lean`) is the separate `lean_lib EMRegistry`. -/
 require ca from git
-  "https://github.com/marcellop71/CA" @ "v4.33.0"
+  "https://github.com/marcellop71/CA" @ "v0.1.0"
 
 -- CA → redis-lean requires these two over SSH (`git@github.com:…`), which an anonymous
 -- clone cannot fetch; requiring them here over https makes the root manifest's entries

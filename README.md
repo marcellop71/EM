@@ -47,7 +47,7 @@ The project includes a machine-readable registry of all key results and open hyp
 **How it works:** The CA package provides `@[publish]` and `@[open_point]` attributes that tag declarations for inclusion in a decentralized formal math registry. Each tagged declaration gets a content address — a deterministic hash of its canonicalized type expression (universe-renamed, metadata-stripped). The `#ca_registry` command at the end of [`EM/Meta/Registry.lean`](EM/Meta/Registry.lean) generates the registry files automatically during `lake build`.
 
 - [`EM/Meta/Registry.lean`](EM/Meta/Registry.lean) — `@[open_point]` annotations (unproved hypotheses) and `@[publish]` annotations (proved theorems)
-- [`registry/declarations.json`](registry/declarations.json) — entries with name, module, kind, status, content hash, pretty-printed type, and dependency list
+- [`registry/declarations.json`](registry/declarations.json) — entries with name, module, kind, status, SHA-256 content hash, pretty-printed type, and dependency list (CA `v0.1.0`; earlier CA versions emitted empty dependency lists and `Prop` for every type)
 - [`registry/meta.json`](registry/meta.json) — project summary (open points, proved, conditional)
 
 The registry is regenerated automatically by `lake build`.
@@ -56,7 +56,7 @@ The registry is regenerated automatically by `lake build`.
 
 Requires the pinned Lean toolchain in [`lean-toolchain`](lean-toolchain).  All dependencies are
 git requires fetched by `lake`: Mathlib `v4.33.0`, [CA](https://github.com/marcellop71/CA)
-`v4.33.0` (the content-addressing registry) and LeanArchitect (pinned to `main`).  Then
+`v0.1.0` (the content-addressing registry) and LeanArchitect (pinned to `main`).  Then
 `lake build` at the repo root.  Two libraries are built: `EM` (the mathematics; depends only on
 Mathlib) and `EMRegistry` (root `EMRegistry.lean`: `EM` plus the registry tooling
 `EM/Meta/{Registry,Blueprint}.lean`, which need CA and LeanArchitect).
