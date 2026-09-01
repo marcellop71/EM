@@ -26,13 +26,16 @@ Replacing $\ZZ$ by $\Fpt$ and primes by monic irreducible polynomials
 gives a clean test bed where \emph{the analytic number theory becomes
 free}.  The Weil bound---an open hypothesis over~$\ZZ$---is a theorem of
 Weil~\cite{Weil1948} over~$\Fpt$.  Yet the function-field Mullin
-Conjecture is still open, and the residual difficulty is identical to
-the integer case: the orbit-specificity barrier.  This subsection
-develops the FF-EM sequence, proves an unconditional six-step sieve
-chain and the $\Phi_3$ exclusion criterion, and presents three formally
-verified dead ends that delineate the boundary of current techniques.
-The function-field module of the formalization comprises 16~files and
-${\sim}7{,}372$~lines with zero \texttt{sorry}.
+Conjecture is not uniformly true: over $\FF_5[t]$ it is \emph{false},
+because the greedy sequence from~$t$ is a perpetually irreducible
+Sylvester tower (Theorem~\ref{thm:ffmc-false-five}, machine-checked),
+and where it is not refuted the residual difficulty is identical to the
+integer case: the orbit-specificity barrier.  This subsection develops
+the FF-EM sequence, proves the refutation over~$\FF_5$, an unconditional
+six-step sieve chain and the $\Phi_3$ exclusion criterion, and presents
+three formally verified dead ends that delineate the boundary of current
+techniques.  The function-field module of the formalization comprises
+19~files and ${\sim}9{,}200$~lines with zero \texttt{sorry}.
 
 \medskip\noindent\textbf{What is and is not machine-checked here (audit
 2026-08-17).}\enspace The Weil bound is not formalized: \code{WeilBound},
@@ -47,8 +50,9 @@ an implication between them (\code{weil\_implies\_population\_equidist},
 \code{barrier\_setting\_independent}, \dots) is trivial.  Such items are
 marked \placeholder\ below.  The machine-checked content of this
 section is: the FF-EM sequence and its structural theory (coprimality
-cascade, injectivity, degree growth), FFDH~$\Rightarrow$~FF-MC, the
-$\Phi_3$ exclusion, the exact degree telescope
+cascade, injectivity, degree growth), the refutation of FF-MC over
+$\FF_5[t]$ (\code{EM/FunctionField/StableTower.lean}),
+FFDH~$\Rightarrow$~FF-MC, the $\Phi_3$ exclusion, the exact degree telescope
 (\S\ref{sec:ff-telescope}), the stochastic FF-MC and its phase
 transition, and the density chain whose one
 hypothesis \code{FFDirichletDensity} is honestly stated (\code{EM/FunctionField/DensityMC.lean}).
@@ -82,6 +86,89 @@ For every monic irreducible $Q \in \Fpt$, there exists $n$ with
 $\ffseq(n) = Q$.
 \end{conjecture}
 
+Stated for every prime~$p$, the conjecture is \emph{false}.
+
+\begin{theorem}[{FF-MC fails over $\FF_5[t]$ ---
+\lean{EM/FunctionField/StableTower.lean}{not\_ffMullinConjecture\_five}}]
+\label{thm:ffmc-false-five}
+Over $\FF_5[t]$ every Euclid polynomial $\ffprod(n)+1$ of the sequence
+seeded at~$t$ is irreducible
+(\lean{EM/FunctionField/StableTower.lean}{tower\_euclid\_irreducible}).
+Consequently the sequence is
+\[
+  t,\; t+1,\; t^2+t+1,\; t^4+2t^3+2t^2+t+1,\; g_3(t),\; g_4(t),\;\dots,
+  \qquad g_n := \Phi_6^{\,n} + 1,\ \ \Phi_6(y) = y(y+1),
+\]
+no tie ever occurs, the selected irreducibles are $t$, $t+1$ and exactly
+one of each degree $2^k$ for $k \geq 1$, and every other monic
+irreducible---every one of degree not a power of two, and the linear
+polynomials $t+2$, $t+3$---never appears.  In particular $\neg\FFMC$ for
+$p = 5$, for every choice function.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+On the autonomous branch $\ffprod(n) = \Phi_6^{\,n}(t)$ and
+$\ffprod(n)+1 = g_n(t)$, so the claim is that every level polynomial
+$g_n$ is irreducible over~$\FF_5$
+(\lean{EM/FunctionField/StableTower.lean}{g\_irreducible}).  In
+$L = \overline{\FF}_5$ put $\alpha_0 = -1$ and
+$\alpha_{k+1} = 3s_{k+1}+2$ with $s_{k+1}^2 = 1+4\alpha_k$, so that
+$\alpha_{k+1}^2+\alpha_{k+1} = \alpha_k$ and $g_n(\alpha_n) = 0$.  With
+$q_e = 5^{2^e}$ and $m_e = (q_e-1)/2$ a single induction, using only
+that $x \mapsto x^{q_e}$ is a ring endomorphism fixing $\FF_5$ and the
+identity $m_{e+1} = m_e(q_e+1)$, gives
+$\alpha_k^{q_k} = \alpha_k$, $(1+4\alpha_k)^{m_k} = -1$ and
+$(2+4\alpha_k)^{m_k} = -1$
+(\lean{EM/FunctionField/StableTower.lean}{tower\_invariant}).  Hence
+$s_{k+1}^{q_k} = -s_{k+1}$ and $\alpha_n^{q_{n-1}} = -3s_n+2 \neq \alpha_n$:
+the Frobenius orbit of $\alpha_n$ has exactly $2^n$ points
+(\lean{EM/FunctionField/StableTower.lean}{minimalPeriod\_alpha}), all
+roots of the minimal polynomial of~$\alpha_n$, which therefore has
+degree $\geq 2^n = \deg g_n$ and divides~$g_n$; so $g_n$ is the minimal
+polynomial.  No Capelli lemma and no norm computation is needed.  The
+linear polynomial $t+3$ then witnesses the failure: the only linear
+terms are $t$ and $t+1$.
+\end{proof}
+
+The mechanism is a \emph{stable tower}.  By Capelli's lemma and the
+finite-field square criterion, $g_n$ is irreducible over~$\Fp$ iff
+$g_{n-1}$ is and $\Phi_6^{\,n-1}(-1/4)+1$ is a non-square mod~$p$; the
+first values of these constants over~$\mathbb{Q}$ are $13/16$, $217/256$,
+$57073/65536$---the level constants of \S\ref{sec:level-tower}, made
+rational again by the norm.  Call $p$ \emph{exceptional} if $p \equiv 2
+\pmod 3$ and every value on the (finite) orbit of $-1/4$ under
+$y \mapsto y^2+y$ in $\Fp$ is one less than a non-square.  For $p = 5$
+one has $-1/4 = 1$, the orbit is the two-cycle $1,2,1,2,\dots$, and the
+shifted values $3, 2$ are both non-squares: $5$ is exceptional.  The
+primes $11, 17, 23, 29, 41, 47$ are not (for $17, 23, 29$ already $13$
+is a square; $11$ and $41$ fail at level~$4$, $47$ at level~$8$), and
+heuristically the exceptional primes are finite in number.  Exactly for
+exceptional~$p$ is the seed-$t$ sequence a perpetually irreducible
+tower, and then FF-MC fails as in Theorem~\ref{thm:ffmc-false-five}.
+The honest function-field conjecture therefore excludes them:
+
+\begin{conjecture}[Function-Field Mullin Conjecture, corrected]
+\label{conj:ffmc-corrected}
+For every non-exceptional prime~$p$ and every FF-EM data over~$\Fpt$,
+every monic irreducible $Q \in \Fpt$ appears.
+\end{conjecture}
+
+Two consequences are worth stating.  First, the composite floor
+$(\mathrm{C}\infty)$ and MC fail \emph{together} over $\FF_5[t]$: the
+perpetually irreducible Sylvester tower that cannot be excluded
+over~$\ZZ$ (\S\ref{sec:cinfty-verdict}) is realised, and the growth
+constant of \S\ref{sec:ff-telescope} equals~$1$ there
+($\deg\ffprod(N) = 2^N$ exactly).  Second, \code{FFPerpetualIrreducibility}
+(\code{EM/FunctionField/DegreeTelescope.lean}), treated below as a
+hypothesis, is a \emph{theorem} for $p = 5$ from stage~$0$.  In the other
+direction, over $\FF_2[t]$ the take-all map $P \mapsto P^2+P$ is additive
+and the identity $y^8+y^4+y^2+y+1 = (y^4+y^3+1)(y^4+y^3+y^2+y+1)$ shows
+that no four consecutive Euclid polynomials are irreducible, so
+$(\mathrm{C}\infty)$ holds there for every seed; and for $p \equiv 1
+\pmod 3$ already $\Phi_3$ splits, so no two consecutive Euclid
+polynomials are irreducible.  These two floors are not yet formalized;
+the refutation over $\FF_5$ is.
+
 Two structural differences from the integer setting are immediate.
 First, monic irreducibles of the same degree have no canonical total
 order, so the ``minimal-degree'' rule may select among several
@@ -100,8 +187,9 @@ analogous result requires the Weighted PNT in arithmetic progressions.
 By isolating the \emph{orbit-specificity barrier}---the gap between
 ``population statistics'' and ``the specific walk
 $\ffprod(n) \bmod Q$ visits the residue class $-1$''---we will show
-that this barrier is the sole remaining obstacle to FF-MC, and that it
-is structurally identical to the obstacle for MC over~$\ZZ$.
+that, for the primes not refuted by Theorem~\ref{thm:ffmc-false-five},
+this barrier is the sole remaining obstacle to FF-MC, and that it is
+structurally identical to the obstacle for MC over~$\ZZ$.
 
 \paragraph{Basic structural facts.}
 The following hold unconditionally for any FF-EM data:
@@ -437,7 +525,9 @@ $Q$ itself to be selected (\emph{competitor exhaustion},
 the function-field analog of the integer bootstrap
 \code{dynamical\_hitting\_implies\_mullin}; the only difference is the
 final exhaustion step, which over $\ZZ$ collapses because primes are
-totally ordered.
+totally ordered.  Read contrapositively with
+Theorem~\ref{thm:ffmc-false-five}: $\FFDH$ is \emph{false} for $p = 5$;
+the walk of the seed-$t$ sequence modulo $t+3$ never returns to~$-1$.
 
 \paragraph{The \texorpdfstring{$\Phi_3$}{Phi3} exclusion criterion.}
 
@@ -507,6 +597,16 @@ $w = 1$).  Primes $p \equiv 2 \pmod 3$ with $p \geq 5$ include
 $5, 11, 17, 23, 29, 41, 47, \dots$
 \end{remark}
 
+\begin{remark}[The criterion is unconditional for $p = 5$]
+The hypothesis of the criterion---that every factor of $\ffprod(n)+1$
+has degree one, so that the walk follows the autonomous map---is a
+special case of perpetual irreducibility, which for $p = 5$ and the
+seed~$t$ is a theorem at every stage (Theorem~\ref{thm:ffmc-false-five}).
+There the exclusion says outright that the linear irreducibles $t+2$ and
+$t+3$ are never selected: their walks start at $2, 3 \neq -1$ and follow
+$w \mapsto w(w+1)$ forever, and $\Phi_3$ has no root in~$\FF_5$.
+\end{remark}
+
 \paragraph{Integer non-analog.}
 Over $\ZZ$ the multiplier $a_{n+1} \bmod q$ is \emph{not} determined by
 $P(n) \bmod q$ alone---it depends on the global factorization of
@@ -515,9 +615,12 @@ direct integer analog.
 
 \paragraph{The cyclotomic structure (Dead End \#129).}
 Over $\FF_2$, the product of all monic irreducibles of degree dividing
-$d=2$ is $t(t+1)(t^2+t+1) = t^4+t$, and adding $1$ gives
-$\Phi_5(t) = t^4 + t + 1$.  Its Galois group is
-$\mathrm{Gal}(\FF_{2^4}/\FF_2) \cong \ZZ/4\ZZ$---abelian, not~$S_4$.
+$d=2$ is $t(t+1)(t^2+t+1) = t^4+t$, and adding $1$ gives the irreducible
+$t^4 + t + 1$ (a factor of $\Phi_{15}$; the fifth cyclotomic polynomial
+$\Phi_5 = t^4+t^3+t^2+t+1$ appears one stage later, as one of the two
+tied quartic factors of $\ffprod(3)+1 = t^8+t^4+t^2+t+1$).  Its Galois
+group is $\mathrm{Gal}(\FF_{2^4}/\FF_2) \cong \ZZ/4\ZZ$---abelian,
+not~$S_4$.
 More generally, the classical identity
 $\prod_{\deg Q \mid d}Q = t^{p^d}-t$ forces the greedy FF-EM to build
 products dividing $t^{p^d}-t$ for some~$d$, so $\ffprod(n)+1$ has
@@ -621,7 +724,9 @@ properties:
   injectivity, degree growth, finiteness per degree, coprimality
   cascade.
 \item $\FFDH \Rightarrow \FFMC$ (Theorem~\ref{thm:ff-bootstrap}).
-\item $\FFDH$ is the sole remaining hypothesis.
+\item $\FFDH$ is the sole remaining hypothesis for non-exceptional
+  primes; for $p = 5$ both $\FFDH$ and $\FFMC$ are false
+  (Theorem~\ref{thm:ffmc-false-five}).
 \item The barrier is not closed by population statistics
   (Theorem~\ref{thm:de127}; in Lean this clause is the placeholder
   implication \code{WeilBound}~$\to$~\code{FFPopulationEquidist}
@@ -649,8 +754,8 @@ placeholder implication \placeholder.
 \item Over $\Fpt$: ANT is free (Weil $\Rightarrow$ equidistribution of
   irreducibles of large degree modulo~$Q$; in the formalization this
   clause is a placeholder implication \placeholder\ and proves nothing).
-\item Over $\Fpt$: orbit specificity remains ($\FFDH$ open;
-  $\FFDH \Rightarrow \FFMC$).
+\item Over $\Fpt$: orbit specificity remains ($\FFDH$ open for
+  non-exceptional~$p$, false for $p = 5$; $\FFDH \Rightarrow \FFMC$).
 \item Over $\Fpt$: stochastic perturbation dissolves the barrier;
   the deterministic limit does not.
 \end{enumerate}
@@ -664,9 +769,10 @@ statement PE fails over $\Fpt$ for the same reason as over $\ZZ$: the
 class density of the least-degree irreducible factor among $Q$-rough
 polynomials is a head-dominated convergent series, Dead End~\#160; what
 Weil supplies is the counting statement for irreducibles of a fixed
-large degree, which is not PE\@.)  This proves that the difficulty of Mullin's Conjecture
-lies \emph{entirely} in the orbit-specificity barrier and not in the
-analytic number theory.
+large degree, which is not PE\@.)  This proves that, wherever the
+conjecture is not simply false (Theorem~\ref{thm:ffmc-false-five}), the
+difficulty of Mullin's Conjecture lies \emph{entirely} in the
+orbit-specificity barrier and not in the analytic number theory.
 
 \paragraph{The degree telescope.}
 The growth axis of \S\ref{sec:defect-telescope} transfers to $\Fpt$, and
@@ -696,7 +802,8 @@ Stochastic MC ($\varepsilon > 0$) & Proved & Proved \\
 $\Phi_3$ exclusion & --- & \textbf{Proved} \\
 Defect telescope & Approximate & \textbf{Exact} \\
 Growth constant $C = 0 \Leftrightarrow (\mathrm{C}\infty)$ & Proved & Proved \\
-$(\mathrm{C}\infty)$ itself & \textbf{Open} & \textbf{Open} \\
+$(\mathrm{C}\infty)$ itself & \textbf{Open} & \textbf{False} for $p=5$, seed~$t$ (open otherwise) \\
+The conjecture itself & \textbf{Open} & \textbf{False} for $p=5$ (Thm.~\ref{thm:ffmc-false-five}) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -708,11 +815,16 @@ analog (the integer counterparts are catalogued in~\S\ref{sec:hard}).
 
 \begin{frontierbox}
 \textbf{Deterministic FF-MC.}
-Does every monic irreducible over $\Fpt$ eventually appear in the greedy
-FF-EM sequence?  Equivalently, does $\FFDH$ hold?  Our work shows that
-$\FFDH$ is the sole remaining hypothesis: the stochastic version
-($\varepsilon > 0$) is proved (Theorem~\ref{thm:ff-stoch}), and the
-open content is exactly the $\varepsilon = 0$ boundary.
+For $p = 5$ the answer is \emph{no} (Theorem~\ref{thm:ffmc-false-five}),
+and the same holds for every exceptional prime.  For non-exceptional~$p$:
+does every monic irreducible over $\Fpt$ eventually appear in the greedy
+FF-EM sequence?  Equivalently, does $\FFDH$ hold?  There $\FFDH$ is the
+sole remaining hypothesis: the stochastic version ($\varepsilon > 0$) is
+proved (Theorem~\ref{thm:ff-stoch}), and the open content is exactly the
+$\varepsilon = 0$ boundary.  Two further questions: is the set of
+exceptional primes finite (heuristically yes; is $5$ the only one?), and
+does the seed-$t$ sequence over a non-exceptional prime, once it leaves
+the autonomous branch, ever return to it for a long stretch?
 \end{frontierbox}
 
 \begin{frontierbox}
@@ -778,6 +890,12 @@ witness:
 \item the orbit-barrier and setting-independence theses
   (Theorems~\ref{thm:barrier-thesis}, \ref{thm:setting-independent}).
 \end{itemize}
+Separately, and not part of that conjunction, the refutation over
+$\FF_5[t]$ (Theorem~\ref{thm:ffmc-false-five}) shows that the
+function-field conjecture is a statement about non-exceptional primes.
 The function-field treatment thus delivers the cleanest available
-diagnosis: \emph{the difficulty of Mullin's Conjecture is the
-orbit-specificity barrier, not the analytic number theory}.
+diagnosis: \emph{where the conjecture is not false outright, the
+difficulty of Mullin's Conjecture is the orbit-specificity barrier, not
+the analytic number theory}---and where it is false, the failure is the
+one branch, a perpetually irreducible Sylvester tower, that no method
+can exclude over~$\ZZ$.

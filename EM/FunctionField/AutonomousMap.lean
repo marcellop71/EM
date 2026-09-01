@@ -19,6 +19,11 @@ This provides a STRUCTURAL OBSTRUCTION for degree-1 capture in FF-EM under
 perpetual irreducibility: for p equiv 2 mod 3, only the starting value -1 itself
 can reach -1. All other starting values are absorbed into 0 without ever hitting -1.
 This is a concrete instance of the orbit-specificity barrier (Dead End #90).
+
+(2026-09-02) For `p = 5` the hypothesis "perpetual irreducibility" is a THEOREM for the seed `X`
+at every stage (`EM/FunctionField/StableTower.lean`, `tower_euclid_irreducible`), so the
+exclusion is unconditional there: `X + 2` and `X + 3` are never selected, and
+`FFMullinConjecture 5` is false (`not_ffMullinConjecture_five`).
 -/
 
 namespace FunctionFieldAnalog

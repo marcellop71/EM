@@ -526,6 +526,13 @@ do not.
   property that $\sum 1/p$ converges over their prime divisors.  Again,
   doubly exponential growth limits opportunities.
 
+\item \textbf{The $\FF_5[t]$ sequence} is the Sylvester case realised:
+  every Euclid polynomial of the seed-$t$ sequence is irreducible
+  (\lean{EM/FunctionField/StableTower.lean}{tower\_euclid\_irreducible}),
+  so the ``hash chain'' never compresses and only one irreducible of each
+  degree $2^k$ is ever selected---the function-field conjecture is
+  \emph{false} there (Theorem~\ref{thm:ffmc-false-five}).
+
 \item The \textbf{second EM sequence} ($\mathrm{maxFac}$ variant)
   provably omits infinitely many primes~\cite{CoxVdP1968,
   PollackTrevino2014}.  Here the ``hash function'' ($\mathrm{maxFac}$

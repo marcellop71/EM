@@ -27,7 +27,8 @@ Two documents, both with clickable links to the Lean source for every formally v
   max (Cox–van der Poorten's omission of 5, no congruence invariant under lpf).
 - **Technical report** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (sources in [`paper/`](paper/)):
   everything the formalization does — the above plus the variants, the spectral and variance
-  routes, the obstruction calculus, the function-field analogue (placeholders marked), the
+  routes, the obstruction calculus, the function-field analogue (placeholders marked; the
+  conjecture is machine-checked *false* over 𝔽₅[t], `EM/FunctionField/StableTower.lean`), the
   complete catalogue of documented dead ends, and the methodology.  Nothing in the short paper
   depends on it.
 

@@ -81,6 +81,7 @@ import EM.FunctionField.AutonomousMap
 import EM.FunctionField.NecklaceFormula
 import EM.FunctionField.FFSieve
 import EM.FunctionField.DensityMC
+import EM.FunctionField.StableTower
 import EM.Stochastic.MissedPrimes
 import EM.Population.AvoidanceTube
 import EM.Population.InfiniteM
@@ -472,6 +473,10 @@ attribute [publish] stochastic_mc_of_tsd
 attribute [publish] FunctionFieldAnalog.ff_neg_one_unreachable
 attribute [publish] FunctionFieldAnalog.necklace_identity_proved
 attribute [publish] FunctionFieldAnalog.ff_almost_all_unconditional
+-- 2026-09-02: the function-field conjecture is FALSE over 𝔽_5[t] (stable Sylvester tower)
+attribute [publish] FunctionFieldAnalog.StableTower.g_irreducible
+attribute [publish] FunctionFieldAnalog.StableTower.tower_euclid_irreducible
+attribute [publish] FunctionFieldAnalog.not_ffMullinConjecture_five
 
 /-! ### Avoidance tube and spectral conspiracy -/
 

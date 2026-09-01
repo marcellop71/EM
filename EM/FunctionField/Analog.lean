@@ -897,8 +897,15 @@ theorem ff_monodromy_landscape {n : ℕ} :
 Over F₂, the product of all monic irreducibles of degree ≤ 2 is:
   t · (t+1) · (t²+t+1) = t⁴ + t  (= t^{2²} - t)
 
-Adding 1 gives t⁴ + t + 1 = Φ₅(t) over F₂, the 5th cyclotomic polynomial.
+Adding 1 gives t⁴ + t + 1 over F₂, irreducible (a factor of Φ₁₅; NOT Φ₅ — the fifth
+cyclotomic polynomial Φ₅ = t⁴+t³+t²+t+1 appears one stage later, as one of the two tied
+quartic factors of ffProd(3)+1 = t⁸+t⁴+t²+t+1 = (t⁴+t³+1)·Φ₅(t); corrected 2026-09-02).
 Its Galois group is Gal(F_{2⁴}/F₂) ≅ Z/4Z, NOT S₄.
+
+(2026-09-02) For p = 5 the autonomous branch from the seed X is PERPETUAL: every Euclid
+polynomial is irreducible, and `FFMullinConjecture 5` is FALSE — see
+`EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`.  The conjecture as stated
+in Section 2 is therefore a statement about non-exceptional primes only.
 
 ### Why this is structural, not accidental
 

@@ -365,6 +365,21 @@ On that branch the walk mod~$q$ is autonomous, $w\mapsto w^2+w$
 and reaches $-1$ only through a root of $w^2+w+1$, which exists in $\FF_q$
 only for $q\equiv1\pmod3$ (and $q=3$).
 
+The branch is not empty in the comparison class.  Over $\FF_5[t]$, with
+$t$ in place of~$2$ and least-degree irreducible factor in place of
+$\lpf$, every Euclid polynomial of the greedy sequence is irreducible
+(\lean{EM/FunctionField/StableTower.lean}{tower\_euclid\_irreducible}):
+the sequence is the Sylvester tower $t,\,t+1,\,t^2+t+1,\,
+t^4+2t^3+2t^2+t+1,\dots$, one irreducible of each degree~$2^k$, and the
+function-field Mullin conjecture is \emph{false} there
+(\lean{EM/FunctionField/StableTower.lean}{not\_ffMullinConjecture\_five}).
+The proof is a two-element check---the orbit of $-1/4=1$ under
+$w\mapsto w^2+w$ in $\FF_5$ is $1,2,1,2,\dots$ and $3,2$ are non-squares---
+plus the observation that the Frobenius orbit of a root of the $n$-th level
+polynomial has exactly $2^n$ points.  Over $\ZZ$ the corresponding
+statement, that some Sylvester tower of Euclid numbers is all prime, is
+what $\Cinf$ denies and what no method can exclude.
+
 \begin{theorem}[\lean{EM/Population/AutonomousBranch.lean}{eventually\_prime\_implies\_not\_mullin},
 \lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_mullin}]
 If $P_n+1$ is prime for all large~$n$ then every prime $q\equiv2\pmod3$ is
@@ -839,8 +854,9 @@ registry (\code{registry/}); the open points are MC and its equivalents,
 the threshold hypotheses, and the floor ladder.
 
 The repository's long document is a technical report: the variants
-(factor tree, two-point, $\varepsilon$-perturbed, mixed, function field,
-with placeholders marked), the spectral and variance routes, the
+(factor tree, two-point, $\varepsilon$-perturbed, mixed, function field
+with the $\FF_5[t]$ refutation and with placeholders marked), the
+spectral and variance routes, the
 obstruction calculus, a complete catalogue of \DEentries~documented dead
 ends with the reason each fails, and the human--AI methodology.  Nothing
 in this paper depends on it.

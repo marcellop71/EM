@@ -394,6 +394,8 @@ stable identifier independent of human naming.
 \midrule
 %%% ---- Function field ----
 \multicolumn{4}{l}{\emph{Function field analog}} \\
+\quad FF-MC is \textbf{false} over $\FF_5[t]$ (seed $t$ misses $t+3$) & \proved & \code{not\_ffMullinConjecture\_five}  & ea1b0b39 \\
+\quad Every level polynomial $\Phi_6^n(t)+1$ irreducible over $\FF_5$ (stable tower) & \proved & \code{g\_irreducible}  & 7103ee63 \\
 \quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & \proved & \code{ff\_dh\_implies\_ffmc}  & 1e2fbef6 \\
 \quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ (\code{WeilCharSumBoundFF} is a \code{True} placeholder) & \placeholder & \code{weil\_implies\_ff\_se}  & 3076c478 \\
 \quad $\ZZ/4\ZZ$: generation $\neq$ coverage (Dead End~\#130) & \proved & \code{alternating\_walk\_misses\_two}  & 2282e3a7 \\

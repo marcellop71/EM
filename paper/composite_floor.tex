@@ -38,8 +38,10 @@ This section is about that statement alone.  The arc:
 \item[\S\ref{sec:arboreal}] The arboreal input---what Chebotarev would
   supply---is free.  The residual gap is disjoint from it.
 \item[\S\ref{sec:ff-telescope}] Over $\FF_p[t]$, where every analytic input
-  is a theorem, the whole telescope holds with the epsilons removed---and
-  nothing moves.
+  is a theorem, the whole telescope holds with the epsilons removed---and,
+  uniformly in~$p$, nothing moves; for particular~$p$ it moves in both
+  directions ($(\mathrm{C}\infty)$ false over $\FF_5[t]$, machine-checked;
+  true over $\FF_2[t]$ and for $p \equiv 1 \pmod 3$).
 \item[\S\ref{sec:cinfty-verdict}] The verdict: $\MC$ implies a
   no-infinite-prime-tower statement for a doubly exponential sequence,
   of the shape of the Fermat question.
@@ -1065,6 +1067,26 @@ exactly computable, is a statement about the population.  This is Dead
 End~\#90 in the setting where every analytic input is a theorem---which is
 the strongest available evidence that the analytic input was never the
 obstruction.
+
+\paragraph{Where the question does move.}
+The preceding paragraph is about the question \emph{as posed uniformly
+in~$p$}.  For particular primes the model decides it, in both directions.
+Over $\FF_5[t]$ the seed-$t$ sequence is perpetually irreducible
+(\lean{EM/FunctionField/StableTower.lean}{tower\_euclid\_irreducible};
+Theorem~\ref{thm:ffmc-false-five}): $\delta_{\mathrm{FF}}(n) = 0$ for every
+$n$, $D(N) = 2^N$ exactly, $C_{\mathrm{FF}} = 1$, and
+$(\mathrm{C}\infty)$ is \emph{false}.  The branch that
+\S\ref{sec:cinfty-verdict} cannot rule out over~$\ZZ$ is realised there,
+and with it the failure of the conjecture.  In the other direction the
+floor is a theorem for $p = 2$, where $P \mapsto P(P+1) = P^2 + P$ is
+additive and $(F+1)^3P + 1 = (P^4+P^3+1)(P^4+P^3+P^2+P+1)$ forces a
+reducible stage among any four consecutive ones (sharp: the seed~$t$
+attains three), and for $p \equiv 1 \pmod 3$, where $\Phi_3$ splits and no
+two consecutive Euclid polynomials are irreducible.  Which case a prime
+$p \equiv 2 \pmod 3$ falls into is decided by a finite check on the orbit
+of $-1/4$ under $y \mapsto y^2+y$ in~$\Fp$ (the exceptional primes of
+\S\ref{sec:function-field}).  The two floors are not yet formalized; the
+$\FF_5$ refutation is.
 
 %% =========================================================================
 \subsection{The Verdict}

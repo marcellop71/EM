@@ -75,6 +75,7 @@ import EM.FunctionField.MultiplierCCSB
 import EM.FunctionField.NecklaceFormula
 import EM.FunctionField.OrbitBarrier
 import EM.FunctionField.PopulationEquidist
+import EM.FunctionField.StableTower
 import EM.FunctionField.StochasticMC
 import EM.FunctionField.SubgroupEscape
 import EM.FunctionField.WeakMC

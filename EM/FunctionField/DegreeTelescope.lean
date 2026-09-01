@@ -64,6 +64,17 @@ barrier (`EM/Meta/BagInformation.lean`, Dead End #90), and this file is the shar
 of the evidence that it, and not the analytic input, is the obstruction: here every
 analytic input is a theorem, and nothing moves.
 
+**Update 2026-09-02 — for particular `p` the question does move, in both directions.**
+Over `𝔽_5[t]` the seed-`X` sequence is perpetually irreducible from stage `0`
+(`EM/FunctionField/StableTower.lean`, `tower_euclid_irreducible`): `ffDefect n = 0` for all `n`,
+`ffGrowthConstant = 1`, `FFPerpetualIrreducibility d 0` holds, `(C∞)_FF` is *false*, and so is
+`FFMullinConjecture 5` (`not_ffMullinConjecture_five`).  Over `𝔽_2[t]` the take-all map
+`P ↦ P² + P` is additive and `(F+1)³P + 1 = (P⁴+P³+1)(P⁴+P³+P²+P+1)`, so no four consecutive
+Euclid polynomials are irreducible and `(C∞)_FF` holds for every seed; for `p ≡ 1 (mod 3)` `Φ₃`
+splits and no two consecutive ones are.  (The last two are not yet formalized.)  Which case a
+prime `p ≡ 2 (mod 3)` falls into is decided by a finite check on the orbit of `−1/4` under
+`y ↦ y² + y` in `𝔽_p`.
+
 ## Contents
 
 * `ffDeg`, `ffDefect`, `ffNormDeg` — the telescope's three sequences.

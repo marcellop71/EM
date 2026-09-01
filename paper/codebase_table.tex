@@ -130,8 +130,8 @@
 \code{Adelic/Profinite.lean} & Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion & 182 \\
 \code{Adelic/UniformConductor.lean} & UCE hypothesis, conductor counting; UCE at $M{=}1$ is RoughLPFEquidist (false, \#160) & 298 \\
 \code{Adelic/ProfiniteGeneration.lean} & Primes generate $(\ZZ/N\ZZ)^\times$; MC$\Rightarrow$full generation & 176 \\
-\code{FunctionField/Analog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 958 \\
-\code{FunctionField/DegreeTelescope.lean} & Exact degree telescope over $\FF_p[t]$; (G$_{\mathrm{FF}}$) $\Leftrightarrow$ (C$\infty$)$_{\mathrm{FF}}$ & 572 \\
+\code{FunctionField/Analog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 965 \\
+\code{FunctionField/DegreeTelescope.lean} & Exact degree telescope over $\FF_p[t]$; (G$_{\mathrm{FF}}$) $\Leftrightarrow$ (C$\infty$)$_{\mathrm{FF}}$ & 583 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/MultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 768 \\
@@ -145,7 +145,7 @@
 \code{FunctionField/FFSieve.lean} & Sieve chain: SPV $\to$ PSCD $\to$ almost-all GenMixedMC (zero hypotheses) & 325 \\
 \code{FunctionField/DensityMC.lean} & Genuine trapped-density statement: exact congruence sieve, pigeonhole, density $\to 0$ from Kornblum divergence (sole hypothesis) & 1550 \\
 \code{FunctionField/Master.lean} & Theorems A/B/C/D assembly: factor tree + stochastic MC + sieve chain & 306 \\
-\code{FunctionField/AutonomousMap.lean} & $\Phi_3$ criterion: $-1$ unreachable for $p \equiv 2 \pmod{3}$, orbit dynamics & 225 \\
+\code{FunctionField/AutonomousMap.lean} & $\Phi_3$ criterion: $-1$ unreachable for $p \equiv 2 \pmod{3}$, orbit dynamics & 230 \\
 \code{GaussEM/GaussEMDefs.lean} & Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality & 291 \\
 \code{GaussEM/GaussWalkStructure.lean} & Gaussian walk: split/inert classification, norm kernel, orbit barrier & 334 \\
 \code{GaussEM/GaussConfinement.lean} & Integer walk confined to real axis, norm closure, Dead End~\#135 & 349 \\
@@ -201,7 +201,7 @@
 \code{Meta/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 710 \\
 \code{Meta/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 451 \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 219 \\
-\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 785 \\
+\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 789 \\
 \code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 785 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 309 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 129 \\
@@ -257,4 +257,7 @@
 \code{Population/ProfiniteEnsemble.lean} & Ambient profinite ensemble $\Omega=\prod_r \mathbb{Z}/r$ with the product uniform measure; \code{measure\_cylinder} and \code{measure\_residue\_classes} (an $M$-periodic event has measure its period fraction); packaging only, and $\mathbb{N}\subset\Omega$ is $\mu$-null & 271 \\
 \code{Population/ProfiniteDynamics.lean} & The greedy dynamics on a profinite point: the multiplier is the least prime whose coordinate of the current Euclid element vanishes; the agreement gate \code{profSeq\_iota} (hypothesis $1\le m$ only) and band-local agreement & 277 \\
 \code{Population/ProfiniteHeadline.lean} & \code{measure\_some\_prime\_missed\_eq\_zero}: $\mu$-almost every profinite point captures every prime whose coordinate it does not annihilate; the union over $q$ by countable additivity, with no $q$-uniform rate & 393 \\
+\midrule
+\multicolumn{3}{l}{\emph{Adelic and profinite framework (new)}} \\
+\code{FunctionField/StableTower.lean} & $\FF_5[t]$: every level polynomial $\Phi_6^n(t)+1$ irreducible (stable tower, Frobenius-orbit proof); \code{FFMullinConjecture 5} is \textbf{false} & 432 \\
 \end{longtable}

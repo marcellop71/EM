@@ -73,7 +73,11 @@ survives.  Almost-all tree hitting is unconditional; the ε-perturbed rule captu
 `maxFac` misses.  **Selection is where the difficulty lives** — access to the factor bag is
 not the problem, the deterministic choice of its least element is.  Over `𝔽_p[t]` the Weil
 statements in Lean are `True` placeholders (marked; badged `[placeholder]` in the paper); the
-real FF content is the exact degree telescope, `Φ₃` exclusion, `FFDirichletDensity`.
+real FF content is the exact degree telescope, `Φ₃` exclusion, `FFDirichletDensity` — and,
+since 2026-09-02, a **refutation**: over `𝔽_5[t]` the seed-`t` sequence is a perpetually
+irreducible Sylvester tower, so `FFMullinConjecture 5` is false
+(`EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`).  The branch (C∞) denies
+over `ℤ` is realised there; the FF conjecture is a statement about non-exceptional primes.
 
 ## 7. The population, done properly: the seed-average law (2026-08-19)
 
@@ -219,3 +223,21 @@ where no general theory exists and the known results are population-only.
 * ~~The seeded constant suggests studying `T` on the fibre `{C = 0}`: does the doubling factor
   map have a *second* invariant (a bounded quantity not scaled by `T`)?~~ — DONE: `ρ` above.
   It is not a hitting-time proxy (size–residue decoupling); it is a floor-ladder refinement.
+
+## The profinite dynamics, classified (2026-09-01)
+
+A logic-oriented session (`docs/analysis/logic_routes_2026-09-01.md`) found that model theory,
+ultrafilters and geometric logic add no mechanism (each rebuilds the population picture under
+another name), but that the profinite layer itself is *unfinished* rather than exhausted.  On
+`Ω = ∏_r 𝔽_r` the greedy map is injective on each stratum, adds exactly one zero coordinate per
+step, and on unit seeds is conjugate to the shift on **admissible enumerations of the primes**
+via `x_{p_n} = −(p_0⋯p_{n−1})^{-1} mod p_n`, admissibility being one congruence per inversion.
+The basin contains explicit non-integer points (the primorial point, itinerary `2,3,5,7,…`);
+factor-tree paths from 1 are the itineraries of the point `1` under non-greedy rules; every
+invariant probability lives on the singular set.  Selection rules descend to `Ω` exactly when
+the priority order has type ω, and for those capture is a clopen cylinder, so the No-Invariant
+Theorem should generalise to every ω-order — the min/max dichotomy is profinite continuity.
+Two theorem targets: the coding/classification theorem, and `no_cvdp_obstruction` for arbitrary
+ω-orders.  §G stays out of reach of `Ω` because profinite points have no size (§7.4 there).
+Rational points of `Ω` are the shifted sequences `P ↦ P·lpf(aP+b)`; the unit `1` is the only
+integer unit, so the Euclid–Mullin orbit is the orbit of the unique integer unit.
