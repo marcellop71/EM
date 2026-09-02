@@ -19,12 +19,14 @@ The first terms are 2, 3, 7, 43, 13, 53, 5, 6221671, 38709183810571, 139, 2801, 
 
 Two documents, both with clickable links to the Lean source for every formally verified result:
 
-- **Short paper** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (10 pages, sources in
+- **Short paper** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (13 pages, sources in
   [`paper/short/`](paper/short/)): the mathematics, with proof sketches.  The residue-walk
   reformulations of MC (all equivalent to MC), the composite floor (growth constant, MC ⇒ (C∞),
   Sylvester towers, the invariant ρ), the population laws (head domination, the bag-conditioned
-  1/q law, almost-all factor-tree hitting, Karamata and Mertens in progressions), and min versus
-  max (Cox–van der Poorten's omission of 5, no congruence invariant under lpf).
+  1/q law, almost-all factor-tree hitting, Karamata and Mertens in progressions), min versus
+  max (Cox–van der Poorten's omission of 5, no congruence invariant under lpf), and Mullin's
+  conjecture in head coordinates (the least missing prime): MC ⟺ head → ∞, every head capture is a
+  composite Euclid number, and the seed-average law re-indexed by the head.
 - **Technical report** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (sources in [`paper/`](paper/)):
   everything the formalization does — the above plus the variants, the spectral and variance
   routes, the obstruction calculus, the function-field analogue (placeholders marked; the

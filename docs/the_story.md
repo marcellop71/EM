@@ -267,3 +267,12 @@ a hierarchy of "the least factor is small", MC at the top.  Near the floor: `CI(
 NotConfined ⟹ (C∞)`, `¬CI(3 mod 4) ⟹ (C∞)`, `CI(1 mod 4) ⟹ (C∞)`; every Euclid number has a
 prime factor `≡ 3 (mod 4)` (`ClassInfinitude.lean`).  Rigidity: each prime divides at most `π(q)`
 Euclid numbers.  Every route to (C∞) over `ℤ` fails structurally; the floor is Fermat-hard.
+
+## Head coordinates for the population (2026-09-02)
+
+`EM/Population/SeedHead.lean` re-indexes the seed-average law by the head of a seeded orbit:
+GenMC(m) ⟺ head → ∞; at a fixed late stage the head exceeds any `Q` for almost all seeds; and
+§G is *equivalent* to the stall tail (N2′) — the finite part is free.  Effective excursion tails
+give an effective growing range (ceiling `√(log log X)` with the present constants) and provably
+cannot give §G: all-scale summable tails imply cofinite MC.  The (N2) predicate was corrected to
+quantify over primes (it was false as written).  See `docs/analysis/compositeness_2026-09-02.md` §9.

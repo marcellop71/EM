@@ -45,7 +45,11 @@ because the `T`-orbit of `2` has density `0`.
 `docs/analysis/simultaneous_in_q_scoping.md` §2.5 names the missing input for the
 simultaneous-in-`q` law as
 
-> (N2) for every `δ` a `Q` with `#{m ≤ X : ∃ q > Q, m misses q} ≤ δ X` **for all `X`**.
+> (N2) for every `δ` a `Q` with `#{m ≤ X : ∃ prime q > Q, m misses q} ≤ δ X` **for all `X`**.
+
+(The quantifier is over *primes*: without it every composite `q > X` is "missed" by every
+seed `m ≤ X` and the predicate is false outright — `SeedHead.scaleUniformTail_without_primality_false`;
+corrected 2026-09-02.)
 
 "For all `X`" is fatal: at `X = m` with `δ < 1/m` the bound forces the seed `m` itself to miss
 no prime `> Q`.  So (N2) implies that **every** seed misses only finitely many of the primes
@@ -283,23 +287,25 @@ theorem genMC_genProd_iff (m M : ℕ) :
 /-! ## 3. "(N2)" as written is an orbit statement -/
 
 /-- The scale-uniform tail bound named "(N2)" in the §G scoping: for every `δ > 0` there is a
-`Q` such that **for all `X`**, the seeds `m ≤ X` missing some prime `q > Q` coprime to `m`
-number at most `δ X`. -/
+`Q` such that **for all `X`**, the seeds `m ≤ X` missing some *prime* `q > Q` coprime to `m`
+number at most `δ X`.  (Primality is essential: see
+`SeedHead.scaleUniformTail_without_primality_false`.) -/
 def ScaleUniformTail : Prop :=
   ∀ δ : ℝ, 0 < δ → ∃ Q : ℕ, ∀ X : ℕ,
-    (((Finset.Icc 1 X).filter (fun m => ∃ q, Q < q ∧ Misses q m)).card : ℝ) ≤ δ * (X : ℝ)
+    (((Finset.Icc 1 X).filter (fun m => ∃ q, Q < q ∧ q.Prime ∧ Misses q m)).card : ℝ)
+      ≤ δ * (X : ℝ)
 
 /-- **(N2) forces every seed to miss only finitely many primes.**  Taking `X = m` and
 `δ < 1/m` leaves no room for `m` itself in the bad set. -/
 theorem scaleUniformTail_cofinite (h : ScaleUniformTail) (m : ℕ) (hm : 1 ≤ m) :
-    ∃ Q : ℕ, ∀ q, Q < q → ¬ Misses q m := by
+    ∃ Q : ℕ, ∀ q, Q < q → q.Prime → ¬ Misses q m := by
   have hδ : (0 : ℝ) < 1 / (2 * (m : ℝ)) := by positivity
   obtain ⟨Q, hQ⟩ := h _ hδ
-  refine ⟨Q, fun q hq hmiss => ?_⟩
-  have hmem : m ∈ (Finset.Icc 1 m).filter (fun m => ∃ q, Q < q ∧ Misses q m) :=
-    Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨hm, le_rfl⟩, q, hq, hmiss⟩
+  refine ⟨Q, fun q hq hqp hmiss => ?_⟩
+  have hmem : m ∈ (Finset.Icc 1 m).filter (fun m => ∃ q, Q < q ∧ q.Prime ∧ Misses q m) :=
+    Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨hm, le_rfl⟩, q, hq, hqp, hmiss⟩
   have hcard : (1 : ℝ) ≤ (((Finset.Icc 1 m).filter
-      (fun m => ∃ q, Q < q ∧ Misses q m)).card : ℝ) := by
+      (fun m => ∃ q, Q < q ∧ q.Prime ∧ Misses q m)).card : ℝ) := by
     exact_mod_cast Finset.card_pos.mpr ⟨m, hmem⟩
   have hbound := hQ m
   have hmpos : (0 : ℝ) < (m : ℝ) := by exact_mod_cast hm
@@ -316,7 +322,7 @@ theorem scaleUniformTail_cofinite_mc (h : ScaleUniformTail) :
   refine ⟨Q, fun q hq hqp => ?_⟩
   by_cases h2 : q ∣ 2
   · exact ⟨0, by rw [Mullin.seq_zero]; exact ((Nat.prime_dvd_prime_iff_eq hqp Nat.prime_two).mp h2).symm⟩
-  · have hnm : ¬ Misses q 2 := hQ q hq
+  · have hnm : ¬ Misses q 2 := hQ q hq hqp
     by_contra hno
     exact hnm ⟨h2, fun k hk => hno ⟨k + 1, by rw [← genSeq_two_eq_seq_succ, hk]⟩⟩
 

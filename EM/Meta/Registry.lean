@@ -59,6 +59,7 @@ import EM.Population.DefectTelescope
 import EM.Population.SylvesterTower
 import EM.Population.ClassInfinitude
 import EM.Population.HeadDynamics
+import EM.Population.SeedHead
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -531,6 +532,17 @@ attribute [publish] HeadDynamics.head_le_nth_prime
 attribute [publish] HeadDynamics.capture_composite
 attribute [publish] HeadDynamics.mullin_implies_lpf_le_nth_prime_io
 attribute [publish] HeadDynamics.composite_of_lpf_le_nth_prime
+attribute [publish] SeedHead.genMC_iff_head_tendsto
+attribute [publish] SeedHead.exists_misses_of_head_le
+attribute [publish] SeedHead.head_stage_density
+attribute [publish] SeedHead.head_bounded_density
+attribute [publish] SeedHead.head_growing_range
+attribute [publish] SeedHead.headEscapesAA_iff_almostAllGenMC
+attribute [publish] SeedHead.headEscapesAA_iff_stallTail
+attribute [publish] SeedHead.effective_range
+attribute [publish] SeedHead.head_effective_range
+attribute [publish] SeedHead.allScaleTail_cofinite_mc
+attribute [publish] SeedHead.scaleUniformTail_without_primality_false
 
 /-! ### Avoidance tube and spectral conspiracy -/
 

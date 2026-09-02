@@ -288,6 +288,13 @@ stable identifier independent of human naming.
 \quad Pathwise compensator $\sum_{k<n} S_k \geq (c_1/2)n$ (deterministic) & \proved & \code{LargeStepRoughness.pathwise\_compensator}  & \textrm{---} \\
 \quad Theorem C (good uncaptured seeds exponentially rare) & \proved & \code{TheoremC.theorem\_C}  & \textrm{---} \\
 \quad \textbf{Almost-all capture, density form} (per fixed $q$) & \proved & \code{AlmostAllDensity.almost\_all\_genmc\_density}  & \textrm{---} \\
+\quad GenMC$(m)$ $\iff$ the head of the seed tends to infinity & \proved & \code{SeedHead.genMC\_iff\_head\_tendsto}  & ecd8cc52 \\
+\quad At a fixed late stage the head exceeds $Q$ for a.a.\ seeds & \proved & \code{SeedHead.head\_stage\_density}  & f3b61dec \\
+\quad Growing range in head coordinates & \proved & \code{SeedHead.head\_growing\_range}  & 8424dd54 \\
+\quad \S G $\iff$ the stall tail (N2$'$) & \proved & \code{SeedHead.headEscapesAA\_iff\_stallTail}  & 233bf1dd \\
+\quad Effective thresholds give an effective growing range & \proved & \code{SeedHead.effective\_range}  & 83346149 \\
+\quad All-scale summable tails imply cofinite MC & \proved & \code{SeedHead.allScaleTail\_cofinite\_mc}  & b65c3225 \\
+\quad (N2) without primality is false & \proved & \code{SeedHead.scaleUniformTail\_without\_primality\_false}  & 5fcc463a \\
 \quad Profinite packaging: $\mu$-a.e.\ point captures every prime & \proved & \code{ProfiniteHeadline.measure\_some\_prime\_missed\_eq\_zero}  & \textrm{---} \\
 \quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting) & \proved & \code{dynamical\_hitting\_implies\_mullin}  & d0bcf5e4 \\
 \quad \textbf{CCSB $\Rightarrow$ MC} (char sums) & \proved & \code{complex\_csb\_mc'}  & 903f2200 \\

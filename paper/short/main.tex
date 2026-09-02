@@ -581,6 +581,13 @@ and a diagonal argument lets the range grow with the seed: for some
 ineffective nondecreasing $Q\to\infty$, almost every seed~$m$ selects every
 prime $q\le Q(m)$ coprime to it
 (\lean{EM/Population/GrowingRange.lean}{seed\_range\_never\_density}).
+In head coordinates (the head of a seed being the least prime outside its
+bag) the simultaneous law is exactly the statement that a head which has
+passed~$Q$ rarely stalls afterwards
+(\lean{EM/Population/SeedHead.lean}{headEscapesAA\_iff\_stallTail}), and
+effective per-prime tails can give an effective growing range but not the
+simultaneous law: valid at all scales they already imply a cofinite Mullin
+conjecture (\lean{EM/Population/SeedHead.lean}{allScaleTail\_cofinite\_mc}).
 That is as far as it goes, and the only bridge to a single orbit is a
 theorem: if some relation on seeds preserves ``$m$ misses~$q$'' for every
 $q$ and its class of~$2$ has positive upper density, then $\MC$ holds

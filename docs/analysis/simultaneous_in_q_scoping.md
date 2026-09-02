@@ -194,3 +194,14 @@ Neither route maps onto an existing entry (`deadEndCount` was 166 at the time of
 3. **Do not pursue** a `q`-uniform rate for its own sake; record (K1)/(K2) so no future statement
    quietly assumes an explicit `n(q)`.
 4. **Do not pursue** logarithmic density.
+
+## Addendum 2026-09-02 — head coordinates and the exact status of (N2′)
+
+`EM/Population/SeedHead.lean`: with `head m n` the least prime outside the bag of seed `m`,
+§G (the seeds whose head does not tend to infinity have density 0) is **equivalent** to (N2′)
+(`headEscapesAA_iff_stallTail`); the finite part is unconditional (`head_bounded_density`).
+The quantifier in (N2)/(N2′) must range over *primes* — the unrestricted predicate is false
+(`scaleUniformTail_without_primality_false`); `GrowingRange.ScaleUniformTail` was corrected.
+Any per-prime tail valid at all scales with summable coefficients implies cofinite MC
+(`allScaleTail_cofinite_mc`); effective tails yield an effective growing range only
+(`effective_range`), of size at most `√(log log X)` with the present constants.

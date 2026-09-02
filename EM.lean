@@ -140,6 +140,7 @@ import EM.Obstruction.RuleTransition
 import EM.Population.AutonomousBranch
 import EM.Population.ClassInfinitude
 import EM.Population.HeadDynamics
+import EM.Population.SeedHead
 import EM.Population.AvoidanceTube
 import EM.Population.ArborealTower
 import EM.Population.BackwardLevels

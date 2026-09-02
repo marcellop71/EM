@@ -272,6 +272,38 @@ argument, which is a theorem about countably additive measures, and the
 the scale, an orbit statement (it implies a cofinite Mullin conjecture for
 the seed~$2$; dead end~\#176).
 
+The same law reads more sharply in \emph{head coordinates}.  For a seed
+$m\ge 1$ let $\mathrm{head}(m,n)$ be the least prime not dividing the
+accumulator $P_n(m)$.  Then $\mathrm{GenMC}(m)$ holds iff $\mathrm{head}(m,n)\to\infty$
+(\lean{EM/Population/SeedHead.lean}{genMC\_iff\_head\_tendsto}), and the
+finite-union law says that at one fixed late stage the head exceeds any
+prescribed~$Q$ for almost all seeds
+(\lean{EM/Population/SeedHead.lean}{head\_stage\_density}).  Write
+$(\mathrm{N2}')$ for the thresholded tail input: for every $\delta>0$ there
+are $Q$ and $X_0$ such that for $X\ge X_0$ at most $\delta X$ seeds $m\le X$
+miss some \emph{prime} $q>Q$.  Then the simultaneous-in-$q$ law is
+\emph{equivalent} to $(\mathrm{N2}')$
+(\lean{EM/Population/SeedHead.lean}{headEscapesAA\_iff\_stallTail}): the
+finite part is free, and what is open is exactly that a head which has
+passed~$Q$ rarely stalls afterwards.  Two facts bound what an
+\emph{effective} version of the per-prime law could add.  If the per-range
+thresholds are bounded by an explicit $G$, the growing range can be taken
+$Q(X)\ge G^{-1}(X)$
+(\lean{EM/Population/SeedHead.lean}{effective\_range}); with the present
+constants ($C\ge 48q$ and a period of size $e^{Y}$ with $\log Y\ge n^2/2$)
+this ceiling is of order $(\log\log X)^{1/2}$, and replacing the Karamata
+input by an explicit prime number theorem in progressions would not change
+it.  And a per-prime tail bound valid at \emph{all} scales with summable
+coefficients already implies that the Euclid--Mullin sequence contains every
+sufficiently large prime
+(\lean{EM/Population/SeedHead.lean}{allScaleTail\_cofinite\_mc}), so the
+route ``effective tails, then Borel--Cantelli'' to the simultaneous law is
+closed rather than merely hard.  (The quantifier in $(\mathrm{N2})$ must
+range over primes: without that restriction the predicate is false outright,
+since every composite $q>X$ is ``missed'' by every seed $m\le X$
+(\lean{EM/Population/SeedHead.lean}{scaleUniformTail\_without\_primality\_false});
+the formal statement was corrected accordingly.)
+
 One modest orbit-existence statement does follow by counting alone: for
 every prime~$q$ there is a \emph{squarefree} seed coprime to~$q$ whose
 greedy orbit selects~$q$

@@ -188,3 +188,54 @@ compactness gives recurrence to *some* residue but not to `−1`, equidistributi
 Verdict: **worth the sharpening, done; not a route by itself.**  The genuinely open weak target
 it isolates remains CI(3 mod 4), and the newly visible quantitative consequence (H) is a clean
 way to state how much compositeness MC needs: a factor below `log E_n`, infinitely often.
+
+## 9. Head coordinates for the seed population (2026-09-02, third pass)
+
+Lean: `EM/Population/SeedHead.lean`.  For a seed `m ≥ 1` let `head m n` be the least prime not
+dividing the accumulator `genProd m n` (the bag of a seed contains the primes of the seed).
+
+**Item 1 — the seed-average law re-indexed by the head.**
+* `GenMC m ⟺ head m → ∞` (`genMC_iff_head_tendsto`); a bounded head is a missed prime, namely
+  its eventual value (`exists_misses_of_head_le`).
+* `head_stage_density`: for every `Q, ε` one horizon `n` and one threshold `X₀` with
+  `#{m ≤ X : head m n ≤ Q} ≤ εX` for `X ≥ X₀` — at a fixed late stage the head exceeds `Q` for
+  almost all seeds.  This is `finite_simultaneous_density` (the common sampling frame `[1,X]`
+  already existed) read in head coordinates.
+* `head_bounded_density`, `head_growing_range`: seeds whose head stays `≤ Q` (resp. `≤ Q(m)`,
+  `Q → ∞` ineffective) forever have density 0.
+* **§G ⟺ StallTail** (`headEscapesAA_iff_stallTail`), where StallTail is the thresholded
+  (N2′): for every δ there are `Q, X₀` with `#{m ≤ X : m misses some prime > Q} ≤ δX` for
+  `X ≥ X₀`.  The finite part is free, so §G is *exactly* "a head that has passed `Q` rarely
+  stalls afterwards" — one monotone quantity, one missing tail bound.  (Also
+  `headEscapesAA_iff_almostAllGenMC`.)
+
+**Item 2 — what an effective excursion tail gives.**
+* Where the ineffectivity lives.  `LemmaD` uses the *asymptotic* weighted PNT in progressions
+  (`IK.weightedPNTinAP_asymp_proved`, proved by Karamata's Tauberian theorem, threshold `x₀(q,ε)`
+  existential with no rate).  Everything downstream is explicit modulo that: `pathwise_compensator`
+  has `n₀ = max(n₂, ⌈e^600⌉)`, Theorem C's `κ, K₀, n₁` come from `lemma_D_z`, `three_type_union_small`
+  takes `n ≥ max(n₁, Cc)` with `Cc ≥ 48q` and a truncation `Y` with `log Y ≥ n²/2`, the sample
+  space is one period `M = ∏_{r ≤ Y, r ≠ q} r ≈ e^Y`, and the density conversion
+  (`PeriodicDensity.eventually_density_le`) takes `X₀ = M`.
+* Consequence: even with every constant made explicit, the per-range threshold is
+  `X₀(K) ≥ exp(exp(c K²))` (from `n ≥ 48K` and `log Y ≥ n²/2`), so the effective growing range
+  extracted by `effective_range` / `head_effective_range` is at most **`Q(X) ≍ (log log X)^{1/2}`**.
+  Replacing Karamata by an explicit PNT in APs (thresholds of order `exp(c√q log³q)` are in the
+  literature, Bennett–Martin–O'Bryant–Rechnitzer 2018; not in Mathlib) would not change this
+  shape, since `exp(√q log³ q) ≤ exp(n²/2)` already for `n ≥ 48q`.  The bottleneck is the
+  design `Cc ≥ 48q` and the period `e^Y`, not the Tauberian input.
+* What effective tails cannot do: `allScaleTail_cofinite_mc` — a per-prime bound
+  `#{m ≤ X : m misses q} ≤ f(q)·X` valid at *all* scales with `f` of small tails implies that
+  the Euclid–Mullin sequence contains every sufficiently large prime.  So "effective tails ⟹
+  Borel–Cantelli ⟹ §G" is closed, not hard (#176 sharpened from the (N2) shape to the tail
+  shape).  The reason is the same as before: at scale `X` the tail concerns primes `q > X`, for
+  which no period `≤ X` sees the event.
+* Correction: the predicate `GrowingRange.ScaleUniformTail` quantified over all `q`, and without
+  primality it is false outright (every composite `q > X` is "missed" by every seed `m ≤ X`,
+  `scaleUniformTail_without_primality_false`), which made `scaleUniformTail_cofinite_mc` vacuous.
+  Statement corrected to primes; the proof and the conclusion of #176 are unchanged.
+
+**Verdict.**  Item 1 done: the population law is now literally a statement about the head, and
+§G is identified with the stall tail.  Item 2 done in the only honest form: the effective
+program is stated (`effective_range`), its ceiling computed (`√(log log X)`), its analytic input
+named (explicit PNT in APs, outside Mathlib), and its impossibility of reaching §G proved.
