@@ -1,5 +1,5 @@
-{"published": 340,
- "proved": 272,
+{"published": 361,
+ "proved": 293,
  "project": "EM.Meta.Registry",
  "open_points": 21,
  "lean_toolchain": "leanprover/lean4:v4.33.0",

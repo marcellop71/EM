@@ -396,6 +396,23 @@ stable identifier independent of human naming.
 \multicolumn{4}{l}{\emph{Function field analog}} \\
 \quad FF-MC is \textbf{false} over $\FF_5[t]$ (seed $t$ misses $t+3$) & \proved & \code{not\_ffMullinConjecture\_five}  & ea1b0b39 \\
 \quad Every level polynomial $\Phi_6^n(t)+1$ irreducible over $\FF_5$ (stable tower) & \proved & \code{g\_irreducible}  & 7103ee63 \\
+\quad Level polynomials irreducible over $\ZZ$ (via mod 5) & \proved & \code{gZ\_irreducible}  & f945fddc \\
+\quad $\FF_2[t]$: three irreducible Euclid polynomials force a reducible fourth & \proved & \code{euclid\_three\_reducible\_of\_two}  & 7fd8e217 \\
+\quad $\FF_2[t]$: composite floor, $C_{\mathrm{FF}} = 0$ for every sequence & \proved & \code{ffGrowthConstant\_eq\_zero\_of\_two}  & b21e9f26 \\
+\quad $p \equiv 1 \pmod 3$: an irreducible Euclid polynomial is followed by a reducible one & \proved & \code{euclid\_succ\_reducible\_of\_one\_mod\_three}  & 5645c9bc \\
+\quad $p \equiv 1 \pmod 3$: composite floor, $C_{\mathrm{FF}} = 0$ & \proved & \code{ffGrowthConstant\_eq\_zero\_of\_one\_mod\_three}  & 472982e7 \\
+\quad $\FF_5$: $g_n(t^2+c)$ irreducible for $c \in \{1,2\}$ (quadratic seeds are perpetual towers) & \proved & \code{g\_comp\_irreducible}  & d6ca4b90 \\
+\quad Frobenius-orbit criterion: period $=$ degree $\Rightarrow$ irreducible (any $p$) & \proved & \code{irreducible\_of\_natDegree\_eq\_minimalPeriod}  & 7dd39430 \\
+\quad Roots of an irreducible of degree $d$ lie in $\FF_{p^d}$ & \proved & \code{pow\_p\_pow\_natDegree\_eq\_self}  & 288bcff5 \\
+\quad $p \equiv 2 \pmod 3$: factors of $\Phi_3(P)$ have even degree & \proved & \code{even\_natDegree\_of\_dvd\_phi3}  & 5d062791 \\
+\quad $\FF_2$: first four terms forced ($t, t{+}1, t^2{+}t{+}1, t^4{+}t{+}1$) & \proved & \code{ff\_two\_first\_terms}  & 6673daad \\
+\quad $\FF_2$: the constant 3 is attained by the seed $t$ & \proved & \code{ff\_two\_attains\_three}  & 7f25b8de \\
+\quad $\FF_3$: $E_{n+1} = (P_n-1)^2$ after an irreducible stage & \proved & \code{euclid\_succ\_eq\_sq}  & 58c4b7a0 \\
+\quad $\FF_3$: composite floor, constant 1; first five terms forced & \proved & \code{ff\_three\_first\_terms}  & 08ebc965 \\
+\quad $\FF_2$: after two irreducible stages, $4 \mid$ degree of the next factor & \proved & \code{four\_dvd\_ffSeq\_natDegree\_of\_two\_irreducible}  & e33a8851 \\
+\quad $\FF_5$: every linear seed $t+a$ is a perpetual tower & \proved & \code{lin\_seed\_perpetual}  & d4f5219b \\
+\quad $\FF_5$: every valid selection from $t^2+c$ follows the tower & \proved & \code{quad\_seed\_perpetual}  &a1d1f74b \\
+\quad Level polynomials irreducible over $\mathbb{Q}$ (Gauss); generic sequence is a Sylvester tower & \proved & \code{gQ\_irreducible}  &8ee16c57 \\
 \quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & \proved & \code{ff\_dh\_implies\_ffmc}  & 1e2fbef6 \\
 \quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ (\code{WeilCharSumBoundFF} is a \code{True} placeholder) & \placeholder & \code{weil\_implies\_ff\_se}  & 3076c478 \\
 \quad $\ZZ/4\ZZ$: generation $\neq$ coverage (Dead End~\#130) & \proved & \code{alternating\_walk\_misses\_two}  & 2282e3a7 \\

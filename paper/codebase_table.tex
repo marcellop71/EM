@@ -131,7 +131,7 @@
 \code{Adelic/UniformConductor.lean} & UCE hypothesis, conductor counting; UCE at $M{=}1$ is RoughLPFEquidist (false, \#160) & 298 \\
 \code{Adelic/ProfiniteGeneration.lean} & Primes generate $(\ZZ/N\ZZ)^\times$; MC$\Rightarrow$full generation & 176 \\
 \code{FunctionField/Analog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 965 \\
-\code{FunctionField/DegreeTelescope.lean} & Exact degree telescope over $\FF_p[t]$; (G$_{\mathrm{FF}}$) $\Leftrightarrow$ (C$\infty$)$_{\mathrm{FF}}$ & 583 \\
+\code{FunctionField/DegreeTelescope.lean} & Exact degree telescope over $\FF_p[t]$; (G$_{\mathrm{FF}}$) $\Leftrightarrow$ (C$\infty$)$_{\mathrm{FF}}$ & 584 \\
 \code{FunctionField/Bootstrap.lean} & FF-MC $\Leftarrow$ FFDynamicalHitting, competitor exhaustion, injectivity & 438 \\
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/MultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 768 \\
@@ -201,7 +201,7 @@
 \code{Meta/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 710 \\
 \code{Meta/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 451 \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 219 \\
-\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 789 \\
+\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 824 \\
 \code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 785 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 309 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 129 \\
@@ -259,5 +259,13 @@
 \code{Population/ProfiniteHeadline.lean} & \code{measure\_some\_prime\_missed\_eq\_zero}: $\mu$-almost every profinite point captures every prime whose coordinate it does not annihilate; the union over $q$ by countable additivity, with no $q$-uniform rate & 393 \\
 \midrule
 \multicolumn{3}{l}{\emph{Adelic and profinite framework (new)}} \\
-\code{FunctionField/StableTower.lean} & $\FF_5[t]$: every level polynomial $\Phi_6^n(t)+1$ irreducible (stable tower, Frobenius-orbit proof); \code{FFMullinConjecture 5} is \textbf{false} & 432 \\
+\code{FunctionField/StableTower.lean} & $\FF_5[t]$: every level polynomial $\Phi_6^n(t)+1$ irreducible (stable tower, Frobenius-orbit proof); \code{FFMullinConjecture 5} is \textbf{false} & 435 \\
+\code{FunctionField/GenericTower.lean} & Level polynomials $\Phi_6^n(x)+1$ irreducible over $\ZZ$ and $\mathbb{Q}$ (via mod 5); the generic seed-$x$ sequence is a Sylvester tower; $g_3(2)=13\cdot139$ & 133 \\
+\code{FunctionField/CompositeFloors.lean} & Composite floor as a theorem: $\FF_2[t]$ (no four consecutive irreducible Euclid polynomials) and $p\equiv1\pmod 3$ (no two); $C_{\mathrm{FF}}=0$ for every sequence there & 219 \\
+\code{FunctionField/QuadraticSeeds.lean} & $\FF_5$: seeds $t^2+1$, $t^2+2$ are perpetual towers too ($g_n(t^2+c)$ irreducible; every valid selection follows the tower) & 237 \\
+\code{FunctionField/FrobeniusOrbit.lean} & Frobenius-orbit criterion over any $\FF_p$: period $\le$ degree of minpoly, roots of irreducibles of degree $d$ lie in $\FF_{p^d}$, cube roots of unity have period 2 for $p\equiv2\pmod3$ & 199 \\
+\code{FunctionField/CharTwo.lean} & $\FF_2$: $t^2+t+1$, $t^4+t+1$ irreducible; first four terms forced; the constant 3 is attained; first tie $(t^4+t^3+1)(t^4+t^3+t^2+t+1)$ & 155 \\
+\code{FunctionField/CharThree.lean} & $\FF_3$: $\Phi_3(P)=(P-1)^2$, composite floor with constant 1, first five terms forced ($t,t+1,t+2,t^3+2t+1,t^3+2t+2$) & 164 \\
+\code{FunctionField/AutonomousDegrees.lean} & After an irreducible stage every factor has even degree ($p\equiv2\pmod3$); over $\FF_2$ after two, degree divisible by 4 & 76 \\
+\code{FunctionField/LinearSeeds.lean} & $\FF_5$: every linear seed $t+a$ is a perpetual tower (period is invariant under subtracting a constant) & 117 \\
 \end{longtable}

@@ -78,6 +78,15 @@ since 2026-09-02, a **refutation**: over `𝔽_5[t]` the seed-`t` sequence is a 
 irreducible Sylvester tower, so `FFMullinConjecture 5` is false
 (`EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`).  The branch (C∞) denies
 over `ℤ` is realised there; the FF conjecture is a statement about non-exceptional primes.
+Corollary via mod 5 (`GenericTower.lean`): every level polynomial `Φ₆ⁿ+1` is irreducible over
+`ℚ`, so the *generic* sequence seeded at the indeterminate `x` is a Sylvester tower that never
+leaves; the FF sequences are its reductions, the integer sequence its specialization at `2`,
+which leaves at stage 3 (`1807 = 13·139`).  MC lives entirely in the specialization regime.
+The floor itself is a theorem over `𝔽_2[t]` (no four consecutive irreducible Euclid
+polynomials) and for `p ≡ 1 (mod 3)` (no two), for every choice function
+(`CompositeFloors.lean`); and over `𝔽_5` the quadratic seeds `t²+1`, `t²+2` are perpetual
+towers too (`QuadraticSeeds.lean`).  The function-field model decides (C∞) prime by prime, in
+both directions; `ℤ` decides nothing.
 
 ## 7. The population, done properly: the seed-average law (2026-08-19)
 
@@ -241,3 +250,9 @@ Two theorem targets: the coding/classification theorem, and `no_cvdp_obstruction
 ω-orders.  §G stays out of reach of `Ω` because profinite points have no size (§7.4 there).
 Rational points of `Ω` are the shifted sequences `P ↦ P·lpf(aP+b)`; the unit `1` is the only
 integer unit, so the Euclid–Mullin orbit is the orbit of the unique integer unit.
+The small characteristics are now worked out in full for every choice function
+(`FrobeniusOrbit.lean`, `CharTwo.lean`, `CharThree.lean`, `AutonomousDegrees.lean`,
+`LinearSeeds.lean`): over `𝔽_2` the first four terms are forced and the constant 3 is attained;
+over `𝔽_3` `Φ₃ = (y−1)²`, an irreducible Euclid polynomial is followed by a perfect square, the
+floor holds with constant 1 and the first five terms are forced; for `p ≡ 2 (mod 3)` every factor
+after an irreducible stage has even degree; over `𝔽_5` all five linear seeds are perpetual towers.

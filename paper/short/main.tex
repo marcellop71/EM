@@ -376,9 +376,23 @@ function-field Mullin conjecture is \emph{false} there
 The proof is a two-element check---the orbit of $-1/4=1$ under
 $w\mapsto w^2+w$ in $\FF_5$ is $1,2,1,2,\dots$ and $3,2$ are non-squares---
 plus the observation that the Frobenius orbit of a root of the $n$-th level
-polynomial has exactly $2^n$ points.  Over $\ZZ$ the corresponding
-statement, that some Sylvester tower of Euclid numbers is all prime, is
-what $\Cinf$ denies and what no method can exclude.
+polynomial has exactly $2^n$ points.  Reducing mod~$5$ also shows that
+every level polynomial $\Phi_6^{\,n}+1$ is irreducible over~$\mathbb{Q}$
+(\lean{EM/FunctionField/GenericTower.lean}{gQ\_irreducible}): the
+\emph{generic} sequence, seeded at the indeterminate~$x$, is a Sylvester
+tower that never leaves, the function-field sequences are its reductions,
+and the integer sequence is its specialization at $x=2$, which leaves the
+tower at stage~$3$ because $1807 = 13\cdot139$.  In the other direction
+the floor is a theorem over $\FF_2[t]$, where $P\mapsto P^2+P$ is additive
+and no four consecutive Euclid polynomials are irreducible
+(\lean{EM/FunctionField/CompositeFloors.lean}{ffGrowthConstant\_eq\_zero\_of\_two}),
+and for $p\equiv1\pmod 3$, where $w^2+w+1$ splits and no two are
+(\lean{EM/FunctionField/CompositeFloors.lean}{ffGrowthConstant\_eq\_zero\_of\_one\_mod\_three});
+over $\FF_3$, where $w^2+w+1=(w-1)^2$, an irreducible Euclid polynomial is
+followed by a perfect square
+(\lean{EM/FunctionField/CharThree.lean}{euclid\_succ\_eq\_sq}).
+Over $\ZZ$ the statement that some Sylvester tower of Euclid numbers is
+all prime is what $\Cinf$ denies and what no method can exclude.
 
 \begin{theorem}[\lean{EM/Population/AutonomousBranch.lean}{eventually\_prime\_implies\_not\_mullin},
 \lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_mullin}]

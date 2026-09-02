@@ -82,6 +82,14 @@ import EM.FunctionField.NecklaceFormula
 import EM.FunctionField.FFSieve
 import EM.FunctionField.DensityMC
 import EM.FunctionField.StableTower
+import EM.FunctionField.GenericTower
+import EM.FunctionField.CompositeFloors
+import EM.FunctionField.QuadraticSeeds
+import EM.FunctionField.FrobeniusOrbit
+import EM.FunctionField.CharTwo
+import EM.FunctionField.CharThree
+import EM.FunctionField.AutonomousDegrees
+import EM.FunctionField.LinearSeeds
 import EM.Stochastic.MissedPrimes
 import EM.Population.AvoidanceTube
 import EM.Population.InfiniteM
@@ -477,6 +485,32 @@ attribute [publish] FunctionFieldAnalog.ff_almost_all_unconditional
 attribute [publish] FunctionFieldAnalog.StableTower.g_irreducible
 attribute [publish] FunctionFieldAnalog.StableTower.tower_euclid_irreducible
 attribute [publish] FunctionFieldAnalog.not_ffMullinConjecture_five
+-- 2026-09-02: corollary over ℤ/ℚ — the tree over −1 under y ↦ y²+y is stable over ℚ (via mod 5)
+attribute [publish] FunctionFieldAnalog.GenericTower.gZ_irreducible
+attribute [publish] FunctionFieldAnalog.GenericTower.gQ_irreducible
+-- 2026-09-02: the composite floor is a THEOREM over 𝔽_2[X] (constant 3) and over 𝔽_p[X], p ≡ 1 (3) (constant 1)
+attribute [publish] FunctionFieldAnalog.CompositeFloors.euclid_succ_reducible_of_one_mod_three
+attribute [publish] FunctionFieldAnalog.CompositeFloors.ffGrowthConstant_eq_zero_of_one_mod_three
+attribute [publish] FunctionFieldAnalog.CompositeFloors.euclid_three_reducible_of_two
+attribute [publish] FunctionFieldAnalog.CompositeFloors.ffGrowthConstant_eq_zero_of_two
+-- 2026-09-02: quadratic seeds X²+1, X²+2 over 𝔽_5 are perpetual towers too
+attribute [publish] FunctionFieldAnalog.QuadraticSeeds.g_comp_irreducible
+attribute [publish] FunctionFieldAnalog.QuadraticSeeds.quad_seed_perpetual
+-- 2026-09-02: Frobenius-orbit criterion (general p), 𝔽_2 sharpness and first terms, 𝔽_3 squares and first terms,
+-- degree constraints after autonomous steps, 𝔽_5 linear seeds
+attribute [publish] FunctionFieldAnalog.FrobeniusOrbit.irreducible_of_natDegree_eq_minimalPeriod
+attribute [publish] FunctionFieldAnalog.FrobeniusOrbit.pow_p_pow_natDegree_eq_self
+attribute [publish] FunctionFieldAnalog.FrobeniusOrbit.even_natDegree_of_dvd_phi3
+attribute [publish] FunctionFieldAnalog.CharTwo.X_four_add_X_add_one_irreducible
+attribute [publish] FunctionFieldAnalog.CharTwo.ff_two_first_terms
+attribute [publish] FunctionFieldAnalog.CharTwo.ff_two_attains_three
+attribute [publish] FunctionFieldAnalog.CharThree.euclid_succ_eq_sq
+attribute [publish] FunctionFieldAnalog.CharThree.ffGrowthConstant_eq_zero
+attribute [publish] FunctionFieldAnalog.CharThree.ff_three_first_terms
+attribute [publish] FunctionFieldAnalog.AutonomousDegrees.ffSeq_natDegree_even_of_irreducible
+attribute [publish] FunctionFieldAnalog.AutonomousDegrees.four_dvd_ffSeq_natDegree_of_two_irreducible
+attribute [publish] FunctionFieldAnalog.LinearSeeds.g_comp_linear_irreducible
+attribute [publish] FunctionFieldAnalog.LinearSeeds.lin_seed_perpetual
 
 /-! ### Avoidance tube and spectral conspiracy -/
 

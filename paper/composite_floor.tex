@@ -1085,8 +1085,21 @@ attains three), and for $p \equiv 1 \pmod 3$, where $\Phi_3$ splits and no
 two consecutive Euclid polynomials are irreducible.  Which case a prime
 $p \equiv 2 \pmod 3$ falls into is decided by a finite check on the orbit
 of $-1/4$ under $y \mapsto y^2+y$ in~$\Fp$ (the exceptional primes of
-\S\ref{sec:function-field}).  The two floors are not yet formalized; the
-$\FF_5$ refutation is.
+\S\ref{sec:function-field}).  All three statements are machine-checked,
+for every FF-EM data:
+\lean{EM/FunctionField/CompositeFloors.lean}{ffGrowthConstant\_eq\_zero\_of\_two}
+and
+\lean{EM/FunctionField/CompositeFloors.lean}{not\_four\_consecutive\_irreducible}
+for $p = 2$,
+\lean{EM/FunctionField/CompositeFloors.lean}{ffGrowthConstant\_eq\_zero\_of\_one\_mod\_three}
+for $p \equiv 1 \pmod 3$, and the $\FF_5$ refutation above.  Over $\FF_3$,
+where $\Phi_3 = (y-1)^2$ has a double root, an irreducible Euclid
+polynomial is followed by a perfect square and the floor again holds with
+constant~$1$ (\lean{EM/FunctionField/CharThree.lean}{ffGrowthConstant\_eq\_zero});
+the sharpness of the constant~$3$ over $\FF_2$ is machine-checked too
+(\lean{EM/FunctionField/CharTwo.lean}{ff\_two\_attains\_three}).  The
+function-field model thus decides $(\mathrm{C}\infty)$ in both directions,
+prime by prime, while over~$\ZZ$ it decides nothing.
 
 %% =========================================================================
 \subsection{The Verdict}
@@ -1118,7 +1131,14 @@ no-infinite-prime-tower statement for a doubly exponential sequence},
 which is open.  Every conjecture is at least as hard as its open
 consequences, so this is not a lower bound on difficulty in any
 technical sense; it is a statement of \emph{shape}: any proof of $\MC$
-must, along the way, rule out a Sylvester-type prime tower.
+must, along the way, rule out a Sylvester-type prime tower.  The shape can
+be made a little sharper.  The level polynomials $g_k = \Phi_6^{\,k}+1$ are
+irreducible over~$\mathbb{Q}$ for every~$k$
+(Theorem~\ref{thm:level-irreducible-Q}, proved by reduction mod~$5$), so
+perpetual primality from stage~$N$ says that the single integer
+$\Prod{2}(N)$ is a simultaneous prime value of infinitely many irreducible
+polynomials.  For comparison, even the Bunyakovsky instance ``$y^2+y+1$ is
+prime infinitely often'' is open.
 
 \paragraph{The Fermat test.}
 The comparison is not loose.  The Fermat numbers $F_n = 2^{2^n}+1$ have the

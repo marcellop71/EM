@@ -71,9 +71,10 @@ Over `𝔽_5[t]` the seed-`X` sequence is perpetually irreducible from stage `0`
 `FFMullinConjecture 5` (`not_ffMullinConjecture_five`).  Over `𝔽_2[t]` the take-all map
 `P ↦ P² + P` is additive and `(F+1)³P + 1 = (P⁴+P³+1)(P⁴+P³+P²+P+1)`, so no four consecutive
 Euclid polynomials are irreducible and `(C∞)_FF` holds for every seed; for `p ≡ 1 (mod 3)` `Φ₃`
-splits and no two consecutive ones are.  (The last two are not yet formalized.)  Which case a
-prime `p ≡ 2 (mod 3)` falls into is decided by a finite check on the orbit of `−1/4` under
-`y ↦ y² + y` in `𝔽_p`.
+splits and no two consecutive ones are.  Both floors are theorems for every `FFEMData`
+(`EM/FunctionField/CompositeFloors.lean`: `ffGrowthConstant_eq_zero_of_two`,
+`ffGrowthConstant_eq_zero_of_one_mod_three`).  Which case a prime `p ≡ 2 (mod 3)` falls into is
+decided by a finite check on the orbit of `−1/4` under `y ↦ y² + y` in `𝔽_p`.
 
 ## Contents
 

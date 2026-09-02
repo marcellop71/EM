@@ -58,7 +58,10 @@ function-field conjecture therefore cannot be stated uniformly in `p`; the hones
 the *exceptional primes* (those whose critical orbit of `-1/4` under `y² + y` avoids all
 squares-minus-one; they are `≡ 2 (mod 3)` and rare — `11, 17, 23, 29, 41, 47` are not
 exceptional).  Contrast: over `𝔽_2[X]` and over `𝔽_p[X]` with `p ≡ 1 (mod 3)` the composite
-floor is a theorem (memo §9.1, §11.2), and over `ℤ` it is open.
+floor is a theorem (`EM/FunctionField/CompositeFloors.lean`), and over `ℤ` it is open.  The
+quadratic seeds `X² + 1`, `X² + 2` over `𝔽_5` are perpetual towers too
+(`EM/FunctionField/QuadraticSeeds.lean`); the level polynomials are irreducible over `ℚ`
+(`EM/FunctionField/GenericTower.lean`).
 -/
 
 namespace FunctionFieldAnalog
