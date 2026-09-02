@@ -527,6 +527,10 @@ attribute [publish] HeadDynamics.mullin_implies_notConfined
 attribute [publish] HeadDynamics.classInfinitude_one_mod_four_implies_infinitelyManyComposite
 attribute [publish] HeadDynamics.dvd_euclid_iff_prod_mul_eq_one
 attribute [publish] HeadDynamics.coprime_euclid_succ
+attribute [publish] HeadDynamics.head_le_nth_prime
+attribute [publish] HeadDynamics.capture_composite
+attribute [publish] HeadDynamics.mullin_implies_lpf_le_nth_prime_io
+attribute [publish] HeadDynamics.composite_of_lpf_le_nth_prime
 
 /-! ### Avoidance tube and spectral conspiracy -/
 

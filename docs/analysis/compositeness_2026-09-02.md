@@ -149,3 +149,42 @@ late compositeness is invisible.
   It is the recommended target if any new marginal technique appears.
 * **Do not**: look for coverings, for a population (C∞), for factorisations of level polynomials,
   or for reciprocity contradictions — each is closed by a theorem or a structural argument above.
+
+## 8. Sharpening the head equivalences (2026-09-02, second pass) — and whether it is a route
+
+**What sharpens (all in Lean, `HeadDynamics` §5).**
+* `head n ≤ p_{n+2}` (`head_le_nth_prime`): pigeonhole, the bag has `n+1` primes.  So the head
+  grows at most like `n log n`; heuristically it grows like `√(n log n)`.
+* **Every head capture after stage 0 is a composite Euclid number** (`capture_composite`): if
+  `E_n` were prime it would be the head, so every prime below `E_n` would divide `E_n − 1`; by
+  Bertrand a prime `p` with `(E_n−1)/2 < p < E_n` then gives `2p ∣ E_n − 1`, impossible.  Hence
+  the number of head captures below stage `N` is at most the number of composite stages: the
+  rate of MC is bounded by the rate of compositeness, locally and unconditionally.
+* **The rung (H)**: `MC ⟹ lpf(E_n) ≤ p_{n+2}` infinitely often (`mullin_implies_lpf_le_nth_prime_io`),
+  and `(H) ⟹ (C∞)` (`composite_of_lpf_le_nth_prime`).  Since `log E_n ≥ θ(p_{n+1}) ≈ p_{n+2}`,
+  MC forces infinitely many Euclid numbers to have a prime factor below `(1+o(1)) log E_n` — a
+  factor smaller than the number's own logarithm.  (H) sits between MC and (C∞); it is
+  incomparable with RD a priori (RD allows all least factors above `p_{n+2}`, since `∑ 1/p_n`
+  diverges; (H) allows a sparse set of small least factors).  Ladder:
+
+      MC ⟹ (H) ⟹ (C∞),   MC ⟹ RD ⟹ (S) ⟹ (C∞),   MC ⟹ CI(2 mod 3) ⟹ NotConfined ⟹ (C∞).
+
+* The headship decomposition: stages split into excursions during which the head `q` is fixed,
+  all multipliers exceed `q`, `E_n` is `q`-rough and `q ∤ E_n`; the excursion ends exactly at
+  `q ∣ E_n`.  MC ⟺ every excursion is finite.  In the seed population, Theorem C is precisely a
+  tail bound on excursion lengths; §G is "all excursions finite for a.a. seeds".
+
+**Is it a route?**  The head coordinates are the right *statement* of MC for the anatomical
+viewpoint: they remove the exposure bookkeeping (head capture = hit), make the compositeness
+content explicit (captures are composite steps, (H)), and unify the population results.  They do
+not supply a mechanism.  The finiteness of one excursion is the walk-hitting problem for one
+prime with all smaller primes captured — #90 in its purest form.  What would turn it into a route
+is a quantity monotone along an excursion and bounded, a Lyapunov function; the candidates were
+checked and fail: residues (the walk is an arbitrary sequence in `(ℤ/q)^× ∖ {−1}`), sizes (the
+multipliers are distinct primes `> q`, unbounded above, no upper bound relates them to `E_n`),
+the count of missing primes below the multiplier (no deterministic constraint), the growth
+telescope (blind to residues).  Recurrence needs an invariant measure (none: dissipative),
+compactness gives recurrence to *some* residue but not to `−1`, equidistribution is CME.
+Verdict: **worth the sharpening, done; not a route by itself.**  The genuinely open weak target
+it isolates remains CI(3 mod 4), and the newly visible quantitative consequence (H) is a clean
+way to state how much compositeness MC needs: a factor below `log E_n`, infinitely often.

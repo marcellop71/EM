@@ -414,7 +414,11 @@ stable identifier independent of human naming.
 \quad MC $\Leftrightarrow$ $\lpf(P_n{+}1) = $ head infinitely often & \proved & \code{mullin\_iff\_head\_captured\_io}  & 65943d51 \\
 \quad MC $\Leftrightarrow$ $\lpf(P_n{+}1) \leq f(\text{head})$ for some $f$ & \proved & \code{mullin\_iff\_exists\_bound}  & bc8d09cc \\
 \quad NotConfined $\Rightarrow (\mathrm{C}\infty)$; MC $\Rightarrow$ NotConfined (Dirichlet) & \proved & \code{notConfined\_implies\_infinitelyManyComposite}  & f3d81c5f \\
-\quad Consecutive Euclid numbers are coprime & \proved & \code{coprime\_euclid\_succ}  & f698e103 \\
+\quad The head is at most the $(n{+}2)$-th prime & \proved & \code{head\_le\_nth\_prime}  & e7ef77e8 \\
+\quad Every head capture ($n \geq 1$) is a composite Euclid number (Bertrand) & \proved & \code{capture\_composite}  & 675e5bcb \\
+\quad (H): MC $\Rightarrow \lpf(P_n{+}1) \leq p_{n+2}$ i.o. & \proved & \code{mullin\_implies\_lpf\_le\_nth\_prime\_io}  & 2a30fd3e \\
+\quad (H) $\Rightarrow (\mathrm{C}\infty)$: $\lpf(P_n{+}1) \leq p_{n+2}$ forces compositeness & \proved & \code{composite\_of\_lpf\_le\_nth\_prime}  & 8ff6cdb3 \\
+\quad Consecutive Euclid numbers are coprime & \proved & \code{coprime\_euclid\_succ}  &f698e103 \\
 \quad After a hit, later hits are returns of the multiplier product to $1$ & \proved & \code{dvd\_euclid\_iff\_prod\_mul\_eq\_one}  & 05910091 \\
 \quad Every Euclid number has a prime factor $\equiv 3 \pmod 4$ & \proved & \code{exists\_prime\_dvd\_euclid\_three\_mod\_four}  &f05005cd \\
 \quad $\mathrm{CI}(2 \bmod 3) \Rightarrow (\mathrm{C}\infty)$ & \proved & \code{classInfinitude\_two\_mod\_three\_implies\_infinitelyManyComposite}  & 7891370f \\

@@ -1,5 +1,7 @@
 import EM.Population.ClassInfinitude
 import Mathlib.NumberTheory.LSeries.PrimesInAP
+import Mathlib.NumberTheory.Bertrand
+import Mathlib.Data.Nat.Nth
 
 /-!
 # The head: Mullin's conjecture as an extremal compositeness statement
@@ -399,5 +401,145 @@ theorem coprime_euclid_succ (n : ℕ) : Nat.Coprime (prod n + 1) (prod (n + 1) +
   · rw [Nat.mod_eq_of_lt hlt] at hval; omega
   · have : seq (n + 1) = r := by omega
     rw [this, Nat.mod_self] at hval; omega
+
+/-! ## 5. Sharpening: the head is small, and head captures are composite steps -/
+
+/-- **The head is at most the `(n+2)`-th prime** (pigeonhole: the bag has `n+1` elements). -/
+theorem head_le_nth_prime (n : ℕ) : head n ≤ Nat.nth Nat.Prime (n + 1) := by
+  by_contra h
+  push Not at h
+  have hinf : (Set.ofPred Nat.Prime).Infinite := Nat.infinite_setOfPred_prime
+  -- every one of the first `n+2` primes is in the bag
+  have hbag : ∀ i, i ≤ n + 1 → InBag n (Nat.nth Nat.Prime i) := fun i hi =>
+    inBag_of_prime_lt_head (Nat.prime_nth_prime i)
+      (lt_of_le_of_lt ((Nat.nth_strictMono hinf).monotone hi) h)
+  classical
+  choose! stage hstage_le hstage_eq using hbag
+  -- `stage` is an injection from `range (n+2)` into `range (n+1)`
+  have hinj : Set.InjOn stage (Finset.range (n + 2) : Set ℕ) := by
+    intro i hi j hj hij
+    simp only [Finset.coe_range, Set.mem_Iio] at hi hj
+    have h1 := hstage_eq i (by omega)
+    have h2 := hstage_eq j (by omega)
+    rw [hij] at h1
+    exact Nat.nth_injective hinf (h1.symm.trans h2)
+  have hcard := Finset.card_le_card_of_injOn stage (t := Finset.range (n + 1))
+    (fun i hi => Finset.mem_range.mpr (by
+      have hi' := Finset.mem_range.mp hi
+      have := hstage_le i (by omega)
+      omega)) hinj
+  simp at hcard
+
+/-- If `E_n` is prime (`n ≥ 1`) then not every prime below it lies in the bag: Bertrand's
+postulate gives a prime `p` with `(E_n − 1)/2 < p < E_n`, and `2p ∣ E_n − 1` is impossible. -/
+theorem not_all_smaller_inBag_of_prime {n : ℕ} (hn : 1 ≤ n) (_hE : Nat.Prime (prod n + 1))
+    (hall : ∀ p, Nat.Prime p → p < prod n + 1 → p ∣ prod n) : False := by
+  obtain ⟨m, hm⟩ := EuclidClasses.prod_eq_two_mul_odd n
+  obtain ⟨t, ht⟩ := hm.1
+  have hprod3 := EuclidClasses.three_dvd_prod hn
+  have h2 := prod_ge_two n
+  -- `prod n = 2 m` with `m ≥ 3`
+  have hm3 : 3 ≤ m := by
+    obtain ⟨c, hc⟩ := hprod3
+    omega
+  obtain ⟨p, hp, hmp, hp2m⟩ := Nat.exists_prime_lt_and_le_two_mul m (by omega)
+  have hpE : p < prod n + 1 := by omega
+  have hdvd : p ∣ prod n := hall p hp hpE
+  -- `p` is odd (`p > m ≥ 3`) and divides `2m`, hence divides `m`, contradicting `p > m`
+  have hp2 : p ≠ 2 := by omega
+  have hodd : Nat.Coprime p 2 := (Nat.coprime_primes hp Nat.prime_two).mpr hp2
+  rw [hm.2, mul_comm] at hdvd
+  have := Nat.le_of_dvd (by omega) (hodd.dvd_of_dvd_mul_right hdvd)
+  omega
+
+/-- **Every head capture after stage 0 is a composite Euclid number.** -/
+theorem capture_composite {n : ℕ} (hn : 1 ≤ n) (h : seq (n + 1) = head n) :
+    ¬ Nat.Prime (prod n + 1) := by
+  intro hE
+  apply not_all_smaller_inBag_of_prime hn hE
+  intro p hp hpE
+  -- the head is `E_n` itself, so every smaller prime is in the bag
+  have hhead : head n = prod n + 1 := by
+    rw [← h, seq_succ, euclid_minFac_self_of_prime hE]
+  obtain ⟨k, hk, hkp⟩ := inBag_of_prime_lt_head hp (hhead ▸ hpE)
+  rw [← hkp]; exact seq_dvd_prod k n hk
+
+/-- **The rung (H): MC ⟹ `lpf(E_n) ≤ p_{n+2}` infinitely often** — the least factor of a Euclid
+number is, infinitely often, below the `(n+2)`-th prime, hence below `(1+o(1)) log E_n`. -/
+theorem mullin_implies_lpf_le_nth_prime_io (hmc : MullinConjecture) :
+    ∀ N, ∃ n, N ≤ n ∧ seq (n + 1) ≤ Nat.nth Nat.Prime (n + 1) := by
+  intro N
+  obtain ⟨n, hn, hcap⟩ := mullin_iff_head_captured_io.mp hmc N
+  exact ⟨n, hn, hcap ▸ head_le_nth_prime n⟩
+
+/-- **(H) ⟹ (C∞)**: a Euclid number whose least factor is at most `p_{n+2}` is composite
+(`n ≥ 1`). -/
+theorem composite_of_lpf_le_nth_prime {n : ℕ} (hn : 1 ≤ n)
+    (h : seq (n + 1) ≤ Nat.nth Nat.Prime (n + 1)) : ¬ Nat.Prime (prod n + 1) := by
+  intro hE
+  have hseq : seq (n + 1) = prod n + 1 := by rw [seq_succ, euclid_minFac_self_of_prime hE]
+  rw [hseq] at h
+  apply not_all_smaller_inBag_of_prime hn hE
+  intro p hp hpE
+  by_contra hnot
+  -- the bag, `E_n` and `p` are `n+3` distinct primes `≤ p_{n+2}`: too many
+  have hinf : (Set.ofPred Nat.Prime).Infinite := Nat.infinite_setOfPred_prime
+  classical
+  -- count-based injection into `range (n+2)`
+  have hcount : ∀ q, Nat.Prime q → q ≤ Nat.nth Nat.Prime (n + 1) → Nat.count Nat.Prime q ≤ n + 1 := by
+    intro q _ hq
+    have := Nat.count_monotone Nat.Prime hq
+    rwa [Nat.count_nth_of_infinite hinf] at this
+  -- the set of primes in play
+  let S : Finset ℕ := ((Finset.range (n + 1)).image seq) ∪ {prod n + 1, p}
+  have hmemS : ∀ q, q ∈ S ↔ (∃ k, k ≤ n ∧ seq k = q) ∨ q = prod n + 1 ∨ q = p := by
+    intro q
+    simp only [S, Finset.mem_union, Finset.mem_image, Finset.mem_insert, Finset.mem_singleton,
+      Finset.mem_range, Nat.lt_succ_iff]
+  have hS_prime : ∀ q ∈ S, Nat.Prime q := by
+    intro q hq
+    rcases (hmemS q).mp hq with ⟨k, _, hkq⟩ | hq' | hq'
+    · rw [← hkq]; exact EuclidClasses.seq_nat_prime k
+    · rw [hq']; exact hE
+    · rw [hq']; exact hp
+  have hS_le : ∀ q ∈ S, q ≤ Nat.nth Nat.Prime (n + 1) := by
+    intro q hq
+    rcases (hmemS q).mp hq with ⟨k, hk, hkq⟩ | hq' | hq'
+    · have hdv : seq k ∣ prod n := seq_dvd_prod k n hk
+      have := Nat.le_of_dvd (by have := prod_ge_two n; omega) hdv
+      omega
+    · rw [hq']; exact h
+    · rw [hq']; omega
+  have hcard_S : n + 3 ≤ S.card := by
+    have h1 : ((Finset.range (n + 1)).image seq).card = n + 1 := by
+      rw [Finset.card_image_of_injective _ (fun a b hab => seq_injective a b hab), Finset.card_range]
+    have hE_notin : prod n + 1 ∉ (Finset.range (n + 1)).image seq := by
+      intro hmem
+      obtain ⟨k, hk, hkE⟩ := Finset.mem_image.mp hmem
+      have := Nat.le_of_dvd (by have := prod_ge_two n; omega) (seq_dvd_prod k n (Nat.lt_succ_iff.mp (Finset.mem_range.mp hk)))
+      omega
+    have hp_notin : p ∉ (Finset.range (n + 1)).image seq := by
+      intro hmem
+      obtain ⟨k, hk, hkp⟩ := Finset.mem_image.mp hmem
+      exact hnot (hkp ▸ seq_dvd_prod k n (Nat.lt_succ_iff.mp (Finset.mem_range.mp hk)))
+    have hpE' : p ≠ prod n + 1 := by omega
+    have : S.card = ((Finset.range (n + 1)).image seq).card + 2 := by
+      simp only [S]
+      rw [Finset.union_comm, Finset.card_union_of_disjoint]
+      · rw [Finset.card_pair hpE'.symm]; ring
+      · rw [Finset.disjoint_left]
+        intro q hq
+        simp only [Finset.mem_insert, Finset.mem_singleton] at hq
+        rcases hq with rfl | rfl
+        · exact hE_notin
+        · exact hp_notin
+    omega
+  have hinj : Set.InjOn (Nat.count Nat.Prime) (S : Set ℕ) := by
+    intro a ha b hb hab
+    exact Nat.count_injective (hS_prime a ha) (hS_prime b hb) hab
+  have := Finset.card_le_card_of_injOn (Nat.count Nat.Prime) (t := Finset.range (n + 2))
+    (fun q hq => Finset.mem_range.mpr (by have := hcount q (hS_prime q hq) (hS_le q hq); omega)) hinj
+  simp at this
+  omega
 
 end HeadDynamics

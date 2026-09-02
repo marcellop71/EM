@@ -402,7 +402,11 @@ $\iff \lpf(P_n+1) \le f(h(n))$ for some function~$f$
 (\lean{EM/Population/HeadDynamics.lean}{mullin\_iff\_exists\_bound}): MC
 fails exactly when the head stalls while the multipliers, being distinct
 primes, escape to infinity.  Nothing weaker than equality with the head
-suffices.
+suffices.  Every head capture after stage~$0$ is a composite Euclid number
+(\lean{EM/Population/HeadDynamics.lean}{capture\_composite}), so MC forces
+infinitely many Euclid numbers to have a prime factor below the $(n{+}2)$-th
+prime, i.e.\ below $(1+o(1))\log(P_n+1)$
+(\lean{EM/Population/HeadDynamics.lean}{mullin\_implies\_lpf\_le\_nth\_prime\_io}).
 
 \begin{theorem}[\lean{EM/Population/AutonomousBranch.lean}{eventually\_prime\_implies\_not\_mullin},
 \lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_mullin}]

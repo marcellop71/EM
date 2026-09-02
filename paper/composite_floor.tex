@@ -1165,8 +1165,28 @@ $(\mathrm{C}\infty) \Leftarrow (\mathrm{S}) \Leftarrow \mathrm{RD}
 below $E^{1/2}$ infinitely often; below $2^{n-c}$ infinitely often;
 summable reciprocals fail; equal to the head infinitely often.  Nothing
 weaker than the last suffices---a sequence whose least factor is always the
-\emph{second} missing prime satisfies every lower rung and fails $\MC$.  Two
-structural facts accompany this: consecutive Euclid numbers are coprime
+\emph{second} missing prime satisfies every lower rung and fails $\MC$.
+Two sharpenings are unconditional.  The head is at most the $(n{+}2)$-th
+prime, by pigeonhole
+(\lean{EM/Population/HeadDynamics.lean}{head\_le\_nth\_prime}), and
+\emph{every head capture after stage~$0$ is a composite Euclid number}
+(\lean{EM/Population/HeadDynamics.lean}{capture\_composite}): if
+$\Prod{2}(n)+1$ were prime and the head, every prime below it would divide
+$\Prod{2}(n)$, and Bertrand's postulate supplies a prime $p$ with
+$(\Prod{2}(n))/2 < p < \Prod{2}(n)+1$ for which $2p \mid \Prod{2}(n)$ is
+impossible.  So the number of head captures is bounded by the number of
+composite stages, and $\MC$ yields the rung
+\[
+  (\mathrm{H}):\quad \lpf(\Prod{2}(n)+1) \leq p_{n+2}
+  \ \text{ infinitely often}
+\]
+(\lean{EM/Population/HeadDynamics.lean}{mullin\_implies\_lpf\_le\_nth\_prime\_io}),
+which in turn implies $(\mathrm{C}\infty)$
+(\lean{EM/Population/HeadDynamics.lean}{composite\_of\_lpf\_le\_nth\_prime}).
+Since $\log \Prod{2}(n) \geq \theta(p_{n+1})$, $(\mathrm{H})$ says that
+infinitely many Euclid numbers have a prime factor below
+$(1+o(1))\log(\Prod{2}(n)+1)$---a factor smaller than the number's own
+logarithm.  Two structural facts accompany this: consecutive Euclid numbers are coprime
 (\lean{EM/Population/HeadDynamics.lean}{coprime\_euclid\_succ}), and once a
 prime $r$ divides $\Prod{2}(n)+1$ its later hits are exactly the returns of
 the multiplier product $a(n{+}1)\cdots a(m)$ to $1$ modulo~$r$
