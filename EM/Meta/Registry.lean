@@ -57,6 +57,8 @@ import EM.Population.BackwardOrbit
 import EM.Population.CompositeFloor
 import EM.Population.DefectTelescope
 import EM.Population.SylvesterTower
+import EM.Population.ClassInfinitude
+import EM.Population.HeadDynamics
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -511,6 +513,20 @@ attribute [publish] FunctionFieldAnalog.AutonomousDegrees.ffSeq_natDegree_even_o
 attribute [publish] FunctionFieldAnalog.AutonomousDegrees.four_dvd_ffSeq_natDegree_of_two_irreducible
 attribute [publish] FunctionFieldAnalog.LinearSeeds.g_comp_linear_irreducible
 attribute [publish] FunctionFieldAnalog.LinearSeeds.lin_seed_perpetual
+-- 2026-09-02: residue classes of the Euclid–Mullin primes and the composite floor (integer side)
+attribute [publish] EuclidClasses.exists_prime_dvd_euclid_three_mod_four
+attribute [publish] EuclidClasses.classInfinitude_two_mod_three_implies_infinitelyManyComposite
+attribute [publish] EuclidClasses.not_classInfinitude_three_mod_four_implies_infinitelyManyComposite
+attribute [publish] EuclidClasses.prime_dvd_euclid_succ_mod_three
+-- 2026-09-02: the head (least missing prime) — MC as an extremal compositeness statement
+attribute [publish] HeadDynamics.mullin_iff_head_tendsto
+attribute [publish] HeadDynamics.mullin_iff_head_captured_io
+attribute [publish] HeadDynamics.mullin_iff_exists_bound
+attribute [publish] HeadDynamics.notConfined_implies_infinitelyManyComposite
+attribute [publish] HeadDynamics.mullin_implies_notConfined
+attribute [publish] HeadDynamics.classInfinitude_one_mod_four_implies_infinitelyManyComposite
+attribute [publish] HeadDynamics.dvd_euclid_iff_prod_mul_eq_one
+attribute [publish] HeadDynamics.coprime_euclid_succ
 
 /-! ### Avoidance tube and spectral conspiracy -/
 

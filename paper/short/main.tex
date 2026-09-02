@@ -394,6 +394,16 @@ followed by a perfect square
 Over $\ZZ$ the statement that some Sylvester tower of Euclid numbers is
 all prime is what $\Cinf$ denies and what no method can exclude.
 
+The conjecture itself is the top of this ladder of ``the least factor is
+small''.  With $h(n)$ the least prime not yet selected, $a(n{+}1) =
+\lpf(P_n+1) \ge h(n)$ always, and
+$\MC \iff h(n)\to\infty \iff \lpf(P_n+1) = h(n)$ infinitely often
+$\iff \lpf(P_n+1) \le f(h(n))$ for some function~$f$
+(\lean{EM/Population/HeadDynamics.lean}{mullin\_iff\_exists\_bound}): MC
+fails exactly when the head stalls while the multipliers, being distinct
+primes, escape to infinity.  Nothing weaker than equality with the head
+suffices.
+
 \begin{theorem}[\lean{EM/Population/AutonomousBranch.lean}{eventually\_prime\_implies\_not\_mullin},
 \lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_mullin}]
 If $P_n+1$ is prime for all large~$n$ then every prime $q\equiv2\pmod3$ is

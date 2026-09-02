@@ -256,3 +256,14 @@ The small characteristics are now worked out in full for every choice function
 over `𝔽_3` `Φ₃ = (y−1)²`, an irreducible Euclid polynomial is followed by a perfect square, the
 floor holds with constant 1 and the first five terms are forced; for `p ≡ 2 (mod 3)` every factor
 after an irreducible stage has even degree; over `𝔽_5` all five linear seeds are perpetual towers.
+
+## Compositeness (2026-09-02)
+
+A dedicated memo, `docs/analysis/compositeness_2026-09-02.md`.  Headline: **MC is itself an
+extremal compositeness statement** — with `head n` the least missing prime, `lpf(E_n) ≥ head n`
+always, and MC ⟺ equality infinitely often ⟺ `head → ∞` ⟺ `lpf(E_n)` is bounded by *some*
+function of the head (`EM/Population/HeadDynamics.lean`).  The ladder `(C∞) ⇐ (S) ⇐ RD ⇐ MC` is
+a hierarchy of "the least factor is small", MC at the top.  Near the floor: `CI(2 mod 3) ⟹
+NotConfined ⟹ (C∞)`, `¬CI(3 mod 4) ⟹ (C∞)`, `CI(1 mod 4) ⟹ (C∞)`; every Euclid number has a
+prime factor `≡ 3 (mod 4)` (`ClassInfinitude.lean`).  Rigidity: each prime divides at most `π(q)`
+Euclid numbers.  Every route to (C∞) over `ℤ` fails structurally; the floor is Fermat-hard.

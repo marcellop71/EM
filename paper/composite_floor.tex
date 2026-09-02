@@ -4,6 +4,7 @@
 %% (C-infinity) is not a variant of MC, it is the necessary condition beneath
 %% every route to it, and it carries the paper's longest unconditional arc.
 %% =========================================================================
+\providecommand{\lpf}{\operatorname{lpf}}
 \section{The Composite Floor: $(\mathrm{C}\infty)$}
 \label{sec:cinfty}
 %% =========================================================================
@@ -1139,6 +1140,73 @@ perpetual primality from stage~$N$ says that the single integer
 $\Prod{2}(N)$ is a simultaneous prime value of infinitely many irreducible
 polynomials.  For comparison, even the Bunyakovsky instance ``$y^2+y+1$ is
 prime infinitely often'' is open.
+
+\paragraph{Mullin's conjecture as the top of the smallness ladder.}
+Let $h(n)$ be the \emph{head}, the least prime not among
+$a(0),\dots,a(n)$.  The next multiplier is a missing prime, so
+$\lpf(\Prod{2}(n)+1) = a(n{+}1) \geq h(n)$, with equality exactly when the
+head is captured; the head is nondecreasing and moves only when captured.
+Hence (\lean{EM/Population/HeadDynamics.lean}{mullin\_iff\_head\_tendsto},
+\lean{EM/Population/HeadDynamics.lean}{mullin\_iff\_head\_captured\_io},
+\lean{EM/Population/HeadDynamics.lean}{mullin\_iff\_exists\_bound})
+\[
+  \MC
+  \;\Longleftrightarrow\; h(n) \to \infty
+  \;\Longleftrightarrow\; \lpf(\Prod{2}(n)+1) = h(n) \text{ infinitely often}
+  \;\Longleftrightarrow\; \exists f\ \forall n:\ \lpf(\Prod{2}(n)+1) \leq f(h(n)).
+\]
+So Mullin's conjecture is itself an extremal compositeness statement: the
+least prime factor of the Euclid number attains its trivial lower bound
+infinitely often; equivalently, it is bounded by \emph{some} function of
+the head, failing exactly when the head stalls while the multipliers,
+being distinct primes, escape to infinity.  The floor ladder
+$(\mathrm{C}\infty) \Leftarrow (\mathrm{S}) \Leftarrow \mathrm{RD}
+\Leftarrow \MC$ is thereby a hierarchy of ``the least factor is small'':
+below $E^{1/2}$ infinitely often; below $2^{n-c}$ infinitely often;
+summable reciprocals fail; equal to the head infinitely often.  Nothing
+weaker than the last suffices---a sequence whose least factor is always the
+\emph{second} missing prime satisfies every lower rung and fails $\MC$.  Two
+structural facts accompany this: consecutive Euclid numbers are coprime
+(\lean{EM/Population/HeadDynamics.lean}{coprime\_euclid\_succ}), and once a
+prime $r$ divides $\Prod{2}(n)+1$ its later hits are exactly the returns of
+the multiplier product $a(n{+}1)\cdots a(m)$ to $1$ modulo~$r$
+(\lean{EM/Population/HeadDynamics.lean}{dvd\_euclid\_iff\_prod\_mul\_eq\_one}).
+Finally, on the perpetual-primality branch every late multiplier is
+$\equiv 1$ modulo the whole accumulator, so ``the multipliers are not
+eventually $\equiv 1 \pmod{\Prod{2}(N)}$'' implies $(\mathrm{C}\infty)$
+and is implied by $\MC$ through Dirichlet's theorem
+(\lean{EM/Population/HeadDynamics.lean}{notConfined\_implies\_infinitelyManyComposite},
+\lean{EM/Population/HeadDynamics.lean}{mullin\_implies\_notConfined}).
+
+\paragraph{Two class rungs above the floor.}
+The Euclid numbers carry two frozen residues, $\Prod{2}(n)+1 \equiv 3
+\pmod 4$ and $\equiv 1 \pmod 3$ for $n \geq 1$, so a \emph{prime} Euclid
+number is $\equiv 7 \pmod{12}$.  On the perpetual-primality branch every
+late multiplier is a prime Euclid number, hence $\equiv 7 \pmod{12}$ and
+$\equiv 1$ modulo every earlier bag prime.  Writing $\mathrm{CI}(a \bmod m)$
+for ``infinitely many Euclid--Mullin primes are $\equiv a \pmod m$'', this
+gives two implications
+(\lean{EM/Population/ClassInfinitude.lean}{classInfinitude\_two\_mod\_three\_implies\_infinitelyManyComposite},
+\lean{EM/Population/ClassInfinitude.lean}{not\_classInfinitude\_three\_mod\_four\_implies\_infinitelyManyComposite}):
+\[
+  \mathrm{CI}(2 \bmod 3) \;\Longrightarrow\; (\mathrm{C}\infty),
+  \qquad
+  \neg\,\mathrm{CI}(3 \bmod 4) \;\Longrightarrow\; (\mathrm{C}\infty).
+\]
+Both class statements are implied by $\MC$ and by Weak Mullin.  The first
+is therefore at least as hard as the floor; the second is the one class
+statement the floor does not block, and it comes with an unconditional
+positive ingredient: every Euclid number has a prime factor $\equiv 3
+\pmod 4$
+(\lean{EM/Population/ClassInfinitude.lean}{exists\_prime\_dvd\_euclid\_three\_mod\_four}),
+the only positive divisibility fact the sequence yields for free.  Whether
+infinitely many of those factors are ever the \emph{least} one is
+$\mathrm{CI}(3 \bmod 4)$, open.  Finally, after a prime Euclid number the
+next one is $\Phi_3(\Prod{2}(n))$ and every one of its prime factors is
+$\equiv 1 \pmod 3$
+(\lean{EM/Population/ClassInfinitude.lean}{prime\_dvd\_euclid\_succ\_mod\_three}),
+the integer twin of the even-degree exclusion over $\FF_p[t]$
+(\S\ref{sec:function-field}).
 
 \paragraph{The Fermat test.}
 The comparison is not loose.  The Fermat numbers $F_n = 2^{2^n}+1$ have the

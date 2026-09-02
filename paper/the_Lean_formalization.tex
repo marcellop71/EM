@@ -410,7 +410,17 @@ stable identifier independent of human naming.
 \quad $\FF_3$: $E_{n+1} = (P_n-1)^2$ after an irreducible stage & \proved & \code{euclid\_succ\_eq\_sq}  & 58c4b7a0 \\
 \quad $\FF_3$: composite floor, constant 1; first five terms forced & \proved & \code{ff\_three\_first\_terms}  & 08ebc965 \\
 \quad $\FF_2$: after two irreducible stages, $4 \mid$ degree of the next factor & \proved & \code{four\_dvd\_ffSeq\_natDegree\_of\_two\_irreducible}  & e33a8851 \\
-\quad $\FF_5$: every linear seed $t+a$ is a perpetual tower & \proved & \code{lin\_seed\_perpetual}  & d4f5219b \\
+\quad MC $\Leftrightarrow$ the head (least missing prime) $\to \infty$ & \proved & \code{mullin\_iff\_head\_tendsto}  & ef914dfb \\
+\quad MC $\Leftrightarrow$ $\lpf(P_n{+}1) = $ head infinitely often & \proved & \code{mullin\_iff\_head\_captured\_io}  & 65943d51 \\
+\quad MC $\Leftrightarrow$ $\lpf(P_n{+}1) \leq f(\text{head})$ for some $f$ & \proved & \code{mullin\_iff\_exists\_bound}  & bc8d09cc \\
+\quad NotConfined $\Rightarrow (\mathrm{C}\infty)$; MC $\Rightarrow$ NotConfined (Dirichlet) & \proved & \code{notConfined\_implies\_infinitelyManyComposite}  & f3d81c5f \\
+\quad Consecutive Euclid numbers are coprime & \proved & \code{coprime\_euclid\_succ}  & f698e103 \\
+\quad After a hit, later hits are returns of the multiplier product to $1$ & \proved & \code{dvd\_euclid\_iff\_prod\_mul\_eq\_one}  & 05910091 \\
+\quad Every Euclid number has a prime factor $\equiv 3 \pmod 4$ & \proved & \code{exists\_prime\_dvd\_euclid\_three\_mod\_four}  &f05005cd \\
+\quad $\mathrm{CI}(2 \bmod 3) \Rightarrow (\mathrm{C}\infty)$ & \proved & \code{classInfinitude\_two\_mod\_three\_implies\_infinitelyManyComposite}  & 7891370f \\
+\quad $\neg\mathrm{CI}(3 \bmod 4) \Rightarrow (\mathrm{C}\infty)$ & \proved & \code{not\_classInfinitude\_three\_mod\_four\_implies\_infinitelyManyComposite}  & 04b2940f \\
+\quad Prime factors of the Euclid number after a prime one are $\equiv 1 \pmod 3$ & \proved & \code{prime\_dvd\_euclid\_succ\_mod\_three}  & cbba8b75 \\
+\quad $\FF_5$: every linear seed $t+a$ is a perpetual tower & \proved & \code{lin\_seed\_perpetual}  &d4f5219b \\
 \quad $\FF_5$: every valid selection from $t^2+c$ follows the tower & \proved & \code{quad\_seed\_perpetual}  &a1d1f74b \\
 \quad Level polynomials irreducible over $\mathbb{Q}$ (Gauss); generic sequence is a Sylvester tower & \proved & \code{gQ\_irreducible}  &8ee16c57 \\
 \quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & \proved & \code{ff\_dh\_implies\_ffmc}  & 1e2fbef6 \\

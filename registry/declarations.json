@@ -890,6 +890,28 @@
   "module": "EM.Ensemble.UnconditionalPSCD",
   "kind": "theorem"},
  {"type_hash":
+  "bc8d09cc6923bf2c995b8a7cb8e677deeed5380089c57bf7b4f19a66ad5f4a75",
+  "type_deps":
+  ["Mullin.seq",
+   "Exists",
+   "instOfNatNat",
+   "LE.le",
+   "instLENat",
+   "instHAdd",
+   "Iff",
+   "HAdd.hAdd",
+   "Nat",
+   "instAddNat",
+   "Mullin.MullinConjecture",
+   "OfNat.ofNat",
+   "HeadDynamics.head"],
+  "status": "conditional",
+  "pp_type":
+  "Mullin.MullinConjecture ↔ ∃ f, ∀ (n : ℕ), Mullin.seq (n + 1) ≤ f (HeadDynamics.head n)",
+  "name": "HeadDynamics.mullin_iff_exists_bound",
+  "module": "EM.Population.HeadDynamics",
+  "kind": "theorem"},
+ {"type_hash":
   "edaed3430b7620fc948804a007ebe7617e0aeb0ff69397c803bc303b9360c68d",
   "type_deps":
   ["Real.instLE",
@@ -1895,6 +1917,30 @@
   "∀ {m : ℕ},\n  m ≠ 0 → ∀ {r : ZMod m}, RuleTransition.OddRepresentable m r → ∀ (B : ℕ), ∃ N, B < N ∧ Odd N ∧ 3 ≤ N ∧ ↑N = r + 1",
   "name": "RuleTransition.exists_large_odd_of_representable",
   "module": "EM.Obstruction.RuleTransition",
+  "kind": "theorem"},
+ {"type_hash":
+  "f05005cd8f1566056c2faff13ff5242c0d1b8602c801554007b82d24ca9c102c",
+  "type_deps":
+  ["Nat.Prime",
+   "Dvd.dvd",
+   "Exists",
+   "Nat.instMod",
+   "instHMod",
+   "instOfNatNat",
+   "instHAdd",
+   "HMod.hMod",
+   "And",
+   "Nat.instDvd",
+   "HAdd.hAdd",
+   "Nat",
+   "instAddNat",
+   "OfNat.ofNat",
+   "Mullin.prod",
+   "Eq"],
+  "status": "proved",
+  "pp_type": "∀ (n : ℕ), ∃ p, Nat.Prime p ∧ p ∣ Mullin.prod n + 1 ∧ p % 4 = 3",
+  "name": "EuclidClasses.exists_prime_dvd_euclid_three_mod_four",
+  "module": "EM.Population.ClassInfinitude",
   "kind": "theorem"},
  {"type_hash":
   "f2da238336d5428e5022f433cacaa499fcaa57fe42d094fe31f58f6492a20d51",
@@ -3842,6 +3888,22 @@
   "module": "EM.Obstruction.Fragment",
   "kind": "theorem"},
  {"type_hash":
+  "04b2940f6ccb68ad7ed4b293674ecc5a7efc66ff38caa4386c33386a42ce459f",
+  "type_deps":
+  ["EuclidClasses.ClassInfinitude",
+   "instOfNatNat",
+   "Nat",
+   "OfNat.ofNat",
+   "Not",
+   "AutonomousBranch.InfinitelyManyComposite"],
+  "status": "conditional",
+  "pp_type":
+  "¬EuclidClasses.ClassInfinitude 4 3 → AutonomousBranch.InfinitelyManyComposite",
+  "name":
+  "EuclidClasses.not_classInfinitude_three_mod_four_implies_infinitelyManyComposite",
+  "module": "EM.Population.ClassInfinitude",
+  "kind": "theorem"},
+ {"type_hash":
   "b779833f5901d190546160132c7e78ef6b30b8f3d6833f407c68982aeb3dc060",
   "type_deps":
   ["Real",
@@ -3904,6 +3966,29 @@
   "∀ (N : ℕ), 2 ^ 2 ^ CompositeFloor.primeEuclidCount N ≤ Mullin.prod N",
   "name": "CompositeFloor.two_pow_two_pow_primeEuclidCount_le_prod",
   "module": "EM.Population.CompositeFloor",
+  "kind": "theorem"},
+ {"type_hash":
+  "cbba8b754e58804bef053ebba22fa7fdedaf345589f1daac4fd41894a8502090",
+  "type_deps":
+  ["Nat.Prime",
+   "Dvd.dvd",
+   "Nat.instMod",
+   "instHMod",
+   "instOfNatNat",
+   "instHAdd",
+   "HMod.hMod",
+   "Nat.instDvd",
+   "HAdd.hAdd",
+   "Nat",
+   "instAddNat",
+   "OfNat.ofNat",
+   "Mullin.prod",
+   "Eq"],
+  "status": "proved",
+  "pp_type":
+  "∀ {n : ℕ}, Nat.Prime (Mullin.prod n + 1) → ∀ {q : ℕ}, Nat.Prime q → q ∣ Mullin.prod (n + 1) + 1 → q % 3 = 1",
+  "name": "EuclidClasses.prime_dvd_euclid_succ_mod_three",
+  "module": "EM.Population.ClassInfinitude",
   "kind": "theorem"},
  {"type_hash":
   "c3a39c8001d003e8005536ba95667c356b975fe031713f71b4582d4b93c339dc",
@@ -3978,6 +4063,22 @@
   "∀ {p : ℕ} [hp : Fact (Nat.Prime p)] {start : Polynomial (ZMod p)} {σ : FunctionFieldAnalog.FFMixedSelection p},\n  FunctionFieldAnalog.FFMixedSelectionValid p start σ →\n    Irreducible start → ¬FunctionFieldAnalog.ffMixedCaptures p start σ start",
   "name": "FunctionFieldAnalog.start_not_capturable",
   "module": "EM.FunctionField.FactorTree",
+  "kind": "theorem"},
+ {"type_hash":
+  "f698e1037a36d520bdafaceb3d19fe14ec4e51b613cf6850643c07f59be76670",
+  "type_deps":
+  ["Nat.Coprime",
+   "instOfNatNat",
+   "instHAdd",
+   "HAdd.hAdd",
+   "Nat",
+   "instAddNat",
+   "OfNat.ofNat",
+   "Mullin.prod"],
+  "status": "proved",
+  "pp_type": "∀ (n : ℕ), (Mullin.prod n + 1).Coprime (Mullin.prod (n + 1) + 1)",
+  "name": "HeadDynamics.coprime_euclid_succ",
+  "module": "EM.Population.HeadDynamics",
   "kind": "theorem"},
  {"type_hash":
   "1251dd77245ba7076dca3893948d1562ed4c7f60443a908a085666f7f4e1c092",
@@ -5933,6 +6034,16 @@
   "module": "EM.Population.HeadDomination",
   "kind": "theorem"},
  {"type_hash":
+  "f3d81c5f8c769ddbf96a82b6eb91949f417c2d4b26177641783db94e01410881",
+  "type_deps":
+  ["HeadDynamics.NotConfined", "AutonomousBranch.InfinitelyManyComposite"],
+  "status": "conditional",
+  "pp_type":
+  "HeadDynamics.NotConfined → AutonomousBranch.InfinitelyManyComposite",
+  "name": "HeadDynamics.notConfined_implies_infinitelyManyComposite",
+  "module": "EM.Population.HeadDynamics",
+  "kind": "theorem"},
+ {"type_hash":
   "2eb412f6e3474438217dc18ecfdd61a9cb9aa2d9be16e02ef2dc3e59982241d7",
   "type_deps": ["VanDerCorputBound"],
   "status": "proved",
@@ -6028,6 +6139,21 @@
   "pp_type": "AdelicEquidist → Mullin.MullinConjecture",
   "name": "adelic_implies_mc",
   "module": "EM.Adelic.Equidist",
+  "kind": "theorem"},
+ {"type_hash":
+  "c8b91b9eed7b20e749034bcb9f212a11f0d581742ccb77b7adf539c24a1af88f",
+  "type_deps":
+  ["EuclidClasses.ClassInfinitude",
+   "instOfNatNat",
+   "Nat",
+   "OfNat.ofNat",
+   "AutonomousBranch.InfinitelyManyComposite"],
+  "status": "conditional",
+  "pp_type":
+  "EuclidClasses.ClassInfinitude 4 1 → AutonomousBranch.InfinitelyManyComposite",
+  "name":
+  "HeadDynamics.classInfinitude_one_mod_four_implies_infinitelyManyComposite",
+  "module": "EM.Population.HeadDynamics",
   "kind": "theorem"},
  {"type_hash":
   "254e1cd3213bdb8e363f84627bc74a25d1b404c34640a950a1579f8270511864",
@@ -6557,6 +6683,30 @@
   "∀ (a : ZMod 5) (n : ℕ),\n  Irreducible ((FunctionFieldAnalog.StableTower.g n).comp (FunctionFieldAnalog.LinearSeeds.linSeed a))",
   "name": "FunctionFieldAnalog.LinearSeeds.g_comp_linear_irreducible",
   "module": "EM.FunctionField.LinearSeeds",
+  "kind": "theorem"},
+ {"type_hash":
+  "65943d512d6dbba8399eea07a7019688fece7413d84f330e223281e92bb1829d",
+  "type_deps":
+  ["Mullin.seq",
+   "Exists",
+   "instOfNatNat",
+   "LE.le",
+   "instLENat",
+   "instHAdd",
+   "And",
+   "Iff",
+   "HAdd.hAdd",
+   "Nat",
+   "instAddNat",
+   "Mullin.MullinConjecture",
+   "OfNat.ofNat",
+   "Eq",
+   "HeadDynamics.head"],
+  "status": "conditional",
+  "pp_type":
+  "Mullin.MullinConjecture ↔ ∀ (N : ℕ), ∃ n, N ≤ n ∧ Mullin.seq (n + 1) = HeadDynamics.head n",
+  "name": "HeadDynamics.mullin_iff_head_captured_io",
+  "module": "EM.Population.HeadDynamics",
   "kind": "theorem"},
  {"type_hash":
   "3f815b24ca16cd4f2b2d69a1b4fb6cca08a618a006158db221ee818d92821d0a",
@@ -7563,6 +7713,22 @@
   "module": "EM.Ensemble.MinFacShifted",
   "kind": "theorem"},
  {"type_hash":
+  "ef914dfb60754014f53860768cc9acd729eebdc98dec8fb1affed5bad6525b6a",
+  "type_deps":
+  ["Filter.atTop",
+   "Iff",
+   "Filter.Tendsto",
+   "Nat.instPreorder",
+   "Nat",
+   "Mullin.MullinConjecture",
+   "HeadDynamics.head"],
+  "status": "conditional",
+  "pp_type":
+  "Mullin.MullinConjecture ↔ Filter.Tendsto HeadDynamics.head Filter.atTop Filter.atTop",
+  "name": "HeadDynamics.mullin_iff_head_tendsto",
+  "module": "EM.Population.HeadDynamics",
+  "kind": "theorem"},
+ {"type_hash":
   "5c09947f532bc3f30997a26dddbff4151a16e1723e05e0f93f5af15df181d1f7",
   "type_deps":
   ["Nat.Prime",
@@ -8363,6 +8529,43 @@
   "module": "EM.FunctionField.CharThree",
   "kind": "theorem"},
  {"type_hash":
+  "05910091470198c24497b01883f2f5bf02b63b1a427eea07bae6a328773f4a82",
+  "type_deps":
+  ["Dvd.dvd",
+   "ZMod.commRing",
+   "Mullin.seq",
+   "AddGroupWithOne.toAddMonoidWithOne",
+   "Nat.instLocallyFiniteOrder",
+   "AddMonoidWithOne.toNatCast",
+   "instOfNatNat",
+   "LE.le",
+   "instLENat",
+   "Nat.cast",
+   "ZMod",
+   "Finset.prod",
+   "AddMonoidWithOne.toOne",
+   "instHAdd",
+   "Iff",
+   "Nat.instDvd",
+   "HAdd.hAdd",
+   "Nat.instPreorder",
+   "Nat",
+   "Nat.instCommMonoid",
+   "One.toOfNat1",
+   "instAddNat",
+   "CommRing.toRing",
+   "OfNat.ofNat",
+   "Mullin.prod",
+   "Eq",
+   "Ring.toAddGroupWithOne",
+   "Finset.Ioc"],
+  "status": "proved",
+  "pp_type":
+  "∀ {r n m : ℕ}, r ∣ Mullin.prod n + 1 → n ≤ m → (r ∣ Mullin.prod m + 1 ↔ ↑(∏ k ∈ Finset.Ioc n m, Mullin.seq k) = 1)",
+  "name": "HeadDynamics.dvd_euclid_iff_prod_mul_eq_one",
+  "module": "EM.Population.HeadDynamics",
+  "kind": "theorem"},
+ {"type_hash":
   "bb9d742019ba8920d9629f360e6d1cc34538204f3b696324a937bc7e06b14ddb",
   "type_deps":
   ["FFDegreeTelescope.FFInfinitelyManyReducible",
@@ -8593,6 +8796,14 @@
   "pp_type": "¬EnsembleCharSumConcentration",
   "name": "UncenteredRefutations.not_ensembleCharSumConcentration",
   "module": "EM.Ensemble.UncenteredRefutations",
+  "kind": "theorem"},
+ {"type_hash":
+  "367c52c6f9697eb017c441c45f72a338c4e9959bb750fa4afb527208b8132b4a",
+  "type_deps": ["HeadDynamics.NotConfined", "Mullin.MullinConjecture"],
+  "status": "conditional",
+  "pp_type": "Mullin.MullinConjecture → HeadDynamics.NotConfined",
+  "name": "HeadDynamics.mullin_implies_notConfined",
+  "module": "EM.Population.HeadDynamics",
   "kind": "theorem"},
  {"type_hash":
   "36a4024aa9ef8a24f0c357e04acc2ea92d4d09e1bf06ed881956cd11c20fd51d",
@@ -8840,6 +9051,21 @@
   "pp_type": "¬WeakMullin → MissingPrimes.Infinite",
   "name": "not_wm_implies_missing_infinite",
   "module": "EM.Population.SpectralConspiracy",
+  "kind": "theorem"},
+ {"type_hash":
+  "7891370fdd4aa9b235d816a30be9536273d446b9a6b0b80e8f75e4f2095ddb49",
+  "type_deps":
+  ["EuclidClasses.ClassInfinitude",
+   "instOfNatNat",
+   "Nat",
+   "OfNat.ofNat",
+   "AutonomousBranch.InfinitelyManyComposite"],
+  "status": "conditional",
+  "pp_type":
+  "EuclidClasses.ClassInfinitude 3 2 → AutonomousBranch.InfinitelyManyComposite",
+  "name":
+  "EuclidClasses.classInfinitude_two_mod_three_implies_infinitelyManyComposite",
+  "module": "EM.Population.ClassInfinitude",
   "kind": "theorem"},
  {"type_hash":
   "17a6b4a5d9f6fd9185e62cd19ed50a4a5cba2bb711794ecfe84e8df9364cdb66",
