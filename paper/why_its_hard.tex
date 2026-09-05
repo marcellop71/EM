@@ -321,7 +321,13 @@ VE and hence MC, and even a one-sided linear drift bound (LinearDrift)
 suffices via a threshold-free route.  The zero-bias property under
 uniform multipliers is proved; the orbit-specificity gap---does the
 EM orbit satisfy the drift bound?---remains open
-(Section~\ref{sec:spectral-routes}).
+(Section~\ref{sec:spectral-routes}).  Two cautions.  Under
+equidistributed multipliers the next position is uniform and
+independent of the past, so the Lyapunov increment has conditional mean
+exactly zero: there is no restoring force, only martingale fluctuation,
+and ``self-correcting'' names the absence of bias rather than a
+mechanism opposing concentration.  And the same feedback is present
+over $\FF_5[t]$, where MC is false (\S\ref{sec:barriers-witnessed}).
 
 \medskip
 These four features---growth, coprimality, the $\minFac$ selection
@@ -417,9 +423,15 @@ the full group, the cycle size~$k$ can be less than~$|(\ZZ/q\ZZ)^\times|$.
 Example: in $\ZZ/6\ZZ$, the cycle $0 \to 1 \to 0$ has
 $\langle 1, 5 \rangle = \ZZ/6\ZZ$ but misses~3.
 
-Closing this gap requires showing that at each cofinally visited
-position, \emph{multiple} multiplier classes appear---expanding the
-cycle until it covers $-1$.  This is the ``specific-orbit problem'':
+It is tempting to close this gap by showing that at each cofinally
+visited position \emph{several} multiplier classes appear, so that the
+cycle expands until it covers~$-1$.  That does not work: Dead
+End~\#179 exhibits a walk in $(\ZZ/5\ZZ)^\times$ with two classes at
+every cofinal position, generating multipliers, and no visit to~$-1$
+(\lean{EM/Meta/OrbitBarrier.lean}{two\_classes\_not\_coverage}).  At a
+position~$x$ only the single residue $-x^{-1}$ is fatal, so the gap
+closes only when \emph{that} class is shown to appear, which is DH
+itself.  What remains is the ``specific-orbit problem'':
 transferring generic equidistribution of $\minFac$ residues to the
 particular EM orbit.
 
@@ -1065,69 +1077,87 @@ MC directly.
 
 \paragraph{What Would Close the Conjecture}
 
-\begin{frontierbox}[title={\sffamily\bfseries Paths to MC}]
-The cleanest paths to MC:
-\begin{enumerate}
-\item \textbf{Prove CME} (the reformulation of MC in walk language): show that the
-  multiplier character sum $\sum_{\substack{n < N \\ w(n) = c}} \chi(m(n))$ is
-  $o(N)$ for each walk position~$c$, for every missing~$q$.  CME implies
-  CCSB (\lean{EM/CME/Reduction.lean}{cme\_implies\_ccsb}) and is equivalent
-  to MC (\lean{EM/CME/Equivalences.lean}{cme\_iff\_mc}).
-  CME asks only about the \emph{conditional} distribution of
-  multipliers given walk state---it does not require controlling the
-  walk character sum itself.  This bypasses the $d \geq 3$ barrier
-  entirely.
+Every item that earlier drafts listed here as a ``path'' is either a
+restatement of MC, a hypothesis that is false, or a population
+statement that the litmus test of \S\ref{sec:barriers-witnessed}
+rules out.  We therefore state the frontier as a ladder with four
+screens, and record the residue reformulations for what they are.
 
-\item \textbf{Prove CCSB directly}: show that no non-trivial
-  character sum can sustain the $\Omega(N)$ bias that permanent
-  avoidance of~$-1$ would require.  The self-correcting sieve
-  (concentration of EM primes in a residue class is exponentially
-  self-limiting) is the strongest heuristic argument.
+\begin{frontierbox}[title={\sffamily\bfseries The ladder, and what a route must pass}]
+\textbf{The ladder.}\enspace MC implies RD, RD implies (S), and (S)
+implies $(\mathrm{C}\infty)$
+(\lean{EM/Population/WeakMullin.lean}{mc\_implies\_rd},
+\lean{EM/Population/CompositeFloor.lean}{exists\_small\_minFac\_of\_reciprocalDivergence},
+\lean{EM/Population/CompositeFloor.lean}{infinitelyManyComposite\_of\_small\_minFac}).
+Each rung says that the least prime factor of the Euclid number is
+small infinitely often: $\lpf(E_n) \le \sqrt{E_n}$; $\lpf(E_n) <
+2^{n-c}$; $\sum 1/\lpf(E_n) = \infty$; and at the top $\lpf(E_n) =
+\mathrm{head}(n)$, the least missing prime, which is MC itself
+(\lean{EM/Population/HeadDynamics.lean}{mullin\_iff\_head\_captured\_io}).
+Every rung is open.  So any proof of MC contains a proof of
+$(\mathrm{C}\infty)$, a Fermat-shaped compositeness statement about a
+Sylvester-type tower with an unknown seed, for which no method exists
+(\S\ref{sec:cinfty}).  The first genuinely new idea has to land on the
+bottom rung, because nothing above it can be proved first.  What can be
+attacked now is the \emph{conditional} statement $(\mathrm{C}\infty)
+\Rightarrow \MC$; we checked that assuming $(\mathrm{C}\infty)$ helps
+none of the residue reformulations below, since it says only that the
+cofactor $E_n/\lpf(E_n)$ exceeds~$1$ infinitely often, which carries no
+information modulo~$q$.
 
-\item \textbf{Exhibit one horizon} (the weakest form of the previous
-  item).  Fix the least missing prime~$q$ and find a \emph{single}
-  window past the sieve gap with
-  \[
-    \sum_{\chi \neq 1}
-      \Bigl\lvert \sum_{n < N} \chi(\walkZ{2}{q}{n}) \Bigr\rvert < N .
-  \]
-  Fourier inversion then forces the walk to visit \emph{every} unit
-  before~$N$, in particular~$-1$
-  (\lean{EM/Equidist/OneHorizon.lean}{covers\_of\_charSum\_lt}), and one
-  such window at each prime gives MC
-  (\lean{EM/Equidist/OneHorizon.lean}{windowFourierGain\_implies\_mc}).
-  This asks for one finite-horizon gain rather than $o(N)$ cancellation
-  at every large~$N$.
-
-\item \textbf{Prove a BV-type estimate}: even an averaged bound
-  over~$q$ would suffice---for $q \geq Q_0$ it rules out permanent
-  avoidance, and the finitely many $q < Q_0$ are handled by the
-  inductive bootstrap (\S\ref{sec:bootstrap}).
-
-\item \textbf{Close the orbit chain gap}: show that at each cofinally
-  visited walk position, at least two distinct multiplier classes
-  appear.  This would force the orbit chain to expand to the full group.
-
-\item \textbf{Prove DH directly}: show that a multiplicative walk
-  on a cyclic group with a generating set of multipliers must hit
-  every element cofinally.  This is a combinatorial question about
-  deterministic walks.
-
-\item \textbf{Prove StrongSieveEquidist}: show that the EM orbit's
-  $\minFac$ residues equidistribute within sliding windows; the window
-  route (\S38) then gives PED and, with the CCSB bridge, MC\@.  (The
-  former ``SieveTransfer'' item is retired: its generic-integer input is
-  false, Dead End~\#160.)
-
-\item \textbf{Prove BVImpliesMMCSB or PrimeArithLSImpliesMMCSB}: the
-  large sieve route (\S41--\S65) reduces MC to a transfer hypothesis.
-  Given Bombieri--Vinogradov or the analytic large sieve, the remaining
-  open step is showing that the EM orbit's multipliers receive their
-  fair share of each residue class---in particular, that the death
-  channel is not systematically avoided.  This is the same
-  orbit-specificity gap as CME, approached from a different
-  mathematical toolkit.
+\smallskip
+\textbf{Four screens.}\enspace A candidate route must
+\begin{enumerate}[nosep]
+\item produce a \emph{positive} divisibility fact about a prescribed
+  prime, not only non-divisibility facts (the sign asymmetry of
+  $\minFac$, \S\ref{sec:barriers-witnessed});
+\item use characteristic-zero input, so that it fails to transplant to
+  $\FF_5[t]$, where every walk-and-residue feature is present and MC is
+  false (Theorem~\ref{thm:ffmc-false-five});
+\item be single-orbit: population statistics do not determine hitting
+  (Dead End~\#90);
+\item yield $(\mathrm{C}\infty)$ as a corollary, or say how its
+  hypothesis does.
 \end{enumerate}
+
+\smallskip
+\textbf{The residue reformulations.}\enspace CME, CCSB, the one-horizon
+Fourier gain
+(\lean{EM/Equidist/OneHorizon.lean}{windowFourierGain\_implies\_mc}),
+StrongSieveEquidist via the window route, and the transfer hypotheses
+BVImpliesMMCSB and PrimeArithLSImpliesMMCSB are one target seen in five
+quantifier shapes: control of the residues mod~$q$ of this orbit.  CME
+is equivalent to MC (\lean{EM/CME/Equivalences.lean}{cme\_iff\_mc}), and
+the others are sufficient conditions differing only in what is averaged
+and over what horizon.  None is an independent line of attack, and none
+says how it would pass screens~1, 2 or~4.  The one-horizon form is the
+best posed: one finite window per prime, quantitative, with partial
+progress measurable.  Note that it asks the walk to cover all $q-1$
+units in the window in order to secure the single hit that
+Theorem~\ref{thm:single-hit} needs; the Fourier detour overshoots the
+requirement by a factor of $q-1$.
+
+\smallskip
+\textbf{Retired.}\enspace Two items formerly listed here are false.
+``A multiplicative walk with a generating set of multipliers must hit
+every element cofinally'' is refuted by the \#90 witness~$B$
+(\S\ref{sec:barriers-witnessed}), whose multipliers generate
+$(\ZZ/5\ZZ)^\times$ while its walk never leaves $\{1,2\}$.  ``Two
+distinct multiplier classes at every cofinally visited position force
+the orbit chain to cover~$-1$'' is Dead End~\#179: the periodic prime
+multipliers $(7,19,7,13,19,13)^\infty$ visit $\{1,2,3\}$ mod~$5$
+cofinally with two classes at every position, generate, all
+exceed $q=5$, and never reach~$4$
+(\lean{EM/Meta/OrbitBarrier.lean}{two\_classes\_not\_coverage}).  The
+reason is general: at a position~$x$ exactly one multiplier residue,
+$-x^{-1}$, is fatal
+(\lean{EM/Meta/OrbitBarrier.lean}{death\_multiplier\_unique}), so all
+$q-2$ other classes may appear at every position while the walk
+avoids~$-1$ forever.  The only strengthening that works names the death
+class, and that is DH\@.  A third item, ``a BV-type estimate averaged
+over~$q$'', fails screen~2 under its natural reading, since
+Bombieri--Vinogradov is a theorem over function fields; what survives
+of it is the orbit-transfer hypothesis already listed above.
 \end{frontierbox}
 
 \paragraph{A caveat on the one-horizon route.}
@@ -1237,8 +1267,12 @@ orbit-specificity, not analytic number theory.
 
 \paragraph{Function Field Analog}
 
-Over $\FF_p[t]$, the FF-EM sequence has additional structural
-advantages.  The formalization proves
+The function field model is a control, not a friendlier setting: over
+$\FF_5[t]$ Mullin's conjecture is \emph{false}
+(Theorem~\ref{thm:ffmc-false-five}), which is what gives the litmus test
+of \S\ref{sec:barriers-witnessed} its force.  What the model offers is
+unconditional versions of the \emph{weak} and population statements.
+The formalization proves
 (\code{EM/FunctionField/WeakMC.lean}, 471~lines, zero \code{sorry}):
 \begin{itemize}[nosep]
 \item \textbf{Degree escape}
@@ -1380,7 +1414,13 @@ bound.  Perpetual primality therefore requires the tower to dodge
 simultaneously and forever, an event of heuristic probability
 $\prod_\ell (1-\rho(\ell)) = 0$.  Note also that $\rho$ is defined
 purely by the autonomous map, so unlike the rest of this paper the
-heuristic here involves no non-autonomous dynamics at all.
+heuristic here involves no non-autonomous dynamics at all.  One further
+point.  On the branch the bag is frozen, and every bag prime sees the
+tower at the fixed point~$1$ of~$\Phi_6$; so the absorbing primes are
+exactly the primes $\ell \equiv 1 \pmod 6$ \emph{outside} the bag, and
+the better the sequence has done before the branching stage, the larger
+the least absorbing prime.  The mechanism that would kill the branch is
+disabled precisely on the primes MC has already captured.
 
 \smallskip\noindent
 That this does not become a proof is instructive.  It would suffice to
@@ -1412,9 +1452,12 @@ existence means any proof must be genuinely subtle.
 
 \paragraph{Assessment.}
 We believe the walk does hit~$-1$ at every prime, primarily because
-the self-correcting sieve mechanism provides a concrete dynamical
-reason (not merely a probabilistic heuristic) for the walk to
-eventually hit~$-1$.  The strongest form of this belief: CME should
+nothing in the arithmetic of the multipliers, conditioned on walk
+position, has any reason to avoid the death channel.  We no longer
+describe this as a dynamical mechanism distinct from the probabilistic
+heuristic: under equidistributed multipliers the Lyapunov drift has
+conditional mean exactly zero (\S\ref{sec:walk-features}).  The
+strongest form of this belief: CME should
 hold because the EM multipliers, conditioned on walk position, have
 no arithmetic reason to avoid the death channel systematically.
 But we acknowledge that no existing technique can prove this.
@@ -1429,21 +1472,22 @@ techniques---likely exploiting the specific arithmetic of the
 $\minFac$ rule on super-exponentially growing squarefree numbers in
 ways that current analytic number theory does not.
 
-One direction remains genuinely untried: exploiting the
-\emph{arithmetic of the seed} $x_0 = 2$.
-The multiplicative order $\mathrm{ord}_q(2)$ is large for most
-primes~$q$ (Artin's conjecture, proved under GRH by Hooley), and
-character sums $\sum \chi(g^n)$ cancel when $\mathrm{ord}(g)$ is
-large (Konyagin--Shparlinski).  This is exactly the pattern CCSB
-demands.  The fatal gap: the walk position
-$\Prod{2}(n) \bmod q = 2 \cdot \seq{2}(1) \cdots \seq{2}(n) \bmod q$
-is \emph{not} the geometric progression $2^n \bmod q$---the
-varying multipliers $\seq{2}(k)$ destroy the structure that makes
-exponential-sum bounds work (Dead End~\#135).  No mechanism has been
-found to convert Artin-type information about $\mathrm{ord}_q(2)$
-into walk equidistribution through a route that avoids Fourier
-analysis and Cauchy--Schwarz (Dead End~\#136).  Whether such a
-mechanism exists is, in our view, the most promising open question.
+One direction that earlier drafts called the most promising, exploiting
+the arithmetic of the seed $x_0 = 2$ through the multiplicative order
+$\mathrm{ord}_q(2)$ (large for most primes~$q$ by Artin's conjecture,
+proved under GRH by Hooley; character sums $\sum \chi(g^n)$ cancel when
+$\mathrm{ord}(g)$ is large, Konyagin--Shparlinski), is closed by the
+litmus test of \S\ref{sec:barriers-witnessed}: Artin's conjecture is a
+theorem over function fields, and MC is false over $\FF_5[t]$, so no
+Artin-type input about $\mathrm{ord}_q(2)$ can suffice without
+characteristic-zero anatomy.  The mechanical obstruction was already on
+file: the walk position $\Prod{2}(n) \bmod q = 2 \cdot \seq{2}(1)
+\cdots \seq{2}(n) \bmod q$ is not the geometric progression $2^n \bmod
+q$ (Dead End~\#135), and no Fourier-free conversion was found (Dead
+End~\#136).  If a breakthrough comes we expect it on the bottom rung of
+the ladder in \S\ref{sec:precise-frontier}: a method that proves a
+specific iterated integer sequence has a proper factor infinitely
+often, which is $(\mathrm{C}\infty)$.
 
 %% =========================================================================
 \subsection{Four Questions}

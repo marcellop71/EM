@@ -239,3 +239,104 @@ dividing the accumulator `genProd m n` (the bag of a seed contains the primes of
 §G is identified with the stall tail.  Item 2 done in the only honest form: the effective
 program is stated (`effective_range`), its ceiling computed (`√(log log X)`), its analytic input
 named (explicit PNT in APs, outside Mathlib), and its impossibility of reaching §G proved.
+
+## 10. Entropy, forgetting, and "arbitrarily composed" numbers (2026-09-02, fourth pass)
+
+The question: *could a dynamics with enough entropy, or enough forgetting, fail to avoid
+arbitrarily composed numbers?*  And: *what is the probability that a Euclid number has many
+factors?*  Both are natural, and the answer separates cleanly into four parts.  The conclusion
+is that sufficient forgetting **would** force MC but the only sufficient form is CME, which is
+already known to be equivalent to MC, and that the *number* of prime factors is the wrong
+coordinate: it lives at scale `log n` while MC lives at scale `√n`.
+
+### 10.1 Two directions of mixing; only one is even a candidate
+
+* **Mixing along the orbit** (for fixed `q`, the residue `E_n mod q` equidistributes as `n`
+  runs) is **provably false**.  Each prime divides at most `π(q)` Euclid numbers
+  (`AdelicShadow.hits_finite`, `captured_of_many_hits`), so the residue `0` occurs finitely
+  often, and after capture the walk is frozen at `1` forever.  The dynamics mod `q` is
+  absorbing, not mixing.  Any argument of the form "an ergodic/mixing system must hit every
+  state" is inapplicable at the outset; this is the measure-theoretic content of the profinite
+  picture (a.e. point of `Ω` has infinitely many vanishing coordinates, an integer has finitely
+  many).
+* **Mixing across primes** (for fixed `n`, the residues of `E_n` modulo the missing primes are
+  jointly "random") is the rough-integer heuristic.  It is not a dynamical property at all: it
+  is a statement about the anatomy of *one integer*, and there is no theorem that certifies
+  randomness of a single number outside a family.  This is exactly the gap the seed population
+  fills — and cannot cross (#90, #117).
+
+### 10.2 Which forgetting would suffice, and why weaker forms do not
+
+The head is captured exactly when the multiplier product returns to `−1` mod the head
+(`dvd_euclid_iff_prod_mul_eq_one` plus `seq_succ_eq_head_of_dvd`).  Equidistribution of the
+multiplier residues in `(ℤ/q)^×` forces that return; that hypothesis **is** CME, and
+`cme_iff_mc` is on record: CME ⟺ MC.  So "sufficient forgetting" is not an approximation to
+MC, it is a restatement of it.
+
+Everything strictly weaker is compatible with permanent avoidance, because at each step
+`q − 2` of the `q − 1` step-residues avoid `−1`:
+
+| property of the step sequence | forces a hit? | witness |
+|---|---|---|
+| positive entropy | no | the avoiding subshift on `q−2` symbols has entropy `log(q−2)` |
+| full support (every residue used i.o.) | no | avoid `−1` while using every step value |
+| generates `(ℤ/q)^×` | no | `alternating_walk_misses_two` (#20/#130); generation ≠ coverage |
+| not eventually confined to a coset | no | `NotConfined` is implied by MC and gives only `(C∞)` |
+| equidistribution (CME) | **yes** | `cme_iff_mc` — and it *is* MC |
+
+The avoidance set is a full shift on `q−2` symbols: it has positive entropy, is topologically
+mixing, and supports many invariant measures.  So "high entropy" and "avoids `−1` forever" are
+not in tension; only the *specific* measure (uniform on `(ℤ/q)^×`) rules avoidance out.  This is
+the No-Invariant phenomenon in dynamical clothing: no property of the step sequence short of its
+distribution decides the hitting.
+
+### 10.3 The anatomy heuristic, quantitatively
+
+Model `E_n` as a random integer of its size, rough beyond `head n ≍ √(n log n)`, with
+`log E_n ≍ n log² n`:
+
+| quantity | heuristic value | consequence |
+|---|---|---|
+| `ω(E_n)` (distinct prime factors) | `≈ log n`, Erdős–Kac spread `√(log n)` | almost every stage *is* "arbitrarily composed" |
+| `P(E_n prime)` | `≈ log(head)/log(E_n) ≍ 1/n` (up to iterated logs) | `∑ 1/n = ∞`: **infinitely many prime Euclid numbers**, very sparse |
+| `P(lpf(E_n) = head n)` | `≈ 1/head n ≍ 1/√(n log n)` | `∑ = ∞`: MC heuristically true, and this is the bag-conditioned `1/q` law (`BagConditionedLaw`) |
+| `P(lpf(E_n) > e^K)` | `≈ log(head)/K` | heavy tail: small factors are the *typical*, not the rare, case |
+
+So the intuition "the dynamics cannot avoid arbitrarily composed numbers" is *heuristically
+correct and useless*: almost every stage has `~log n` factors, and this is compatible with MC
+failing.  Note also the second row: the heuristic predicts infinitely many **prime** Euclid
+numbers (known: stages 0, 1, 2, 6, 7).  "Eventually always composite" is heuristically false;
+`(C∞)` ("composite infinitely often") is heuristically certain and still open.  That is the
+Fermat-number shape of the difficulty, not a deficit of entropy.
+
+### 10.4 Why the count of factors cannot reach MC
+
+`ω(E_n) → ∞` neither implies nor is implied by MC:
+
+* `E_n = head n · (large prime)` captures the head with `ω = 2`;
+* `E_n` with a thousand factors, none equal to the head, captures nothing.
+
+The only bridge from the count to the ladder of smallness is the trivial `lpf(E_n) ≤
+E_n^{1/ω(E_n)}`.  Granting full Erdős–Kac along the orbit — far beyond anything provable —
+gives `lpf(E_n) ≤ exp(C log² n)` i.o., i.e. rung **(S)**, and stops there.  MC needs
+`lpf(E_n) = head n ≍ √(n log n)`.  The two axes are orthogonal:
+
+    the count of factors lives at scale  log n;   MC lives at scale  √(n log n).
+
+Hence the thesis of §0 is the right notion of "sufficiently composed": **not how many factors,
+but whether the smallest one is the smallest it could be.**  Head coordinates (§8, §9) are the
+formalisation of that, and `ω` is not.
+
+### 10.5 What could still be formalised here (low priority)
+
+* **Population Erdős–Kac.**  At a fixed stage `n`, on each type cell of the seed population
+  `E_n(m)` is a linear function of `m`, so Turán–Kubilius/Erdős–Kac applies: almost all seeds
+  have `ω(E_n(m)) ≈ log log X`.  Medium effort, population-only, **no MC content** (it does not
+  even give `(C∞)` for a single orbit).  `IK.ErdosKac` exists as a statement in `EM/IK/Ch1.lean`.
+* **Two cheap bookkeeping lemmas**: `lpf(E_n) ≤ E_n^{1/ω(E_n)}` (the bridge above, making the
+  scale mismatch a theorem rather than a remark), and `∑_{n<N} (ω(E_n) − 1) =` the number of
+  wasted hits before stage `N` (§2).
+* **Recommendation**: do not invest in `ω`.  The quantity that matters is the *lower tail* of
+  `lpf`, i.e. `P(lpf(E_n) = head n)`, which is the bag-conditioned `1/q` law already on file.
+
+Recorded as dead end #178.

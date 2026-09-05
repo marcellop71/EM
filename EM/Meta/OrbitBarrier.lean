@@ -304,6 +304,126 @@ theorem integer_orbit_barrier_thesis :
     ⟨mult_cancel_not_walk_cancel.2.2.2.1, mult_cancel_not_walk_cancel.2.2.2.2.2⟩,
     ⟨multipliers_generate, _root_.alternating_walk_misses_two⟩⟩
 
+/-! ## Part 8: Dead End #179 — two multiplier classes per position is not coverage
+
+The "orbit chain gap" proposal: show that at every cofinally visited walk position at least
+*two* distinct multiplier classes appear cofinally, and conclude that the chain expands to
+the whole group and reaches `-1`.  The sequence `mulC` below refutes it, in the same group as
+`mulA`/`mulB` and with prime multipliers all exceeding `q = 5` (so it is compatible with the
+one unconditional constraint at a missing prime, `multipliers_exceed`).  Its residues are
+`(2, 4, 2, 3, 4, 3)`, its walk is `1, 2, 3, 1, 3, 2, 1, …`: every visited position is visited
+cofinally, with two distinct multiplier classes each time, the residues generate `(ZMod 5)ˣ`,
+and the walk never reaches `4`.
+
+The general reason is `death_multiplier_unique`: at a position `x ≠ 0` exactly one multiplier
+residue, `-x⁻¹`, is fatal.  So all `q - 2` other classes may be used at every position while
+the walk avoids `-1` forever — the avoidance set is a full shift on `q - 2` symbols.  The only
+strengthening of the proposal that does work is "the death class `-x⁻¹` appears cofinally at
+some cofinal position `x`", which is `DynamicalHitting` restated. -/
+
+/-- Multiplier sequence `C`: period `(7, 19, 7, 13, 19, 13)`, residues `(2, 4, 2, 3, 4, 3)`
+mod `5`.  All values are primes greater than `5`. -/
+def mulC (k : ℕ) : ℕ :=
+  if k % 6 = 0 then 7 else if k % 6 = 1 then 19 else if k % 6 = 2 then 7
+  else if k % 6 = 3 then 13 else if k % 6 = 4 then 19 else 13
+
+theorem mulC_periodic (N j : ℕ) : mulC (6 * N + j) = mulC j := by
+  have h : (6 * N + j) % 6 = j % 6 := by omega
+  simp only [mulC, h]
+
+theorem mulC_mem (k : ℕ) : mulC k = 7 ∨ mulC k = 13 ∨ mulC k = 19 := by
+  unfold mulC; split_ifs <;> simp
+
+/-- Every multiplier of `C` is a prime exceeding `q = 5`. -/
+theorem mulC_prime_gt (k : ℕ) : Nat.Prime (mulC k) ∧ 5 < mulC k := by
+  rcases mulC_mem k with h | h | h <;> rw [h] <;> exact ⟨by norm_num, by norm_num⟩
+
+/-- The walk positions of `C`, as natural-number representatives: period `(1, 2, 3, 1, 3, 2)`. -/
+def walkNatC (n : ℕ) : ℕ :=
+  if n % 6 = 0 then 1 else if n % 6 = 1 then 2 else if n % 6 = 2 then 3
+  else if n % 6 = 3 then 1 else if n % 6 = 4 then 3 else 2
+
+theorem walkC_eq (n : ℕ) : walk mulC n = (walkNatC n : ZMod 5) := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [walk, ih]
+    have h : n % 6 = 0 ∨ n % 6 = 1 ∨ n % 6 = 2 ∨ n % 6 = 3 ∨ n % 6 = 4 ∨ n % 6 = 5 := by omega
+    rcases h with h | h | h | h | h | h
+    all_goals
+      have h' : (n + 1) % 6 = (n % 6 + 1) % 6 := by omega
+      simp only [mulC, walkNatC, h, h']
+      decide
+
+theorem walkC_periodic (N j : ℕ) : walk mulC (6 * N + j) = walk mulC j := by
+  rw [walkC_eq, walkC_eq]
+  have h : (6 * N + j) % 6 = j % 6 := by omega
+  simp only [walkNatC, h]
+
+/-- **Walk `C` never reaches the death class.** -/
+theorem walkC_misses (n : ℕ) : walk mulC n ≠ 4 := by
+  rw [walkC_eq]
+  have h : n % 6 = 0 ∨ n % 6 = 1 ∨ n % 6 = 2 ∨ n % 6 = 3 ∨ n % 6 = 4 ∨ n % 6 = 5 := by omega
+  rcases h with h | h | h | h | h | h <;> simp only [walkNatC, h] <;> decide
+
+/-- Two offsets `o₁, o₂` of the period that land on the position of step `n` with distinct
+multiplier residues give two multiplier classes used cofinally at that position. -/
+theorem two_classes_at (n o₁ o₂ : ℕ)
+    (h₁ : walk mulC o₁ = walk mulC n) (h₂ : walk mulC o₂ = walk mulC n)
+    (hm : ((mulC o₁ : ℕ) : ZMod 5) ≠ ((mulC o₂ : ℕ) : ZMod 5)) :
+    ∃ m₁ m₂ : ℕ, ((m₁ : ℕ) : ZMod 5) ≠ ((m₂ : ℕ) : ZMod 5) ∧
+      (∀ N, ∃ k, N ≤ k ∧ walk mulC k = walk mulC n ∧ mulC k = m₁) ∧
+      (∀ N, ∃ k, N ≤ k ∧ walk mulC k = walk mulC n ∧ mulC k = m₂) :=
+  ⟨mulC o₁, mulC o₂, hm,
+    fun N => ⟨6 * N + o₁, by omega, (walkC_periodic N o₁).trans h₁, mulC_periodic N o₁⟩,
+    fun N => ⟨6 * N + o₂, by omega, (walkC_periodic N o₂).trans h₂, mulC_periodic N o₂⟩⟩
+
+/-- At every step, the position of walk `C` is visited cofinally with two distinct multiplier
+classes. -/
+theorem walkC_two_classes (n : ℕ) :
+    ∃ m₁ m₂ : ℕ, ((m₁ : ℕ) : ZMod 5) ≠ ((m₂ : ℕ) : ZMod 5) ∧
+      (∀ N, ∃ k, N ≤ k ∧ walk mulC k = walk mulC n ∧ mulC k = m₁) ∧
+      (∀ N, ∃ k, N ≤ k ∧ walk mulC k = walk mulC n ∧ mulC k = m₂) := by
+  have hn : walk mulC n = walk mulC (n % 6) := by
+    conv_lhs => rw [← Nat.div_add_mod n 6]
+    exact walkC_periodic (n / 6) (n % 6)
+  have h : n % 6 = 0 ∨ n % 6 = 1 ∨ n % 6 = 2 ∨ n % 6 = 3 ∨ n % 6 = 4 ∨ n % 6 = 5 := by omega
+  rcases h with h | h | h | h | h | h <;> rw [h] at hn
+  · exact two_classes_at n 0 3 (by rw [hn]) (by rw [hn]; decide) (by decide)
+  · exact two_classes_at n 1 5 (by rw [hn]) (by rw [hn]; decide) (by decide)
+  · exact two_classes_at n 2 4 (by rw [hn]) (by rw [hn]; decide) (by decide)
+  · exact two_classes_at n 3 0 (by rw [hn]) (by rw [hn]; decide) (by decide)
+  · exact two_classes_at n 4 2 (by rw [hn]) (by rw [hn]; decide) (by decide)
+  · exact two_classes_at n 5 1 (by rw [hn]) (by rw [hn]; decide) (by decide)
+
+/-- At a position `x ≠ 0` of `ZMod q`, `q` prime, exactly one multiplier residue is fatal:
+`x * m = -1` iff `m = -x⁻¹`.  Every other class keeps the walk alive, so the avoidance set is
+a full shift on `q - 2` symbols and no "many classes per position" hypothesis short of naming
+the death class can force a hit. -/
+theorem death_multiplier_unique {q : ℕ} [Fact q.Prime] (x m : ZMod q) (hx : x ≠ 0) :
+    x * m = -1 ↔ m = -x⁻¹ := by
+  have h := mul_right_inj' hx (b := m) (c := -x⁻¹)
+  rw [mul_neg, mul_inv_cancel₀ hx] at h
+  exact h
+
+/-- **Dead End #179, witnessed.**  Two distinct multiplier classes at every cofinally visited
+position, generating multiplier residues, prime multipliers all above `q` — and the walk still
+never reaches the death class.  The "orbit chain gap" cannot be closed by counting classes per
+position; only the death class itself counts, and asking for it is `DynamicalHitting`. -/
+theorem two_classes_not_coverage :
+    -- prime multipliers, all exceeding q = 5
+    (∀ k, Nat.Prime (mulC k) ∧ 5 < mulC k) ∧
+    -- whose residues generate (ZMod 5)ˣ: the first multiplier is 7 ≡ 2, a generator
+    ((mulC 0 : ℕ) : ZMod 5) = 2 ∧
+    (∀ x : ZMod 5, x ≠ 0 → ∃ k : ℕ, k < 4 ∧ (2 : ZMod 5) ^ k = x) ∧
+    -- at every visited position two distinct multiplier classes are used cofinally
+    (∀ n, ∃ m₁ m₂ : ℕ, ((m₁ : ℕ) : ZMod 5) ≠ ((m₂ : ℕ) : ZMod 5) ∧
+      (∀ N, ∃ k, N ≤ k ∧ walk mulC k = walk mulC n ∧ mulC k = m₁) ∧
+      (∀ N, ∃ k, N ≤ k ∧ walk mulC k = walk mulC n ∧ mulC k = m₂)) ∧
+    -- yet the walk never reaches the death class
+    (∀ n, walk mulC n ≠ 4) :=
+  ⟨mulC_prime_gt, by decide, multipliers_generate, walkC_two_classes, walkC_misses⟩
+
 end OrbitBarrier
 
 end

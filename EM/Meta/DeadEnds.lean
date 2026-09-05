@@ -69,7 +69,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 
 <!-- BEGIN GENERATED CATALOGUE -->
 
-177 numbers; 167 catalogued entries; 35 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
+179 numbers; 169 catalogued entries; 37 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
 
 ### Orbit specificity (OS, 10) — population or ensemble statistics do not determine what one orbit does
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -156,7 +156,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 166 | ``The bag has caught up'' justification of $S_k \asymp 1$ | 309 | Circular: it assumes the small primes have been captured, which is precisely the population form of the conclusion (LS)/Theorem C. Any proof of (LS) routing through ``the bag has caught up'' presupposes its own conclusion. The non-circular route, and the one actually formalized, is the harmonic charge budget $\sum_{r<2n} H_{r-1} \le \theta(2n)+\pi(2n) = O(n)$, which uses only that an *uncaptured* prime pays $1/\|B\|$ into its own finite budget whenever it declines (`LargeStepRoughness.charge_sum_le_harmonic`). | — | 3 |
 | 170 | ``The box has not collapsed'' as a usable branch | 313 | Circular. `seed_mem_box`'s Lean proof is literally ``exposure $\Rightarrow$ non-divisibility'' (it ends in `not_dvd_succ_of_exposed_avoid`), so $\|B_k(r)\|\ge 1$ unwinds to ``$r \nmid \Prod{m}(j) + 1$ at every $r$-exposed $j<k$'', i.e. the walk mod $r$ avoids the death class — which is $\neg\mathrm{DynamicalHitting}(r)$, the hypothesis one is trying to contradict. The other branch (``$r$ rarely exposed'') is refuted outright by `few_small_multipliers`: at least $n-\pi(r)$ of the first $n$ steps are $r$-exposed regardless. Nor can the circle be broken by weakening: the only nonvacuous quantitative negation, $C \ge r-1$, *is* MC($r$). Exact mirror of #166 — #166 blocks the entrance to (LS), this blocks the exit. | — | 0 |
 
-### Structurally false (SF, 30) — the proposed statement is false: an explicit counterexample or a proved refutation
+### Structurally false (SF, 31) — the proposed statement is false: an explicit counterexample or a proved refutation
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 6 | Direct SE implies DH (generation not coverage) | 5 | Counterexample: in $\mathbb{Z}/6$ steps $2,2,2,\dots$ generate but partial sums cycle $0,2,4$ and miss all odd elements; generation does not imply coverage. Later $\mathbb{Z}/4$ witness | — | - |
@@ -189,8 +189,9 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 165 | Omitting $r \ne q$ from the $q$-free box process | 309 | False at $r = q$: the $q$-free selector $\tilde p = \minFac_{\ne q}$ ignores $q$ entirely, so the brink lemma (F3) fails at $r = q$ and the step survival $S_k$ computes the wrong probability. The $q$-free type is a function of $m \bmod M_Y$ with $q \nmid M_Y$; $q$ is not a box coordinate at all, and the $q$-coordinate is carried separately by the capture identity. | — | 1 |
 | 171 | Sure layer can force a capture ($q$-free model obstruction) | 313 | Structurally impossible. Every theorem of the sure layer is proved *about* $`genSeqAvoid` q m$, and `SeedCapture.genSeqAvoid_ne_avoided` proves that this dynamics *never selects* $q$. So at every finite horizon on which the $q$-free orbit is nondegenerate, the entire layer is satisfied by a dynamics that misses $q$ by construction; no consequence of the layer alone can force any capture. Stated precisely so as not to overclaim: capture *is* recoverable per-orbit via `captured_iff_mem_visited` at $m'=m$, but nothing sure forces `visitedSetAvoid` to grow so as to contain a *prescribed* class. The single cleanest reason the orbit direction is closed, and the only one with a ready-made formal witness. | `SeedCapture.genSeqAvoid_ne_avoided` | 0 |
 | 175 | Unrestricted generalized Mullin conjecture $\mathrm{GenMC}(n)$ over all primes | 316 | False for every $n\ge 2$: $n \mid \Prod{n}(k)$ for all $k$ (`start_dvd_genProd`), so a prime $p\mid n$ is coprime to $\Prod{n}(k)+1$ and is never selected. In particular $2$ never re-appears in $\seq{2}$, so the old $\mathrm{GenMC}(2)\Rightarrow\mathrm{MC}$ was $\bot\Rightarrow\mathrm{MC}$, and the cofinal-hitting premise was unsatisfiable for every $n\ge1$ (the walk is identically $0$ mod $p\mid n$; for $n=1$ the $q=2$ clause fails). Same defect as Conjecture A (#1). Repaired 2026-08-20: $\mathrm{GenMC}(n)$ now quantifies over primes $q\nmid n$, the hitting hypothesis likewise, and $\mathrm{GenMC}(2)\iff\mathrm{MC}$ (`gen_mc_two_iff_mc`). | `gen_mc_unrestricted_false` | 0 |
+| 179 | Two multiplier classes per cofinal position close the orbit chain gap | 320 | False. In $(\mathbb{Z}/5)^\times$ the periodic prime multipliers $(7,19,7,13,19,13)^\infty$, residues $(2,4,2,3,4,3)$, drive the walk $1,2,3,1,3,2,\dots$: every visited position is visited cofinally with two distinct multiplier classes, the residues generate the group, every multiplier exceeds $q=5$, and the walk never reaches $-1=4$ (`OrbitBarrier.two_classes_not_coverage`). Item 6 was already refuted by the #90 witness $B$. The general reason: at a position $x\neq 0$ exactly one multiplier residue, $-x^{-1}$, is fatal (`OrbitBarrier.death_multiplier_unique`), so all $q-2$ other classes may appear at every position while the walk avoids $-1$ forever — the full-shift observation of #178. The only strengthening that works is ``the death class $-x^{-1}$ appears cofinally at some cofinal position $x$'', which is DH restated; there is no middle ground between a false hypothesis and a restatement. | `OrbitBarrier.two_classes_not_coverage` | 0 |
 
-### Technique mismatch (TM, 55) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
+### Technique mismatch (TM, 56) — the tool needs structure (independence, multiplicativity, stationarity, algebraic families) that the walk provably lacks
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 4 | Consecutive vs arbitrary subsequences (ordering problem) | 5 | Those theorems concern arbitrary subsequences/subset products or existence of some good ordering; DH needs prefix products of one fixed ordering (the EM walk). Generation/coverage of subsets says nothing about the specific order | — | - |
@@ -248,6 +249,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 168 | Summable per-$q$ rates close the union over all primes | 312 | Summability *is* achievable ($\varepsilon_q=q^{-2}$ with $C_c(q)=\max(48q,3q^2)$ and $n(q)\approx 2e^{250}\exp(8B\varphi(q))$; the $e^{25}\log n/n$ tail is slack, not binding), and the differing sample spaces are *not* an obstruction ($\mathrm{modulus} q Y \mid P(Y')$, and `SelectionLaw.genSeqAvoid_prefix_eq_of_modEq` is stated for an arbitrary multiple of the band primes), so the finite-$S$ union bound is a genuine corollary (`AlmostAllDensity.finite_simultaneous_density`). But at scale $X$ only $q \lesssim \log\log\log X$ are controlled, and Borel–Cantelli is a theorem about *countably additive* measures: under a finitely additive density $\sum_q \varepsilon_q<\infty$ implies nothing about $\bigcup_q F_q$ (increasing sets of density $\le\delta$ can have union of density $1$). The rate is not the obstruction; the additivity is. The repair is a countably additive ambient measure — the profinite ensemble, in which every event is a cylinder event; built in Session 314 as $\Omega=\prod_r \mathbb{Z}/r$ with the product uniform measure (squarefree moduli make $\mathbb{Z}_r$ unnecessary), where the union over all $q$ is a one-line consequence of countable additivity (`ProfiniteHeadline.measure_some_prime_missed_eq_zero`). That is a statement about a different ensemble, in which $\mathbb{N}$ is null; it does not revive the natural-density form. | `AlmostAllDensity.finite_simultaneous_density` | 1 |
 | 174 | Bounding the missed-prime counting function | 313 | Every such target requires a *lower* bound on the hit count. The sure layer's only multiplier-size statement is `few_small_multipliers`, an *upper* bound on the number of small multipliers — the wrong direction, and the only one available, because distinctness is the only sure arithmetic fact about the multiplier sequence. Moreover a lower bound is gated on an open problem: under `AutonomousBranch.PerpetualPrimality` (open; its negation is (C$\infty$), the top frontier item) $p_k = \prod_k+1$ grows doubly exponentially and $\mathrm{hits}(x)=O(\log\log x)$; even granting (C$\infty$), compositeness gives only $p_k \le \sqrt{\prod_k+1}$, still doubly exponential. Hence any nontrivial bound on $\mathrm{missed}(x)$ implies (C$\infty$) and much more, and cannot come from a bookkeeping layer. Underlying cause: the *sign asymmetry of* `minFac` — $p_k=\minFac(N_k)$ yields infinitely many non-divisibility facts and exactly one divisibility fact, about a prime captured by definition. | — | 1 |
 | 177 | Height argument for capture at a fixed prime | 318 | The approximation exponent $\prod_{v<\infty}\|P_n+1\|_v=1/E_n$ is identically $H^{-1}$ (below Roth's $2$, no information); Baker degrades as $\exp(-C^{\omega}\prod h)$ with $\omega\approx n$ terms, far below $1/E_n$, and the subspace theorem needs a fixed support while $P_n$ is an $S_n$-unit with $S_n$ growing (#134 mismatch); $\prod E_n\to0$ in $\Omega$ is the tautology ``every prime divides some Euclid number''. The structural reason: $\mathbb Z_q^\times=\mu_{q-1}\times(1+q\mathbb Z_q)$, the walk mod $q$ is the *torsion* (Teichm\"uller) component, and every absolute value and $q$-adic logarithm factors through the torsion-free data. Formally, the capture identity shows that for a fixed multiplier prefix — hence fixed heights, defects and all $\|\cdot\|_v$, $v\ne q$ — capture of $q$ is a condition on the single residue $m\bmod q$ with both outcomes realised, so no inequality among height-type functionals decides it. The only height/torsion coupling left (Northcott: bounded height $\Rightarrow$ finitely many) reproduces the seed-average programme on the bounded-height family $m\le X$. See `docs/analysis/height_argument_attempt_2026-08-20.md`. | `SeedCapture.captured_iff_mem_visited` | 1 |
+| 178 | Entropy / mixing / ``sufficiently composed'' arguments for capture | 319 | Two separate failures. (i) *Mixing along the orbit is false*: each prime divides at most $\pi(q)$ Euclid numbers (`AdelicShadow.hits_finite`) and the walk freezes at $1$ after capture, so the dynamics mod $q$ is absorbing, not mixing; and the avoidance set is a full shift on the $q-2$ step-residues $\ne -1$, with entropy $\log(q-2)$, topologically mixing, carrying many invariant measures. Positive entropy, full support, generation (#20/#130, generation $\ne$ coverage) and non-confinement are therefore all compatible with permanent avoidance; the only sufficient hypothesis is equidistribution of the multiplier residues, which is CME, and `cme_iff_mc` makes CME $\iff$ MC — a restatement, not an approximation. (ii) *The count of factors is the wrong scale*: $\omega(E_n)\to\infty$ neither implies nor is implied by MC ($E_n=\mathrm{head}\cdot p$ captures with $\omega=2$; a thousand factors none of which is the head capture nothing), and the only bridge, $\lpf(E_n)\le E_n^{1/\omega(E_n)}$, yields at best rung (S) even granting full Erd\H{o}s–Kac along the orbit: $\omega$ lives at scale $\log n$, MC at scale $\sqrt{n\log n}$. The heuristic also predicts *infinitely many prime* Euclid numbers ($P\approx 1/n$), so ``eventually always composite'' is heuristically false while (C$\infty$) stays open — the Fermat shape, not a deficit of entropy. | `cme_iff_mc` | 0 |
 
 ### Scale mismatch (SM, 14) — the error term of the tool exceeds the signal on an $O(\log x)$-term or exponentially sparse orbit
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -729,11 +731,13 @@ model never selects `q` (#171), the compensator has the wrong per-path sign (#17
 inapplicable to the orbit of 2 (#173), and missed-prime counting is gated on (C∞) (#174).
 Session 316 (2026-08-20 codebase review) added #175: the unrestricted generalized conjecture
 `GenMC(n)` over *all* primes is false for every `n ≥ 2` (a prime dividing `n` is never selected),
-so the old `GenMC(2) ⇒ MC` was vacuous; repaired in `EM/Ensemble/WeylChain.lean`. -/
-def deadEndCount : ℕ := 177
+so the old `GenMC(2) ⇒ MC` was vacuous; repaired in `EM/Ensemble/WeylChain.lean`.
+Session 319 added #178 (entropy/mixing/"sufficiently composed" arguments) and Session 320
+(2026-09-05) #179: two multiplier classes per cofinal position do not force coverage of `-1`. -/
+def deadEndCount : ℕ := 179
 
 /-- Number of catalogued dead-end entries: the 175 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 167
+def deadEndEntryCount : ℕ := 169
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -755,8 +759,9 @@ adds #175 (`gen_mc_unrestricted_false`), giving 33.  Session 317 adds #176
 (`GrowingRange.scaleUniformTail_cofinite_mc`: the "(N2)" input of the §G scoping implies a
 cofinite MC, so it is an orbit statement), giving 34.  Session 318 adds #177
 (`SeedCapture.captured_iff_mem_visited`: capture is a torsion datum invisible to heights),
-giving 35. -/
-def witnessedDeadEndCount : ℕ := 35
+giving 35.  Session 319 adds #178 (`cme_iff_mc`) and Session 320 adds #179
+(`OrbitBarrier.two_classes_not_coverage`), giving 37. -/
+def witnessedDeadEndCount : ℕ := 37
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
 #136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
@@ -767,9 +772,9 @@ def revivableDeadEndCount : ℕ := 15
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 177 ∧
-    deadEndEntryCount = 167 ∧
-    witnessedDeadEndCount = 35 ∧
+    deadEndCount = 179 ∧
+    deadEndEntryCount = 169 ∧
+    witnessedDeadEndCount = 37 ∧
     revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival
