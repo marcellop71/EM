@@ -82,6 +82,7 @@ import EM.FunctionField.CompositeFloors
 import EM.FunctionField.QuadraticSeeds
 import EM.FunctionField.FrobeniusOrbit
 import EM.FunctionField.CharTwo
+import EM.FunctionField.CharTwoHead
 import EM.FunctionField.CharThree
 import EM.FunctionField.AutonomousDegrees
 import EM.FunctionField.LinearSeeds

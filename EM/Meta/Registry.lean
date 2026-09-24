@@ -64,6 +64,7 @@ import EM.Population.GapPrinciple
 import EM.Population.CoverageLadder
 import EM.Population.Dichotomy
 import EM.Population.QuadraticStep
+import EM.FunctionField.CharTwoHead
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -892,6 +893,9 @@ attribute [publish] QuadraticStep.frozen_of_perpetual
 attribute [publish] QuadraticStep.infinitelyManyComposite_of_noFrozen
 attribute [publish] QuadraticStep.frozen_rung
 attribute [publish] QuadraticStep.sgrowth_eq_zero_of_genMC
+attribute [publish] FunctionFieldAnalog.CharTwoHead.monic_irreducible_natDegree_le_two
+attribute [publish] FunctionFieldAnalog.CharTwoHead.ffMCBelow_three
+attribute [publish] FunctionFieldAnalog.CharTwoHead.cubic_capture
 
 -- ============================================================================
 -- Registry generation (runs during `lake build`)

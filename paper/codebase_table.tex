@@ -201,7 +201,7 @@
 \code{Meta/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 710 \\
 \code{Meta/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 451 \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 219 \\
-\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 900 \\
+\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 904 \\
 \code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 793 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 429 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 129 \\
@@ -275,6 +275,7 @@
 \code{FunctionField/QuadraticSeeds.lean} & $\FF_5$: seeds $t^2+1$, $t^2+2$ are perpetual towers too ($g_n(t^2+c)$ irreducible; every valid selection follows the tower) & 237 \\
 \code{FunctionField/FrobeniusOrbit.lean} & Frobenius-orbit criterion over any $\FF_p$: period $\le$ degree of minpoly, roots of irreducibles of degree $d$ lie in $\FF_{p^d}$, cube roots of unity have period 2 for $p\equiv2\pmod3$ & 199 \\
 \code{FunctionField/CharTwo.lean} & $\FF_2$: $t^2+t+1$, $t^4+t+1$ irreducible; first four terms forced; the constant 3 is attained; first tie $(t^4+t^3+1)(t^4+t^3+t^2+t+1)$ & 155 \\
+\code{FunctionField/CharTwoHead.lean} & \code{monic\_irreducible\_natDegree\_le\_two}: the monic irreducibles of degree $\le 2$ over $\mathbb F_2$ are $X$, $X+1$, $X^2+X+1$; \code{ffMCBelow\_three}: every sequence has collected everything below degree 3; \code{cubic\_capture}: for $n\ge2$ a cubic dividing $E_n$ forces a cubic multiplier --- at the head, capture is a bare hit & 125 \\
 \code{FunctionField/CharThree.lean} & $\FF_3$: $\Phi_3(P)=(P-1)^2$, composite floor with constant 1, first five terms forced ($t,t+1,t+2,t^3+2t+1,t^3+2t+2$) & 164 \\
 \code{FunctionField/AutonomousDegrees.lean} & After an irreducible stage every factor has even degree ($p\equiv2\pmod3$); over $\FF_2$ after two, degree divisible by 4 & 76 \\
 \code{FunctionField/LinearSeeds.lean} & $\FF_5$: every linear seed $t+a$ is a perpetual tower (period is invariant under subtracting a constant) & 117 \\

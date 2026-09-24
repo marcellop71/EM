@@ -496,3 +496,69 @@ falsifiable FF form).
   (the `𝔽_5` refutation is consistent with the dichotomy).
 * Not done: the seeded direction `GenMC(m) → sgrowth m = 0` for general `m` (needs the
   autonomous-branch argument for `genProd`); on a tower `S(x)/π(x) → 0` needs Odoni/Jones.
+
+## 10. The model problem: FF-MC over `𝔽_2[t]` (2026-09-24, scoping)
+
+Under the dichotomy conjecture, MC is the statement `(C∞) ⟹ MC`.  Over `𝔽_2[t]` the floor
+`(C∞)` is a theorem for every sequence (no four consecutive irreducible Euclid polynomials,
+`CompositeFloors.ffGrowthConstant_eq_zero_of_two`), and there is no exceptional branch.  So
+`FFMullinConjecture 2` is exactly the conjecture's content with the floor in hand
+(`Dichotomy.ffMC_two_of_ffDichotomy`).  This section records what the model problem looks
+like from inside, what characteristic 2 adds, and what it does not.
+
+### 10.1 Structure specific to characteristic 2 (all theorems, mostly on file)
+
+* **The death value is the identity.**  `Q ∣ E_n ⟺ P_n ≡ 1 (mod Q)`: in `(𝔽_2[t]/Q)^× ≅ 𝔽_{2^d}^×`
+  the walk must return to `1`, not reach the element of order 2.  In discrete-log terms the
+  partial sums of the multiplier logarithms must vanish mod `2^d − 1`.
+* **The tower map is additive.**  `L(P) = P² + P = (F + 1)(P)` with `F` the Frobenius, so on a
+  tower segment of length `k`, `E_{N+k} = (F+1)^k(P_N) + 1 = Σ_{j : C(k,j) odd} P_N^{2^j} + 1`
+  (Lucas).  These are *linearized polynomials plus one*: their roots form an affine
+  `𝔽_2`-space, and their factorisation over `𝔽_2` is governed by Frobenius orbits on that
+  space.  `k = 3` gives `y⁸+y⁴+y²+y+1 = (y⁴+y³+1)(y⁴+y³+y²+y+1)`, which is the floor: **the only
+  positive divisibility fact in the whole project** (screen 1) comes from additivity, but it
+  exhibits a factor that is a polynomial in `P_N`, of degree `4·deg P_N`, and says nothing about
+  the least factor.
+* **Trace exclusion.**  On a tower step `E_{n+1} = L(P_n) + 1`, an irreducible `Q` of degree
+  `d` divides `E_{n+1}` iff `w² + w = 1` is solvable in `𝔽_{2^d}`, iff `Tr(1) = d mod 2 = 0`.
+  So after an irreducible Euclid polynomial every factor of the next has even degree, after two
+  the degree is divisible by `4` (`AutonomousDegrees.lean`), and towers are at most three long
+  (`CharTwo.lean`).  Additivity produces *exclusions* — negative facts — exactly as the sign
+  asymmetry predicts.
+* **Automatic roughness at the head.**  The first four terms are forced,
+  `X, X+1, X²+X+1, X⁴+X+1` (`CharTwo.ff_two_first_terms`), and these are all the monic
+  irreducibles of degree `≤ 2` plus one quartic.  Hence for every `FFEMData 2` and every
+  `n ≥ 2`, a cubic `Q` divides `E_n` iff the next multiplier is a cubic
+  (`CharTwoHead.cubic_capture`, new): for the cubics, capture is a bare hit, no sieve
+  condition.  The head after stage 3 is degree 3.
+* **The involution `σ : X ↦ X + 1`.**  `P_1 = X(X+1)` is `σ`-invariant, so `σ` maps every
+  sequence to a sequence with the conjugate tie-breaks: runs come in `σ`-conjugate pairs with
+  identical degree sequences and `σ`-conjugate missing sets.  The stage-3 tie (two quartics
+  swapped by `σ`) is forced.  This is the only cross-run symmetry, and it is an involution.
+
+### 10.2 Reconnaissance (computation, not evidence for the conjecture)
+
+Forty stages of every branch (four branches: ties at stages 3 and 33 only, each pair
+`σ`-conjugate).  Multiplier degrees of one branch:
+`1,2,4,4,5,3,3,7,7,7,8,8,60,4,5,7,13,20,5,43,5,6,5,8,9,73,12,8,14,22,7,48,5,7,13,15,27,20,7,6`.
+The head degree climbs `2,3,3,3,3,3,4,…,4,5,…,5,6,…`: every monic irreducible of degree `≤ 5`
+is collected by stage 33 in every branch, both cubics at stages 6–7.  `E_{12}` is irreducible
+of degree 60 and is followed by a quartic (even, as the trace exclusion demands).  Nothing
+resembling an obstruction; nothing resembling a mechanism either.  Recorded only to calibrate
+the model problem, per the project's rule against numerical surveys.
+
+### 10.3 Verdict
+
+Characteristic 2 supplies exactly what the litmus test said it would: the floor (a positive
+factorisation, but of the wrong kind of factor) and a family of exclusions.  It supplies no
+capture mechanism, and the hitting problem for a fixed `Q` — a walk on `𝔽_{2^d}^×` driven by
+the residues of the least-degree factors — is #90 verbatim.  The model problem therefore
+confirms rather than shortcuts the diagnosis: if `(C∞) ⟹ MC` has a proof, it must be a proof
+that a specific deterministic walk returns to the identity, and `𝔽_2[t]` is where every other
+ingredient is already a theorem.  The right use of the model is as the **first test** of any
+proposed mechanism for `(C∞) ⟹ MC`: run it on `𝔽_2[t]` for the two cubics before anything
+else.
+
+Lean added: `EM/FunctionField/CharTwoHead.lean` — classification of monic irreducibles of
+degree `≤ 2` over `𝔽_2`, `ffMCBelow_three` (every sequence has collected everything below
+degree 3), `cubic_capture`.
