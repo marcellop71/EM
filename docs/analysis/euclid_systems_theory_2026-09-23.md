@@ -939,3 +939,116 @@ in `ℤ[ω][p]` that can be attacked level by level and whose first level is com
 here (tower, shifted tower, and nothing else among linear families).  The other is #90.  The
 theory's contribution is that the "probability-zero" reading of (3) was wrong exactly where
 Zilber–Pink says it should be, and that the correction is computable algebra.
+
+## 14. `CI(3 mod 4)`: theories and analogies (2026-09-24; no computation)
+
+`CI(3 mod 4)`: infinitely many Euclid–Mullin primes are `≡ 3 (mod 4)`.  Known: every Euclid
+number is `≡ 3 (mod 4)`, hence has a prime factor `≡ 3 (mod 4)` (the class-hit fact); on the
+Sylvester tower the multipliers are the Euclid numbers themselves, so `CI(3 mod 4)` holds there
+(`¬CI(3 mod 4) ⟹ (C∞)`, `ClassInfinitude.lean`).  Its content is therefore
+**`(C∞) ⟹ CI(3 mod 4)`**: on the branch with infinitely many composite Euclid numbers, the
+least factor is `≡ 3 (mod 4)` infinitely often.
+
+### 14.1 What kind of statement it is
+
+* **A half-set confinement of the multiplier.**  `¬CI(3 mod 4)` says the multipliers
+  eventually all lie in `1 + 4ℤ₂`, the index-2 subgroup of `ℤ₂^×`.  This is the same shape as
+  Frozen (§11: cofactor residue in a half-set) and as confinement to `ℚ(√−3)` (§12: all late
+  multipliers split in `ℚ(√−3)`, proved as a *consequence*): here "all late multipliers split
+  in `ℚ(i)`" is the *hypothesis*.  In general, for a quadratic field `K`, "all late
+  multipliers split in `K`" makes every inert prime beyond the bag missing, hence refutes MC;
+  the class-infinitude statements are the negations of these split-runs, `CI(3 mod 4)` being
+  `NotSplit(ℚ(i))`, `CI(2 mod 3)` being `NotSplit(ℚ(√−3))`.
+* **Why the 2-power (and `p²`) moduli are the weak targets.**  Write `W(m)` for "infinitely
+  many multipliers `≢ 1 (mod m)`".  On the tower the multiplier is `E_n ≡ 1 + P_n (mod m)`, which
+  is `≡ 1` iff `m ∣ P_n`; so for squarefree `m` with captured prime factors (`m = 3`, `6`, …) the
+  tower has all late multipliers `≡ 1 (mod m)` and `W(m)` sits *above* the floor (`W(3) = CI(2 mod 3)
+  ⟹ (C∞)`), while for `m = 4`, `9`, `p²` with `p` in the bag, `E_n ≢ 1 (mod m)` and `W(m)` holds
+  on the tower.  `W(4) = CI(3 mod 4)` is the cleanest member of the family `{W(p²)}` of targets
+  not blocked by the floor.
+* **The 2-adic reformulation** (Lean, `ClassThreeModFour.lean`): `P_n ≡ 2 (mod 4)`, and a
+  multiplier `≡ 3 (mod 4)` is exactly a change of `P_n mod 8`.  So `CI(3 mod 4)` ⟺ **the
+  accumulator (equivalently the Euclid number) is not eventually constant modulo 8** ⟺ the
+  torsion component `{±1}` of the 2-deleted walk `O_n = P_n/2` in `ℤ₂^×` keeps flipping.  It is a
+  deleted-walk statement (§8.2) for the seed prime `2`, the first captured prime, exactly as
+  "the 3-deleted walk hits `−1` infinitely often" is a class-count parity for the prime `3`.
+  And it is a *torsion* statement, the kind #177 says heights and logarithms cannot see.
+* **The Legendre reading.**  `P_n ≡ −1 (mod p_{n+1})`, so `(P_n / p_{n+1}) = χ₄(p_{n+1})`:
+  `CI(3 mod 4)` ⟺ the accumulator is a quadratic non-residue modulo its own next multiplier
+  infinitely often.  Reciprocity turns this into a law along the orbit: with `O_n` the odd part,
+  `(p_{n+1} / O_n) = χ₄(p_{n+1}) · (2/p_{n+1}) · (−1)^{(O_n−1)(p_{n+1}−1)/4}` — a one-bit
+  constraint on the new prime modulo the old accumulator, of the type
+  `Reciprocity.no_reciprocity_induction_proof` shows cannot block anything.
+
+### 14.2 Genus theory, and why the max rule is different
+
+`E_n ≡ 1 (mod P_n)` puts `E_n` in the principal genus for every fundamental discriminant built
+from bag primes: the Kronecker symbols `(d/q)` over the prime factors `q` of `E_n` multiply to
+`+1` for all such `d`, and to `−1` for `d = −4` (`E_n ≡ 3 (mod 4)`).  Hence the multiplier `p`
+and the cofactor `c` share all bag characters, and `χ₄(c) = −χ₄(p)`.  These are exactly the
+"mod-4 law" and "discriminant law" behind Cox–van der Poorten and Booker for the *largest*
+factor.  Their proofs work because under the max rule the cofactor is *smooth* (all its primes
+are smaller than the chosen one), so when the small primes are all known the cofactor's
+factorization is known and the symbols can be evaluated.  Under the min rule the cofactor is
+*rough* — its primes are the unknown large ones — and the same laws say nothing about which
+factor is least.  This is the reciprocity memo's verdict, now specialized to the one class
+statement where the positive fact (a `3 (mod 4)` factor always exists) is available.
+
+### 14.3 The Gaussian locus is empty (Lean)
+
+The quadratic-step theory attaches to each stage the field `ℚ(√D_n)`; the tower lives in
+`ℚ(√−3)`, and §12 showed the failure of `(C∞)` has that algebraic locus.  The corresponding
+locus for `CI(3 mod 4)` would be confinement to `ℚ(i)`: `D_n = −s²`, i.e. `4c_n − 1` a perfect
+square.  **This never happens** (`four_cofactor_sub_one_not_square`): it would make
+`4c_n E_{n+1} = (2E_n − 1)² + s²` a sum of two squares, so every prime `≡ 3 (mod 4)` would divide
+`E_{n+1}` to even order (the cofactor being coprime to `E_{n+1}`), against `E_{n+1} ≡ 3 (mod 4)`.
+So a failure of `CI(3 mod 4)` has **no quadratic-field locus**: in the Zilber–Pink language its
+exceptional set has empty algebraic part at this level.  That is a precise sense in which
+`CI(3 mod 4)` is the *purest* instance of #90 — nothing algebraic could make it fail, and
+nothing algebraic can prove it; only the orbit statistics remain.
+
+### 14.4 Analogies, with verdicts
+
+* **Euclid's proof for primes `≡ 3 (mod 4)`.**  `4m + 3` has a prime factor `≡ 3 (mod 4)`; take
+  *any* such factor and the infinitude follows.  Mullin's rule takes the *least* factor, which
+  may be `≡ 1 (mod 4)`; `CI(3 mod 4)` is Euclid's argument with the least-factor rule.  The gap
+  between "some factor" and "the least factor" is the whole content.  *Verdict: the exact
+  shape, and the reason the statement is weak but open.*
+* **The primorial analogue.**  For explicit sequences of the same shape — `x_k = 4·k# + 3`, or
+  `k# − 1` — "the least prime factor is `≡ 3 (mod 4)` infinitely often" is, to my knowledge,
+  equally open: nothing controls the class of the least prime factor of a sparse deterministic
+  sequence, dynamics or not.  *Verdict: `CI(3 mod 4)` is at least as hard as a dynamics-free
+  problem nobody can do; the dynamics is not what makes it hard.*
+* **Chebyshev's bias** (Rubinstein–Sarnak): primes `≡ 3 (mod 4)` lead in logarithmic density.
+  The population analogue here is exact and head-dominated (`HeadDomination.lean`): among
+  `y`-rough integers `≡ 3 (mod 4)` the least factor is `≡ 3 (mod 4)` with an explicit relative
+  density near `1/2`.  *Verdict: population only; the orbit inherits nothing (#90).*
+* **Prime divisors of recurrences** (Hasse, Lagarias: the primes dividing some Lucas number
+  have density `2/3`, by Chebotarev in Kummer extensions).  Class distribution of prime
+  *divisors* of a sequence is accessible when the sequence is a linear recurrence; ours is not,
+  and in any case "divides some `E_n` in class `3 (mod 4)`" is already trivial here — the
+  question is about the *least* divisor.  *Verdict: wrong quantity.*
+* **Zsigmondy / primitive divisors.**  Positive existence of new prime divisors, no class
+  control.  *Verdict: not applicable to the class.*
+* **Fermat's two-squares theorem.**  The one place a `3 (mod 4)` statement becomes algebraic —
+  odd multiplicity of `3 (mod 4)` primes in a non-sum-of-two-squares — and it gave the only
+  theorem of this section (14.3).  *Verdict: yields an exclusion, as the sign asymmetry
+  predicts; nothing positive.*
+* **2-adic torsion vs heights (#177).**  `CI(3 mod 4)` is a statement about the `{±1}` component
+  of a 2-adic walk; every functional built from sizes or logarithms factors through the
+  torsion-free part.  *Verdict: heights are blind to it, as to MC.*
+
+### 14.5 Verdict
+
+`CI(3 mod 4)` is the weakest open statement about the sequence with a positive ingredient, and
+the theory says exactly why it is still out of reach: it is the least-factor version of
+Euclid's `3 (mod 4)` argument, equivalent to non-constancy of the 2-adic torsion of the
+accumulator, with no algebraic locus on which it could fail and hence no algebraic mechanism
+by which it could be proved.  Its function-field twin over `𝔽_2[t]` is the trace exclusion
+(§10.1) — there the "class" `Tr = 1` is *forced* on tower steps and open otherwise — and the
+primorial analogue is open with no dynamics at all.  What was provable was proved: the mod-8
+reformulation and the emptiness of the Gaussian locus.  A route to `CI(3 mod 4)` would be a
+route to controlling the least prime factor of one sparse sequence in a residue class, which
+is the same demand every other target makes.  I would not attack it directly either; I would
+keep it as the statement to test any future mechanism on *first*, before `(C∞) ⟹ MC`, because
+it asks for a half-set rather than a single class.

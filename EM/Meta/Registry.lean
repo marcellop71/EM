@@ -68,6 +68,7 @@ import EM.FunctionField.CharTwoHead
 import EM.Population.Confinement
 import EM.Population.UniformFreezing
 import EM.Population.EisensteinFamilies
+import EM.Population.ClassThreeModFour
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -912,6 +913,9 @@ attribute [publish] EisensteinFamilies.four_euclid_succ_eq_norm
 attribute [publish] EisensteinFamilies.tower_factorization
 attribute [publish] EisensteinFamilies.shifted_tower_factorization
 attribute [publish] EisensteinFamilies.linear_family_root
+attribute [publish] ClassThreeModFour.four_cofactor_sub_one_not_square
+attribute [publish] ClassThreeModFour.prod_succ_mod_eight_eq_iff
+attribute [publish] ClassThreeModFour.classInfinitude_three_mod_four_iff_prod_mod_eight
 attribute [publish] UniformFreezing.jacobiSym_neg_one_mod_four
 attribute [publish] UniformFreezing.exists_jacobiSym_eq_neg_one
 attribute [publish] UniformFreezing.eq_neg_three_mul_sq_of_nonsquare_two_mod_three
