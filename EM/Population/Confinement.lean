@@ -148,6 +148,135 @@ theorem multiplier_not_two_mod_three {n : ℕ} (hc : Confined n)
     omega
   exact not_dvd_of_confined_squarefree hc hsq hp h3 h5 hdvd
 
+/-! ## Confined runs -/
+
+/-- **On two consecutive confined stages the multiplier is `≡ 1 (mod 3)`**, with no
+squarefreeness assumption: a multiplier `p ≡ 2 (mod 3)` would divide `E_{n+1}` twice
+(`sq_dvd_of_confined` at stage `n`), hence divide the cofactor `c_{n+1} = (3s'² + 1)/4`
+(stage `n+1` confined), which has no prime factor `≡ 2 (mod 3)` since `−3` would be a square. -/
+theorem multiplier_one_mod_three_of_confined_pair {n : ℕ} (hc : Confined n)
+    (hc' : Confined (n + 1)) : Mullin.seq (n + 2) % 3 = 1 := by
+  have hprime : (Mullin.seq (n + 2)).Prime :=
+    (MullinGroup.isPrime_iff_natPrime _).mp (seq_isPrime (n + 2))
+  have hdvd : Mullin.seq (n + 2) ∣ prod (n + 1) + 1 := seq_succ_dvd_euclid (n + 1)
+  have h2 : 2 ∣ prod (n + 1) := by
+    have := seq_dvd_prod 0 (n + 1) (Nat.zero_le _); rwa [seq_zero] at this
+  have h3 : 3 ∣ prod (n + 1) := by
+    have := seq_dvd_prod 1 (n + 1) (by omega); rwa [seq_one] at this
+  have hp2 : Mullin.seq (n + 2) ≠ 2 := by
+    intro h
+    have h' : 2 ∣ prod (n + 1) + 1 := by rw [← h]; exact hdvd
+    have := (Nat.dvd_add_right h2).mp h'
+    omega
+  have hp3 : Mullin.seq (n + 2) ≠ 3 := by
+    intro h
+    have h' : 3 ∣ prod (n + 1) + 1 := by rw [← h]; exact hdvd
+    have := (Nat.dvd_add_right h3).mp h'
+    omega
+  have h5 : 5 ≤ Mullin.seq (n + 2) := by
+    have := hprime.two_le; have := hprime.eq_two_or_odd; omega
+  by_contra hne
+  have hmod : Mullin.seq (n + 2) % 3 = 2 := by
+    rcases Nat.lt_or_ge (Mullin.seq (n + 2) % 3) 1 with h0 | h0
+    · exfalso
+      have hd3 : 3 ∣ Mullin.seq (n + 2) := Nat.dvd_of_mod_eq_zero (by omega)
+      rcases hprime.eq_one_or_self_of_dvd 3 hd3 with h | h
+      · omega
+      · exact hp3 h.symm
+    · omega
+  have hsq : Mullin.seq (n + 2) ^ 2 ∣ prod (n + 1) + 1 :=
+    sq_dvd_of_confined hc hprime hmod h5 hdvd
+  have hc2 : Mullin.seq (n + 2) ∣ cofactor (n + 1) := by
+    have hE : prod (n + 1) + 1 = Mullin.seq (n + 2) * cofactor (n + 1) :=
+      (seq_mul_cofactor (n + 1)).symm
+    rw [hE, pow_two] at hsq
+    exact Nat.dvd_of_mul_dvd_mul_left hprime.pos hsq
+  obtain ⟨s, hs⟩ := hc'
+  have hcof : 4 * (cofactor (n + 1) : ℤ) = 3 * s ^ 2 + 1 := by
+    unfold disc at hs; linarith
+  have : Fact (Nat.Prime (Mullin.seq (n + 2))) := ⟨hprime⟩
+  apply not_isSquare_neg_three hmod h5
+  have hz : ((3 * s ^ 2 + 1 : ℤ) : ZMod (Mullin.seq (n + 2))) = 0 := by
+    rw [← hcof]
+    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mpr
+      ((Int.natCast_dvd_natCast.mpr hc2).mul_left 4)
+  push_cast at hz
+  refine ⟨3 * (s : ZMod (Mullin.seq (n + 2))), ?_⟩
+  push_cast
+  linear_combination (-3 : ZMod (Mullin.seq (n + 2))) * hz
+
+/-- The orbit is confined from some stage on. -/
+def ConfinedRun : Prop := ∃ N, ∀ n, N ≤ n → Confined n
+
+/-- **A confined run refutes MC**: no prime `≡ 2 (mod 3)` is ever a multiplier past the start
+of the run, so a Dirichlet prime `q ≡ 2 (mod 3)` beyond the bag is missing. -/
+theorem not_mc_of_confinedRun (h : ConfinedRun) : ¬ MullinConjecture := by
+  obtain ⟨N, hN⟩ := h
+  intro hmc
+  obtain ⟨q, hqB, hq, hq3⟩ := QuadraticStep.exists_prime_two_mod_three_gt (prod (N + 2))
+  obtain ⟨k, hk⟩ := hmc q ((MullinGroup.isPrime_iff_natPrime q).mpr hq)
+  have hk3 : N + 3 ≤ k := by
+    by_contra hlt
+    push Not at hlt
+    have hdvd : Mullin.seq k ∣ prod (N + 2) := seq_dvd_prod k (N + 2) (by omega)
+    rw [hk] at hdvd
+    exact absurd (Nat.le_of_dvd (by have := prod_ge_two (N + 2); omega) hdvd) (by omega)
+  obtain ⟨n, rfl⟩ : ∃ n, k = n + 2 := ⟨k - 2, by omega⟩
+  have := multiplier_one_mod_three_of_confined_pair (hN n (by omega)) (hN (n + 1) (by omega))
+  rw [hk] at this
+  omega
+
+/-- **Under the dichotomy conjecture a confined run is eventually a Sylvester tower**: question
+(3) of the memo is a consequence of the conjecture. -/
+theorem perpetual_of_confinedRun_of_dichotomy (hd : Dichotomy.DichotomyConjecture)
+    (h : ConfinedRun) : ∃ N, AutonomousBranch.PerpetualPrimality N := by
+  rw [← DefectTelescope.growthConstant_pos_iff_perpetualPrimality]
+  by_contra hle
+  push Not at hle
+  have h0 : DefectTelescope.growthConstant = 0 :=
+    le_antisymm hle DefectTelescope.growthConstant_nonneg
+  exact not_mc_of_confinedRun h (Dichotomy.mc_of_dichotomy hd h0)
+
+/-! ## The shifted-tower family: an algebraic source of confined pairs
+
+The search of memo §12.3 found composite confined stages whose successor is again confined
+along the line `s = (4p+5)/3`.  It is an identity: with `p = 3k + 1`,
+
+    (p c − 1) p + 1 = p' c',   c = 12k² + 18k + 7,  p' = p² + 3p + 3 = 9k² + 15k + 7,  c' = 12k² + 6k + 1,
+
+and `4c − 1 = 3(4k+3)²`, `4c' − 1 = 3(4k+1)²` are both cuban.  So whenever `E_n = p·c` with
+`p = lpf E_n` and `p² + 3p + 3 = lpf E_{n+1}` (three quadratics in `k` simultaneously prime, a
+Schinzel-type condition), stages `n` and `n + 1` are both confined and composite.  The
+"coincidence" of a confined successor therefore has an algebraic sub-locus — the special
+subvariety inside the unlikely locus, exactly as Zilber–Pink predicts. -/
+
+/-- The shifted-tower identity. -/
+theorem shifted_tower_identity (k : ℕ) :
+    (3 * k + 1) ^ 2 * (12 * k ^ 2 + 18 * k + 7) = (9 * k ^ 2 + 15 * k + 7) * (12 * k ^ 2 + 6 * k + 1) + 3 * k := by
+  ring
+
+/-- **The shifted-tower family gives confined pairs.**  If `E_n = (3k+1)(12k²+18k+7)` with
+multiplier `3k + 1` and next multiplier `9k² + 15k + 7`, then stages `n` and `n+1` are confined. -/
+theorem confined_pair_of_shifted_tower {n k : ℕ}
+    (hE : prod n + 1 = (3 * k + 1) * (12 * k ^ 2 + 18 * k + 7))
+    (hp : Mullin.seq (n + 1) = 3 * k + 1) (hp' : Mullin.seq (n + 2) = 9 * k ^ 2 + 15 * k + 7) :
+    Confined n ∧ Confined (n + 1) := by
+  have hc : cofactor n = 12 * k ^ 2 + 18 * k + 7 := by
+    unfold cofactor; rw [hE, hp, Nat.mul_div_cancel_left _ (by omega)]
+  have hE' : prod (n + 1) + 1 = (9 * k ^ 2 + 15 * k + 7) * (12 * k ^ 2 + 6 * k + 1) := by
+    have h1 : prod (n + 1) = prod n * Mullin.seq (n + 1) := prod_succ n
+    have h2 : prod n = (3 * k + 1) * (12 * k ^ 2 + 18 * k + 7) - 1 := by omega
+    rw [h1, h2, hp]
+    have := shifted_tower_identity k
+    have hpos : 1 ≤ (3 * k + 1) * (12 * k ^ 2 + 18 * k + 7) := Nat.one_le_iff_ne_zero.mpr (by positivity)
+    zify [hpos] at *
+    nlinarith [this]
+  have hc' : cofactor (n + 1) = 12 * k ^ 2 + 6 * k + 1 := by
+    unfold cofactor; rw [hE', hp', Nat.mul_div_cancel_left _ (by positivity)]
+  refine ⟨⟨4 * k + 3, ?_⟩, ⟨4 * k + 1, ?_⟩⟩
+  · unfold disc; rw [hc]; push_cast; ring
+  · unfold disc; rw [hc']; push_cast; ring
+
 end Confinement
 
 end

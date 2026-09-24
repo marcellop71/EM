@@ -607,8 +607,11 @@ single stage `n` the discriminant `D_n` is a non-square modulo every sufficientl
 `M = |D_n|/3` is not a square, the Jacobi character mod `M` is nontrivial, so some class `b`
 has `(b/M) = −1`; primes `q ≡ b (mod M)`, `q ≡ 2 (mod 3)` give `(q/|D_n|) = (q/3)(q/M) = +1`.
 Hence `|D_n|/3` is a square. ∎
-So **UniformlyFrozenClass ⟹ Confined from `N` on**, and the converse holds trivially.  The
-three questions are then:
+So **UniformlyFrozenClass ⟹ Confined from `N` on**.  (The converse is *not* automatic: on a
+confined stage `D_n = −3 s_n²` is `0`, hence a square, modulo every prime dividing `s_n`, so a
+confined run is uniformly frozen only if the conductors `s_n` have no prime factor `≡ 2 (3)`
+beyond a fixed bound.  The correct inclusions are tower ⊂ UniformlyFrozenClass ⊂ ConfinedRun;
+corrected 2026-09-24, §12.)  The three questions are then:
 
 1. *Non-uniform ⟹ uniform?*  Frozen at each `q ≡ 2 (3)` with its own threshold `N(q)`, versus
    one threshold for all: the §G / #176 quantifier wall, verbatim.  Not attackable.
@@ -682,3 +685,128 @@ the discriminant degenerates (`4 = 0`) and confinement reads `c_n + 1 ∈ ℘(�
 `℘(f) = f² + f` (Artin–Schreier; the tower has `c_n = 1`).  Checked on the 40-stage branches
 of §10.2: the only confined stages are the four irreducible ones (stages 0, 1, 2, 12); no
 composite stage is confined.  Consistent with (3), and no more than that.
+
+
+## 12. Question (3), faced: confined runs (2026-09-24)
+
+### 12.1 What a confined run is, exactly
+
+Stage `n` confined ⟺ `4c_n − 1 = 3 s_n²` ⟺ the cofactor is a **cuban number**
+`c_n = 3t² + 3t + 1 = (t+1)³ − t³ = N(t + (t+1)ω)`, the norm of an Eisenstein integer of real
+part `1/2`.  Cuban numbers: `1, 7, 19, 37, 61, 91, 127, …`; the tower is `c_n = 1`.  A
+**confined run** (`Confinement.ConfinedRun`) is "confined at every stage from some `N` on".
+Question (3) in its honest form: *a confined run has only finitely many composite stages*,
+i.e. it is eventually a tower.
+
+Three facts, all in Lean now (`Confinement.lean`):
+* `multiplier_one_mod_three_of_confined_pair`: on two consecutive confined stages the
+  multiplier is `≡ 1 (mod 3)`, **unconditionally** — a `p ≡ 2 (3)` would divide `E_{n+1}`
+  twice (stage `n` confined) hence divide the cuban cofactor `c_{n+1}` (stage `n+1`
+  confined), which has no prime factor `≡ 2 (3)` because `3s'² ≡ −1` would make `−3` a square.
+  This removes the squarefreeness hypothesis of §11.3 on runs.
+* `not_mc_of_confinedRun`: **a confined run refutes MC** — no prime `≡ 2 (mod 3)` is ever
+  a multiplier past the start of the run, so a Dirichlet prime beyond the bag is missing.
+* `perpetual_of_confinedRun_of_dichotomy`: under the dichotomy conjecture a confined run is
+  eventually a Sylvester tower.  **Question (3) is a consequence of the dichotomy
+  conjecture**, i.e. it is the *weakest* statement in the family: MC-failure ⟹ tower is the
+  conjecture, and confined runs are a very special way of failing MC.
+
+### 12.2 The dynamics on confined states is a partial map
+
+Encode a composite confined stage by `(p, s)` with `E = p·(3s²+1)/4`, `p = lpf(E)`
+(i.e. `(3s²+1)/4` is `p`-rough).  The next stage is determined: `4E' = (p−2)² + 3p²s²`,
+`p' = lpf(E')`, and the stage is confined iff `(4E'/p' − 1)/3` is a perfect square.  So the
+confined composite states carry a **partial deterministic map** `(p, s) ↦ (p', s')`, defined
+only when the coincidence holds, with `E' > E` (no cycles).  Question (3) for all seeds says:
+*no orbit of this partial map is infinite* — the same shape as "every Collatz orbit
+terminates", in Conway's generalized-Collatz class where the general problem is undecidable.
+Without the `lpf` condition the step equation
+
+    (p − 2)² + 3 (p s)² = p' (3 s'² + 1)
+
+is a Pell-type equation in `(s, s')` for each fixed `(p, p')` (discriminant `p'`), with
+infinitely many solutions whenever one exists; the condition that makes chains thin is
+exactly `p' = lpf(E')`, i.e. `(3s'²+1)/4` is `p'`-rough — an anatomical condition.  For `p' = 7`
+that roughness is automatic (`3s'²+1` is never divisible by `2, 3, 5`), and the equation with
+`p = 7` has no solutions at all (`49 s² − 7 s'² = −6` is impossible mod 7); with `p = 13` it
+reduces to `Y² − 7X² = −38` with `13 ∣ Y`, a congruence condition on a Pell orbit.
+
+### 12.3 Reconnaissance over `ℤ` (computation, calibration only)
+
+All composite confined states `(p, s)` with `p ≡ 1 (3)` prime `< 400`, `s < 4000` odd,
+`(3s²+1)/4` `p`-rough, `E ≡ 1 (3)`: 29,734 states.  Of these 3,875 have a confined
+successor — 3,869 because `E'` is *prime* (a tower stage, `s' = 1`; about 13%, the norm-form
+values having no prime factor `≡ 2 (3)`), and **6 whose successor is again composite and
+confined**:
+
+    (19, 793) → (37, 2477) → prime stage;   (37, 51) → (1483, 49);   (67, 2917) → (7, 73869);
+    (73, 471) → (127, 3051);   (193, 259) → (37831, 257);   (277, 371) → (77563, 369).
+
+None continues to a third composite confined stage.  Three of the six lie on a line,
+`s = (4p+5)/3`, `s' = s − 2`, `p' = p² + 3p + 3 = Φ₃(p+1)` — and that is an **identity**
+(`Confinement.shifted_tower_identity`, `confined_pair_of_shifted_tower`): with `p = 3k+1`,
+
+    (p c − 1) p + 1 = p' c',   c = 12k²+18k+7,   p' = 9k²+15k+7,   c' = 12k²+6k+1,
+
+both cofactors cuban.  So a composite confined stage of the form `E_n = p(4p²+10p+7)/3` with
+`p = lpf E_n` has a confined successor whenever `p² + 3p + 3` is the least prime factor of
+`E_{n+1}` — three quadratics in `k` simultaneously prime, which Schinzel's hypothesis makes
+infinitely frequent.  **Length-2 composite confined runs are not a finite accident; they have
+an algebraic source**, the shifted tower `p ↦ Φ₃(p+1)` next to the tower's `p ↦ Φ₃(p−1)`.  The
+family does not extend: `s' = s − 2` is not `(4p'+5)/3`, so the third stage is generic again.
+The other three pairs are off the line and may be genuine coincidences or members of other
+families; not examined.
+
+### 12.4 Analogies, with verdicts
+
+* *Collatz / generalized Collatz* (Conway): the partial map of 12.2 is in the class where
+  termination is undecidable in general; population theorems only (Terras, Tao).  Same wall,
+  now stated for a much thinner map.
+* *Squares in recurrences* (Cohn; Bugeaud–Mignotte–Siksek): finiteness of perfect powers in
+  Lucas sequences uses linear-recurrence identities plus Baker or modularity.  Our condition
+  `(4c_n − 1)/3 = □` is of that type, but `c_n` is not a recurrence: it is `E_n / lpf(E_n)`.
+  The one place a genuine recurrence exists is a tower segment, where `c = 1` and there is
+  nothing to prove.
+* *Pell chains / Vieta jumping*: consecutive states satisfy Pell-type equations sharing a
+  variable; Vieta jumping produces *smaller* solutions from larger ones on a single Markov-type
+  equation, but here the equations change with `(p, p')` and the chain goes up in size.  No
+  descent.
+* *Ramanujan–Nagell* (`x² + 7 = 2^n`): one exponential and one square, finitely many
+  solutions by Skolem/Baker.  Our "exponential" is the doubly exponential growth of `E_n`
+  along the orbit and the square is the conductor; but the coupling passes through `lpf`,
+  which no transcendence method sees.
+* *CM points of growing conductor* (§11.4): the explicit Galois theory of ring class fields
+  of `ℚ(√−3)` acts on the ideals above `E_{n+1}`, i.e. on the tree; it does not see which
+  factor is least.  Same as §9.3.
+* *Function fields*: over `𝔽_q[t]` isolated confined composite stages exist (§11.4a); a
+  confined run would be a sequence of cofactors all of the form `(1 − a s²)/4`.  The same
+  partial map exists there and the same question is open; it is again the right first test.
+
+### 12.5 Verdict on (3)
+
+The reconnaissance changed the question.  The naive heuristic — a confined successor is a
+coincidence of probability `≍ E^{−1/2}`, so runs of length two are finite in number and runs of
+length three never occur — is **wrong at length two**: the unlikely locus contains an
+algebraic curve on which the coincidence is automatic, and the arithmetic condition on that
+curve is a Schinzel-type primality condition, satisfied infinitely often conjecturally.  This is
+the Zilber–Pink picture realised inside question (3) itself: special subvarieties (here the
+tower and the shifted tower) sit inside the exceptional locus, and the honest form of (3) is a
+**structure question**: *is every long confined run explained by an algebraic family, and do
+such families exist for every length?*  Length 1: the tower.  Length 2: the shifted tower.
+Length 3: none found, no identity found.  If families of every length exist, confined runs of
+every finite length exist (under Schinzel) and (3) — an infinite run forces the tower — becomes
+a statement about the *limit* of a tower of algebraic families, which is where Ax–Schanuel-type
+functional transcendence would enter in the analogy.  If they do not, (3) reduces to length-3
+finiteness plus the tower.  Either way the next concrete step is algebraic, not statistical:
+search for identities `(p'−2)² + 3p'²s'² = p''(3s''²+1)` along `(p', s') = (Φ₃(p+1), (4p−1)/3)`.
+
+Facing (3) moved it from a slogan to a precise place: it is the weakest member of the
+dichotomy family (a consequence of the conjecture, `perpetual_of_confinedRun_of_dichotomy`),
+it is a termination statement for a partial deterministic map on pairs `(p, s)`, and the only
+thing that makes that map thin is the least-prime-factor condition — the same anatomical
+condition that blocks every other route.  What is new and positive: confined pairs force
+`≡ 1 (mod 3)` multipliers unconditionally, confined runs refute MC outright, and the step
+equation is explicit enough to be searched.  What is not available: any mechanism for
+termination.  I would not attack (3) directly; I would keep it as the cleanest *test case*
+for a future mechanism, because a mechanism that cannot show that cuban cofactors stop must
+fail on the general problem, and one that can is already saying something about `lpf`.

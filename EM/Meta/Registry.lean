@@ -902,6 +902,11 @@ attribute [publish] Confinement.dvd_of_dvd_sq_add_three_sq
 attribute [publish] Confinement.not_dvd_euclid_of_dvd_euclid_succ
 attribute [publish] Confinement.sq_dvd_of_confined
 attribute [publish] Confinement.multiplier_not_two_mod_three
+attribute [publish] Confinement.multiplier_one_mod_three_of_confined_pair
+attribute [publish] Confinement.not_mc_of_confinedRun
+attribute [publish] Confinement.perpetual_of_confinedRun_of_dichotomy
+attribute [publish] Confinement.shifted_tower_identity
+attribute [publish] Confinement.confined_pair_of_shifted_tower
 attribute [publish] UniformFreezing.jacobiSym_neg_one_mod_four
 attribute [publish] UniformFreezing.exists_jacobiSym_eq_neg_one
 attribute [publish] UniformFreezing.eq_neg_three_mul_sq_of_nonsquare_two_mod_three
