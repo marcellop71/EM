@@ -1,0 +1,407 @@
+%% =========================================================================
+\section{The Exceptional Locus: Discriminants, Freezing, Confinement}
+\label{sec:exceptional}
+%% =========================================================================
+
+Everything before this section describes what one orbit of~$T$ inherits
+from~$T$; this section describes the \emph{exceptional locus}---where
+Mullin's conjecture could fail, what arithmetic structure such a failure
+would have to carry, and where that structure runs out.  The organising
+object is a single integer attached to each step.  Write
+$E_n = \Prod{2}(n)+1$ for the Euclid number, $p = a(n{+}1) =
+\operatorname{lpf}(E_n)$ for the multiplier, and
+\[
+  c_n = E_n / p, \qquad D_n = 1 - 4c_n
+\]
+for the discarded \emph{cofactor} and the \emph{discriminant} of the step
+(\lean{EM/Population/QuadraticStep.lean}{cofactor},
+\lean{EM/Population/QuadraticStep.lean}{disc}).  Its size is the growth
+defect of Section~\ref{sec:cinfty} ($\log c_n$, up to $O(1/\Prod{2}(n))$),
+and its quadratic character governs the next stage.  Nothing here is
+numerical: every statement is an identity along the orbit or a theorem
+about a hypothesis, and each is machine-checked.
+
+%% -------------------------------------------------------------------------
+\subsection{The Euclid Step as a Norm}
+\label{sec:quadratic-step}
+%% -------------------------------------------------------------------------
+
+\begin{theorem}[\lean{EM/Population/QuadraticStep.lean}{euclid\_succ\_eq\_norm},
+\lean{EM/Population/QuadraticStep.lean}{four\_cofactor\_mul\_euclid\_succ}]
+\label{thm:norm-identity}
+With $p = a(n{+}1)$ and $c = c_n$,
+\[
+  E_{n+1} = c\,p^{2} - p + 1 = N_{\ZZ[\omega_n]/\ZZ}(p\,\omega_n - 1),
+  \qquad \omega_n^2 - \omega_n + c_n = 0,
+\]
+and $4c\,E_{n+1} = (2E_n - 1)^2 - D_n$.
+\end{theorem}
+
+Each Euclid number is therefore a value of the principal binary quadratic
+form of discriminant $D_n$ at a primitive vector, and the orbit is a walk
+through the imaginary quadratic orders $\ZZ[\omega_n]$ ($D_n < 0$ always,
+since $c_n \geq 1$).  The second identity, read modulo a divisor, is a
+statement about \emph{all} prime factors of the next Euclid number at once.
+
+\begin{theorem}[Splitting law;
+\lean{EM/Population/QuadraticStep.lean}{isSquare\_disc\_of\_dvd}]
+\label{thm:splitting-law}
+If $\ell \mid E_{n+1}$ then $D_n$ is a square modulo~$\ell$: every prime
+factor of $E_{n+1}$ splits or ramifies in $\QQ(\sqrt{D_n})$.
+\end{theorem}
+
+On a prime stage $c_n = 1$ and $D_n = -3$
+(\lean{EM/Population/QuadraticStep.lean}{disc\_eq\_neg\_three\_of\_prime}),
+and the splitting law is the $\Phi_3$ exclusion of Section~\ref{sec:cinfty}
+in another guise: after a prime Euclid number, every factor of the next
+splits in $\QQ(\sqrt{-3})$.  At a composite stage the law says something
+new at every step.
+
+%% -------------------------------------------------------------------------
+\subsection{The Frozen Rung}
+\label{sec:frozen}
+%% -------------------------------------------------------------------------
+
+A prime~$q$ is \defname{Frozen}
+(\lean{EM/Population/QuadraticStep.lean}{Frozen}) if it has not been
+collected by some stage $N{+}1$ and $D_n$ is a non-square modulo~$q$ for
+every $n \geq N$.  By the splitting law such a~$q$ can never again divide a
+Euclid number, so it is missing
+(\lean{EM/Population/QuadraticStep.lean}{frozen\_missing}).  On a Sylvester
+tower $D_n = -3$, and $-3$ is a non-square modulo every $q \equiv 2
+\pmod 3$, so every such prime outside the bag is frozen
+(\lean{EM/Population/QuadraticStep.lean}{frozen\_of\_perpetual}).  Writing
+\defname{NoFrozen} for ``every frozen prime is collected'' (equivalently,
+no prime is frozen), this gives a rung whose character is arithmetic---a
+splitting condition---rather than a size condition:
+
+\begin{theorem}[\lean{EM/Population/QuadraticStep.lean}{frozen\_rung}]
+\label{thm:frozen-rung}
+$\MC \Rightarrow \mathrm{NoFrozen} \Rightarrow (\mathrm{C}\infty)$.
+\end{theorem}
+
+A missing prime is thus of one of two kinds: \emph{frozen}, inert in every
+late field $\QQ(\sqrt{D_n})$---the mechanism of the $\FF_5[t]$
+refutation, where the field is a constant extension---or
+\emph{unfrozen}, splitting infinitely often while the one congruence
+$a(n{+}1) \equiv -\Prod{2}(n)^{-1} \pmod q$ never holds, which is
+orbit-specificity (Dead End~\#90).  Frozen is a half-set confinement of the
+cofactor residue at every step; unfrozen is one-class avoidance.  When
+freezing is \emph{uniform} over a Chebotarev class it forces an algebraic
+conclusion at a single stage.
+
+\begin{theorem}[Theorem~A;
+\lean{EM/Population/UniformFreezing.lean}{eq\_neg\_three\_mul\_sq\_of\_nonsquare\_two\_mod\_three},
+\lean{EM/Population/UniformFreezing.lean}{confined\_of\_uniformly\_frozen}]
+\label{thm:theorem-A}
+Let $D < 0$, $D \equiv 1 \pmod 4$.  If $D$ is a non-square modulo every
+sufficiently large prime $q \equiv 2 \pmod 3$, then $D = -3s^2$.  In
+particular, if $D_n$ is a non-square modulo every large $q \equiv 2 \pmod
+3$, then stage~$n$ is confined in the sense of the next subsection.
+\end{theorem}
+
+\begin{proof}[Sketch]
+For $D \equiv 1 \pmod 4$ negative, Jacobi reciprocity gives
+$\bigl(\tfrac{D}{q}\bigr) = \bigl(\tfrac{q}{|D|}\bigr)$
+(\lean{EM/Population/UniformFreezing.lean}{jacobiSym\_neg\_one\_mod\_four}).
+Write $|D| = 3^e M$ with $3 \nmid M$.  If $M$ is not a square the Jacobi
+character modulo~$M$ takes the value $-1$
+(\lean{EM/Population/UniformFreezing.lean}{exists\_jacobiSym\_eq\_neg\_one}),
+and Dirichlet supplies large primes $q \equiv 2 \pmod 3$ in a class
+modulo~$M$ where $\bigl(\tfrac{q}{3}\bigr)^e\bigl(\tfrac{q}{M}\bigr) = +1$,
+a contradiction; so $M$ is a square, $\bigl(\tfrac{q}{|D|}\bigr) =
+(-1)^e$, and $e$ is odd.
+\end{proof}
+
+%% -------------------------------------------------------------------------
+\subsection{Confinement and the Shifted Tower}
+\label{sec:confinement}
+%% -------------------------------------------------------------------------
+
+Stage~$n$ is \defname{Confined}
+(\lean{EM/Population/Confinement.lean}{Confined}) if $D_n = -3s^2$: its
+discriminant lies in the tower's field $\QQ(\sqrt{-3})$, with
+\emph{conductor}~$s$.  Then $c_n = 3t^2+3t+1 = (t{+}1)^3 - t^3$ is a cuban
+number, the norm of an Eisenstein integer of real part~$\tfrac12$, and a
+prime stage is confined with $s = 1$.  Confinement sits strictly between
+the tower and a uniformly frozen class: it is the analogue of a
+constant-field extension, and in the Zilber--Pink dictionary the room
+between ``special'' and ``weakly special''---the tower is the maximal
+order, a confined orbit runs through orders of $\QQ(\sqrt{-3})$ of growing
+conductor, like CM points of one field and unbounded conductor.  It is the
+first hypothesis in this paper from which a \emph{positive} divisibility
+fact follows.
+
+\begin{theorem}[\lean{EM/Population/Confinement.lean}{sq\_dvd\_of\_confined},
+\lean{EM/Population/Confinement.lean}{multiplier\_one\_mod\_three\_of\_confined\_pair}]
+\label{thm:confined-divisibility}
+If stage~$n$ is confined and a prime $\ell \equiv 2 \pmod 3$, $\ell \geq
+5$, divides $E_{n+1}$, then $\ell^2 \mid E_{n+1}$.  If stages $n$ and $n{+}1$
+are both confined, the multiplier $a(n{+}2)$ is $\equiv 1 \pmod 3$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+$4c_nE_{n+1} = (2E_n-1)^2 + 3s^2$, and a prime $\ell \equiv 2 \pmod 3$
+dividing $x^2 + 3y^2$ divides both $x$ and~$y$ ($-3$ is a non-square
+modulo~$\ell$), hence divides $4c_nE_{n+1}$ twice; consecutive Euclid
+numbers are coprime
+(\lean{EM/Population/Confinement.lean}{not\_dvd\_euclid\_of\_dvd\_euclid\_succ}:
+a common prime would divide $a(n{+}1)-1$ while being at least $a(n{+}1)$),
+so $\ell \nmid c_n$ and $\ell^2 \mid E_{n+1}$.  For the second claim, a
+multiplier $\equiv 2 \pmod 3$ would then divide the cuban cofactor
+$c_{n+1} = (3s'^2+1)/4$, which has no prime factor $\equiv 2 \pmod 3$
+since $3s'^2 \equiv -1$ would make $-3$ a square.
+\end{proof}
+
+A \defname{ConfinedRun}
+(\lean{EM/Population/Confinement.lean}{ConfinedRun}) is an orbit confined
+from some stage on.  No prime $\equiv 2 \pmod 3$ is ever a multiplier past
+its start, so a Dirichlet prime beyond the bag is missing:
+
+\begin{theorem}[\lean{EM/Population/Confinement.lean}{not\_mc\_of\_confinedRun}]
+\label{thm:confined-run}
+A confined run refutes $\MC$.
+\end{theorem}
+
+Whether a confined run must be a Sylvester tower---whether the
+conductors $s_n$ must eventually be~$1$---is a Diophantine question about
+the orbit, and it has more structure than a probabilistic reading
+suggests.  Consecutive confined stages satisfy the norm equation
+$(p-2)^2 + 3(ps)^2 = p'(3s'^2+1)$, and this equation has an
+\emph{algebraic} family of solutions.
+
+\begin{theorem}[The shifted tower;
+\lean{EM/Population/Confinement.lean}{shifted\_tower\_identity},
+\lean{EM/Population/Confinement.lean}{confined\_pair\_of\_shifted\_tower}]
+\label{thm:shifted-tower}
+For $p = 3k+1$,
+\[
+  (pc - 1)\,p + 1 = p'\,c', \qquad
+  c = 12k^2+18k+7,\quad p' = p^2+3p+3 = \Phi_3(p{+}1),\quad c' = 12k^2+6k+1,
+\]
+with $4c-1 = 3(4k{+}3)^2$ and $4c'-1 = 3(4k{+}1)^2$ both cuban.  Hence if
+$E_n = p\,c$ with $p = \operatorname{lpf}(E_n)$ and $p^2+3p+3 =
+\operatorname{lpf}(E_{n+1})$, stages $n$ and $n{+}1$ are both confined.
+\end{theorem}
+
+Next to the tower's step $p \mapsto \Phi_3(p{-}1)$ there is a
+\emph{shifted} tower $p \mapsto \Phi_3(p{+}1)$ producing confined pairs
+whenever three quadratic polynomials in~$k$ are simultaneously prime---a
+Schinzel-type condition, satisfied infinitely often conjecturally.  The
+two are the same mechanism.  Put $\delta_n = (1+s_n\sqrt{-3})/2 \in
+\ZZ[\omega]$, so that $E_{n+1} = N(p\,\delta_n - 1)$; a polynomial family of
+confined pairs is a factorization $p\,\delta - 1 = \varepsilon\,\pi'\,
+\delta'^{\pm}$ in the unique factorization domain $\ZZ[\omega][p]$, and the
+tower ($p\omega - 1 = \omega(p-\bar\omega)$, $\delta$ a unit) and the
+shifted tower ($p\delta - 1 = -\pi'\bar\delta'$ with $\pi' = (p{+}1)+
+\bar\omega$) are the two conjugation choices of the $\delta$-factor
+(\lean{EM/Population/EisensteinFamilies.lean}{tower\_factorization},
+\lean{EM/Population/EisensteinFamilies.lean}{shifted\_tower\_factorization}).
+For families with linear conductors the coefficient equations collapse
+to the cubic $36vm^3 + 12wm^2 + 3vw^2m + w^3 = (3vm+w)(12m^2+w^2)$, $w =
+3v^2+1$ (\lean{EM/Population/EisensteinFamilies.lean}{linear\_family\_root}),
+whose definite factor leaves the single rational curve $p' = p^2 + (4/w)p +
+4/w$; integrality selects $w = 1$ (the tower) and $w = 4/3$ (the shifted
+tower), and nothing else.  Whether a family of length three exists is a
+question about the reducibility of one cubic over $\QQ(\omega)$, and the
+general question---is there an infinite polynomial orbit all of whose
+Euclid polynomials are reducible?---is the exact opposite of
+Theorem~\ref{thm:level-irreducible-Q}, where the generic orbit is
+irreducible at every level.
+
+%% -------------------------------------------------------------------------
+\subsection{The Dichotomy Conjecture}
+\label{sec:dichotomy}
+%% -------------------------------------------------------------------------
+
+The statements above point at one conjecture, uniform in the seed, which
+is the Zilber--Pink form of Mullin's conjecture: an unlikely event that
+happens has a reason, and the only reason available is the tower.
+
+\begin{conjecture}[Dichotomy;
+\lean{EM/Population/Dichotomy.lean}{DichotomyConjecture}]
+\label{conj:dichotomy}
+For every seed $m \geq 2$, the greedy orbit of~$m$ captures every prime
+coprime to~$m$ if and only if it is not eventually a Sylvester tower:
+$\mathrm{GenMC}(m) \iff C(m) = 0$.
+\end{conjecture}
+
+The direction $\Rightarrow$ is a theorem for every seed
+(\lean{EM/Population/QuadraticStep.lean}{sgrowth\_eq\_zero\_of\_genMC}: a
+tower from stage $N_0$ would never select a Dirichlet prime $q \equiv 2
+\pmod 3$ beyond $\Prod{m}(N_0{+}1)$, by~$\Phi_3$).  Under the conjecture,
+$\MC$ reduces to the floor
+(\lean{EM/Population/Dichotomy.lean}{mc\_of\_dichotomy}), and a confined
+run is eventually a tower
+(\lean{EM/Population/Confinement.lean}{perpetual\_of\_confinedRun\_of\_dichotomy}),
+so the Diophantine question of the previous subsection is the
+\emph{weakest} member of the family.  The algebraic part of the conjecture
+is a theorem:
+
+\begin{theorem}[\lean{EM/Population/Dichotomy.lean}{algebraic\_multiplier\_implies\_tower},
+\lean{EM/Population/Dichotomy.lean}{algebraic\_recursion\_implies\_tower}]
+\label{thm:algebraic-part}
+If $a(n{+}1) = g(E_n)$ for a polynomial $g \in \ZZ[x]$ and all $n \geq N$,
+then $g = x$ and $E_n$ is prime for all $n \geq N$.  If $E_{n+1} = f(E_n)$
+for a polynomial~$f$ and all $n \geq N$, then $f = x^2 - x + 1$ and the
+orbit is a Sylvester tower from~$N$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+$2 \leq g(E) \leq E$ on an unbounded set forces $\deg g \leq 1$; with $g =
+ax+b$, distinctness of the multipliers excludes $a = 0$, the bound $g(E)
+\leq E$ excludes $a \geq 2$, and $E + b \mid E$ forces $b = 0$.  For the
+recursion form, divide $f - 1$ by $x - 1$: the remainder is divisible by
+unboundedly many $\Prod{2}(n)$, hence zero.
+\end{proof}
+
+So the orbit satisfies an algebraic law only on the Sylvester branch,
+the one branch on which missing a prime has a structural reason.  The
+function-field form of the conjecture is falsifiable: over $\FF_2[t]$ and
+$\FF_p[t]$ with $p \equiv 1 \pmod 3$ the composite floor is a theorem for
+every sequence (Section~\ref{sec:function-field}), so the dichotomy there
+implies the function-field conjecture outright
+(\lean{EM/Population/Dichotomy.lean}{ffMC\_two\_of\_ffDichotomy},
+\lean{EM/Population/Dichotomy.lean}{ffMC\_of\_ffDichotomy\_one\_mod\_three}),
+while over $\FF_5[t]$ it is consistent with the refutation, the stable
+tower having positive growth constant
+(\lean{EM/Population/Dichotomy.lean}{stableTower\_ffGrowthConstant\_ne\_zero}).
+A single provable miss over $\FF_2[t]$ would refute it.
+
+%% -------------------------------------------------------------------------
+\subsection{$\mathrm{CI}(3 \bmod 4)$ and the Gaussian Locus}
+\label{sec:ci-three-mod-four}
+%% -------------------------------------------------------------------------
+
+The weakest open class statement is $\mathrm{CI}(3 \bmod 4)$: infinitely
+many Euclid--Mullin primes are $\equiv 3 \pmod 4$.  Every Euclid number is
+$\equiv 3 \pmod 4$ and so has such a factor; on the tower the multipliers
+are the Euclid numbers themselves, so the statement holds there and its
+content is $(\mathrm{C}\infty) \Rightarrow \mathrm{CI}(3 \bmod 4)$.  It is
+Euclid's own argument for primes $\equiv 3 \pmod 4$---take any such
+factor of $4m+3$---with the \emph{least} factor in place of any factor,
+and the gap between the two is the whole content.
+
+\begin{theorem}[\lean{EM/Population/ClassThreeModFour.lean}{prod\_succ\_mod\_eight\_eq\_iff},
+\lean{EM/Population/ClassThreeModFour.lean}{classInfinitude\_three\_mod\_four\_iff\_prod\_mod\_eight}]
+\label{thm:ci-mod-eight}
+A step preserves $\Prod{2}(n) \bmod 8$ iff the multiplier is $\equiv 1
+\pmod 4$.  Hence $\mathrm{CI}(3 \bmod 4)$ holds iff the accumulator
+(equivalently, the Euclid number) is not eventually constant modulo~$8$.
+\end{theorem}
+
+In other words, $\mathrm{CI}(3 \bmod 4)$ says the torsion component
+$\{\pm1\}$ of the $2$-adic walk of the odd part of the accumulator keeps
+flipping---a statement about the $2$-deleted walk of the seed prime~$2$,
+and a torsion statement of the kind Dead End~\#177 shows heights and
+logarithms cannot see.  Its failure would be a half-set confinement of the
+multipliers to $1 + 4\ZZ_2$, the same shape as freezing and confinement.
+But unlike $(\mathrm{C}\infty)$, whose failure has the algebraic locus of
+the tower in $\QQ(\sqrt{-3})$, a failure of $\mathrm{CI}(3 \bmod 4)$ has
+no quadratic-field locus at all:
+
+\begin{theorem}[\lean{EM/Population/ClassThreeModFour.lean}{four\_cofactor\_sub\_one\_not\_square}]
+\label{thm:gaussian-empty}
+$4c_n - 1$ is never a perfect square: no stage is confined to $\QQ(i)$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+If $D_n = -s^2$ then $4c_nE_{n+1} = (2E_n-1)^2 + s^2$ is a sum of two
+squares, so every prime $\equiv 3 \pmod 4$ divides $E_{n+1}$ to even order
+(the cofactor being coprime to $E_{n+1}$), and $E_{n+1}$ would itself be a
+sum of two squares---impossible for a number $\equiv 3 \pmod 4$.
+\end{proof}
+
+This is a precise sense in which $\mathrm{CI}(3 \bmod 4)$ is the purest
+instance of orbit-specificity: nothing algebraic could make it fail, and
+nothing algebraic can prove it.  For the largest-factor rule the same
+mod-$4$ and discriminant laws (the prime factors of $E_n$ lie in the
+principal genus for every bag discriminant, since $E_n \equiv 1 \pmod{
+\Prod{2}(n)}$) are what Cox--van der Poorten and Booker exploit, because
+under that rule the cofactor is \emph{smooth} and its symbols can be
+evaluated once the small primes are known; under the least-factor rule the
+cofactor is \emph{rough}, and the same laws say nothing about which factor
+is least.
+
+%% -------------------------------------------------------------------------
+\subsection{Counting the Missing}
+\label{sec:counting-missing}
+%% -------------------------------------------------------------------------
+
+Two further families of statements calibrate what ``few missing'' can
+mean.  The first concerns seeds.  Missing~$q$ is inherited along the orbit,
+the orbit grows at most doubly exponentially, and for a squarefree seed the
+odd half of each later orbit point is a $T$-preimage of it; so one missing
+seed forces many.
+
+\begin{theorem}[Gap principle;
+\lean{EM/Population/GapPrinciple.lean}{card\_misses\_ge\_of\_squarefree},
+\lean{EM/Population/GapPrinciple.lean}{misses\_eq\_empty\_or},
+\lean{EM/Population/GapPrinciple.lean}{mem\_seq\_of\_card\_misses\_lt}]
+\label{thm:gap-principle}
+For a prime~$q$, the set of seeds missing~$q$ is either empty or has at
+least $k{+}1$ elements below $(m{+}1)^{2^k}$ for every~$k$ and every missing
+$m$---at least $2k$ if $m$ is squarefree.  In particular, if for some~$k$
+fewer than $2k$ seeds in $[1, 3^{2^k}]$ miss~$q$, then $q$ appears in the
+Euclid--Mullin sequence.
+\end{theorem}
+
+The seed-average law (Section~\ref{sec:ensemble}) gives $o(X)$ missing seeds
+below~$X$ with no rate; the gap principle asks for $o(\log\log X)$, and
+nothing lies between.  A backward branch of the orbit at $\Prod{2}(n)$
+through a bag prime~$p$ below the head exists iff the \emph{$p$-deleted
+walk}---the product of the other bag primes modulo~$p$---sits at~$-1$
+(\lean{EM/Population/GapPrinciple.lean}{isPreimage\_div\_iff}); for $p = 3$
+this is a parity: the branch exists iff an even number of $a(2), \dots,
+a(n)$ are $\equiv 2 \pmod 3$
+(\lean{EM/Population/GapPrinciple.lean}{three\_dvd\_prod\_div\_three\_succ\_iff}).
+Amplifying a missed prime into more missing seeds is therefore a hitting
+problem for \emph{captured} primes, with the vacuity of the walk
+reformulations removed.
+
+The second family concerns primes.  With $S(x)$ the number of
+Euclid--Mullin primes $\leq x$ and $M(x) = \pi(x) - S(x)$:
+
+\begin{theorem}[Coverage ladder;
+\lean{EM/Population/CoverageLadder.lean}{coverage\_ladder}]
+\label{thm:coverage-ladder}
+$\MC \Rightarrow \mathrm{MissingFinite} \Rightarrow M(x) = o(\pi(x))
+\Rightarrow S(x) \geq c\,\pi(x)\ \text{eventually} \Rightarrow \mathrm{RD}$.
+\end{theorem}
+
+The last implication is Abel summation, $\sum_{a \in A,\, a \leq N} 1/a =
+\sum_{n \leq N} A(n)/(n(n{+}1)) + A(N)/(N{+}1)$
+(\lean{EM/Population/CoverageLadder.lean}{abel\_identity}), with no
+Chebyshev bound.  Not even the positive-proportion rung is known: the only
+proved lower bound on $S(x)$ is the gap principle's $\log_2\log_3 x$.  On a
+Sylvester tower the captured primes are the prime divisors of a
+Sylvester-type recursion, which have density zero~\cite{Odoni1985}, so the
+rung $S(x) \geq c\,\pi(x)$ is expected to be a strict dichotomy: $0$ on the
+special locus, $1$ off it.
+
+%% -------------------------------------------------------------------------
+\subsection{What the Locus Says}
+\label{sec:exceptional-verdict}
+%% -------------------------------------------------------------------------
+
+The exceptional locus has an algebraic part and a transcendental part.
+The algebraic part is made of towers: the Sylvester tower (the only
+polynomial law the orbit can satisfy, Theorem~\ref{thm:algebraic-part}),
+the shifted tower (the only other integral linear family of confined
+pairs), and the rational curve of confined families between them.  The
+transcendental part is orbit-specificity: a walk avoiding one class per
+position, a cofactor residue in a half-set, a multiplier class that never
+flips---with no locus on which it could happen for a reason.  Every
+statement of this section is either a theorem about the algebraic part or
+a reformulation that isolates the transcendental part; none moves an open
+rung.  What it changes is the reading of ``probability zero'': at length
+two, the unlikely locus of confined pairs contains an algebraic curve on
+which the coincidence is automatic, exactly as Zilber--Pink predicts for
+unlikely intersections, and the honest form of every remaining question is
+whether such curves exist in every length.  The function-field model
+decides these questions first: over $\FF_2[t]$ the floor is free, the
+first four terms are forced, and a cubic dividing a Euclid polynomial is
+captured at once
+(\lean{EM/FunctionField/CharTwoHead.lean}{cubic\_capture}), so the
+dichotomy conjecture there is the conjecture with everything but the
+hitting already a theorem.

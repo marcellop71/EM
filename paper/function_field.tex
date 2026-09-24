@@ -974,6 +974,25 @@ mechanism, not the ambient ring.  This is the cleanest formulation of
 the barrier; the integer analog is CME.
 \end{frontierbox}
 
+\paragraph{The head over $\FF_2[t]$.}
+The monic irreducibles of degree $\leq 2$ over $\FF_2$ are $X$, $X{+}1$,
+$X^2{+}X{+}1$
+(\lean{EM/FunctionField/CharTwoHead.lean}{monic\_irreducible\_natDegree\_le\_two}),
+and every sequence collects exactly these in its first three terms, so
+$\mathrm{FFMCBelow}\ 3$ holds for every $\mathrm{FFEMData}\ 2$
+(\lean{EM/FunctionField/CharTwoHead.lean}{ffMCBelow\_three}); hence for
+$n \geq 2$ a cubic dividing $\mathrm{ffProd}\,n + 1$ forces a cubic
+multiplier (\lean{EM/FunctionField/CharTwoHead.lean}{cubic\_capture}):
+at the head, capture is a bare hit with no sieve condition.  Since the
+composite floor is a theorem over $\FF_2[t]$, the dichotomy conjecture of
+Section~\ref{sec:dichotomy} there says the function-field conjecture holds
+for every seed
+(\lean{EM/Population/Dichotomy.lean}{ffMC\_two\_of\_ffDichotomy}); a
+single provable miss over $\FF_2[t]$ would refute it.  Characteristic~$2$
+adds exclusions (the tower map $P \mapsto P^2+P$ is additive, so an
+irreducible Euclid polynomial is followed by one whose factors all have
+even degree) and the floor's factorization, but no capture mechanism.
+
 \paragraph{Headline summary.}
 The function-field portion of the formalization is collected in the
 landscape theorem

@@ -301,6 +301,28 @@ stable identifier independent of human naming.
 \quad MMCSB $\Rightarrow$ MC (multi-modular) & \proved & \code{mmcsb\_implies\_mc}  & 40b583c7 \\
 \quad VCB $+$ PED $\Rightarrow$ MC & \proved & \code{vcb\_ped\_implies\_mc}  & e8688ed3 \\
 \midrule
+%%% ---- Exceptional locus ----
+\multicolumn{4}{l}{\emph{The exceptional locus (Section~\ref{sec:exceptional})}} \\
+\quad Norm identity $E_{n+1} = c p^2 - p + 1$ & \proved & \code{QuadraticStep.euclid\_succ\_eq\_norm}  & 7eb822dd \\
+\quad Splitting law: $\ell \mid E_{n+1} \Rightarrow D_n$ square mod $\ell$ & \proved & \code{QuadraticStep.isSquare\_disc\_of\_dvd}  & 04dd74eb \\
+\quad Frozen rung $\MC \Rightarrow \mathrm{NoFrozen} \Rightarrow (\mathrm{C}\infty)$ & \proved & \code{QuadraticStep.frozen\_rung}  & 1d774eef \\
+\quad Theorem A: uniformly frozen class $\Rightarrow$ $D = -3s^2$ & \proved & \code{UniformFreezing.eq\_neg\_three\_mul\_sq\_of\_nonsquare\_two\_mod\_three}  & 99205242 \\
+\quad Confined stage: $\ell \equiv 2\ (3)$ divides $E_{n+1}$ twice & \proved & \code{Confinement.sq\_dvd\_of\_confined}  & a6c982ac \\
+\quad Confined pair $\Rightarrow$ multiplier $\equiv 1\ (3)$ & \proved & \code{Confinement.multiplier\_one\_mod\_three\_of\_confined\_pair}  & 66a87f98 \\
+\quad A confined run refutes MC & \proved & \code{Confinement.not\_mc\_of\_confinedRun}  & b7657a1f \\
+\quad The shifted tower $p \mapsto \Phi_3(p{+}1)$ (confined pairs) & \proved & \code{Confinement.confined\_pair\_of\_shifted\_tower}  & 66e1f34d \\
+\quad Tower and shifted tower as factorizations in $\ZZ[\sqrt{-3}]$ & \proved & \code{EisensteinFamilies.shifted\_tower\_factorization}  & 952b77f8 \\
+\quad Linear families: the cubic $(3vm+w)(12m^2+w^2)$ & \proved & \code{EisensteinFamilies.linear\_family\_root}  & 2e389f57 \\
+\quad Dichotomy conjecture $\mathrm{GenMC}(m) \iff C(m)=0$ & \openhyp & \code{Dichotomy.DichotomyConjecture}  & 9d03f065 \\
+\quad $\mathrm{GenMC}(m) \Rightarrow C(m)=0$ (every seed) & \proved & \code{QuadraticStep.sgrowth\_eq\_zero\_of\_genMC}  & cd33cdde \\
+\quad Algebraic multiplier law $\Rightarrow$ Sylvester tower & \proved & \code{Dichotomy.algebraic\_multiplier\_implies\_tower}  & 7592c6bd \\
+\quad Dichotomy over $\FF_2[t]$ $\Rightarrow$ FF-MC & \proved & \code{Dichotomy.ffMC\_two\_of\_ffDichotomy}  & d80e1bb0 \\
+\quad $4c_n - 1$ is never a square (Gaussian locus empty) & \proved & \code{ClassThreeModFour.four\_cofactor\_sub\_one\_not\_square}  & bfb449dc \\
+\quad $\mathrm{CI}(3 \bmod 4) \iff \Prod{2}(n) \bmod 8$ not eventually constant & \proved & \code{ClassThreeModFour.classInfinitude\_three\_mod\_four\_iff\_prod\_mod\_eight}  & f31db0c0 \\
+\quad Gap principle: missing seeds $\geq \log_2\log X$ or none & \proved & \code{GapPrinciple.misses\_eq\_empty\_or}  & de456c32 \\
+\quad Backward branch $\iff$ $p$-deleted walk at $-1$ & \proved & \code{GapPrinciple.isPreimage\_div\_iff}  & 881c5304 \\
+\quad Coverage ladder $\MC \Rightarrow \dots \Rightarrow \mathrm{RD}$ & \proved & \code{CoverageLadder.coverage\_ladder}  & ab79dc55 \\
+\quad Cubic capture at the head over $\FF_2[t]$ & \proved & \code{FunctionFieldAnalog.CharTwoHead.cubic\_capture}  & 74f40bd4 \\
 %%% ---- Bootstrap + walk ----
 \multicolumn{4}{l}{\emph{Inductive bootstrap and walk dynamics}} \\
 \quad PrimeResidueEscape (elementary, no Burgess) & \proved & \code{prime\_residue\_escape}  & 62bfa65d \\

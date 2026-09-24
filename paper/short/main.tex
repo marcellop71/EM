@@ -4,6 +4,7 @@
 \input{../dead_ends_stats.tex}
 \providecommand{\CME}{\mathrm{CME}}
 \providecommand{\CCSB}{\mathrm{CCSB}}
+\providecommand{\QQ}{\mathbb{Q}}
 \newcommand{\lpf}{\operatorname{lpf}}
 \newcommand{\gpf}{\operatorname{gpf}}
 \newcommand{\RD}{\mathrm{RD}}
@@ -64,7 +65,13 @@ $\NN$ is null.
 For each prime~$q$, almost every
 squarefree seed also reaches~$q$ somewhere in its factor tree, unconditionally.
 Karamata's Tauberian theorem and Mertens' theorem in progressions are
-formalized along the way.  (iv)~\emph{Min versus max.}  Cox--van der
+formalized along the way.  (iv)~\emph{The exceptional locus.}  Each Euclid number is a norm from the
+order of discriminant $1-4c_n$, $c_n$ the discarded cofactor, so every prime
+factor of the next Euclid number splits in $\QQ(\sqrt{1-4c_n})$; this gives
+an arithmetic rung $\mathrm{MC}\Rightarrow\mathrm{NoFrozen}\Rightarrow\Cinf$,
+a uniform dichotomy conjecture $\mathrm{GenMC}(m)\iff C(m)=0$ whose
+algebraic part is a theorem, an algebraic family of confined pairs next to
+the tower, and the fact that $4c_n-1$ is never a square.  (v)~\emph{Min versus max.}  Cox--van der
 Poorten's omission of~$5$ for the largest-prime-factor variant is
 machine-checked; under $\lpf$ capture is a residue-class condition, so no
 propagating congruence invariant blocks a prime.
@@ -467,6 +474,75 @@ $w\ne-1$, residue~$a$ and size bound~$K$ are realised together by some
 squarefree seed
 (\lean{EM/Population/SizeResidueDecoupling.lean}{exists\_seed\_composite\_residue\_size}).
 This is why the growth projection carries the floor and nothing above it.
+
+
+\subsection{The exceptional locus}
+
+Write $c_n=E_n/\lpf(E_n)$ for the discarded cofactor and $D_n=1-4c_n$.
+Then $E_{n+1}=c_np^2-p+1$ with $p=\lpf(E_n)$, the norm of $p\,\omega_n-1$
+in the order $\ZZ[\omega_n]$, $\omega_n^2-\omega_n+c_n=0$, and
+$4c_nE_{n+1}=(2E_n-1)^2-D_n$
+(\lean{EM/Population/QuadraticStep.lean}{euclid\_succ\_eq\_norm}); hence
+every prime factor of $E_{n+1}$ has $D_n$ a square modulo it
+(\lean{EM/Population/QuadraticStep.lean}{isSquare\_disc\_of\_dvd}).  A
+prime~$q$ is \emph{frozen} if $D_n$ is eventually a non-square mod~$q$; a
+frozen prime is missing, every $q\equiv2\ (3)$ outside the bag is frozen on
+a Sylvester tower, and
+\[
+  \MC\Rightarrow\mathrm{NoFrozen}\Rightarrow\Cinf
+\]
+(\lean{EM/Population/QuadraticStep.lean}{frozen\_rung}), the first rung whose
+content is a splitting condition.  If $D_n$ is a non-square modulo every
+large $q\equiv2\ (3)$ then $D_n=-3s^2$
+(\lean{EM/Population/UniformFreezing.lean}{confined\_of\_uniformly\_frozen};
+Jacobi reciprocity and Dirichlet): the stage is \emph{confined} to the
+tower's field, $c_n=3t^2+3t+1$.  On a confined stage every prime
+$\ell\equiv2\ (3)$ dividing $E_{n+1}$ divides it twice
+(\lean{EM/Population/Confinement.lean}{sq\_dvd\_of\_confined}), on two
+consecutive confined stages the multiplier is $\equiv1\ (3)$
+(\lean{EM/Population/Confinement.lean}{multiplier\_one\_mod\_three\_of\_confined\_pair}),
+and an orbit confined from some stage on refutes MC
+(\lean{EM/Population/Confinement.lean}{not\_mc\_of\_confinedRun}).
+Consecutive confined stages are not a bare coincidence: for $p=3k+1$,
+$(pc-1)p+1=p'c'$ with $c=12k^2+18k+7$, $p'=p^2+3p+3=\Phi_3(p{+}1)$,
+$c'=12k^2+6k+1$, both cofactors cuban
+(\lean{EM/Population/Confinement.lean}{confined\_pair\_of\_shifted\_tower})---a
+\emph{shifted tower} next to the tower's $p\mapsto\Phi_3(p{-}1)$; in
+$\ZZ[\omega]$ the two are the two conjugation choices of one factorization
+(\lean{EM/Population/EisensteinFamilies.lean}{shifted\_tower\_factorization}),
+and among families with linear conductors they are the only integral ones
+(\lean{EM/Population/EisensteinFamilies.lean}{linear\_family\_root}).
+
+These point at one conjecture, uniform in the seed: $\mathrm{GenMC}(m)\iff
+C(m)=0$ (\lean{EM/Population/Dichotomy.lean}{DichotomyConjecture}), an orbit
+misses a coprime prime iff it is eventually a Sylvester tower.  The
+direction $\Rightarrow$ is a theorem for every seed
+(\lean{EM/Population/QuadraticStep.lean}{sgrowth\_eq\_zero\_of\_genMC}); under
+the conjecture MC reduces to $\Cinf$
+(\lean{EM/Population/Dichotomy.lean}{mc\_of\_dichotomy}); its algebraic part
+holds---if the multiplier is a polynomial in the Euclid number from some
+stage on, the polynomial is $x$ and the orbit is a tower
+(\lean{EM/Population/Dichotomy.lean}{algebraic\_multiplier\_implies\_tower});
+and over $\FF_2[t]$, where the floor is a theorem, it implies the
+function-field conjecture outright
+(\lean{EM/Population/Dichotomy.lean}{ffMC\_two\_of\_ffDichotomy}), so one
+provable miss there would refute it.  The weakest open class statement,
+infinitely many $a(n)\equiv3\ (4)$, holds iff $P_n\bmod 8$ is not eventually
+constant
+(\lean{EM/Population/ClassThreeModFour.lean}{classInfinitude\_three\_mod\_four\_iff\_prod\_mod\_eight}),
+and its failure has no quadratic-field locus: $4c_n-1$ is never a perfect
+square, since $(2E_n-1)^2+s^2$ would make $E_{n+1}\equiv3\ (4)$ a sum of two
+squares
+(\lean{EM/Population/ClassThreeModFour.lean}{four\_cofactor\_sub\_one\_not\_square}).
+Two counting calibrations close the section: a seed missing~$q$ forces at
+least $\log_2\log X$ missing seeds below~$X$
+(\lean{EM/Population/GapPrinciple.lean}{misses\_eq\_empty\_or}), against the
+$o(X)$ the seed-average law provides; and with $S(x)$ the number of
+Euclid--Mullin primes $\le x$, $\MC\Rightarrow S(x)\sim\pi(x)\Rightarrow
+S(x)\ge c\,\pi(x)\Rightarrow\RD$
+(\lean{EM/Population/CoverageLadder.lean}{coverage\_ladder}), not even the
+last rung being known.  None of this moves an open rung; it says where MC
+could fail and with what structure.
 
 \section{Population laws}
 \label{sec:population}
