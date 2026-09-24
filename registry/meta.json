@@ -1,8 +1,8 @@
-{"published": 388,
- "proved": 311,
+{"published": 410,
+ "proved": 328,
  "project": "EM.Meta.Registry",
- "open_points": 21,
+ "open_points": 25,
  "lean_toolchain": "leanprover/lean4:v4.33.0",
- "conditional": 77,
+ "conditional": 82,
  "ca_hash_mode": "name-based",
  "ca_hash_level": "L0"}

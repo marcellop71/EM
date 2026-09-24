@@ -60,6 +60,10 @@ import EM.Population.SylvesterTower
 import EM.Population.ClassInfinitude
 import EM.Population.HeadDynamics
 import EM.Population.SeedHead
+import EM.Population.GapPrinciple
+import EM.Population.CoverageLadder
+import EM.Population.Dichotomy
+import EM.Population.QuadraticStep
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -849,6 +853,46 @@ attribute [publish] ArborealTower.infinitelyManyComposite_iff_witness_proper
 attribute [publish] ArborealTower.witness_eq_self_of_perpetual
 attribute [publish] ArborealTower.minFac_level_injective
 -- unpublished 2026-08-18 (review): `ArborealTower.arboreal_tower_landscape` is a conjunction of already-published facts (documentation, not content)
+
+-- ============================================================================
+-- 2026-09-24: gap principle, coverage ladder, dichotomy conjecture, frozen rung
+-- (docs/analysis/euclid_systems_theory_2026-09-23.md)
+-- ============================================================================
+
+/-! A missed prime forces `≳ log log X` missing seeds below `X` (orbit plus odd halves);
+backward branches of the orbit are hitting problems for *captured* primes (the deleted
+walks); the coverage rungs `MissingDensityZero ⟹ PositiveDensity ⟹ RD`; the dichotomy
+conjecture `GenMC(m) ⟺ sgrowth m = 0` with its algebraic part (`algebraic ⟹ tower`) and its
+function-field consequences; the Euclid step as a norm, the splitting law, and the frozen rung
+`MC ⟹ NoFrozen ⟹ (C∞)`. -/
+
+attribute [publish] GapPrinciple.card_misses_ge
+attribute [publish] GapPrinciple.card_misses_ge_of_squarefree
+attribute [publish] GapPrinciple.misses_eq_empty_or
+attribute [publish] GapPrinciple.mem_seq_of_card_misses_lt
+attribute [publish] GapPrinciple.isPreimage_div_iff
+attribute [publish] GapPrinciple.three_dvd_prod_div_three_succ_iff
+attribute [open_point] CoverageLadder.MissingDensityZero
+attribute [open_point] CoverageLadder.PositiveDensity
+attribute [publish] CoverageLadder.abel_identity
+attribute [publish] CoverageLadder.rd_of_positiveDensity
+attribute [publish] CoverageLadder.coverage_ladder
+attribute [publish] Dichotomy.algebraic_multiplier_implies_tower
+attribute [publish] Dichotomy.algebraic_recursion_implies_tower
+attribute [open_point] Dichotomy.DichotomyConjecture
+attribute [publish] Dichotomy.mc_of_dichotomy
+attribute [publish] Dichotomy.ffMC_two_of_ffDichotomy
+attribute [publish] Dichotomy.ffMC_of_ffDichotomy_one_mod_three
+attribute [publish] Dichotomy.stableTower_ffGrowthConstant_ne_zero
+attribute [publish] QuadraticStep.euclid_succ_eq_norm
+attribute [publish] QuadraticStep.isSquare_disc_of_dvd
+attribute [open_point] QuadraticStep.NoFrozen
+attribute [publish] QuadraticStep.frozen_missing
+attribute [publish] QuadraticStep.frozen_of_perpetual
+attribute [publish] QuadraticStep.infinitelyManyComposite_of_noFrozen
+attribute [publish] QuadraticStep.frozen_rung
+attribute [publish] QuadraticStep.sgrowth_eq_zero_of_genMC
+
 -- ============================================================================
 -- Registry generation (runs during `lake build`)
 -- ============================================================================

@@ -1097,7 +1097,35 @@ small infinitely often: $\lpf(E_n) \le \sqrt{E_n}$; $\lpf(E_n) <
 Every rung is open.  So any proof of MC contains a proof of
 $(\mathrm{C}\infty)$, a Fermat-shaped compositeness statement about a
 Sylvester-type tower with an unknown seed, for which no method exists
-(\S\ref{sec:cinfty}).  The first genuinely new idea has to land on the
+(\S\ref{sec:cinfty}).  Two further families of rungs sit between MC
+and RD.  \emph{Coverage}: with $S(x)$ the number of Euclid--Mullin
+primes $\le x$,
+$\MC\Rightarrow\mathrm{MissingFinite}\Rightarrow S(x)\sim\pi(x)
+\Rightarrow S(x)\ge c\,\pi(x)\Rightarrow\mathrm{RD}$
+(\lean{EM/Population/CoverageLadder.lean}{coverage\_ladder}, by Abel
+summation); not even the positive-proportion rung is known, the only
+proved lower bound being $S(x)\ge\log_2\log_3 x$
+(\lean{EM/Population/GapPrinciple.lean}{card\_misses\_ge}).
+\emph{Arithmetic}: each Euclid number is a norm from the imaginary
+quadratic order of discriminant $D_n=1-4c_n$, $c_n=E_n/\lpf(E_n)$
+(\lean{EM/Population/QuadraticStep.lean}{euclid\_succ\_eq\_norm}), and
+every prime factor of $E_{n+1}$ has $D_n$ a square modulo it
+(\lean{EM/Population/QuadraticStep.lean}{isSquare\_disc\_of\_dvd}); a
+prime for which $D_n$ is eventually a non-square is \emph{frozen} and
+missing, every $q\equiv2\ (3)$ is frozen on a Sylvester tower, and
+$\MC\Rightarrow\mathrm{NoFrozen}\Rightarrow(\mathrm C\infty)$
+(\lean{EM/Population/QuadraticStep.lean}{frozen\_rung}) is the first rung
+whose content is a splitting condition rather than a size condition.
+The conjecture these rungs point at is a dichotomy, uniform in the seed:
+$\mathrm{GenMC}(m)\iff(\mathrm C\infty)(m)$
+(\lean{EM/Population/Dichotomy.lean}{DichotomyConjecture}); its
+algebraic part is exactly the tower---an orbit whose multiplier is a
+polynomial in the Euclid number is a Sylvester tower
+(\lean{EM/Population/Dichotomy.lean}{algebraic\_multiplier\_implies\_tower})---and
+over $\FF_2[t]$ and $\FF_p[t]$, $p\equiv1\ (3)$, where the floor is a
+theorem, the dichotomy implies the function-field conjecture outright
+(\lean{EM/Population/Dichotomy.lean}{ffMC\_two\_of\_ffDichotomy}).
+The first genuinely new idea has to land on the
 bottom rung, because nothing above it can be proved first.  What can be
 attacked now is the \emph{conditional} statement $(\mathrm{C}\infty)
 \Rightarrow \MC$; we checked that assuming $(\mathrm{C}\infty)$ helps

@@ -48,8 +48,11 @@ The backward structure of `T` is explicit:
 So every ancestor of `P_b` divides `P_b` (`grandOrbit_two_dvd_prod`), and an extra branch at
 `P_b` is a mod-`p²` coincidence of heuristic probability `1/p` for each of the `b+1` orbit
 primes.  The backward tree of the Euclid–Mullin orbit is therefore expected to be
-`O(Σ 1/p_j)`-branching and the class of `2` of polylogarithmic size — density `0`, which
-would make `grandOrbit_transfer` vacuous.  None of that is proved, and proving the class
+`O(Σ 1/p_j)`-branching.  (2026-09-24: the size of the class of `2` below `X` is *unknown*;
+the deletion sets are not restricted to single primes, and a heuristic count over all deletion
+sets gives `exp((log X)^{1/2+o(1)})`, far above polylogarithmic and far below `X^c` — see
+`docs/analysis/euclid_systems_theory_2026-09-23.md` §8.2 and `GapPrinciple.isPreimage_div_iff`.)
+Either way the class has density `0`, which would make `grandOrbit_transfer` vacuous.  None of that is proved, and proving the class
 thin would require knowledge of the orbit mod `p²` (a CME-type statement one level up).
 The transfer principle itself is unconditional; the open question it isolates is whether
 *any* GenMC-preserving relation has a fat class of `2`.
