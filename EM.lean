@@ -24,6 +24,7 @@ import EM.ForMathlib.ZModDftParseval
 import EM.ForMathlib.CoprimeAffineBlock
 import EM.ForMathlib.PeriodicDensity
 import EM.ForMathlib.CharNormOne
+import EM.ForMathlib.Mertens
 import EM.CME.Variants
 import EM.Core.Conjectures
 import EM.Core.Defs
