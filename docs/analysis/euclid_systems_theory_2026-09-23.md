@@ -810,3 +810,132 @@ equation is explicit enough to be searched.  What is not available: any mechanis
 termination.  I would not attack (3) directly; I would keep it as the cleanest *test case*
 for a future mechanism, because a mechanism that cannot show that cuban cofactors stop must
 fail on the general problem, and one that can is already saying something about `lpf`.
+
+## 13. The algebra of confined runs (2026-09-24; theory only, no computation)
+
+### 13.1 Eisenstein form
+
+Put `δ_n = (1 + s_n√−3)/2 ∈ ℤ[ω]`, `ω = (1+√−3)/2`, `N(x + yω) = x² + xy + y²`.  A confined stage
+is one with `c_n = N(δ_n)`, and `δ_n` is the root `ω_n` of `y² − y + c_n` of §1, so the norm
+identity reads
+
+    E_{n+1} = N(p_{n+1} δ_n − 1),        4E_{n+1} = N((p − 2) + s p √−3)
+
+(`EisensteinFamilies.four_euclid_succ_eq_norm`).  The next stage is confined iff
+`N(p δ_n − 1) = p_{n+2} · N(δ_{n+1})` with `δ_{n+1}` again of real part `1/2`.  Since `ℤ[ω]` is
+a PID this says: `p δ_n − 1` and `π_{n+2} δ_{n+1}` (`N(π) = p_{n+2}`) have the same prime ideal
+factors up to conjugation of each factor and a unit.  A **polynomial family** — a family of
+confined pairs indexed by `p` with `s, s', p'` polynomial in `p` — is the case where the
+conjugation pattern is uniform, i.e. a factorization in the unique factorization domain
+`ℤ[ω][p]`:
+
+    (F)   p δ(p) − 1 = ε · π'(p) · δ'(p)^{σ},   σ ∈ {id, conj},   N(π') = p'(p),   δ' = (1 + s'(p)√−3)/2.
+
+### 13.2 The two known families are the two conjugation choices
+
+* **Tower** (`s = 1`, `δ = ω`, a unit):  `p ω − 1 = ω · (p − ω̄)`, so `π' = p − ω̄`,
+  `p' = N(p − ω̄) = p² − p + 1 = Φ₃(p − 1)`, `δ' = ω = δ`, `σ = id`
+  (`tower_factorization`: `2((p−2) + p√−3) = (1+√−3)(2p − 1 + √−3)`).
+* **Shifted tower** (`s = (4p+5)/3`):  `p δ − 1 = −π' · δ̄'` with `π' = (p+1) + ω̄`,
+  `p' = N((p+1) + ω̄) = p² + 3p + 3 = Φ₃(p + 1)`, `δ' = (1 + s'√−3)/2`, `s' = (4p−1)/3`, `σ = conj`
+  (`shifted_tower_factorization`: `2√−3·3α = −3(2p + 3 − √−3)(4p − 1 + √−3)`, using
+  `2p − ω̄ = √−3 · δ̄'`).
+
+So the tower and the shifted tower are the *same* mechanism with the two possible conjugation
+choices of the `δ`-factor, and the two Eisenstein primes `p − ω̄`, `(p+1) + ω̄` at distance one
+from `p`.  The tower is degenerate because its `δ` is a unit (`N(δ) = 1`, a prime stage); the
+shifted tower is the first non-degenerate solution of (F).
+
+### 13.3 Classification of linear families
+
+Take `s = m p + r`, `s' = m p + v` (the leading coefficients must agree up to sign), and
+`p' = p² + α p + β` monic.  Comparing coefficients in `N(2(pδ−1)) = p'(p) · (1 + 3s'(p)²)`:
+
+    β (3v²+1) = 4,     (3v²+1) α + 6 m v β = −4,     2r = 2v + m α,     m α²/4 − v α − m β = 0.
+
+With `w = 3v² + 1` the last equation becomes `36 v m³ + 12 w m² + 3 v w² m + w³ = 0`, which
+factors as `(3 v m + w)(12 m² + w²)` (`linear_family_cubic`, `linear_family_root`).  The second
+factor is positive, so `m = −w/(3v)`, and then `α = β = 4/w`, `r = v − 2/(3v)`.  Every linear
+family is therefore
+
+    p' = p² + (4/w) p + 4/w,   s = (v − 2/(3v)) − (w/(3v)) p,   s' = v − (w/(3v)) p,   w = 3v² + 1,
+
+a one-parameter *rational* family indexed by `v ∈ ℚ^×`, plus the degenerate branch `m = 0`
+(the tower, `r = ±1`).  Integrality of `p'` needs `4/w ∈ ℤ`: `w ∈ {1, 2, 4, 4/3}`.  `w = 1` is
+`v = 0` (tower); `w = 4/3` is `v = ±1/3`, the shifted tower; `w = 4` is `v = ±1`, giving
+`p' = Φ₃(p)` and `s = (4p−1)/3` but `s' = (4p−3)/3 ∉ ℤ` for `p ≡ 1 (3)` — a rational family
+with no integral points on the relevant residue class; `w = 2` has no rational `v`.
+**The tower and the shifted tower are the only integral linear families** (with monic `p'`;
+a non-monic `p' = λ p² + …` needs `λ` a rational square and is a small extension).
+
+### 13.4 Length three and reducibility towers
+
+Along a polynomial family the next Euclid polynomial is `E_{n+2}(p) = N(p'(p) δ'(p) − 1)`, with
+`p' δ' − 1` a polynomial of degree `deg p' + deg s'` over `ℚ(ω)`.  If it is *irreducible* in
+`ℚ(ω)[p]`, the only polynomial continuation is a tower step (`p'' = E_{n+2}(p)` itself, `s'' = 1`),
+which is confined but prime.  A *composite* confined continuation needs `p' δ' − 1` reducible
+with a factor of norm `1 + 3(polynomial)²`.  For the shifted tower `p' δ' − 1` is a cubic in `p`
+over `ℚ(ω)`; reducibility means a root in `ℚ(ω)`, a finite check by the rational root theorem
+in `ℤ[ω]` (not carried out; the three instances found did not continue, consistent with
+irreducibility).  So the object behind (3) is a **reducibility tower**: a polynomial orbit
+`E_k(p)` with `E_{k+1} = (E_k − 1) q_k + 1`, `q_k ∣ E_k` an irreducible factor, *all* `E_k`
+reducible — the exact opposite of the generic tower of `GenericTower.lean`, where every level
+polynomial is irreducible and the only polynomial orbit is the tower itself.
+
+### 13.5 What (3) is, in this language
+
+The exceptional locus of (3) is stratified:
+
+* the **algebraic part** — the union of all polynomial families, each of finite composite
+  length unless an infinite reducibility tower exists;
+* the **transcendental part** — confined pairs of the integer orbit lying on no family
+  (three of the six pairs found in §12.3 may be of this kind).
+
+Hence (3) splits into an algebraic question and a #90 question:
+
+1. *Is there an infinite polynomial confined orbit with infinitely many reducible stages?*
+   This is about factorizations in `ℤ[ω][p]`, in principle decidable level by level, and the
+   honest algebraic core.  Conjecture: no — the length of composite confined polynomial
+   families is bounded (perhaps by 2), by the same principle that makes the generic tower
+   irreducible (Hilbert irreducibility, Capelli): reducibility of a specialization is the
+   exception, and an infinite sequence of reducible Euclid polynomials would be an identity
+   the generic tower forbids.
+2. *Does the integer orbit meet the union of the finite families infinitely often, or is it
+   confined by coincidence infinitely often?*  Each family is a curve in the `(p, s)`-plane,
+   the union is thin, and this is the orbit-statistics wall.
+
+The Zilber–Pink analogy is now literal rather than metaphorical: (3) has an algebraic part
+made of special curves (the tower, the shifted tower, the rational families of 13.3) and a
+transcendental part; the functional equation (F) plays the role of the Ax–Schanuel input
+that classifies the special curves; and the conjecture "the algebraic part has bounded length"
+is the analogue of "there are only finitely many special subvarieties of a given complexity".
+
+### 13.6 Analogies, with verdicts
+
+* **Hilbert irreducibility / Capelli.**  The right frame for question 1: polynomial orbits
+  are generic, integer orbits are specializations, and `GenericTower.lean` already says the
+  generic orbit is irreducible at every level.  A reducibility tower would be a polynomial
+  identity of infinite length; none is known and the classification of 13.3 gives none of
+  length three among linear families.  *Verdict: the tool that matches question 1.*
+* **Markov / Vieta.**  The cubic `(3vm + w)(12m² + w²)` is a Markov-type factorization (a
+  linear factor times a definite quadratic), which is why the linear families form a single
+  rational curve.  *Verdict: explains the classification, no descent.*
+* **CM conductors.**  Confined stages are orders `ℤ[s_n ω]`; a family is a polynomial law for
+  the conductor.  *Verdict: language.*
+* **Function fields.**  Over `𝔽_q[t]` a polynomial family *is* an orbit (`p := t` or any
+  polynomial) whenever the least-degree conditions hold, so families are exactly the confined
+  orbits of the generic dynamics, and integer confined pairs on a family are its
+  specializations — the same specialization principle as the generic tower.  *Verdict: the
+  place to decide question 1 first.*
+* **Schinzel / Bunyakovsky.**  Realizing a family over `ℤ` needs its polynomials
+  simultaneously prime; this is what makes length-2 confined runs infinite in number
+  conjecturally.  *Verdict: the bridge from families to integer orbits, conjectural.*
+
+### 13.7 Verdict
+
+Question (3) is now two questions.  The algebraic one — bounded length of composite confined
+polynomial families, i.e. no infinite reducibility tower — is a statement about factorizations
+in `ℤ[ω][p]` that can be attacked level by level and whose first level is completely classified
+here (tower, shifted tower, and nothing else among linear families).  The other is #90.  The
+theory's contribution is that the "probability-zero" reading of (3) was wrong exactly where
+Zilber–Pink says it should be, and that the correction is computable algebra.
