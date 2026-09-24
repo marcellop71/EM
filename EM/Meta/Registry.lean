@@ -66,6 +66,7 @@ import EM.Population.Dichotomy
 import EM.Population.QuadraticStep
 import EM.FunctionField.CharTwoHead
 import EM.Population.Confinement
+import EM.Population.UniformFreezing
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -901,6 +902,10 @@ attribute [publish] Confinement.dvd_of_dvd_sq_add_three_sq
 attribute [publish] Confinement.not_dvd_euclid_of_dvd_euclid_succ
 attribute [publish] Confinement.sq_dvd_of_confined
 attribute [publish] Confinement.multiplier_not_two_mod_three
+attribute [publish] UniformFreezing.jacobiSym_neg_one_mod_four
+attribute [publish] UniformFreezing.exists_jacobiSym_eq_neg_one
+attribute [publish] UniformFreezing.eq_neg_three_mul_sq_of_nonsquare_two_mod_three
+attribute [publish] UniformFreezing.confined_of_uniformly_frozen
 
 -- ============================================================================
 -- Registry generation (runs during `lake build`)

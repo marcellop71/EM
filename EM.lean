@@ -185,6 +185,7 @@ import EM.Population.CoverageLadder
 import EM.Population.Dichotomy
 import EM.Population.QuadraticStep
 import EM.Population.Confinement
+import EM.Population.UniformFreezing
 import EM.Population.AdelicShadow
 import EM.Population.SquarefreeSeed
 import EM.Population.AlmostAllGenMC

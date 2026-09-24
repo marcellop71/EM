@@ -598,8 +598,10 @@ Between the tower and a single frozen prime there is an intermediate locus:
 * **UniformlyFrozenClass**: `χ_q(D_n) = −1` for all `n ≥ N` and all primes `q ≡ 2 (3)` beyond
   a bound `y` *independent of `n`*.
 
-**Theorem A (paper).**  If at a single stage `n` the discriminant `D_n` is a non-square modulo
-every sufficiently large prime `q ≡ 2 (mod 3)`, then `D_n = −3 s²`.
+**Theorem A (Lean: `EM/Population/UniformFreezing.lean`,
+`eq_neg_three_mul_sq_of_nonsquare_two_mod_three`, `confined_of_uniformly_frozen`).**  If at a
+single stage `n` the discriminant `D_n` is a non-square modulo every sufficiently large prime
+`q ≡ 2 (mod 3)`, then `D_n = −3 s²`.
 *Proof.*  `D_n ≡ 1 (mod 4)` gives `χ_q(D_n) = (q / |D_n|)` (Jacobi).  If `3 ∤ D_n`, choose
 `q ≡ 1 (mod |D_n|)`, `q ≡ 2 (mod 3)` by Dirichlet: `χ_q(D_n) = +1`.  If `3 ∣ D_n` and
 `M = |D_n|/3` is not a square, the Jacobi character mod `M` is nontrivial, so some class `b`
@@ -652,6 +654,18 @@ analogies, kept open:
   any `𝔽_p[t]` is open and would be a decisive calibration: it would show confinement does
   not force the tower where every other tool is a theorem.
 
+### 11.4a Calibration over `𝔽_p[t]` (computation, not evidence)
+
+Thirty stages from six seeds over `p = 3, 5, 7, 11, 13`, tagging each stage as a tower stage
+(`c_n = 1`), constant-field confined (`1 − 4c_n = a·s²`, `a` a non-square constant), split
+(`a` a square) or neither.  Over `𝔽_5` the seeds `X, X+1, X+2, X²+1, X(X+1)` are perpetual
+towers (all confined trivially); `X²+X+2` is not a tower.  Isolated confined *composite*
+stages do occur at low degree — `𝔽_11`, seed `X²+1`, stage 1: `D = 7(t+4)²`; `𝔽_3`, seed
+`X²+1`, stage 3: `D = 2(t³+1)²` — each followed by an unconfined stage; no confined run of
+length two was seen anywhere.  So single-stage confinement is an ordinary low-degree
+coincidence (probability `≍ p^{−deg/2}`), and question (3) is genuinely about *runs*: the
+right statement is "no orbit is confined at all large stages unless it is a tower".
+
 ### 11.5 Verdict
 
 "Frozen ⟹ tower" is not one question but three.  Two of them (1, 2) are the familiar walls
@@ -659,7 +673,9 @@ in new clothing and should not be attacked.  The third — **Confined ⟹ tower*
 genuinely Diophantine statement about the conductor of the tower's field along the orbit,
 the first hypothesis with a positive divisibility consequence, and the natural next
 research question of the theory.  Its function-field form is the right first test.  Two
-concrete sub-targets: (a) Theorem A in Lean (Jacobi reciprocity + Dirichlet);
+concrete sub-targets: (a) Theorem A in Lean — done (`UniformFreezing.lean`: reciprocity for a
+negative discriminant `≡ 1 (4)`, the nontrivial Jacobi character of an odd non-square,
+Dirichlet in a class mod `3M`);
 (b) over `𝔽_2[t]` and `𝔽_5[t]`, decide whether a confined stage other than a tower stage
 ever occurs in the computed branches — a finite question that calibrates (3).  Over `𝔽_2[t]`
 the discriminant degenerates (`4 = 0`) and confinement reads `c_n + 1 ∈ ℘(𝔽_2[t])`,
