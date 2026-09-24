@@ -562,3 +562,107 @@ else.
 Lean added: `EM/FunctionField/CharTwoHead.lean` — classification of monic irreducibles of
 degree `≤ 2` over `𝔽_2`, `ffMCBelow_three` (every sequence has collected everything below
 degree 3), `cubic_capture`.
+
+## 11. Item 3: does Frozen force the tower? (2026-09-24)
+
+### 11.1 The question in coordinates
+
+Write `u_n = c_n mod q` for the cofactor residue.  In walk coordinates the step is
+`w_{n+1} = w_n(w_n+1)/u_n` (the cofactor's second shadow, logic memo §7.3), and
+
+    Frozen(q)  ⟺  u_n ∈ U_q := {u : χ_q(1 − 4u) = −1} for all n ≥ N,
+
+a set of exactly `(q−1)/2` residues (`∑_m χ(m² + bm) = −1`).  At position `w` the allowed
+multipliers form the half-set `A(w) = {m : χ(m(m − 4(w+1))) = −1}`, and the death class
+`m = −w⁻¹` is never in it (`m(m − 4(w+1)) = ((2w+1)/w)²`), which is the splitting law again.
+So Frozen is a half-set confinement of the multiplier at every step, against the one-class
+avoidance of an unfrozen miss.  It is *not* a propagating congruence invariant of `P_n`
+(the No-Invariant Theorem does not apply and does not need to): `u_{n+1} = (u_n m_n² − m_n + 1)/m_{n+1}`
+with `m_{n+1}` free, so nothing propagates.  Frozen is an *anatomical* congruence, on the
+cofactor, and holding it forever is a probability-zero event with no mechanism — unless the
+cofactor is `1`.
+
+### 11.2 The decomposition: three questions, one of them provable
+
+Between the tower and a single frozen prime there is an intermediate locus:
+
+    tower (c_n = 1)  ⊂  Confined (D_n = −3 s_n²)  ⊂  UniformlyFrozenClass  ⊂  Frozen(q)  ⊂  Missing(q)
+
+* **Confined** (`Confinement.Confined`): the discriminant stays in the tower's field
+  `ℚ(√−3)`, with conductor `s_n`; `c_n = 3t² + 3t + 1 = (t+1)³ − t³` is a cuban number and
+  `E_{n+1} = N_{ℚ(ω)}(p ω_n − 1)` with `ω_n = −t + (2t+1)ω ∈ ℤ[ω]`.  This is the analogue of a
+  constant-field extension — the `𝔽_5[t]` mechanism — and it is exactly the room between
+  "special" and "weakly special" in the Zilber–Pink dictionary: the tower is the maximal
+  order (`s = 1`, "`j = 0`"), a confined orbit runs through orders of `ℚ(√−3)` of growing
+  conductor, like CM points of one field and unbounded conductor.
+* **UniformlyFrozenClass**: `χ_q(D_n) = −1` for all `n ≥ N` and all primes `q ≡ 2 (3)` beyond
+  a bound `y` *independent of `n`*.
+
+**Theorem A (paper).**  If at a single stage `n` the discriminant `D_n` is a non-square modulo
+every sufficiently large prime `q ≡ 2 (mod 3)`, then `D_n = −3 s²`.
+*Proof.*  `D_n ≡ 1 (mod 4)` gives `χ_q(D_n) = (q / |D_n|)` (Jacobi).  If `3 ∤ D_n`, choose
+`q ≡ 1 (mod |D_n|)`, `q ≡ 2 (mod 3)` by Dirichlet: `χ_q(D_n) = +1`.  If `3 ∣ D_n` and
+`M = |D_n|/3` is not a square, the Jacobi character mod `M` is nontrivial, so some class `b`
+has `(b/M) = −1`; primes `q ≡ b (mod M)`, `q ≡ 2 (mod 3)` give `(q/|D_n|) = (q/3)(q/M) = +1`.
+Hence `|D_n|/3` is a square. ∎
+So **UniformlyFrozenClass ⟹ Confined from `N` on**, and the converse holds trivially.  The
+three questions are then:
+
+1. *Non-uniform ⟹ uniform?*  Frozen at each `q ≡ 2 (3)` with its own threshold `N(q)`, versus
+   one threshold for all: the §G / #176 quantifier wall, verbatim.  Not attackable.
+2. *Frozen at one `q` ⟹ frozen at a class?*  A statement about the cofactor residues at
+   infinitely many primes from one: #90.  Not attackable.
+3. **Confined ⟹ tower?**  Purely Diophantine: if `4c_n − 1 = 3 s_n²` for all large `n`, is
+   `s_n = 1` eventually?  This is the arithmetic core, and it is new.
+
+### 11.3 What confinement forces (Lean: `EM/Population/Confinement.lean`)
+
+Confinement is the first hypothesis in the project from which a **positive divisibility
+fact** follows (screen 1): from `4 c_n E_{n+1} = (2E_n − 1)² + 3 s_n²` and the inertness of
+`ℓ ≡ 2 (3)` in `ℚ(√−3)` (`dvd_of_dvd_sq_add_three_sq`, via `not_isSquare_neg_three`), every
+prime `ℓ ≡ 2 (mod 3)` dividing `E_{n+1}` divides it **twice** (`sq_dvd_of_confined`; consecutive
+Euclid numbers are coprime, `not_dvd_euclid_of_dvd_euclid_succ`, so `ℓ ∤ c_n`).  Hence on a
+confined orbit with squarefree Euclid numbers every multiplier is `≡ 1 (mod 3)`
+(`multiplier_not_two_mod_three`): confinement is a strong form of `¬CI(2 mod 3)`, and
+`CI(2 mod 3) ⟹ (C∞)` is on file.  Squarefreeness of the Euclid numbers is the same open
+question as for Sylvester's sequence (Vardi).
+
+### 11.4 The confined step equation
+
+On a confined orbit, consecutive stages satisfy the norm equation
+
+    (p − 2)² + 3 (p s)² = p' (3 s'² + 1),      p = p_{n+1}, s = s_n, p' = p_{n+2}, s' = s_{n+1},
+
+i.e. `4E_{n+1} = N((p−2) + ps√−3) = N(π') · N(1 + s'√−3)` in `ℤ[ω]`.  The tower is `s = s' = 1`,
+`p' = p² − p + 1`.  So a confined orbit is a chain of integer points on the quadric
+`X² + 3Y² = Z(3W² + 1)` linked by `Y = sX`-type relations and the greedy rule.  Three
+analogies, kept open:
+* *Squares in recurrences* (Cohn, Bugeaud–Mignotte–Siksek): "`(4c_n − 1)/3` is a perfect
+  square for all large `n`" is a square-in-a-recurrence condition, the kind of statement that
+  is finite for linear recurrences.  Our recurrence is nonlinear and carries the `lpf`
+  twist; the finiteness technology (Baker, modularity) does not apply as it stands.
+* *CM points of one field with unbounded conductor* (the tractable case of André–Oort):
+  confined stages are orders `ℤ[s_n ω]`; the analogy suggests confinement is the *easy*
+  side of the dichotomy, where the Galois theory (ring class fields of `ℚ(√−3)`) is explicit.
+  The obstruction of §9.3 persists: the class group of `ℤ[s_n ω]` acts on the ideals above
+  `E_{n+1}`, i.e. on the tree, not on the orbit.
+* *Function fields*: over `𝔽_p[t]` a confined orbit has `D_n = a·s_n²` with `a` a
+  non-square constant, and the constant-field mechanism forces nothing about `s_n`; the
+  `𝔽_5[t]` towers are confined with `s_n = 1`.  Whether a confined non-tower orbit exists over
+  any `𝔽_p[t]` is open and would be a decisive calibration: it would show confinement does
+  not force the tower where every other tool is a theorem.
+
+### 11.5 Verdict
+
+"Frozen ⟹ tower" is not one question but three.  Two of them (1, 2) are the familiar walls
+in new clothing and should not be attacked.  The third — **Confined ⟹ tower** — is a
+genuinely Diophantine statement about the conductor of the tower's field along the orbit,
+the first hypothesis with a positive divisibility consequence, and the natural next
+research question of the theory.  Its function-field form is the right first test.  Two
+concrete sub-targets: (a) Theorem A in Lean (Jacobi reciprocity + Dirichlet);
+(b) over `𝔽_2[t]` and `𝔽_5[t]`, decide whether a confined stage other than a tower stage
+ever occurs in the computed branches — a finite question that calibrates (3).  Over `𝔽_2[t]`
+the discriminant degenerates (`4 = 0`) and confinement reads `c_n + 1 ∈ ℘(𝔽_2[t])`,
+`℘(f) = f² + f` (Artin–Schreier; the tower has `c_n = 1`).  Checked on the 40-stage branches
+of §10.2: the only confined stages are the four irreducible ones (stages 0, 1, 2, 12); no
+composite stage is confined.  Consistent with (3), and no more than that.

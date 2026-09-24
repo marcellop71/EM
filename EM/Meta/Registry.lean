@@ -65,6 +65,7 @@ import EM.Population.CoverageLadder
 import EM.Population.Dichotomy
 import EM.Population.QuadraticStep
 import EM.FunctionField.CharTwoHead
+import EM.Population.Confinement
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -896,6 +897,10 @@ attribute [publish] QuadraticStep.sgrowth_eq_zero_of_genMC
 attribute [publish] FunctionFieldAnalog.CharTwoHead.monic_irreducible_natDegree_le_two
 attribute [publish] FunctionFieldAnalog.CharTwoHead.ffMCBelow_three
 attribute [publish] FunctionFieldAnalog.CharTwoHead.cubic_capture
+attribute [publish] Confinement.dvd_of_dvd_sq_add_three_sq
+attribute [publish] Confinement.not_dvd_euclid_of_dvd_euclid_succ
+attribute [publish] Confinement.sq_dvd_of_confined
+attribute [publish] Confinement.multiplier_not_two_mod_three
 
 -- ============================================================================
 -- Registry generation (runs during `lake build`)

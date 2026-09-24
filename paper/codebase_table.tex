@@ -201,7 +201,7 @@
 \code{Meta/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 710 \\
 \code{Meta/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 451 \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 219 \\
-\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 904 \\
+\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 909 \\
 \code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 793 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 429 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 129 \\
@@ -260,6 +260,7 @@
 \code{Population/CoverageLadder.lean} & \code{MissingDensityZero}, \code{PositiveDensity} (open points); \code{abel\_identity}; \code{coverage\_ladder}: $\MC\Rightarrow\mathrm{MissingFinite}\Rightarrow S\sim\pi\Rightarrow S\ge c\pi\Rightarrow\mathrm{RD}$ for the counting function $S(x)$ of the EM primes & 275 \\
 \code{Population/Dichotomy.lean} & \code{algebraic\_multiplier\_implies\_tower}, \code{algebraic\_recursion\_implies\_tower}: an algebraic multiplier or recursion law forces the Sylvester tower; \code{DichotomyConjecture} $\mathrm{GenMC}(m)\iff\mathrm{sgrowth}\,m=0$ (open point), \code{mc\_of\_dichotomy}; \code{FFDichotomy} with \code{ffMC\_two\_of\_ffDichotomy}, \code{ffMC\_of\_ffDichotomy\_one\_mod\_three}, \code{stableTower\_ffGrowthConstant\_ne\_zero} & 305 \\
 \code{Population/QuadraticStep.lean} & \code{euclid\_succ\_eq\_norm}: $E_{n+1}=c_np^2-p+1$; \code{isSquare\_disc\_of\_dvd}: every divisor of $E_{n+1}$ has $D_n=1-4c_n$ a square mod it; \code{Frozen}, \code{NoFrozen} (open point), \code{frozen\_missing}, \code{frozen\_of\_perpetual}, \code{frozen\_rung}: $\MC\Rightarrow\mathrm{NoFrozen}\Rightarrow(\mathrm C\infty)$; \code{sgrowth\_eq\_zero\_of\_genMC}: the seeded easy direction of the dichotomy & 247 \\
+\code{Population/Confinement.lean} & \code{Confined}: $D_n=-3s^2$ (the tower's field, conductor $s$); \code{dvd\_of\_dvd\_sq\_add\_three\_sq}: inertness of $\ell\equiv2\ (3)$ in $\mathbb Q(\sqrt{-3})$; \code{not\_dvd\_euclid\_of\_dvd\_euclid\_succ}: consecutive Euclid numbers are coprime; \code{sq\_dvd\_of\_confined}: after a confined stage every prime factor $\equiv2\ (3)$ of $E_{n+1}$ is repeated; \code{multiplier\_not\_two\_mod\_three} & 153 \\
 \midrule
 \multicolumn{3}{l}{\emph{Seed-average program (new)}} \\
 \code{Population/AdelicShadow.lean} & \code{hits\_finite}, \code{eventually\_unit}: every finite place is hit by the Euclid numbers only finitely often, so $E_n\in\mathbb Z_q^\times$ eventually for every $q$; \code{captured\_of\_many\_hits}: more than $\pi(q-1)$ hits force selection of $q$; \code{misses\_iff\_eventually\_unit\_both}: failure of MC at $q$ is ``eventually a $q$-adic unit on $P_n$ and $E_n$''; \code{defect\_eq\_log\_cofactor}: the defect is the log of the discarded cofactor & 171 \\
