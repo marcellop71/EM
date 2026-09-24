@@ -179,6 +179,9 @@ import EM.Population.AlmostAllDensity
 import EM.Population.GrowingRange
 import EM.Population.ProfiniteAttractor
 import EM.Population.GrandOrbit
+import EM.Population.GapPrinciple
+import EM.Population.CoverageLadder
+import EM.Population.Dichotomy
 import EM.Population.AdelicShadow
 import EM.Population.SquarefreeSeed
 import EM.Population.AlmostAllGenMC
