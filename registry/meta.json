@@ -2,7 +2,7 @@
  "proved": 349,
  "project": "EM.Meta.Registry",
  "open_points": 25,
- "lean_toolchain": "leanprover/lean4:v4.33.0",
+ "lean_toolchain": "leanprover/lean4:v4.35.0",
  "conditional": 84,
  "ca_hash_mode": "name-based",
  "ca_hash_level": "L0"}

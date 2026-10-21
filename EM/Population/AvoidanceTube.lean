@@ -69,7 +69,7 @@ theorem tubeRatio_nonneg {F : Finset Nat} (hF : ∀ q ∈ F, 3 ≤ q) :
 /-- tubeRatio F ≤ 1 when all q ∈ F satisfy q ≥ 3. -/
 theorem tubeRatio_le_one {F : Finset Nat} (hF : ∀ q ∈ F, 3 ≤ q) :
     tubeRatio F ≤ 1 :=
-  Finset.prod_le_one (fun q hq => tube_factor_nonneg (hF q hq))
+  Finset.prod_le_one₀ (fun q hq => tube_factor_nonneg (hF q hq))
     (fun q hq => tube_factor_le_one (hF q hq))
 
 /-- tubeRatio is monotone decreasing: F ⊆ G → tubeRatio G ≤ tubeRatio F. -/
@@ -85,7 +85,7 @@ theorem tubeRatio_monotone {F G : Finset Nat}
     _ ≤ 1 * (∏ q ∈ F, ((q : ℝ) - 2) / ((q : ℝ) - 1)) := by
           apply mul_le_mul_of_nonneg_right _ (Finset.prod_nonneg
             (fun q hq => tube_factor_nonneg (hG q (hFG hq))))
-          exact Finset.prod_le_one
+          exact Finset.prod_le_one₀
             (fun q hq => tube_factor_nonneg (hG q (Finset.sdiff_subset hq)))
             (fun q hq => tube_factor_le_one (hG q (Finset.sdiff_subset hq)))
     _ = ∏ q ∈ F, ((q : ℝ) - 2) / ((q : ℝ) - 1) := one_mul _

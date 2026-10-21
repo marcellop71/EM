@@ -586,7 +586,7 @@ theorem no_safe_cycle {α : Type*} (C : Finset α) (δ : α → ℝ) (μ_min : �
     (hδ_upper : ∀ c ∈ C, δ c ≤ 1) :
     ∏ c ∈ C, (1 - δ c) ≤ (1 - μ_min) ^ C.card := by
   rw [← Finset.prod_const]
-  apply Finset.prod_le_prod
+  apply Finset.prod_le_prod₀
   · intro i hi
     linarith [hδ_upper i hi]
   · intro i hi

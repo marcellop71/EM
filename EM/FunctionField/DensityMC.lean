@@ -1304,7 +1304,7 @@ theorem ff_density_pscd (hFF : FFDirichletDensity p) {Q : Polynomial (ZMod p)}
     have hprod_exp : ∏ P ∈ S, (1 - 1 / (p : ℝ) ^ P.natDegree) ≤
         Real.exp (-(∑ P ∈ S, 1 / (p : ℝ) ^ P.natDegree)) := by
       rw [← Finset.sum_neg_distrib, Real.exp_sum]
-      apply Finset.prod_le_prod hfac_nonneg
+      apply Finset.prod_le_prod₀ hfac_nonneg
       intro P _
       have h := Real.add_one_le_exp (-(1 / (p : ℝ) ^ P.natDegree))
       linarith

@@ -404,7 +404,7 @@ private theorem death_error_norm_le (chi : (ZMod q)ˣ →* ℂˣ) (N : ℕ) :
               ≤ ∏ k : Fin N, ‖chiAt q chi (epsWalkFactorFrom 2 (finDecisionExtend σ) k)‖ :=
                 Finset.norm_prod_le _ _
             _ ≤ ∏ _k : Fin N, (1 : ℝ) := by
-                apply Finset.prod_le_prod (fun k _ => norm_nonneg _)
+                apply Finset.prod_le_prod₀ (fun k _ => norm_nonneg _)
                   (fun k _ => chiAt_norm_le_one q chi _)
             _ = 1 := by simp
     _ = ↑(deathCount q N) := by

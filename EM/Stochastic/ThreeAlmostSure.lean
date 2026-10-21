@@ -622,7 +622,7 @@ theorem prod_one_sub_le_exp_neg_sum {x : ℕ → ℝ} (_hx0 : ∀ k, 0 ≤ x k) 
     linarith
   calc ∏ k ∈ Finset.range K, (1 - x k)
       ≤ ∏ k ∈ Finset.range K, Real.exp (-x k) :=
-        Finset.prod_le_prod (fun k _ => by linarith [hx1 k]) (fun k _ => hstep k)
+        Finset.prod_le_prod₀ (fun k _ => by linarith [hx1 k]) (fun k _ => hstep k)
     _ = Real.exp (∑ k ∈ Finset.range K, -x k) := (Real.exp_sum _ _).symm
     _ = Real.exp (-∑ k ∈ Finset.range K, x k) := by rw [Finset.sum_neg_distrib]
 

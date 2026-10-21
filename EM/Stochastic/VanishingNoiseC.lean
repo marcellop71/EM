@@ -163,7 +163,7 @@ theorem twoPointCharProduct_norm_le_one (chi : G →* ℂˣ) (a b : ℕ → G) (
     (hε0 : ∀ k, 0 ≤ ε k) (hε1 : ∀ k, ε k ≤ 1) (N : ℕ) :
     ‖twoPointCharProduct chi a b ε N‖ ≤ 1 := by
   rw [twoPointCharProduct_norm_eq]
-  apply Finset.prod_le_one
+  apply Finset.prod_le_one₀
   · intro k _; exact norm_nonneg _
   · intro k _; exact twoPointCharValue_norm_le_one chi (a k) (b k) (ε k) (hε0 k) (hε1 k)
 
@@ -399,7 +399,7 @@ theorem sparse_product_contraction
   have hprod_exp : ∏ k ∈ Finset.range N, a k ≤
       Real.exp (-(∑ k ∈ Finset.range N, (1 - a k))) := by
     rw [← Finset.sum_neg_distrib, Real.exp_sum]
-    apply Finset.prod_le_prod
+    apply Finset.prod_le_prod₀
     · intro k _; exact ha_nonneg k
     · intro k _; exact hbound k
   -- sum >= -log(epsilon) + 1, so exp(-sum) <= exp(log(epsilon) - 1) < epsilon

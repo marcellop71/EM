@@ -85,11 +85,15 @@ abbrev Ω : Type := ∀ r : Nat.Primes, ZMod ((r : ℕ))
 
 /-- The uniform probability measure on the residues mod `r`. -/
 def localUniform (r : Nat.Primes) : Measure (ZMod ((r : ℕ))) :=
-  (PMF.uniformOfFintype (ZMod ((r : ℕ)))).toMeasure
+  Measure.uniformOfFinset Finset.univ
 
 instance instIsProbabilityMeasureLocalUniform (r : Nat.Primes) :
-    IsProbabilityMeasure (localUniform r) :=
-  PMF.toMeasure.isProbabilityMeasure _
+    IsProbabilityMeasure (localUniform r) := by
+  classical
+  constructor
+  rw [localUniform, Measure.uniformOfFinset_apply]
+  simp
+  exact ENNReal.div_self (by exact_mod_cast r.2.ne_zero) (ENNReal.natCast_ne_top _)
 
 /-- The ambient measure: the product of the local uniform measures.  Built with
 Mathlib's `Measure.infinitePi`, which requires only that every factor is a
@@ -104,15 +108,15 @@ instance instIsProbabilityMeasureMu : IsProbabilityMeasure μ := by
 /-- The uniform measure of a finset `S` of residues mod `r` is `#S / r`. -/
 theorem localUniform_apply_finset (r : Nat.Primes) (S : Finset (ZMod ((r : ℕ)))) :
     localUniform r (↑S : Set (ZMod ((r : ℕ)))) = (S.card : ℝ≥0∞) / ((r : ℕ) : ℝ≥0∞) := by
-  rw [localUniform, PMF.toMeasure_apply_finset]
-  simp only [PMF.uniformOfFintype_apply, ZMod.card, Finset.sum_const, nsmul_eq_mul]
-  rw [div_eq_mul_inv]
+  classical
+  rw [localUniform, Measure.uniformOfFinset_apply]
+  simp [ZMod.card]
 
 /-- The uniform measure of a singleton residue class is `1 / r`. -/
 theorem localUniform_apply_singleton (r : Nat.Primes) (b : ZMod ((r : ℕ))) :
     localUniform r {b} = ((r : ℕ) : ℝ≥0∞)⁻¹ := by
-  rw [localUniform, PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton b),
-    PMF.uniformOfFintype_apply, ZMod.card]
+  rw [localUniform, Measure.uniformOfFinset_apply_singleton_of_mem (Finset.mem_univ b),
+    Finset.card_univ, ZMod.card]
 
 /-! ### The cylinder-count lemma -/
 

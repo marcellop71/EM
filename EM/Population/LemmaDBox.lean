@@ -299,7 +299,7 @@ theorem survival_window_ge {q m₀ k : ℕ} (hq : q.Prime) (hm₀ : 1 ≤ m₀)
           Real.exp_le_exp.mpr (by linarith)
       _ = ∏ r ∈ W, Real.exp (-(2 * rho q m₀ r k)) := by rw [← hsum, Real.exp_sum]
       _ ≤ ∏ r ∈ W, (1 - rho q m₀ r k) :=
-          Finset.prod_le_prod (fun i _ => (Real.exp_pos _).le) hstep
+          Finset.prod_le_prod₀ (fun i _ => (Real.exp_pos _).le) hstep
   have hsplit : (∏ r ∈ W, (1 - rho q m₀ r k)) * survival q m₀ y k = survival q m₀ z k := by
     rw [survival, survival, hW]
     exact Finset.prod_sdiff hsub

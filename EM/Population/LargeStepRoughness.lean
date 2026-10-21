@@ -770,7 +770,7 @@ theorem near_band_product_ge (T : ℝ) (hq : q.Prime) (hm : 1 ≤ m)
     _ = ∏ t ∈ nearBand q k, Real.exp (-(2 * rho q m t k)) := by
         rw [← hsum, Real.exp_sum]
     _ ≤ ∏ t ∈ nearBand q k, (1 - rho q m t k) :=
-        Finset.prod_le_prod (fun i _ => (Real.exp_pos _).le) hstep
+        Finset.prod_le_prod₀ (fun i _ => (Real.exp_pos _).le) hstep
 
 /-! ### 5.7  B8 — the band partition -/
 
@@ -1364,7 +1364,7 @@ theorem far_band_product_ge_of_mass (E : ℝ) (y : ℕ)
     _ = ∏ t ∈ farBand q y k, Real.exp (-(2 * rho q m t k)) := by
         rw [← hsum, Real.exp_sum]
     _ ≤ ∏ t ∈ farBand q y k, (1 - rho q m t k) :=
-        Finset.prod_le_prod (fun i _ => (Real.exp_pos _).le) hstep
+        Finset.prod_le_prod₀ (fun i _ => (Real.exp_pos _).le) hstep
 
 /-- **B5 — the far-band product bound.**  For `k ≥ 1` and any cut `y`,
 

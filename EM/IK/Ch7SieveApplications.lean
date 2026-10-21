@@ -363,16 +363,8 @@ theorem expsum_eq_residueClassSum_expsum {N p : ℕ} (a : Fin N → ℂ) (b : Fi
     have hmod : (i : ℕ) % p = (r : ℕ) := Fin.val_eq_of_eq hi
     rw [hmod]
   rw [Finset.sum_congr rfl fiber_eq, ← Finset.sum_mul]
+  -- The sum over the fiber is residueClassSum (`congr 1` closes it).
   congr 1
-  -- The sum over the fiber is residueClassSum
-  unfold residueClassSum
-  apply Finset.sum_congr
-  · ext n
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, g]
-    constructor
-    · intro h; exact Fin.val_eq_of_eq h
-    · intro h; exact Fin.ext h
-  · intro _ _; rfl
 
 /-- Cauchy-Schwarz for finset sums of complex numbers:
     ‖∑_{i ∈ s} v_i‖² ≤ |s| · ∑_{i ∈ s} ‖v_i‖².

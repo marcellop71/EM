@@ -56,7 +56,7 @@ theorem card_primeFactors_le_log (N : ℕ) (hN : 1 ≤ N) :
     calc 2 ^ N.primeFactors.card = ∏ _p ∈ N.primeFactors, 2 := by
           rw [Finset.prod_const]
       _ ≤ ∏ p ∈ N.primeFactors, p :=
-          Finset.prod_le_prod (fun _ _ => Nat.zero_le _)
+          Finset.prod_le_prod₀ (fun _ _ => Nat.zero_le _)
             (fun p hp => (Nat.prime_of_mem_primeFactors hp).two_le)
   have hdvd : (∏ p ∈ N.primeFactors, p) ∣ N := Nat.prod_primeFactors_dvd N
   have hpow : 2 ^ N.primeFactors.card ≤ N :=
@@ -226,7 +226,7 @@ theorem survival_le_exp (hq : q.Prime) (hm : 1 ≤ m)
       * (∏ s ∈ activeWindow q m z y k, (1 - rho q m s k))
       = survival q m y k := Finset.prod_sdiff hsub
   have hdrop : (∏ s ∈ bandUpTo q y \ activeWindow q m z y k, (1 - rho q m s k)) ≤ 1 :=
-    Finset.prod_le_one
+    Finset.prod_le_one₀
       (fun s hs => (hband s (Finset.mem_sdiff.mp hs).1).1)
       (fun s hs => (hband s (Finset.mem_sdiff.mp hs).1).2)
   have hactive_nonneg : 0 ≤ ∏ s ∈ activeWindow q m z y k, (1 - rho q m s k) :=
@@ -237,7 +237,7 @@ theorem survival_le_exp (hq : q.Prime) (hm : 1 ≤ m)
   -- compare with the exponential
   have hstep2 : (∏ s ∈ activeWindow q m z y k, (1 - rho q m s k))
       ≤ ∏ s ∈ activeWindow q m z y k, Real.exp (-((1 : ℝ) / s)) := by
-    refine Finset.prod_le_prod (fun s hs => (hband s (hsub hs)).1) ?_
+    refine Finset.prod_le_prod₀ (fun s hs => (hband s (hsub hs)).1) ?_
     intro s hs
     have hrho : (1 : ℝ) / s ≤ rho q m s k := one_div_le_rho hq hm hnd hs
     have hexp : -((1 : ℝ) / s) + 1 ≤ Real.exp (-((1 : ℝ) / s)) :=

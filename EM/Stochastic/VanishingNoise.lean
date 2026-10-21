@@ -334,7 +334,7 @@ theorem product_contraction_tendsto (gamma : ℕ → ℝ)
   -- The product is at most 1
   have hprod_le_one : ∀ N, ∏ k ∈ Finset.range N, (1 - gamma k) ≤ 1 := by
     intro N
-    apply Finset.prod_le_one
+    apply Finset.prod_le_one₀
     · intro k _; linarith [hle k]
     · intro k _; linarith [hpos k]
   -- Use 1 - x <= exp(-x) for x >= 0
@@ -363,7 +363,7 @@ theorem product_contraction_tendsto (gamma : ℕ → ℝ)
   have hprod_exp : ∏ k ∈ Finset.range N, (1 - gamma k) ≤
       Real.exp (-(∑ k ∈ Finset.range N, gamma k)) := by
     rw [← Finset.sum_neg_distrib, Real.exp_sum]
-    apply Finset.prod_le_prod
+    apply Finset.prod_le_prod₀
     · intro k _; linarith [hle k]
     · intro k _; exact hbound k
   -- sum >= -log(epsilon) + 1, so exp(-sum) <= exp(log(epsilon) - 1) < epsilon

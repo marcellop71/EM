@@ -264,7 +264,7 @@ theorem fiber_eq_stepCell (q Y k m₀ : ℕ) :
 theorem survival_le_one {q m y k : ℕ} (hq : q.Prime) (hm : 1 ≤ m)
     (hnd : ∀ j < k, 2 ≤ genSeqAvoid q m j) : survival q m y k ≤ 1 := by
   rw [survival]
-  refine Finset.prod_le_one (fun r hr => ?_) (fun r hr => ?_)
+  refine Finset.prod_le_one₀ (fun r hr => ?_) (fun r hr => ?_)
   · obtain ⟨_, hrp, hrq⟩ := mem_bandUpTo.mp hr
     have := rho_le_one hq hm hrp hrq hnd
     linarith

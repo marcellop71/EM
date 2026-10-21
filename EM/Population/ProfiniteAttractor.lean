@@ -199,7 +199,7 @@ theorem measure_tailClear_le (N Y : ℕ) :
     _ ≤ ENNReal.ofReal (Real.exp (-(∑ r ∈ block N Y, 1 / (r : ℝ)))) := by
         apply ENNReal.ofReal_le_ofReal
         rw [← Finset.sum_neg_distrib, Real.exp_sum]
-        refine Finset.prod_le_prod (fun r _ => one_sub_inv_nonneg r) (fun r _ => ?_)
+        refine Finset.prod_le_prod₀ (fun r _ => one_sub_inv_nonneg r) (fun r _ => ?_)
         have := Real.add_one_le_exp (-(1 / (r : ℝ)))
         linarith
 

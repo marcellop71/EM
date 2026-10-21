@@ -443,7 +443,7 @@ theorem cfun_le_exp (n : ℕ) :
   unfold cfun Apr Npr
   rw [Nat.cast_prod, Nat.cast_prod, ← Finset.prod_div_distrib, ← Finset.sum_neg_distrib,
     Real.exp_sum]
-  apply Finset.prod_le_prod
+  apply Finset.prod_le_prod₀
   · intro r hr; positivity
   · intro r hr
     have hr' := (Finset.mem_filter.mp hr).2

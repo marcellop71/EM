@@ -55,19 +55,31 @@ section FactorPMF
 theorem primeFactors_succ_nonempty {P : ℕ} (hP : 1 ≤ P) : (P + 1).primeFactors.Nonempty :=
   Nat.nonempty_primeFactors.mpr (by omega)
 
-/-- Uniform PMF over the prime factors of P+1. Each prime factor gets equal weight. -/
+/-- Uniform PMF over the prime factors of P+1. Each prime factor gets equal weight.
+(Mathlib removed `PMF.uniformOfFinset` in favour of the measure
+`Measure.uniformOfFinset`; this is the same weight through `PMF.ofFinset`.) -/
 noncomputable def factorPMF (P : ℕ) (hP : 1 ≤ P) : PMF ℕ :=
-  PMF.uniformOfFinset (P + 1).primeFactors (primeFactors_succ_nonempty hP)
+  PMF.ofFinset
+    (fun p => if p ∈ (P + 1).primeFactors then ((P + 1).primeFactors.card : ENNReal)⁻¹ else 0)
+    (P + 1).primeFactors
+    (by
+      rw [Finset.sum_congr rfl fun p hp => if_pos hp, Finset.sum_const, nsmul_eq_mul]
+      exact ENNReal.mul_inv_cancel
+        (by exact_mod_cast (primeFactors_succ_nonempty hP).card_pos.ne')
+        (ENNReal.natCast_ne_top _))
+    (fun _ ha => if_neg ha)
 
 /-- The support of factorPMF is exactly the set of prime factors of P+1. -/
 theorem factorPMF_support {P : ℕ} (hP : 1 ≤ P) :
     (factorPMF P hP).support = ↑(P + 1).primeFactors := by
-  exact PMF.support_uniformOfFinset (primeFactors_succ_nonempty hP)
+  rw [factorPMF, PMF.support_ofFinset]
+  ext p
+  simp +contextual
 
 /-- Each prime factor of P+1 gets weight 1/omega(P+1) under the uniform PMF. -/
 theorem factorPMF_apply_eq {P : ℕ} (hP : 1 ≤ P) {p : ℕ} (hp : p ∈ (P + 1).primeFactors) :
     factorPMF P hP p = ((P + 1).primeFactors.card : ENNReal)⁻¹ := by
-  simp [factorPMF, hp]
+  rw [factorPMF, PMF.ofFinset_apply, if_pos hp]
 
 /-- Elements of factorPMF's support are prime. -/
 theorem factorPMF_prime {P : ℕ} (hP : 1 ≤ P) {p : ℕ}

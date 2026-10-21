@@ -74,7 +74,7 @@ theorem avgCharProduct_norm_le_one (chi : G →* ℂˣ) (S : ℕ → Finset G)
     (hne : ∀ k, (S k).Nonempty) (N : ℕ) :
     ‖avgCharProduct chi S N‖ ≤ 1 := by
   rw [avgCharProduct_norm_eq]
-  apply Finset.prod_le_one
+  apply Finset.prod_le_one₀
   · intro k _; exact norm_nonneg _
   · intro k hk
     exact meanCharValue_norm_le_one chi (S k) (hne k)

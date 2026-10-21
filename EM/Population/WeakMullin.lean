@@ -143,7 +143,7 @@ theorem safe_fraction_exp_bound {Q : Finset ℝ} (hQ : ∀ q ∈ Q, 2 ≤ q) :
   have h_neg : - ∑ q ∈ Q, 1 / (q - 1) = ∑ q ∈ Q, -(1 / (q - 1)) := by
     rw [← Finset.sum_neg_distrib]
   rw [h_neg, Real.exp_sum]
-  exact Finset.prod_le_prod
+  exact Finset.prod_le_prod₀
     (fun q hq => by
       have hq1 : (0 : ℝ) < q - 1 := by linarith [hQ q hq]
       have hq2 : (0 : ℝ) ≤ q - 2 := by linarith [hQ q hq]
