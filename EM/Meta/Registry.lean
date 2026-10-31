@@ -69,6 +69,8 @@ import EM.Population.Confinement
 import EM.Population.UniformFreezing
 import EM.Population.EisensteinFamilies
 import EM.Population.ClassThreeModFour
+import EM.Population.SecondChance
+import EM.Population.CMPoint
 import EM.Obstruction.RuleTransition
 import EM.Obstruction.Anatomy
 import EM.Stochastic.ReachableSets
@@ -920,6 +922,24 @@ attribute [publish] UniformFreezing.jacobiSym_neg_one_mod_four
 attribute [publish] UniformFreezing.exists_jacobiSym_eq_neg_one
 attribute [publish] UniformFreezing.eq_neg_three_mul_sq_of_nonsquare_two_mod_three
 attribute [publish] UniformFreezing.confined_of_uniformly_frozen
+attribute [publish] SecondChances.hittingSet_finite_of_prime
+attribute [publish] SecondChances.secondChance_window
+attribute [publish] SecondChances.secondChance_iff_two_hits
+attribute [publish] SecondChances.missingFinite_implies_secondChance_io
+attribute [publish] SecondChances.mc_implies_secondChance_io
+attribute [publish] SecondChances.not_mc_of_firstHitCapture
+attribute [publish] SecondChances.exists_window_prod_eq_one
+attribute [publish] SecondChances.secondChance_tower_criterion
+attribute [publish] SecondChances.not_classInfinitude_three_mod_four_implies_missing_io
+attribute [publish] SecondChances.missingFinite_implies_classInfinitude_three_mod_four
+attribute [publish] CMPoint.euclid_succ_eq_principalForm
+attribute [publish] CMPoint.principalForm_ge_of_ne_zero
+attribute [publish] CMPoint.not_represents_of_lt
+attribute [publish] CMPoint.represents_pow_imp_le
+attribute [publish] CMPoint.disc_eq_neg_three_iff
+attribute [publish] CMPoint.perpetual_disc_eq_neg_three
+attribute [publish] CMPoint.infinitelyManyComposite_iff_disc_ne_neg_three_io
+attribute [publish] CMPoint.mullin_implies_nonprincipal_least_factor
 
 -- ============================================================================
 -- Registry generation (runs during `lake build`)

@@ -1052,3 +1052,66 @@ route to controlling the least prime factor of one sparse sequence in a residue 
 is the same demand every other target makes.  I would not attack it directly either; I would
 keep it as the statement to test any future mechanism on *first*, before `(C∞) ⟹ MC`, because
 it asks for a half-set rather than a single class.
+
+## 15. The object: CM points, and the Langlands side of one step (2026-10-25)
+
+Question (user, Session 322): the Mullin sequence should be linked to an *object*, as modular
+forms are linked to elliptic curves, so that arithmetic properties of the sequence become
+properties of the object.  What object?  Lean: `EM/Population/CMPoint.lean`.
+
+**What Langlands needs and what the sequence lacks.**  Modularity transports an Euler product:
+one local factor per prime, primes entering through Frobenius.  The rule `P ↦ P · lpf(P+1)` is
+not multiplicative; the `+1` is an additive step inside a multiplicative recursion, and the
+walk's "L-function" `Σ χ(P_n) n^{−s}` has no Euler product.  This is the Four-Way Blocker in
+Langlands language.  The GL(1) correspondence (Dirichlet characters of the walk) is the
+existing character-sum layer, and it is a tautology: CME ⟺ MC.
+
+**Where the `+1` becomes algebraic: one step.**  §1 writes `E_{n+1} = N(p_{n+1} ω − 1)`.  Read
+as a binary quadratic form,
+
+    E_{n+1} = Q_n(−1, p_{n+1}),   Q_n(x, y) = x² + x y + c_n y²,   disc Q_n = 1 − 4 c_n = D_n
+
+(`euclid_succ_eq_principalForm`, `four_mul_principalForm`).  Inside one step the `+1` is
+absorbed into the principal form.  That is why an object exists there and nowhere else.
+The object: the order `O_n` of discriminant `D_n`, equivalently the **CM point of
+discriminant `D_n` on the `j`-line**; its automorphic side is the weight-one theta series of
+the forms of discriminant `D_n`, Galois side the dihedral representations `Ind χ` for class
+group characters `χ` of `K_n = ℚ(√D_n)`.
+
+Dictionary:
+
+| sequence | object |
+|---|---|
+| prime factor `ℓ` of `E_{n+1}` | `ℓ` splits or ramifies in `K_n` (§3 (T1)); inert-prime coefficients of the theta series vanish |
+| `E_{n+1}` itself | represented by the principal form at `(−1, p_{n+1})` (`represents_euclid_succ`) |
+| least factor `q = lpf E_{n+1}` | least norm among the prime ideals in the principal relation `(p_{n+1}ω − 1) = ∏ 𝔮_i` |
+| `q < c_n` (a small least factor) | `𝔮` non-principal: the principal form takes no value `< c_n` off the axis `y = 0` (`principalForm_ge_of_ne_zero`, `not_represents_of_lt`); class order `≥ log c_n / log q` (`represents_pow_imp_le`) |
+| prime stage (`c_n = 1`) | `D_n = −3`: the CM point is `ρ`, the elliptic point of order 3, `j = 0`; `Φ₆(x) = N(x − ω)` in `ℤ[ω]` (`disc_eq_neg_three_iff`) |
+| Sylvester tower | the **constant** CM point `j = 0` (`perpetual_disc_eq_neg_three`, converse `perpetual_of_disc_eq_neg_three`) |
+| `(C∞)` | the CM point leaves `ρ` infinitely often (`infinitelyManyComposite_iff_disc_ne_neg_three_io`) |
+| confined stage `D_n = −3 s²` (§11) | the order `ℤ[sω]` of conductor `s`: a point of the **Hecke orbit of `ρ`**, `j = 0` with growing conductor (`confined_iff_disc_eq_neg_three_mul_sq`) |
+| frozen prime (§4) | a prime inert in every late `K_n` |
+| MC | for every `q ≥ 5`, at some stage `q` is the least-norm prime in the principal relation, non-principal when `q < c_n` (`mullin_implies_nonprincipal_least_factor`) |
+
+So the exceptional locus of the paper (tower ⊂ confined ⊂ frozen) is literally "special points
+of the `j`-line": the tower is one CM point, confined runs are its Hecke orbit, and
+`MC ⟹ NoFrozen` says the orbit must leave that locus.  This is the André–Oort shape, which is
+why the Zilber–Pink analogy (§9) was right as an *object* even though it is dead as a
+*mechanism* (#182).
+
+**The honest limit.**  The order changes at every step and `|D_n| ≈ 4E_n/p_{n+1}` has the size
+of the Euclid number.  The correspondence is one step deep: chaining steps means asking how the
+element `p_{n+1}ω_n − 1` factors in `O_n` and then feeding the *least* factor into `O_{n+1}`.
+No automorphic object sees "least".  The only object that follows the whole path is the
+arboreal Galois representation of the re-seeded Sylvester tree, and arboreal representations
+have no automorphic side; the 2026-08-17 (f) result measured that object (Chebotarev input
+free, residual gap a size condition).  Elliptic curves do not enter: `Φ₆` is not post-critically
+finite (`1/2 ↦ 3/4 ↦ 13/16 ↦ …`), so there is no Lattès structure, and the confined step
+equation is a surface, not a curve.
+
+**What the dictionary buys.**  Two things.  (i) A positive, screen-1-shaped translation of
+"the least factor is small": a small least factor is a high-order ideal class appearing in a
+principal relation.  (ii) The exceptional locus is now a geometric object with a theory
+(CM points, Hecke orbits, heights of CM points `≈ log |D_n|` = the growth defect of §2), which
+is the right language for the dichotomy conjecture: the generic orbit has unbounded CM height
+and the special orbits are those of bounded `j`-complexity.

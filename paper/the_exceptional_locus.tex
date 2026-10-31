@@ -58,6 +58,40 @@ splits in $\QQ(\sqrt{-3})$.  At a composite stage the law says something
 new at every step.
 
 %% -------------------------------------------------------------------------
+\begin{remark}[The step as a CM point]
+\label{rem:cm-point}
+Theorem~\ref{thm:norm-identity} says that $E_{n+1}$ is a value of the
+principal form of discriminant~$D_n$: $E_{n+1} = Q_n(-1, p_{n+1})$ with
+$Q_n(x,y) = x^2 + xy + c_n y^2$
+(\lean{EM/Population/CMPoint.lean}{euclid\_succ\_eq\_principalForm}).
+The object attached to a step is therefore the order $\mathcal O_n$ of
+discriminant $D_n$, equivalently the CM point of discriminant $D_n$ on
+the $j$-line, with the weight-one theta series of discriminant $D_n$ as
+its automorphic side.  Two facts follow at once.  The principal form
+takes no value below $c_n$ off the axis $y = 0$
+(\lean{EM/Population/CMPoint.lean}{principalForm\_ge\_of\_ne\_zero}), so a
+prime ideal of norm $q < c_n$ is non-principal with class order at least
+$\log c_n/\log q$
+(\lean{EM/Population/CMPoint.lean}{represents\_pow\_imp\_le}): a small
+least factor is a high-order class in the principal relation
+$(p_{n+1}\omega_n - 1) = \prod \mathfrak q_i$, which is MC in class-group
+language
+(\lean{EM/Population/CMPoint.lean}{mullin\_implies\_nonprincipal\_least\_factor}).
+And a stage is prime iff $D_n = -3$
+(\lean{EM/Population/CMPoint.lean}{disc\_eq\_neg\_three\_iff}): the CM
+point is $\rho$, the elliptic point of order three, $j = 0$, and
+$\Phi_6(x) = N(x - \omega)$ in $\ZZ[\omega]$.  A Sylvester tower is the
+\emph{constant} CM point $j = 0$
+(\lean{EM/Population/CMPoint.lean}{perpetual\_disc\_eq\_neg\_three}), and
+the confined stages $D_n = -3s^2$ of \S\ref{sec:confinement} are the
+orders $\ZZ[s\omega]$, the Hecke orbit of~$\rho$.  So the exceptional
+locus of this section is the set of special points of the $j$-line, and
+$\MC \Rightarrow \mathrm{NoFrozen}$ says the orbit must leave it.  The
+correspondence is one step deep: the order changes at every stage, its
+discriminant has the size of the Euclid number, and no automorphic
+object sees which factor is \emph{least}.
+\end{remark}
+
 \subsection{The Frozen Rung}
 \label{sec:frozen}
 %% -------------------------------------------------------------------------

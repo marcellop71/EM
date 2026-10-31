@@ -1116,6 +1116,27 @@ missing, every $q\equiv2\ (3)$ is frozen on a Sylvester tower, and
 $\MC\Rightarrow\mathrm{NoFrozen}\Rightarrow(\mathrm C\infty)$
 (\lean{EM/Population/QuadraticStep.lean}{frozen\_rung}) is the first rung
 whose content is a splitting condition rather than a size condition.
+\emph{Second chances}: a prime can divide a Euclid number, be outranked
+by a smaller factor, and be captured later ($139 \mid E_3 = 13\cdot 139$,
+$139 = p_9$); this happens exactly when the multiplier product over the
+intervening window returns to~$1$ modulo the prime
+(\lean{EM/Population/SecondChance.lean}{secondChance\_window}).
+MissingFinite, hence MC, forces infinitely many second chances among
+the primes $\equiv 3\ (4)$: at the capture of a prime $\equiv 1\ (4)$
+the cofactor is $\equiv 3\ (4)$ and carries a prime factor $\equiv 3\
+(4)$ that is not the multiplier, and all but finitely many of these are
+captured later
+(\lean{EM/Population/SecondChance.lean}{missingFinite\_implies\_secondChance\_io}).
+So capture on first sight is incompatible with MC
+(\lean{EM/Population/SecondChance.lean}{not\_mc\_of\_firstHitCapture}),
+and a fifth screen follows: a route to MC must produce, for infinitely
+many primes, a multiplier window with product $\equiv 1$ \emph{anchored
+at a hit}.  Pigeonhole supplies free windows of length $<q$ for every
+missed~$q$ and every start
+(\lean{EM/Population/SecondChance.lean}{exists\_window\_prod\_eq\_one});
+anchoring is the whole difficulty, and along a run of prime Euclid
+numbers the anchored return is a $\Phi_6$-orbit question
+(\lean{EM/Population/SecondChance.lean}{secondChance\_tower\_criterion}).
 The conjecture these rungs point at is a dichotomy, uniform in the seed:
 $\mathrm{GenMC}(m)\iff(\mathrm C\infty)(m)$
 (\lean{EM/Population/Dichotomy.lean}{DichotomyConjecture}); its

@@ -167,6 +167,7 @@ import EM.Population.ProfiniteEnsemble
 import EM.Population.ProfiniteHeadline
 import EM.Population.ReciprocalSum
 import EM.Population.RigidityMaster
+import EM.Population.SecondChance
 import EM.Population.SeedCapture
 import EM.Population.SeedTypes
 import EM.Population.SelectionLaw
@@ -188,6 +189,7 @@ import EM.Population.Confinement
 import EM.Population.UniformFreezing
 import EM.Population.EisensteinFamilies
 import EM.Population.ClassThreeModFour
+import EM.Population.CMPoint
 import EM.Population.AdelicShadow
 import EM.Population.SquarefreeSeed
 import EM.Population.AlmostAllGenMC

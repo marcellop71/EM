@@ -268,7 +268,43 @@ NotConfined ⟹ (C∞)`, `¬CI(3 mod 4) ⟹ (C∞)`, `CI(1 mod 4) ⟹ (C∞)`; e
 prime factor `≡ 3 (mod 4)` (`ClassInfinitude.lean`).  Rigidity: each prime divides at most `π(q)`
 Euclid numbers.  Every route to (C∞) over `ℤ` fails structurally; the floor is Fermat-hard.
 
-## Head coordinates for the population (2026-09-02)
+## Second chances (2026-10-25)
+
+Memo `docs/analysis/second_chance_2026-10-25.md`, Lean `EM/Population/SecondChance.lean`.  The
+only recurrence the problem has is the recurrence of *discarded* primes: a prime can divide a
+Euclid number, be outranked by a smaller factor, and be captured later (`139 ∣ E_3 = 13·139`,
+`139 = p_9`), exactly when the multiplier product over the intervening window returns to `1`
+modulo the prime (`secondChance_window`).  **MissingFinite, hence MC, forces infinitely many such
+second chances among the primes `≡ 3 (mod 4)`** (`missingFinite_implies_secondChance_io`): a
+capture of a prime `≡ 1 (mod 4)` discards a prime `≡ 3 (mod 4)`, and under MC every discarded
+prime comes back.  So capture on first sight is incompatible with MC (`not_mc_of_firstHitCapture`),
+and the frontier box gains a fifth screen: a route must produce multiplier windows with product
+`≡ 1` *anchored at a hit*.  Pigeonhole gives free windows for every missed prime
+(`exists_window_prod_eq_one`); anchoring is #90.  Inside a run of prime Euclid numbers the anchored
+return is a `Φ₆`-orbit question, `1 − seq (n+1) ∈ PreZero r` (`secondChance_tower_criterion`).
+
+## The survey (2026-10-25)
+
+`docs/mullin_difficulty_survey.md` is the reusable account of why MC is hard: five languages,
+the ladder and Fermat-hardness, why averaging cannot see one orbit, why no finite certificate of
+failure exists, the rigid/free dichotomy, the structure that survives (frozen facts, splitting law,
+CM point, second chances, head rigidity), the five screens and the dichotomy conjecture; every claim
+carries a Lean anchor (appendix).
+
+## The object: CM points (2026-10-25)
+
+Memo `docs/analysis/euclid_systems_theory_2026-09-23.md` §15, Lean `EM/Population/CMPoint.lean`.
+Asked what object the sequence is linked to, Langlands-style: inside one step the `+1` becomes
+algebraic, `E_{n+1} = Q_n(−1, p_{n+1})` for the principal form `x² + xy + c_n y²` of discriminant
+`D_n`, so the object is the order of discriminant `D_n`, i.e. a CM point on the `j`-line, with the
+weight-one theta series as automorphic side.  The principal form takes no value below `c_n` off the
+axis, so a small least factor is a non-principal ideal of class order `≥ log c_n / log q` in the
+principal relation `(p_{n+1}ω − 1) = ∏ 𝔮_i` (MC in class-group language).  A stage is prime iff
+`D_n = −3`: the CM point is `ρ` (`j = 0`), a Sylvester tower is the constant CM point, confined
+stages are its Hecke orbit, and the exceptional locus is the set of special points of the `j`-line.
+The correspondence is one step deep; no automorphic object sees which factor is least, and the
+only object following the whole path (the arboreal representation) has no automorphic side.
+
 
 `EM/Population/SeedHead.lean` re-indexes the seed-average law by the head of a seeded orbit:
 GenMC(m) ⟺ head → ∞; at a fixed late stage the head exceeds any `Q` for almost all seeds; and

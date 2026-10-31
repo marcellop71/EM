@@ -164,7 +164,7 @@
 \code{Stochastic/RandomTwoPointMCB.lean} & Self-consistent random two-point MC: Fourier bridge identity, ChiAtMultiplicativity, death/survival partition, path sum decomposition, Fourier counting identity, TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC (proved) (cont.) & 680 \\
 \code{Stochastic/EpsilonDegeneration.lean} & $\varepsilon$-family and its deterministic limit, failure weight, MC $\iff$ failWeight bound & 592 \\
 \code{Stochastic/EpsilonWalk.lean} & Ensemble $\varepsilon$-walk: sigma-walk equidist, death fiber density, SigmaCRTPropagationStep (open), 8-clause landscape & 283 \\
-\code{Stochastic/TransitionKernel.lean} & Epsilon-mixed walk step PMF, weight lower bounds & 267 \\
+\code{Stochastic/TransitionKernel.lean} & Epsilon-mixed walk step PMF, weight lower bounds & 279 \\
 \code{Stochastic/PathMeasure.lean} & Reachable Finsets, branching distinctness, factor residues & 333 \\
 \code{Stochastic/GeometricCapture.lean} & Block capture weight, geometric decay, TSD$\to$PositiveProbCapture & 380 \\
 \code{Stochastic/RandomFactorMC.lean} & Pure random-factor variant MC, purification lemma, MC$\Rightarrow$PureRandomMC & 390 \\
@@ -201,7 +201,7 @@
 \code{Meta/Dobrushin.lean} & Dobrushin coefficient $= 1$, MUB $\neq$ CME, stopping time, Dead End~\#131 & 710 \\
 \code{Meta/LFunction.lean} & $L_{\mathrm{EM}}$ Dirichlet series, self-similar decomposition, Dead Ends~\#132--\#134 & 451 \\
 \code{Meta/Blueprint.lean} & LeanArchitect~\cite{LeanArchitect2026} annotations for 20 key theorems & 219 \\
-\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 928 \\
+\code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 948 \\
 \code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 793 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 429 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 129 \\
@@ -218,7 +218,7 @@
 \code{IK/Ch7Foundations.lean} & Iwaniec--Kowalski Ch.\,7: foundations, norm bounds & 326 \\
 \code{IK/Ch7AdditiveLS.lean} & Iwaniec--Kowalski Ch.\,7: additive large sieve & 1079 \\
 \code{IK/Ch7MultiplicativeLS.lean} & Iwaniec--Kowalski Ch.\,7: multiplicative large sieve & 462 \\
-\code{IK/Ch7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications (prime case) & 948 \\
+\code{IK/Ch7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications (prime case) & 940 \\
 \code{IK/Ch7SieveCRT.lean} & Iwaniec--Kowalski Ch.\,7: Linnik, CRT general squarefree & 607 \\
 \code{IK/Ch7Hilbert.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram & 750 \\
 \code{IK/Ch7HilbertB.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram (cont.) & 533 \\
@@ -264,11 +264,13 @@
 \code{Population/UniformFreezing.lean} & \textbf{Theorem A}: \code{eq\_neg\_three\_mul\_sq\_of\_nonsquare\_two\_mod\_three} --- a negative $D\equiv1\ (4)$ that is a non-square modulo every large prime $q\equiv2\ (3)$ is $-3$ times a square (Jacobi reciprocity, the nontrivial Jacobi character of a non-square \code{exists\_jacobiSym\_eq\_neg\_one}, Dirichlet); \code{confined\_of\_uniformly\_frozen}: a uniformly frozen class at a stage forces confinement & 273 \\
 \code{Population/EisensteinFamilies.lean} & \code{four\_euclid\_succ\_eq\_norm}: $4E_{n+1}=N((p-2)+sp\sqrt{-3})$ on a confined stage; \code{tower\_factorization} and \code{shifted\_tower\_factorization}: the tower and the shifted tower are the two conjugation choices of the $\delta$-factor in $\mathbb Z[\omega][p]$; \code{linear\_family\_cubic}, \code{linear\_family\_root}: the cubic $(3vm+w)(12m^2+w^2)$ classifying linear length-2 families & 90 \\
 \code{Population/ClassThreeModFour.lean} & \code{four\_cofactor\_sub\_one\_not\_square}: $4c_n-1$ is never a perfect square (the $\mathbb Q(i)$-confined locus is empty: sum of two squares against $E_{n+1}\equiv3\ (4)$); \code{prod\_succ\_mod\_eight\_eq\_iff}, \code{classInfinitude\_three\_mod\_four\_iff\_prod\_mod\_eight}: CI(3 mod 4) $\iff$ the accumulator is not eventually constant mod $8$ (the torsion of the 2-deleted walk keeps flipping) & 131 \\
+\code{Population/SecondChance.lean} & Second chances: a prime hit at stage $n$, outranked, and captured later ($139\mid E_3$, $139=p_9$).  \code{secondChance\_window}: a second chance is a return of the multiplier product to $1$ modulo the prime; \code{missingFinite\_implies\_secondChance\_io}, \code{mc\_implies\_secondChance\_io}: MissingFinite (hence MC) forces infinitely many second chances among primes $\equiv3\ (4)$ (cofactor supply at captures of primes $\equiv1\ (4)$ + Dirichlet); \code{not\_mc\_of\_firstHitCapture}: capture on first sight refutes MC; \code{exists\_window\_prod\_eq\_one}: pigeonhole windows with product $\equiv1$ exist for every missed prime (free, not anchored); \code{secondChance\_tower\_criterion}: along a run of prime Euclid numbers the anchored return is a $\Phi_6$-orbit question (\code{PreZero}); \code{not\_classInfinitude\_three\_mod\_four\_implies\_missing\_io}: eventually $\equiv1\ (4)$ multipliers leave infinitely many primes $\equiv3\ (4)$ missed & 356 \\
+\code{Population/CMPoint.lean} & The step as a CM point: \code{euclid\_succ\_eq\_principalForm}, $E_{n+1}=Q_n(-1,p_{n+1})$ for the principal form $Q_n=x^2+xy+c_ny^2$ of discriminant $D_n$; \code{principalForm\_ge\_of\_ne\_zero}, \code{not\_represents\_of\_lt}: the principal form represents nothing below $c_n$ off the axis, so prime ideals of norm $q<c_n$ are non-principal, with class order $\ge\log c_n/\log q$ (\code{represents\_pow\_imp\_le}); \code{disc\_eq\_neg\_three\_iff}: a stage is prime iff $D_n=-3$ (the CM point is $\rho$, $j=0$); \code{perpetual\_disc\_eq\_neg\_three}: a Sylvester tower is the constant CM point $j=0$, confined stages are its Hecke orbit; \code{mullin\_implies\_nonprincipal\_least\_factor}: MC in class-group language & 172 \\
 \midrule
 \multicolumn{3}{l}{\emph{Seed-average program (new)}} \\
 \code{Population/AdelicShadow.lean} & \code{hits\_finite}, \code{eventually\_unit}: every finite place is hit by the Euclid numbers only finitely often, so $E_n\in\mathbb Z_q^\times$ eventually for every $q$; \code{captured\_of\_many\_hits}: more than $\pi(q-1)$ hits force selection of $q$; \code{misses\_iff\_eventually\_unit\_both}: failure of MC at $q$ is ``eventually a $q$-adic unit on $P_n$ and $E_n$''; \code{defect\_eq\_log\_cofactor}: the defect is the log of the discarded cofactor & 171 \\
 \code{Population/SquarefreeSeed.lean} & \code{exists\_squarefree\_seed\_selects}, \code{almost\_all\_squarefree\_select}, \code{infinite\_squarefree\_seeds\_select}: every prime $q$ is selected by some, by almost all, and by infinitely many squarefree seeds coprime to $q$ --- counting corollaries of the seed-average law (\code{card\_not\_squarefree\_le}: non-squarefree numbers have density $\le 1/2$ via $\sum_p p^{-2}\le 1/2$) & 389 \\
-\code{Population/ProfiniteEnsemble.lean} & Ambient profinite ensemble $\Omega=\prod_r \mathbb{Z}/r$ with the product uniform measure; \code{measure\_cylinder} and \code{measure\_residue\_classes} (an $M$-periodic event has measure its period fraction); packaging only, and $\mathbb{N}\subset\Omega$ is $\mu$-null & 271 \\
+\code{Population/ProfiniteEnsemble.lean} & Ambient profinite ensemble $\Omega=\prod_r \mathbb{Z}/r$ with the product uniform measure; \code{measure\_cylinder} and \code{measure\_residue\_classes} (an $M$-periodic event has measure its period fraction); packaging only, and $\mathbb{N}\subset\Omega$ is $\mu$-null & 275 \\
 \code{Population/ProfiniteDynamics.lean} & The greedy dynamics on a profinite point: the multiplier is the least prime whose coordinate of the current Euclid element vanishes; the agreement gate \code{profSeq\_iota} (hypothesis $1\le m$ only) and band-local agreement & 277 \\
 \code{Population/ProfiniteHeadline.lean} & \code{measure\_some\_prime\_missed\_eq\_zero}: $\mu$-almost every profinite point captures every prime whose coordinate it does not annihilate; the union over $q$ by countable additivity, with no $q$-uniform rate & 393 \\
 \midrule
