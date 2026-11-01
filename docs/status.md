@@ -46,10 +46,12 @@
   `tools/check_placeholders.py` enforces that every `True`-bodied `Prop` is marked.  All run
   in CI (`.github/workflows/ci.yml`) with `lake build`, `tools/check_lean_refs.py` and a
   generated-file drift check; the papers compile in a second job.
-- **Registry** (`registry/meta.json`): 476 declarations — 363 proved, 88 conditional,
+- **Registry** (`registry/meta.json`): 476 declarations — 411 proved, 40 conditional,
   25 open points (including the targets `MullinConjecture`, `HittingHypothesis`); 451 published.
-  CA pinned to its release `v0.1.0` (2026-08-21; the `v4.33.0` tag no longer exists upstream):
-  SHA-256 type hashes, real `type_deps`/`pp_type`.  The paper's L1 column is refreshed by
+  CA pinned to its release `v0.4.0` (2026-10-29): `type_hash` scheme 2 (Merkle), exact
+  `stmt`/`ref` ids, `statements.json`.  "Conditional" means a *hypothesis* reaches an
+  `@[open_point]`; open hypotheses not marked `@[open_point]` (e.g. `WalkEquidistribution`,
+  `AdelicEquidist`) leave their implications counted as proved.  The paper's L1 column is refreshed by
   `tools/update_l1_hashes.py`, which CI runs in the drift check; four rows citing archived
   declarations are now marked "(archived)" with no hash.
 - **Dead ends.** `tools/dead_ends.tsv` is the single source of truth; `EM/Meta/DeadEnds.lean`,

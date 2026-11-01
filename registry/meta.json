@@ -1,8 +1,19 @@
-{"published": 451,
- "proved": 363,
+{"type_hash_scheme": 2,
+ "statements": 476,
+ "published": 451,
+ "proved": 411,
  "project": "EM.Meta.Registry",
+ "payload_format": 1,
+ "open_points_proved": 0,
  "open_points": 25,
  "lean_toolchain": "leanprover/lean4:v4.35.0",
- "conditional": 88,
+ "entries": 476,
+ "definitions": 0,
+ "conditional": 40,
+ "ca_scheme_version": 1,
+ "ca_key_tiers":
+ {"exact": "stmt (RefHash statement id, base58); ref = what dependents embed",
+  "coarse": "type_hash (name-based, Merkle, scheme 2; hex)"},
  "ca_hash_mode": "name-based",
- "ca_hash_level": "L0"}
+ "ca_hash_level": "L0",
+ "axioms": 0}
