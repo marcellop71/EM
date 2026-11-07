@@ -84,7 +84,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 158 | Tail-identity Borel–Cantelli is #90 again | 307 | `standard_tail_not_bad` needs the bad set to have $\mathrm{card}=0$, not density $\to 0$; a density-zero bad set may contain the sparse sequence $\{\prod M\}$ at no cost. The identity turns an orbit statement into an ensemble-member statement, but specificity reappears as which members are good (#58/#117). | — | 0 |
 | 172 | Sure compensator as evidence of coverage progress | 313 | Wrong sign. $S_k = \prod_r (1-\rho_r)$ is *maximal* ($\equiv 1$) exactly when no position is ever new — i.e. for the orbits that capture nothing. Per-path, ``large $S_k$'' means ``no progress toward coverage''; the opposite (ensemble) reading requires the seed residue to be uniform in its box, which is #90. Both proved sure bounds — charge $\le$, survival $\ge$ — constrain the half-line *opposite* to capture-freeness: the configurations satisfying the whole layer are downward-closed in charge, and the capture-free ones sit at the extreme point (zero charge, $S_k\equiv 1$, boxes frozen). No upper bound on charge can exclude zero charge. | — | 0 |
 | 176 | The scale-uniform tail bound ``(N2)'' as the missing \S G input | 317 | Not a population statement. With $X=m$ and $\delta<1/m$ the bound leaves no room for the seed $m$ itself, so (N2) forces *every* seed to miss only finitely many primes coprime to it (`GrowingRange.scaleUniformTail_cofinite`); at $m=2$ it says the Euclid–Mullin sequence contains every sufficiently large prime (`scaleUniformTail_cofinite_mc`), far above the known floor MC $\Rightarrow$ RD $\Rightarrow$ (S) $\Rightarrow$ (C$\infty$). The honest input is (N2$'$), the same bound for $X\ge X_0(\delta)$; at scale $X$ it concerns the primes $q>X$, for which the seeds $m\le X$ are $X$ distinct points of $\mathbb{Z}/q$ and no period $M\le X$ sees the event — orbit-specificity in the sense of #90. What the population method does give is the growing-range form: some ineffective $Q\to\infty$ with a.a.\ seeds $m$ selecting every prime $q\le Q(m)$, $q\nmid m$ (`seed_range_never_density`), the exact analogue of Tao's ``almost bounded values'' for Collatz. | `scaleUniformTail_cofinite_mc` | 1 |
-| 181 | Galois-orbit amplification (the Zilber–Pink lower bound) | 2026-09-24 | No such symmetry exists beyond the map itself and its backward branches: ring automorphisms of $\prod_r\mathbb F_r$ are trivial, relabelling primes is not defined coordinatewise, $x\mapsto x^k$ on $(\mathbb Z/q)^\times$ leaves the family of integer orbits, and the one arithmetic group available, $\mathrm{Pic}$ of the order $\mathbb Z[\omega_n]$ of discriminant $1-4c_n$, acts on the ideals above $E_{n+1}$, i.e.\ on the factor tree (Booker's steering), not on the orbit. The greedy rule is not equivariant; the backward branches are hitting problems for captured primes (`GapPrinciple.isPreimage_div_iff`). | `GapPrinciple.isPreimage_div_iff` | 1 |
+| 181 | Galois-orbit amplification (the Zilber–Pink lower bound) | 2026-09-24 | No such symmetry exists beyond the map itself and its backward branches: ring automorphisms of $\prod_r\mathbb F_r$ are trivial, relabelling primes is not defined coordinatewise, $x\mapsto x^k$ on $(\mathbb Z/q)^\times$ leaves the family of integer orbits, and the one arithmetic group available, $\mathrm{Pic}$ of the order $\mathbb Z[\omega_n]$ of discriminant $1-4c_n$, acts on the ideals above $E_{n+1}$, i.e.\ on the factor tree (Booker's steering), not on the orbit. The greedy rule is not equivariant; the backward branches are hitting problems for captured primes (`GapPrinciple.isPreimage_div_iff`). | `GreedyRigidity.eq_of_itinerary_eq` | 1 |
 
 ### Decorrelation gap (DG, 7) — multiplier-level cancellation or independence does not transfer to the walk
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -736,11 +736,13 @@ Session 316 (2026-08-20 codebase review) added #175: the unrestricted generalize
 `GenMC(n)` over *all* primes is false for every `n ≥ 2` (a prime dividing `n` is never selected),
 so the old `GenMC(2) ⇒ MC` was vacuous; repaired in `EM/Ensemble/WeylChain.lean`.
 Session 319 added #178 (entropy/mixing/"sufficiently composed" arguments) and Session 320
-(2026-09-05) #179: two multiplier classes per cofinal position do not force coverage of `-1`. -/
-def deadEndCount : ℕ := 179
+(2026-09-05) #179: two multiplier classes per cofinal position do not force coverage of `-1`.
+Session 323 (2026-09-24) added #180–#182 (CRT amplification, Galois-orbit amplification,
+Zilber–Pink as a mechanism). -/
+def deadEndCount : ℕ := 182
 
-/-- Number of catalogued dead-end entries: the 175 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 169
+/-- Number of catalogued dead-end entries: the 182 numbers minus the ten never assigned. -/
+def deadEndEntryCount : ℕ := 172
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -763,8 +765,12 @@ adds #175 (`gen_mc_unrestricted_false`), giving 33.  Session 317 adds #176
 cofinite MC, so it is an orbit statement), giving 34.  Session 318 adds #177
 (`SeedCapture.captured_iff_mem_visited`: capture is a torsion datum invisible to heights),
 giving 35.  Session 319 adds #178 (`cme_iff_mc`) and Session 320 adds #179
-(`OrbitBarrier.two_classes_not_coverage`), giving 37. -/
-def witnessedDeadEndCount : ℕ := 37
+(`OrbitBarrier.two_classes_not_coverage`), giving 37.  Session 323 adds #180–#182
+(`GapPrinciple.card_misses_ge`, `GapPrinciple.isPreimage_div_iff`,
+`Dichotomy.algebraic_multiplier_implies_tower`), giving 40; Session 324 (2026-11-07) upgrades
+#181's witness to `GreedyRigidity.eq_of_itinerary_eq` (the itinerary determines the seed, so no
+symmetry of the seed space moves the branch). -/
+def witnessedDeadEndCount : ℕ := 40
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
 #136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
@@ -775,9 +781,9 @@ def revivableDeadEndCount : ℕ := 15
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 179 ∧
-    deadEndEntryCount = 169 ∧
-    witnessedDeadEndCount = 37 ∧
+    deadEndCount = 182 ∧
+    deadEndEntryCount = 172 ∧
+    witnessedDeadEndCount = 40 ∧
     revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival
