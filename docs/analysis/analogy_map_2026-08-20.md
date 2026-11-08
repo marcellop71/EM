@@ -8,6 +8,7 @@ where to push.  Lean for the positive items is in `EM/Population/GrowingRange.le
 |---|---|---|---|
 | (C∞) on the autonomous branch (`E_{n+1} = E_n² − E_n + 1`) | infinitely many composite Fermat / Sylvester numbers | open | no new leverage; consistent with 2026-08-17 (b)–(f) |
 | MC for the orbit of 2 | Artin's conjecture for one fixed base | open without GRH | #90; do not attack |
+| MC (pointwise) vs a.a. GenMC | Rowland / Cloitre lpf-recurrences at linear scale: increments `1` or prime for density-one indices (Bombieri–Vinogradov, Cloitre 2026) vs pointwise (needs strong Linnik; open) | open | same two-layer structure one scale down; calibration only (`catalogue_sweep_2026-11-07.md` §2) |
 | per-`q` seed-average law | Hooley-type "almost all bases" | here: done unconditionally | done (S311–312) |
 | §G: all `q` simultaneously, natural density | Collatz, "almost all orbits reach 1" | open; Tao (2019) proved only "a.a. `N` reach below `f(N)`, any `f → ∞`" | same wall; but Tao's *growing-range* shape was missing here and is now a theorem |
 | ∃ one seed with GenMC | Heath-Brown's unconditional Artin (all but ≤ 2 prime bases) | proved by **coupling failures of different bases at the same prime** through `(ℤ/p)^×`, then a sieve | §G ⇒ ∃ seed with GenMC (trivially), which is itself open; EM has no cross-seed coupling beyond `T`-invariance |

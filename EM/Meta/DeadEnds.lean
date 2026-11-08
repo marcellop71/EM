@@ -69,7 +69,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 
 <!-- BEGIN GENERATED CATALOGUE -->
 
-182 numbers; 172 catalogued entries; 40 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
+183 numbers; 173 catalogued entries; 41 with a genuine Lean witness; 15 with revival score ≥ 2; unassigned numbers: #25, #64, #65, #66, #67, #68, #69, #70, #71, #72.
 
 ### Orbit specificity (OS, 11) — population or ensemble statistics do not determine what one orbit does
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -97,7 +97,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 117 | MultCancel does not force WalkCancel | 128 | Multipliers alternating $\{2,3\}$ mod 5 with $\chi(2)=i$: multiplier sums vanish for even $K$, but $W_K=(K/2)(1+i)$, $\|W_K\|=\Theta(K)$. Compatible with every EM structural property; the transfer is equivalent to CCSB/CME. Sharpens #58. | `OrbitBarrier.mult_cancel_not_walk_cancel` | 0 |
 | 123 | FourPointPCV: cross-time is not cross-modulus | 146 | SCRTI gives cross-modulus independence at one time; FourPointPCV needs cross-time independence at one modulus. Four-time decay is HOD-type mixing (#84), harder than CCSB; the four values are deterministic functions of one seed (#115); pairwise PCV itself open. Superseded: false (#156), DSL vacuous (#160). | — | - |
 
-### Aggregate gap (AG, 8) — an average-case or aggregate bound does not give the per-fibre or per-class bound needed
+### Aggregate gap (AG, 9) — an average-case or aggregate bound does not give the per-fibre or per-class bound needed
 | # | Dead end | S | Why it fails | Witness | Rev |
 |---|---|---|---|---|---|
 | 101 | Bundle Walk / Weak MC / profinite | 70 | BundleGap is weaker than SieveTransfer as a statement but no technique proves it otherwise; product-group characters do not factor (shared minFac index couples moduli), reducing to MMCSB; $\delta(M)\to0$ is population-level. In $(\mathbb Z/11)^\times$ cycling $\{3,4\}$ generates yet visits only $\{1,3\}$. | — | 0 |
@@ -108,6 +108,7 @@ Unnumbered: the Gaussian-EM orbit-specificity barrier (`GaussEM.gauss_orbit_spec
 | 162 | Worst-case bag-prime bound in Lemma D | 309 | Once the threshold is type-determined, the worst-case bound is unbounded on a single type and destroys the uniform-in-$k$ constant: an average-case supply statement is being asked to hold per fibre. Repaired by a first moment, $\mathbb{E}\big[\sum_{r \mid m,\ r > z} 1/r\big] \le 2/(z\log z)$, and a Markov exclusion of a set of relative density $\le 1/C$ (`TailEstimate.seed_divisor_first_moment`, `TailEstimate.markov_divisor_mass`). | — | 3 |
 | 173 | Applying `pathwise_compensator` to the orbit of 2 | 313 | Inapplicable at every horizon. The theorem requires $(\forall j<n,\ \tilde p_j \le Y)$ *and* $\log Y \le n^2$ (and $e^{600}\le n$). No sure bound of that shape holds for the true orbit: the only sure size information permits $p_k \approx 2^{2^k}$, i.e. $\log Y \approx 2^n \gg n^2$. In the seed-average programme $Y$ is a *policy* on a seed population and the violating seeds are absorbed into `ls_plus`'s additive degenerate-tail term — a single orbit cannot be absorbed into a tail term. Any future dispatch wanting to use the compensator on one orbit must first supply an unconditional $\log p_k \le k^2$, which is strictly stronger than (C$\infty$). | — | 1 |
 | 180 | Finite-horizon CRT amplification of a missed prime | 2026-09-24 | The multipliers are distinct primes, so the class has density $e^{-\theta(y_n)}\le e^{-n\log n}$, super-exponentially below any provable ($e^{-cn}$, Theorem C) or heuristic ($e^{-n/q}$, Shanks) decay of the $n$-step missing set; no bound of this kind can be contradicted. Only exact invariance survives the infinite horizon, and exact invariance gives $\log\log X$ missing seeds below $X$ (`GapPrinciple.card_misses_ge`), against the $X^{c}$ a counting argument needs. | `GapPrinciple.card_misses_ge` | 0 |
+| 183 | Autonomous selection as a route to Galois control (feedback-selection theory) | 2026-11-08 | Autonomy modulo a prime is take-all: by Dirichlet every unit class contains a prime, on a prime a rule has no choice, so an autonomous rule has $\sigma(E)\equiv E$ and cofactor $\equiv 1\pmod q$, and its walk is the Sylvester walk whose prime support has density zero (Odoni). The greedy rule is autonomous modulo no odd prime. The only autonomous content of the greedy walk is the runs with $c_n\equiv 1\pmod q$, on which capture is finitely decidable and, for $q\equiv 2\ (3)$, impossible; every capture of such a prime is immediately preceded by a deviation. The positive half (that the deviation residues steer the walk into $-1$) is the conjecture; its choice-free relaxation MixedMC is open. | `FeedbackSelection.sel_cast_eq_of_autonomous` | 0 |
 
 ### Collapse (CO, 28) — the proposed hypothesis is definitionally (or by a short argument) equivalent to an existing one, usually CME, CCSB or MC itself
 | # | Dead end | S | Why it fails | Witness | Rev |
@@ -738,11 +739,12 @@ so the old `GenMC(2) ⇒ MC` was vacuous; repaired in `EM/Ensemble/WeylChain.lea
 Session 319 added #178 (entropy/mixing/"sufficiently composed" arguments) and Session 320
 (2026-09-05) #179: two multiplier classes per cofinal position do not force coverage of `-1`.
 Session 323 (2026-09-24) added #180–#182 (CRT amplification, Galois-orbit amplification,
-Zilber–Pink as a mechanism). -/
-def deadEndCount : ℕ := 182
+Zilber–Pink as a mechanism).  Session 325 (2026-11-08) added #183 (autonomous selection as a
+route to Galois control: autonomy modulo a prime is take-all). -/
+def deadEndCount : ℕ := 183
 
-/-- Number of catalogued dead-end entries: the 182 numbers minus the ten never assigned. -/
-def deadEndEntryCount : ℕ := 172
+/-- Number of catalogued dead-end entries: the 183 numbers minus the ten never assigned. -/
+def deadEndEntryCount : ℕ := 173
 
 /-- Entries with a genuine (non-placeholder) formal Lean witness, counted from
 `tools/dead_ends.tsv` by `tools/gen_dead_ends.py`.
@@ -769,8 +771,10 @@ giving 35.  Session 319 adds #178 (`cme_iff_mc`) and Session 320 adds #179
 (`GapPrinciple.card_misses_ge`, `GapPrinciple.isPreimage_div_iff`,
 `Dichotomy.algebraic_multiplier_implies_tower`), giving 40; Session 324 (2026-11-07) upgrades
 #181's witness to `GreedyRigidity.eq_of_itinerary_eq` (the itinerary determines the seed, so no
-symmetry of the seed space moves the branch). -/
-def witnessedDeadEndCount : ℕ := 40
+symmetry of the seed space moves the branch).  Session 325 (2026-11-08) adds #183
+(`FeedbackSelection.sel_cast_eq_of_autonomous`: a rule autonomous modulo a prime is take-all
+modulo that prime, by Dirichlet), giving 41. -/
+def witnessedDeadEndCount : ℕ := 41
 
 /-- Dead ends with weak-MC revival score ≥ 2 (#86, #90, #106, #120, #121, #125, #127, #129,
 #136, #146, #161, #162, #163, #164, #166).  The last five are the Session 312 seed-average
@@ -781,9 +785,9 @@ def revivableDeadEndCount : ℕ := 15
 /-- Dead end registry summary. -/
 theorem dead_end_registry :
     -- Witnessed dead ends have Lean proofs
-    deadEndCount = 182 ∧
-    deadEndEntryCount = 172 ∧
-    witnessedDeadEndCount = 40 ∧
+    deadEndCount = 183 ∧
+    deadEndEntryCount = 173 ∧
+    witnessedDeadEndCount = 41 ∧
     revivableDeadEndCount = 15 ∧
     -- Key revival chains are proved
     (RecipSumConcentration → AlmostAllSquarefreeRSD) ∧  -- #90 revival
