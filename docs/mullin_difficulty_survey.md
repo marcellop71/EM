@@ -163,7 +163,10 @@ Variants locate the conjecture at a boundary.
 feature is present and Weil's Riemann hypothesis is a theorem, the greedy sequence from the
 seed `X` is a perpetual tower of irreducibles and the function-field Mullin conjecture is
 **false**.  [`not_ffMullinConjecture_five`]  The reason is a finite-field accident: the
-constant `−1/4` has a finite `Φ₆`-orbit modulo `5`.  Over `𝔽₂[t]` and over `𝔽_p[t]` with
+constant `−1/4` has a finite `Φ₆`-orbit modulo `5`.  The failure of the function-field
+conjecture along perpetually irreducible paths was found by Kurokawa and Satoh
+(Experiment. Math. 17, 2008), who also reported computations supporting the conjecture in
+the remaining cases; the Lean theorem is the `p = 5` instance.  Over `𝔽₂[t]` and over `𝔽_p[t]` with
 `p ≡ 1 (mod 3)` the composite floor (C∞) is a theorem with explicit constants, and the
 conjecture is open and exactly as hard as over `ℤ`.  [`ffGrowthConstant_eq_zero_of_two`,
 `ffGrowthConstant_eq_zero_of_one_mod_three`]

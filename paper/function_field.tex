@@ -28,9 +28,16 @@ free}.  The Weil bound---an open hypothesis over~$\ZZ$---is a theorem of
 Weil~\cite{Weil1948} over~$\Fpt$.  Yet the function-field Mullin
 Conjecture is not uniformly true: over $\FF_5[t]$ it is \emph{false},
 because the greedy sequence from~$t$ is a perpetually irreducible
-Sylvester tower (Theorem~\ref{thm:ffmc-false-five}, machine-checked),
-and where it is not refuted the residual difficulty is identical to the
-integer case: the orbit-specificity barrier.  This subsection develops
+Sylvester tower (Theorem~\ref{thm:ffmc-false-five}, machine-checked).
+This failure mode is not new: Kurokawa and Satoh~\cite{KuSa2008}
+reformulated Shanks's conjecture in $\FF_p[t]$ in 2008, proved that the
+heuristic breaks down in explicitly characterised cases---the perpetually
+irreducible paths, in the description of~\cite{BoIr2016}---and reported
+computations suggesting the conjecture holds otherwise; our $\FF_5$
+theorem is a machine-checked instance of their mechanism, and
+$\FF_2[t]$ is their open case.  Where the conjecture is not refuted the
+residual difficulty is identical to the integer case: the
+orbit-specificity barrier.  This subsection develops
 the FF-EM sequence, proves the refutation over~$\FF_5$, an unconditional
 six-step sieve chain and the $\Phi_3$ exclusion criterion, and presents
 three formally verified dead ends that delineate the boundary of current
@@ -86,7 +93,9 @@ For every monic irreducible $Q \in \Fpt$, there exists $n$ with
 $\ffseq(n) = Q$.
 \end{conjecture}
 
-Stated for every prime~$p$, the conjecture is \emph{false}.
+Stated for every prime~$p$, the conjecture is \emph{false}; this was
+first shown by Kurokawa and Satoh~\cite{KuSa2008}, and the following
+theorem is the $p = 5$ instance, verified in Lean.
 
 \begin{theorem}[{FF-MC fails over $\FF_5[t]$ ---
 \lean{EM/FunctionField/StableTower.lean}{not\_ffMullinConjecture\_five}}]

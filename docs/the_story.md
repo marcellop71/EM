@@ -76,7 +76,9 @@ statements in Lean are `True` placeholders (marked; badged `[placeholder]` in th
 real FF content is the exact degree telescope, `Φ₃` exclusion, `FFDirichletDensity` — and,
 since 2026-09-02, a **refutation**: over `𝔽_5[t]` the seed-`t` sequence is a perpetually
 irreducible Sylvester tower, so `FFMullinConjecture 5` is false
-(`EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`).  The branch (C∞) denies
+(`EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`); the phenomenon was
+found by Kurokawa–Satoh (Experiment. Math. 2008), who characterised the failing cases and
+reported numerics supporting the conjecture otherwise, 𝔽_2[t] included.  The branch (C∞) denies
 over `ℤ` is realised there; the FF conjecture is a statement about non-exceptional primes.
 Corollary via mod 5 (`GenericTower.lean`): every level polynomial `Φ₆ⁿ+1` is irreducible over
 `ℚ`, so the *generic* sequence seeded at the indeterminate `x` is a Sylvester tower that never

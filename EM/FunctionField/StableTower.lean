@@ -11,6 +11,12 @@ import Mathlib.Dynamics.PeriodicPts.Defs
 Euclid–Mullin sequence over `𝔽_p[X]` (seed `X`, least-degree monic irreducible factor at each
 step, any tie-break) every monic irreducible appears.  This file refutes it for `p = 5`.
 
+**Prior work.** The failure of the function-field Shanks/Mullin conjecture is due to
+N. Kurokawa and T. Satoh, *Euclid prime sequences over unique factorization domains*,
+Experiment. Math. 17 (2008) 145–152, who proved that the heuristic breaks down in explicitly
+characterised cases (the perpetually irreducible paths) and found numerical support for the
+conjecture otherwise.  This file is a machine-checked instance of their mechanism for `p = 5`.
+
 ## The mechanism: a stable Sylvester tower
 
 On the *autonomous branch* — as long as every Euclid number `E_n = P_n + 1` is irreducible —
