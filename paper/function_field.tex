@@ -236,6 +236,17 @@ FF-EM data, i.e.\ for every choice function:
   single step; over $\FF_2$, after two irreducible stages every factor has
   degree divisible by~$4$
   (\lean{EM/FunctionField/AutonomousDegrees.lean}{four\_dvd\_ffSeq\_natDegree\_of\_two\_irreducible}).
+  The closed form over $\FF_2$: after $k$ consecutive irreducible stages
+  every irreducible factor of the next Euclid polynomial has degree $D$
+  with $k < 2^{v_2(D)}$
+  (\lean{EM/FunctionField/AutonomousThreshold.lean}{lt\_two\_pow\_padicValNat\_natDegree\_of\_run}),
+  because $1$ lies in the image of $(F+1)^k$ on $\FF_{2^d}$ exactly when
+  $k < 2^{v_2(d)}$
+  (\lean{EM/FunctionField/AutonomousThreshold.lean}{one\_mem\_sylv\_iterate\_image\_iff}):
+  a solution of $z^{2^{2^v}} = z + 1$ has Frobenius period exactly
+  $2^{v+1}$, and root counting gives sharpness.  The actual sequence attains
+  the bound at $k = 3$, $D = 4$
+  (\lean{EM/FunctionField/AutonomousThreshold.lean}{threshold\_attained\_at\_three}).
 \end{itemize}
 
 \paragraph{The generic sequence, and a corollary over $\mathbb{Q}$.}

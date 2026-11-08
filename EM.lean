@@ -85,6 +85,7 @@ import EM.FunctionField.CharTwo
 import EM.FunctionField.CharTwoHead
 import EM.FunctionField.CharThree
 import EM.FunctionField.AutonomousDegrees
+import EM.FunctionField.AutonomousThreshold
 import EM.FunctionField.LinearSeeds
 import EM.FunctionField.StochasticMC
 import EM.FunctionField.SubgroupEscape

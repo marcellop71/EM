@@ -98,20 +98,32 @@ Over `𝔽_2[X]` the autonomous step is `P ↦ P² + P = (F + 1)P`, an `𝔽_2`-
 `𝔽_{2^d}`, and a capture of `π` after `k` autonomous steps requires
 `1 ∈ Im (F + 1)^k` on `𝔽_{2^d}`.
 
-Claim (language item, proof sketch below): **`1 ∈ Im (F+1)^k` on `𝔽_{2^d}` iff
-`k ≤ 2^{v₂(d)} − 1`.** So an irreducible of degree `d = 2^v · odd` can be captured after at
-most `2^v − 1` consecutive autonomous steps; for odd degree the step immediately before a
-capture must deviate. The cases `k = 1` and `k = 2` are already in Lean in the form
-"irreducible factors after one autonomous stage have even degree, after two stages degree
-divisible by 4" (`AutonomousDegrees.even_natDegree_of_dvd_euclid_succ`,
-`four_dvd_natDegree_of_two_irreducible`), and the general claim is their closed form.
+Theorem (Lean, `EM/FunctionField/AutonomousThreshold.lean`, added later on 2026-11-08):
+**`1 ∈ Im (F+1)^k` on `𝔽_{2^d}` iff `k ≤ 2^{v₂(d)} − 1`**
+(`AutonomousThreshold.one_mem_sylv_iterate_image_iff`, stated as
+`(∃ x, x^{2^d} = x ∧ sylv^[k] x = 1) ↔ k < 2 ^ padicValNat 2 d`). So an irreducible of degree
+`d = 2^v · odd` can be captured after at most `2^v − 1` consecutive autonomous steps; for odd
+degree the step immediately before a capture must deviate. For the Euclid sequence:
+after `k` consecutive irreducible stages every irreducible factor of the next Euclid
+polynomial has degree `D` with `k < 2^{v₂(D)}` (`lt_two_pow_padicValNat_natDegree_of_run`;
+divisibility form `two_pow_succ_dvd_natDegree_of_run`: `2^v ≤ k ⟹ 2^{v+1} ∣ D`). The cases
+`k = 1` and `k = 2` were already in Lean (`AutonomousDegrees.even_natDegree_of_dvd_euclid_succ`,
+`four_dvd_natDegree_of_two_irreducible`); the actual `𝔽_2` sequence attains the bound at
+`k = 3`, `D = 4` (`threshold_attained_at_three`: three irreducible Euclid polynomials, then a
+split into two quartics, `3 = 2^{v₂(4)} − 1`).
 
-Sketch. Let `d = 2^v m`, `m` odd, `K = 𝔽_{2^{2^v}} ⊆ 𝔽_{2^d}`. The relative trace
-`Tr : 𝔽_{2^d} → K` is surjective, `F`-equivariant, and `Tr(1) = m·1 = 1`. If
-`(F+1)^k x = 1` then `(F_K+1)^k Tr(x) = 1` in `K`. On `K` the operator `N = F_K + 1` is
-nilpotent of index `2^v` (since `N^{2^v} = F^{2^v} + 1 = 0` and `1, F, …, F^{2^v−1}` are
-independent), on a space of dimension `2^v`, hence a single Jordan block with socle
-`ker N = 𝔽_2·1`; so `1 ∈ Im N^k` iff `k ≤ 2^v − 1`. Sufficiency: solve inside `K`.
+Proof as formalised (no relative trace needed). *Necessity*: in characteristic `2`,
+`(F+1)^{2^v} = F^{2^v} + 1` (`sylv_iterate_two_pow`), so if `(F+1)^k y = 1` with `k ≥ 2^v`
+then `z = (F+1)^{k−2^v} y` solves `z^{2^{2^v}} = z + 1`; iterating, `z^{2^{2^{v+1}}} = z` and
+`z^{2^{2^v}} ≠ z`, so `z` has Frobenius period exactly `2^{v+1}`
+(`minimalPeriod_eq_of_sylv_iterate_two_pow_eq_one`; this is the period-2 and period-4
+computation of `CharTwo.lean` in closed form), and that period divides the period of `y`
+because `F+1` commutes with `F`. *Sharpness*: `(F+1)^j` is evaluation of a monic polynomial
+of degree `2^j` (`sylvPoly_iterate_monic_natDegree`), so `(F+1)^{2^v−1}` has at most
+`2^{2^v−1} < 2^{2^v}` zeros, while `(F+1)^{2^v} = 0` on `𝔽_{2^{2^v}}`; a nonzero value in
+`ker(F+1) = {0,1}` is `1` (`exists_sylv_iterate_pred_eq_one`). The Jordan-block picture of
+the first draft (single block on `𝔽_{2^{2^v}}` with socle `𝔽_2·1`) is the same fact; the
+root count replaces the dimension count.
 
 The parallel with `ℤ` is exact in shape: over `ℤ` the autonomous capture of `q` after `k`
 steps is a Chebotarev condition in the degree-`2^k` field of the Sylvester tower, with
@@ -157,7 +169,8 @@ Euclid number, which is the single-integer barrier in its original form.
 ## 6. What the theory yields, honestly
 
 * **Necessity theorems**: feedback at bounded distance before almost every capture; exact
-  over `𝔽_2` (threshold `2^{v₂(d)}`), Chebotarev-density over `ℤ`.
+  over `𝔽_2` (threshold `2^{v₂(d)}`, now a Lean theorem with sharpness), Chebotarev-density
+  over `ℤ`.
 * **Classification**: autonomy = take-all; the taxonomy of §4.
 * **A rung**: `NoAutonomousTail`, between NoFrozen and `(C∞)`.
 * **Decidability on autonomous tails**: capture decided in `< q` steps; the only place where
@@ -166,8 +179,11 @@ Euclid number, which is the single-integer barrier in its original form.
 
 ## 7. Follow-ups
 
-1. Lean, moderate: the `𝔽_2` threshold theorem of §3 (nilpotent Jordan block on `𝔽_{2^{2^v}}`
-   via the relative trace), stated for `FFEMData 2` with residue-autonomous stages modulo `π`.
+1. ~~Lean, moderate: the `𝔽_2` threshold theorem of §3.~~ Done the same day:
+   `EM/FunctionField/AutonomousThreshold.lean` (iff with sharpness at the field level, and the
+   `FFEMData 2` statement for runs of irreducible stages). Not done: the version with
+   residue-autonomous (rather than irreducible) stages modulo `π`, which would need the
+   cofactor-mod-`π` bookkeeping of `FeedbackSelection.lean` transported to `𝔽_2[X]`.
 2. Lean, small: seeded versions of §2 (`genProd`, `seedCofactor`), and the level-`k`
    statement for `q ≡ 1 (mod 3)` using `BackwardLevels.realizedLevels`.
 3. Paper: a paragraph in `why_its_hard.tex` after the definition of the non-autonomous map
