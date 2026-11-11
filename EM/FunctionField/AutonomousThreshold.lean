@@ -1,5 +1,6 @@
 import EM.FunctionField.AutonomousDegrees
 import Mathlib.NumberTheory.Padics.PadicVal.Basic
+import Mathlib.FieldTheory.Finite.Extension
 
 /-!
 # The `𝔽_2` threshold: `1 ∈ Im (F+1)^k` on `𝔽_{2^d}` iff `k < 2^{v₂(d)}`
@@ -31,6 +32,12 @@ consecutive irreducible stages every irreducible factor `f` of the next Euclid p
 The actual `𝔽_2` sequence attains the bound: its first three Euclid polynomials are irreducible
 (`CharTwo.ff_two_attains_three`) and the fourth splits into two quartics, `k = 3 = 2² - 1` with
 `v₂(4) = 2`.
+
+**Scope.** Runs of irreducible stages have length at most `3`
+(`CompositeFloors.not_four_consecutive_irreducible`), so for such runs the sequence form is
+empty for `k ≥ 4`, and `k = 3` follows from `k = 2`.  The unbounded range of `k` belongs to
+residue-autonomous runs; see §4, which also derives the constant `3` from the field-level
+theorem (exact factor degrees of the level polynomials).
 
 Reading in the language of feedback selection: for an odd-degree target the step immediately
 before a capture must deviate; for degree `2^v · odd` the feedback must arrive within `2^v - 1`
@@ -308,6 +315,122 @@ theorem threshold_attained_at_three (d : FFEMData 2) :
       compute_degree!
     rw [hdeg, show (4 : ℕ) = 2 ^ 2 by norm_num, padicValNat.prime_pow]
     norm_num
+
+/-! ## 4. Scope of the sequence form; exact periods; the residue-autonomous form
+
+For runs of *irreducible* stages the sequence form of §3 has no content beyond
+`AutonomousDegrees` and `CompositeFloors`: a run has length at most `3`
+(`run_lt_four`, from `CompositeFloors.not_four_consecutive_irreducible`), the cases `k = 1, 2`
+are the earlier theorems, and `k = 3` gives `4 ∣ deg f`, which is the `k = 2` statement applied
+one stage later.  The field-level theorem explains the constant instead: every solution of
+`sylv^[k] y = 1` has Frobenius period *exactly* `2^{⌊log₂ k⌋ + 1}`
+(`minimalPeriod_eq_of_sylv_iterate_eq_one`), so every irreducible factor of the level polynomial
+`sylvPoly^[k] X + 1` has degree `2^{⌊log₂ k⌋ + 1}` (`natDegree_eq_of_irreducible_dvd_level`),
+and that polynomial, of degree `2^k`, is irreducible exactly for `k ≤ 2`.  In arboreal terms
+Frobenius at `2` acts on level `k` of the Sylvester tree with all cycles of length
+`2^{⌊log₂ k⌋ + 1}` (over `𝔽_5` it is a single cycle, `StableTower.g_irreducible`).
+
+The threshold with unbounded `k` applies to *residue-autonomous* runs, where the cofactor is
+`≡ 1` modulo the target without the stage being irreducible
+(`lt_two_pow_padicValNat_natDegree_of_residue_run`): the function-field form of
+`FeedbackSelection.level_prime_of_capture_after_run`. -/
+
+/-- A run of irreducible stages over `𝔽_2` has length at most three. -/
+theorem run_lt_four (d : FFEMData 2) (n k : ℕ)
+    (h : ∀ j, j < k → Irreducible (d.ffProd (n + j) + 1)) : k < 4 := by
+  by_contra hk
+  exact not_four_consecutive_irreducible d n (fun j hj => h j (by omega))
+
+theorem sylv_iterate_one {m : ℕ} (hm : m ≠ 0) : sylv^[m] (1 : Lp 2) = 0 := by
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hm
+  have h1 : sylv (1 : Lp 2) = 0 := by
+    simp only [sylv]; linear_combination two_eq_zero_L
+  have h0 : sylv (0 : Lp 2) = 0 := by simp [sylv]
+  rw [Function.iterate_succ_apply, h1]
+  exact Function.iterate_fixed h0 m
+
+/-- **Exact period.** A solution of `sylv^[k] y = 1` with `2^v ≤ k < 2^{v+1}` has Frobenius
+period exactly `2^{v+1}`. -/
+theorem minimalPeriod_eq_of_sylv_iterate_eq_one {v k : ℕ} (hk : 2 ^ v ≤ k)
+    (hk' : k < 2 ^ (v + 1)) {y : Lp 2} (h : sylv^[k] y = 1) :
+    Function.minimalPeriod (⇑(φ 2)) y = 2 ^ (v + 1) := by
+  apply Nat.dvd_antisymm
+  · apply Function.IsPeriodicPt.minimalPeriod_dvd
+    show (⇑(φ 2))^[2 ^ (v + 1)] y = y
+    have h0 : sylv^[2 ^ (v + 1)] y = 0 := by
+      obtain ⟨m, hm⟩ := Nat.exists_eq_add_of_lt hk'
+      rw [hm, show k + m + 1 = (m + 1) + k by omega, Function.iterate_add_apply, h]
+      exact sylv_iterate_one (Nat.succ_ne_zero m)
+    rw [sylv_iterate_two_pow] at h0
+    rw [φ_iterate]
+    linear_combination h0 + (-y) * two_eq_zero_L
+  · exact two_pow_succ_dvd_minimalPeriod_of_sylv_iterate_eq_one hk h
+
+/-- **Factor degrees of the level polynomials over `𝔽_2`.** For `2^v ≤ k < 2^{v+1}` every
+irreducible factor of `sylvPoly^[k] X + 1` has degree exactly `2^{v+1}`. -/
+theorem natDegree_eq_of_irreducible_dvd_level {v k : ℕ} (hk : 2 ^ v ≤ k)
+    (hk' : k < 2 ^ (v + 1)) {f : (ZMod 2)[X]} (hf : Irreducible f)
+    (hdvd : f ∣ sylvPoly^[k] X + 1) : f.natDegree = 2 ^ (v + 1) := by
+  obtain ⟨β, hβ⟩ := exists_aeval_eq_zero 2 hf
+  obtain ⟨g, hg⟩ := hdvd
+  have hy : sylv^[k] β = 1 := by
+    have := congrArg (aeval β) hg
+    rw [map_mul, hβ, zero_mul, map_add, map_one, aeval_sylvPoly_iterate, aeval_X] at this
+    linear_combination this - two_eq_zero_L
+  have hper := minimalPeriod_eq_of_sylv_iterate_eq_one hk hk' hy
+  apply Nat.dvd_antisymm
+  · have hc : Nat.card (ZMod 2) = 2 := by simp
+    apply hf.natDegree_dvd_of_dvd_X_pow_card_pow_sub_X
+    rw [hc]
+    have hint : IsIntegral (ZMod 2) β := Algebra.IsIntegral.isIntegral β
+    have hroot : aeval β (X ^ 2 ^ 2 ^ (v + 1) - X : (ZMod 2)[X]) = 0 := by
+      have hfix : (⇑(φ 2))^[2 ^ (v + 1)] β = β := by
+        rw [← hper]; exact Function.isPeriodicPt_minimalPeriod _ _
+      rw [φ_iterate] at hfix
+      rw [map_sub, map_pow, aeval_X, hfix, sub_self]
+    have hassoc : Associated (minpoly (ZMod 2) β) f :=
+      (minpoly.irreducible hint).associated_of_dvd hf (minpoly.dvd _ _ hβ)
+    exact hassoc.symm.dvd.trans (minpoly.dvd _ _ hroot)
+  · have := minimalPeriod_aeval_dvd_natDegree 2 hf hβ X
+    rwa [aeval_X, hper] at this
+
+/-- Along a residue-autonomous run at `β` (each cofactor evaluates to `1` at `β`) the
+accumulator follows the autonomous step in the residue field. -/
+theorem aeval_ffProd_add_of_residue_run (d : FFEMData 2) (n k : ℕ) (β : Lp 2)
+    (h : ∀ j, j < k → ∃ c : (ZMod 2)[X],
+      d.ffProd (n + j) + 1 = d.ffSeq (n + j + 1) * c ∧ aeval β c = 1) :
+    aeval β (d.ffProd (n + k)) = sylv^[k] (aeval β (d.ffProd n)) := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    obtain ⟨c, hc, hc1⟩ := h k (Nat.lt_succ_self k)
+    have := congrArg (aeval β) hc
+    rw [map_add, map_one, map_mul, hc1, mul_one] at this
+    rw [Function.iterate_succ_apply', ← ih (fun j hj => h j (by omega)), ← add_assoc,
+      d.ffProd_succ, map_mul, ← this]
+    simp only [sylv]; ring
+
+/-- **Threshold, residue-autonomous form.** If an irreducible `f` with root `β` divides the
+Euclid polynomial after `k` consecutive stages whose cofactors are `≡ 1` at `β`, then
+`k < 2^{v₂(deg f)}`.  Irreducible stages are the case `c = 1`; here `k` is not bounded by `3`. -/
+theorem lt_two_pow_padicValNat_natDegree_of_residue_run (d : FFEMData 2) (n k : ℕ)
+    {f : (ZMod 2)[X]} (hf : Irreducible f) {β : Lp 2} (hβ : aeval β f = 0)
+    (h : ∀ j, j < k → ∃ c : (ZMod 2)[X],
+      d.ffProd (n + j) + 1 = d.ffSeq (n + j + 1) * c ∧ aeval β c = 1)
+    (hdvd : f ∣ d.ffProd (n + k) + 1) : k < 2 ^ padicValNat 2 f.natDegree := by
+  obtain ⟨g, hg⟩ := hdvd
+  have hy : sylv^[k] (aeval β (d.ffProd n)) = 1 := by
+    have := congrArg (aeval β) hg
+    rw [map_mul, hβ, zero_mul, map_add, map_one, aeval_ffProd_add_of_residue_run d n k β h]
+      at this
+    linear_combination this - two_eq_zero_L
+  by_contra hlt
+  push Not at hlt
+  have hpos : f.natDegree ≠ 0 :=
+    (natDegree_pos_iff_degree_pos.mpr (degree_pos_of_irreducible hf)).ne'
+  exact pow_succ_padicValNat_not_dvd hpos
+    ((two_pow_succ_dvd_minimalPeriod_of_sylv_iterate_eq_one hlt hy).trans
+      (minimalPeriod_aeval_dvd_natDegree 2 hf hβ _))
 
 end AutonomousThreshold
 

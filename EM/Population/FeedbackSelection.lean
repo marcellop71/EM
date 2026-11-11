@@ -334,6 +334,78 @@ theorem autonomous_rung :
     (NoAutonomousTail → AutonomousBranch.InfinitelyManyComposite) :=
   ⟨noFrozen_of_mc, noAutonomousTail_of_noFrozen, infinitelyManyComposite_of_noAutonomousTail⟩
 
+/-! ## 5. The `ℤ`-twin of the `𝔽₂` threshold: captures after autonomous runs are level-`k` primes
+
+Over `𝔽₂` the irreducibles capturable after `k` autonomous steps are exactly those of degree
+`d` with `k < 2^{v₂(d)}` (`FunctionFieldAnalog.AutonomousThreshold.one_mem_sylv_iterate_image_iff`).
+Over `ℤ` the same inclusion reads: a prime captured after `k` residue-autonomous stages is a
+**level-`k` prime** of the Sylvester tree, `q ∈ R_k := {q : ∃ w, sylvWalk^[k] w = -1}`
+(`level_prime_of_capture_after_run`; `k = 1` is `phi3_root_of_capture_after_run`).  Equivalently
+(`deviation_within_of_capture`): a prime outside `R_k` that is captured deviates at one of the `k`
+stages preceding the capture.  The analytic input that gives this teeth is the **density** of
+`R_k`: `R_1` is the set of primes with a primitive cube root of unity (density `1/2`), and in
+general the density of `R_k` is the proportion of elements of the arboreal Galois group of the
+`k`-th Sylvester iterate `Φ₆^k` with a fixed point, which tends to `0` (Odoni 1985 for the full
+wreath product; Jones 2008 for the density of prime divisors of orbits of `x² − x + 1`,
+regardless of the starting point).  Chebotarev is not in Mathlib, so the density statement stays
+cited rather than proved (compare `ArborealTower.ArborealChebotarev`, the positive-density half).
+Modulo that input: **MC forces all but a density-`δ_k` set of primes to be captured within `k`
+stages of a deviation, for every `k`, with `δ_k → 0`** — the quantitative deviation principle
+over `ℤ`, the twin of the exact `𝔽₂` cut-off. -/
+
+/-- A prime captured after `k` residue-autonomous stages is a level-`k` prime of the Sylvester
+tree: `sylvWalk^[k]` reaches `-1` from some residue. -/
+theorem level_prime_of_capture_after_run {q N k : ℕ}
+    (h : ∀ j, j < k → StageAutonomous q (N + j)) (hd : q ∣ prod (N + k) + 1) :
+    ∃ w : ZMod q, sylvWalk^[k] w = -1 :=
+  ⟨walkZ q N, by rw [← walkZ_add_of_run h]; exact (dvd_euclid_iff_walkZ_eq_neg_one q _).mp hd⟩
+
+/-- A captured prime that is not a level-`k` prime deviates at one of the `k` stages before its
+capture. -/
+theorem deviation_within_of_capture {q n k : ℕ} (hk : k ≤ n + 1)
+    (hq : ¬ ∃ w : ZMod q, sylvWalk^[k] w = -1) (hd : q ∣ prod (n + 1) + 1) :
+    ∃ j, j < k ∧ Deviates q (n + 1 - k + j) := by
+  by_contra hcon
+  push Not at hcon
+  apply hq
+  refine level_prime_of_capture_after_run (N := n + 1 - k) (fun j hj => ?_) ?_
+  · exact not_deviates_iff.mp (hcon j hj)
+  · rwa [Nat.sub_add_cancel hk]
+
+/-- Under MC, every prime `q ≥ 5` outside `R_k` is captured within `k` stages of a deviation
+(or among the first `k` stages). -/
+theorem mc_deviation_within {k : ℕ} (hmc : MullinConjecture) {q : ℕ} [Fact q.Prime]
+    (hq5 : 5 ≤ q) (hR : ¬ ∃ w : ZMod q, sylvWalk^[k] w = -1) :
+    ∃ n, seq (n + 2) = q ∧ (n + 1 < k ∨ ∃ j, j < k ∧ Deviates q (n + 1 - k + j)) := by
+  obtain ⟨m, hm⟩ := hmc q ((isPrime_iff_natPrime q).mpr Fact.out)
+  have hm2 : 2 ≤ m := by
+    by_contra hlt
+    rcases Nat.lt_succ_iff.mp (not_le.mp hlt) |> Nat.le_one_iff_eq_zero_or_eq_one.mp with rfl | rfl
+    · rw [seq_zero] at hm; omega
+    · rw [seq_one] at hm; omega
+  obtain ⟨n, rfl⟩ : ∃ n, m = n + 2 := ⟨m - 2, by omega⟩
+  refine ⟨n, hm, ?_⟩
+  rcases Nat.lt_or_ge (n + 1) k with hlt | hge
+  · exact Or.inl hlt
+  · refine Or.inr (deviation_within_of_capture hge hR ?_)
+    rw [← hm]; exact seq_succ_dvd_euclid (n + 1)
+
+/-- Autonomy at stage `n` modulo `q` is the divisibility `q ∣ c_n − 1`. -/
+theorem stageAutonomous_iff_dvd_cofactor_sub_one (q n : ℕ) :
+    StageAutonomous q n ↔ q ∣ cofactor n - 1 := by
+  unfold StageAutonomous
+  rw [show (1 : ZMod q) = ((1 : ℕ) : ZMod q) by simp, ZMod.natCast_eq_natCast_iff,
+    Nat.ModEq.comm, Nat.modEq_iff_dvd' (cofactor_pos n)]
+
+/-- At a composite stage only finitely many primes see an autonomous stage: they divide
+`c_n − 1 ≥ 1`. -/
+theorem finite_stageAutonomous_of_cofactor_ne_one {n : ℕ} (h : cofactor n ≠ 1) :
+    {q : ℕ | StageAutonomous q n}.Finite := by
+  have hpos : cofactor n - 1 ≠ 0 := by have := cofactor_pos n; omega
+  refine ((Nat.divisors (cofactor n - 1)).finite_toSet).subset fun q hq => ?_
+  rw [Finset.mem_coe, Nat.mem_divisors]
+  exact ⟨(stageAutonomous_iff_dvd_cofactor_sub_one q n).mp hq, hpos⟩
+
 /-! ## Landscape -/
 
 /-- **Feedback selection.**  Autonomy modulo a prime is take-all; the greedy rule is

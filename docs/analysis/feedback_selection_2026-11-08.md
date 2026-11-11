@@ -103,14 +103,26 @@ Theorem (Lean, `EM/FunctionField/AutonomousThreshold.lean`, added later on 2026-
 (`AutonomousThreshold.one_mem_sylv_iterate_image_iff`, stated as
 `(∃ x, x^{2^d} = x ∧ sylv^[k] x = 1) ↔ k < 2 ^ padicValNat 2 d`). So an irreducible of degree
 `d = 2^v · odd` can be captured after at most `2^v − 1` consecutive autonomous steps; for odd
-degree the step immediately before a capture must deviate. For the Euclid sequence:
-after `k` consecutive irreducible stages every irreducible factor of the next Euclid
-polynomial has degree `D` with `k < 2^{v₂(D)}` (`lt_two_pow_padicValNat_natDegree_of_run`;
-divisibility form `two_pow_succ_dvd_natDegree_of_run`: `2^v ≤ k ⟹ 2^{v+1} ∣ D`). The cases
-`k = 1` and `k = 2` were already in Lean (`AutonomousDegrees.even_natDegree_of_dvd_euclid_succ`,
-`four_dvd_natDegree_of_two_irreducible`); the actual `𝔽_2` sequence attains the bound at
-`k = 3`, `D = 4` (`threshold_attained_at_three`: three irreducible Euclid polynomials, then a
-split into two quartics, `3 = 2^{v₂(4)} − 1`).
+degree the step immediately before a capture must deviate.
+
+Scope (corrected 2026-11-10). For runs of *irreducible* stages this adds nothing to what was
+already in Lean: such a run has length at most `3` (`CompositeFloors.not_four_consecutive_irreducible`,
+`AutonomousThreshold.run_lt_four`), `k = 1, 2` are `AutonomousDegrees.even_natDegree_of_dvd_euclid_succ`
+and `four_dvd_natDegree_of_two_irreducible`, and `k = 3` gives `4 ∣ D`, the `k = 2` statement one
+stage later. The sequence form `lt_two_pow_padicValNat_natDegree_of_run` is therefore empty for
+`k ≥ 4`. What the field-level theorem does give:
+
+* every solution of `(F+1)^k y = 1` has Frobenius period exactly `2^{⌊log₂ k⌋+1}`
+  (`minimalPeriod_eq_of_sylv_iterate_eq_one`), so every irreducible factor of the level
+  polynomial `Φ₆^k + 1` over `𝔽_2` has degree `2^{⌊log₂ k⌋+1}`
+  (`natDegree_eq_of_irreducible_dvd_level`); the level polynomial is irreducible exactly for
+  `k ≤ 2`, which is where the floor constant `3` comes from. Frobenius at `2` acts on level `k`
+  of the Sylvester tree with all cycles of length `2^{⌊log₂ k⌋+1}`; at `5` it is one cycle
+  (`StableTower`); over `ℚ` the group is the full wreath product (Odoni).
+* the residue-autonomous form (`lt_two_pow_padicValNat_natDegree_of_residue_run`): `k` stages
+  whose cofactors are `≡ 1` at a root of `f`, followed by a capture of `f`, force
+  `k < 2^{v₂(deg f)}`. Here `k` is unbounded; this is the twin of
+  `FeedbackSelection.level_prime_of_capture_after_run`.
 
 Proof as formalised (no relative trace needed). *Necessity*: in characteristic `2`,
 `(F+1)^{2^v} = F^{2^v} + 1` (`sylv_iterate_two_pow`), so if `(F+1)^k y = 1` with `k ≥ 2^v`
@@ -179,11 +191,10 @@ Euclid number, which is the single-integer barrier in its original form.
 
 ## 7. Follow-ups
 
-1. ~~Lean, moderate: the `𝔽_2` threshold theorem of §3.~~ Done the same day:
-   `EM/FunctionField/AutonomousThreshold.lean` (iff with sharpness at the field level, and the
-   `FFEMData 2` statement for runs of irreducible stages). Not done: the version with
-   residue-autonomous (rather than irreducible) stages modulo `π`, which would need the
-   cofactor-mod-`π` bookkeeping of `FeedbackSelection.lean` transported to `𝔽_2[X]`.
+1. ~~Lean, moderate: the `𝔽_2` threshold theorem of §3.~~ Done:
+   `EM/FunctionField/AutonomousThreshold.lean` (iff with sharpness at the field level; exact
+   factor degrees of the level polynomials; the residue-autonomous form, added 2026-11-10
+   together with the scope correction of §3).
 2. Lean, small: seeded versions of §2 (`genProd`, `seedCofactor`), and the level-`k`
    statement for `q ≡ 1 (mod 3)` using `BackwardLevels.realizedLevels`.
 3. Paper: a paragraph in `why_its_hard.tex` after the definition of the non-autonomous map
