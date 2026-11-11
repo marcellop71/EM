@@ -62,7 +62,7 @@ orbit barrier.
 
 * Integer-side chain: `EM/Ensemble/MixedEnsemble.lean` (PSCD, pigeonhole, almost-all)
 * FF-FCD: `EM/FunctionField/FFCharacterSums.lean` (unconditional)
-* Factor tree: `EM/FunctionField/FactorTree.lean` (FFGenMixedMC, mixed selection)
+* Factor tree: `EM/FunctionField/FactorTree.lean` (mixed selection)
 -/
 
 namespace FunctionFieldAnalog
@@ -257,15 +257,9 @@ theorem ff_vs_integer_chain :
 
 /-! ## Part 7: Connection to Factor Tree Infrastructure -/
 
-/-- GenMixedMC (the "all" version) is strictly stronger than
-    almost-all GenMixedMC. This witnesses that the unconditional
-    almost-all result does NOT resolve the deterministic FF-MC. -/
-theorem ff_gen_mixed_mc_implies_almost_all :
-    FFGenMixedMC p → FFAlmostAllGenMixedMC p := by
-  intro _
-  exact ff_almost_all_gen_mixed_mc_proved p
+-- ff_gen_mixed_mc_implies_almost_all archived to EM/Archive/FunctionField/FFGenMixedMCArchive.lean (RED #19)
 
-/-- FFMullinConjecture (from X) implies FFMixedMC (from X) for any target Q.
+/-- FFMullinConjecture (from X) implies factor-tree reachability from X for any target Q.
 
     If the greedy walk from X captures every monic irreducible, then a fortiori
     the standard greedy selection (viewed as a mixed selection) captures Q.
@@ -276,20 +270,18 @@ theorem ff_mc_implies_mixed_mc_from_X (d : FFEMData p) (hmc : FFMullinConjecture
     ffTreeReachable p (X : Polynomial (ZMod p)) Q :=
   ffmc_implies_tree_reachable_from_X d hmc Q hQm hQi
 
-/-- The hierarchy of FF-MC variants:
-    deterministic FF-MC -> GenMixedMC -> almost-all GenMixedMC (unconditional).
+/-- The unconditional almost-all statement and the chain from FCD.
 
-    The gap between the second and third is exactly the orbit-specificity
-    barrier. The first implies the second trivially. -/
+    The original middle clause `FFGenMixedMC p → FFAlmostAllGenMixedMC p` was vacuous:
+    `FFGenMixedMC` was found false on 2026-11-10 (`FunctionFieldAnalog.not_ffGenMixedMC`).
+    The original three-clause statement is archived in
+    `EM/Archive/FunctionField/FFGenMixedMCArchive.lean` (RED #19). -/
 theorem ff_mc_hierarchy :
     -- (1) Almost-all GenMixedMC is unconditional
     FFAlmostAllGenMixedMC p ∧
-    -- (2) GenMixedMC implies almost-all (weakening)
-    (FFGenMixedMC p → FFAlmostAllGenMixedMC p) ∧
-    -- (3) Full chain from FCD is unconditional
+    -- (2) Full chain from FCD is unconditional
     (FFFCD p → FFAlmostAllGenMixedMC p) :=
   ⟨ff_almost_all_unconditional p,
-   ff_gen_mixed_mc_implies_almost_all p,
    ff_fcd_implies_almost_all p⟩
 
 /-! ## Part 8: Landscape -/

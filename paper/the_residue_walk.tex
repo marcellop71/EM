@@ -490,7 +490,7 @@ operation $\minFac$ extracts global arithmetic information from all
 $\sim 2^n$ bits; the death channel is determined by $O(\log q)$ bits.
 For the multiplier to systematically avoid the death channel, the
 $O(\log q)$-bit residue would have to predict the outcome of an
-operation on a $2^n$-bit integer---a ``prediction'' whose information
+operation on an integer of up to $2^n$ bits---a ``prediction'' whose information
 content vanishes exponentially.
 
 More precisely: for a generic $q$-rough integer $N \equiv a \pmod{q}$,
@@ -588,7 +588,8 @@ CCSB~$\Rightarrow$~MC appear as Theorem~\ref{thm:ccsb-mc}.
 \defname{ConditionalMultiplierEquidist} asks that the multiplier
 characters $\chi(\multZ{2}{q}{n})$, conditioned on each walk position
 $\walkZ{2}{q}{n} = c$, have cancelling partial sums.  CME is the
-sharpest hypothesis: it asserts that the factoring operation destroys
+form closest to the heuristic (and, as a global statement, equivalent to
+MC): it asserts that the factoring operation destroys
 correlation between consecutive multiplier residues conditioned on
 the walk position, and it implies CCSB for all character orders,
 bypassing the $d \geq 3$ barrier that blocks the BRE route.  The
@@ -636,7 +637,7 @@ for $N$ steps is $(1 - 1/(q-1))^N \to 0$.  The EM walk is not
 random---it is deterministic---but the factoring operation that
 determines each multiplier is, heuristically, a decorrelating ``hash.''
 This is the \textbf{factorization independence heuristic}: the
-function $\minFac$, applied to a $2^n$-bit integer, produces an
+function $\minFac$, applied to an integer of up to $2^n$ bits, produces an
 output that is effectively uncorrelated with the $O(\log q)$-bit
 residue class of the input.
 

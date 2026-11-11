@@ -27,14 +27,15 @@ Write `P_n = p_0 p_1 ⋯ p_n` for the running product, `E_n = P_n + 1` for the E
 the part of the Euclid number the rule discards.  The whole dynamics is the pair `(p_{n+1}, c_n)`.
 
 Three immediate facts shape everything.  The primes `p_n` are distinct, since `E_n` is coprime
-to `P_n`.  The products grow doubly exponentially, `log P_n ≍ 2^n`, since `E_n ≈ P_n` and
-`P_{n+1} = P_n p_{n+1} ≤ P_n E_n`.  And at a prime stage (`E_n` prime, `c_n = 1`) the next
+to `P_n`.  The products grow at least exponentially and at most doubly exponentially,
+`n + 1 ≤ log₂ P_n ≤ 2^n`, since `P_{n+1} = P_n p_{n+1} ≤ P_n E_n`; `log P_n ≍ 2^n` is exactly the
+prime-tower branch (`C > 0`), which refutes MC, so under MC `log P_n = o(2^n)`.  And at a prime stage (`E_n` prime, `c_n = 1`) the next
 Euclid number is a polynomial in the current one: `E_{n+1} = E_n² − E_n + 1 = Φ₆(E_n)`.  A run
 of prime stages is therefore a *Sylvester tower*, an orbit of the quadratic map `Φ₆`, and the
 greedy rule leaves the tower exactly at a composite stage.
 
-Computation is nearly powerless here.  To know `p_{n+1}` one must factor `E_n`, a number of
-about `2^n` digits, and about fifty terms are known.  This is not a problem on which
+Computation is nearly powerless here.  To know `p_{n+1}` one must factor `E_n`, a number that
+already has hundreds of digits around `n ≈ 50`, and about fifty terms are known.  This is not a problem on which
 experiments accumulate.
 
 ## 2. What the conjecture says, in five languages
@@ -224,7 +225,7 @@ Dead End #90 in another language.  [`missingFinite_implies_secondChance_io`,
 
 *Head rigidity.*  `head(n) ≤ p_{n+2}` (the `(n+2)`-nd prime), every head capture after the
 first stage is a composite Euclid number, and MC forces `lpf(E_n) ≤ p_{n+2}` infinitely often:
-a prime factor below `(1+o(1)) log E_n`, infinitely often, in a number of `2^n` digits.
+a prime factor below `(1+o(1)) log E_n`, infinitely often, in a number of up to `2^n` digits.
 [`head_le_nth_prime`, `capture_composite`, `mullin_implies_lpf_le_nth_prime_io`]
 
 ## 8. What a proof would have to be

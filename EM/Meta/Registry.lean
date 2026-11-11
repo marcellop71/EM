@@ -232,7 +232,7 @@ attribute [open_point] MixedDiversity
 attribute [open_point] MixedDiversityWeak
 attribute [open_point] MixedHitting
 attribute [open_point] UFDStrongImpliesMixedMC
--- FactorEscapeHypothesis : ℕ → Prop (not bare Prop, skip)
+-- FactorEscapeHypothesis archived (RED #18): false, `HypothesisAudit.not_factorEscapeHypothesis`
 
 -- ============================================================================
 -- Published results: proved theorems
@@ -456,7 +456,7 @@ attribute [publish] reachableAt_from_factor
 attribute [publish] reachable_composite_branch
 attribute [publish] reachableEver_not_in_coset
 attribute [publish] factor_confinement
-attribute [publish] factor_escape_implies_mixed_mc_at
+-- factor_escape_implies_mixed_mc_at publish deleted (RED #18)
 attribute [publish] pure_random_mc_iff_mixed_mc
 attribute [publish] standard_mc_implies_pure_random
 attribute [publish] pscd_implies_almost_all_mixed_hitting

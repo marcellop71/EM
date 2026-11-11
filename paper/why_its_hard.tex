@@ -275,12 +275,14 @@ walk has four structural features---all proved or formalized---that no
 dead-end approach has successfully exploited.  Any proof of MC will
 almost certainly use at least one.
 
-\medskip\noindent\textbf{Feature~1: Super-exponential growth.}\enspace
-$\Prod{2}(n) \geq 2^n$
+\medskip\noindent\textbf{Feature~1: Fast growth.}\enspace
+$2^{n+1}\le\Prod{2}(n) \le 2^{2^n}$; where between these bounds the truth
+lies is the question $(\mathrm{C}\infty)$ (doubly exponential growth is the
+prime-tower branch, which refutes MC).  The lower bound is
 (\lean{EM/LargeSieve/Structural.lean}{prod\_lower\_bound\_for\_sieve}).  The
-Euclid numbers $\Prod{2}(n)+1$ grow absurdly fast.  This means the
+Euclid numbers $\Prod{2}(n)+1$ grow at least exponentially.  This means the
 \emph{sieve level}---the threshold below which all prime factors have
-been excluded---grows super-exponentially.  By step~$n$, the Euclid
+been excluded---grows without bound.  By step~$n$, the Euclid
 number $\Prod{2}(n)+1$ is coprime to each of $\seq{2}(0), \ldots, \seq{2}(n)$,
 a growing set of distinct primes.  The pool of ``available'' small
 primes as factors of $\Prod{2}(n)+1$ shrinks, but the size of
@@ -301,9 +303,9 @@ prime factor.}\enspace  This is the key constraint that everyone
 mentions but nobody has quantified.  If $\walkZ{2}{q}{n} \neq -1$ (so
 that $q$ does not divide $\Prod{2}(n)+1$ as the smallest factor), then
 the multiplier $\multZ{2}{q}{n} = \minFac(\Prod{2}(n)+1)$ satisfies
-$\multZ{2}{q}{n} \leq (\Prod{2}(n)+1)^{1/2}$.  For a number of size
-${\sim}2^n$, this smallest factor could be as small as~$3$ or as
-large as~${\sim}2^{n/2}$.  The $\minFac$ rule creates a deterministic
+$\multZ{2}{q}{n} \leq (\Prod{2}(n)+1)^{1/2}$.  For a number of size at least
+$2^n$, this smallest factor could be as small as~$3$ or as
+large as its square root.  The $\minFac$ rule creates a deterministic
 coupling between walk position and multiplier: the multiplier at
 step~$n$ depends on the full value of~$\Prod{2}(n)+1$, not just its
 residue.
@@ -518,12 +520,12 @@ entirely.
 
 The preceding barriers explain why MC is hard to \emph{prove}.  This
 subsection explains why it should be \emph{true}---and why the
-formalization's sole remaining hypothesis (CME) is the precise
+formalization's reformulation of MC (CME) is the precise
 mathematical content of a natural intuition about factorization.
 
 \paragraph{The information bottleneck.}
 The information bottleneck of \S\ref{sec:sufficient-conditions}---$O(\log q)$
-bits visible to the walk versus ${\sim}2^n$ bits determining the
+bits visible to the walk versus up to $2^n$ bits determining the
 multiplier---means the mutual information vanishes exponentially.
 This is directly analogous to the pseudorandomness of iterated hash
 functions: if~$H$ is a cryptographic hash, the sequence
@@ -690,11 +692,11 @@ follows from standard ANT).
   population.  For EM, this is the algebraic fact
   \lean{EM/Group/CRT.lean}{crt\_multiplier\_invariance}.
 
-\item \textbf{Super-exponential growth}: $T^n(x_0) \geq 2^{2^n}$ for
-  $n \geq n_0$.  For EM, $\Prod{2}(n) \geq 2^{n+1}$
+\item \textbf{Fast growth}: $T^n(x_0)$ grows at least exponentially.
+  For EM, $2^{n+1}\le\Prod{2}(n) \le 2^{2^n}$
   (\lean{EM/LargeSieve/Structural.lean}{prod\_lower\_bound\_for\_sieve}).
   This creates the information bottleneck: the walk position uses
-  $O(\log q)$ bits to describe a state with $\Omega(2^n)$ bits.
+  $O(\log q)$ bits to describe a state with at least $n$ bits.
 
 \item \textbf{Generating multipliers}: the residues
   $\{m(x_n) \bmod q\}_{n \geq 0}$ generate $(\ZZ/q\ZZ)^\times$.
@@ -964,11 +966,14 @@ DecorrelationHypothesis.  The sole remaining gap on this route is
 \textbf{PEDImpliesComplexCSB}
 (\lean{EM/Equidist/SelfCorrecting.lean}{PEDImpliesComplexCSB}):
 does positive escape density for all primes imply walk character sum
-cancellation?  Any proof of SieveEquidistribution (e.g., from PNT
-in APs $+$ Alladi's theorem) would immediately yield Dec and PED
-for free, isolating this single bridge as the only open step.
+cancellation?  A proof of SieveEquidistribution would yield Dec and PED,
+isolating this bridge; but SieveEquidistribution is an orbit statement about
+the multipliers at a missing prime, not a consequence of the prime number
+theorem in progressions or of Alladi's theorem (an earlier version of this
+text said so), and its population analogue is false
+(dead end~\#160).
 
-\paragraph{CME: The Sole Remaining Hypothesis}
+\paragraph{CME: the reformulation at the top}
 
 The reduction landscape (Section~\ref{sec:ensemble}) collapses to a
 single open statement: \textbf{Conditional Multiplier
@@ -1361,7 +1366,7 @@ producing that hit.
 Three independent lines of evidence suggest the walk does hit~$-1$
 (see also Remark~\ref{rem:why-dsl}).
 (1)~\emph{The information bottleneck}: $\Prod{2}(n)$ has
-${\sim}2^n$ bits, but the walk position carries only $O(\log q)$ bits.
+up to $2^n$ bits, but the walk position carries only $O(\log q)$ bits.
 The smallest prime factor of $\Prod{2}(n)+1$ depends on the full
 value, not on its residue mod~$q$, so conditioning on walk position
 constrains almost nothing about the factoring outcome---the

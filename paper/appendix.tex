@@ -868,7 +868,10 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & Multiplier subgroup generates full unit group; SE $\Rightarrow$ NAO (proved)
     & App.~\ref{app:routes} \\
 --- & StrongSME
-    & Walk hits every unit cofinally; StrongSME $\Rightarrow$ MC (proved)
+    & Walk hits every unit cofinally, for every prime; false as formalized
+      (the walk is $0$ modulo~$2$,
+      \lean{EM/Meta/HypothesisAudit.lean}{not\_strongSME}); the reduction
+      StrongSME $\Rightarrow$ MC was vacuous and is archived
     & App.~\ref{app:routes} \\
 \midrule
 

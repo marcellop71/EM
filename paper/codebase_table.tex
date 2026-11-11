@@ -42,17 +42,17 @@
 \code{Equidist/WeakHitting.lean} & The weakest orbit target: every odd prime divides some Euclid number; the four-rung ladder & 182 \\
 \code{Equidist/CofinalOrbit.lean} & Cofinal orbit expansion, quotient walk, cofinal escape & 663 \\
 \code{Equidist/OrbitAnalysis.lean} & TailSE, sieve reduction, oracle barrier, selectability & 778 \\
-\code{Equidist/Fourier.lean} & Character sums, Fourier bridge & 626 \\
+\code{Equidist/Fourier.lean} & Character sums, Fourier bridge & 605 \\
 \code{Equidist/FourierB.lean} & Character sums, Fourier bridge (cont.) & 622 \\
 \code{Equidist/SelfCorrecting.lean} & Decorrelation, BRE, telescoping, kernel & 1036 \\
-\code{Equidist/SieveTransfer.lean} & Sieve equidistribution, NoLongRuns, DPED; GenericLPFEquidist refuted (\#160) & 667 \\
+\code{Equidist/SieveTransfer.lean} & Sieve equidistribution, NoLongRuns, DPED; GenericLPFEquidist refuted (\#160) & 671 \\
 \midrule
 \multicolumn{3}{l}{\emph{CME decomposition and spectral analysis}} \\
 \code{LargeSieve/WalkDecomposition.lean} & Quadratic/general walk sum decomposition, escape decorrelation & 990 \\
 \code{CME/Variants.lean} & CME weaker variants (CME\_d, CME\_avg, CME\_subseq, CME\_target) & 96 \\
 \code{CME/Decomposition.lean} & CME $=$ A $+$ B decomposition, EMD $\Rightarrow$ CME & 356 \\
 \code{LargeSieve/Basic.lean} & BV, ALS, ArithLS, MMCSB, Farey, GCT, EH chains & 903 \\
-\code{LargeSieve/Structural.lean} & Coprimality, divisibility, BV decomposition, sieve bridge & 964 \\
+\code{LargeSieve/Structural.lean} & Coprimality, divisibility, BV decomposition, sieve bridge & 965 \\
 \code{LargeSieve/Harmonic.lean} & Parseval, Gauss sums, DFT, kernel & 813 \\
 \code{LargeSieve/Analytic.lean} & Gauss inversion, WeakALS, GCT chain & 1149 \\
 \code{LargeSieve/PrimeArithLS.lean} & Prime arithmetic large sieve, walk as partial product, dead ends & 561 \\
@@ -65,7 +65,7 @@
 \multicolumn{3}{l}{\emph{SDDS and independence}} \\
 \code{SDDS/Dynamics.lean} & Abstract SDDS framework, factoring rules & 200 \\
 \code{SDDS/Bridge.lean} & SDDS $\leftrightarrow$ EM bridge, orbit/walk/mult correspondence & 375 \\
-\code{SDDS/Reduction.lean} & StrongSME $\Rightarrow$ MC via sieve-map equidist.\ & 126 \\
+\code{SDDS/Reduction.lean} & Sieve-map equidistribution at $q$ $\Rightarrow$ $q$ divides a Euclid number (StrongSME chain archived) & 64 \\
 \code{Transfer/Excursion.lean} & Walk excursions, char.\ sum independence & 461 \\
 \code{Transfer/CRTFiber.lean} & SE $\Rightarrow$ NAO, CRT independence, death channel & 255 \\
 \midrule
@@ -127,7 +127,7 @@
 \midrule
 \multicolumn{3}{l}{\emph{Adelic and profinite framework (new)}} \\
 \code{Adelic/Equidist.lean} & Adelic decomposition: CME $\Leftrightarrow$ MWI $+$ MME, Fourier bridge, CPD & 617 \\
-\code{Adelic/Profinite.lean} & Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion & 182 \\
+\code{Adelic/Profinite.lean} & Profinite equidistribution, UPE $\Rightarrow$ CCSB $\Rightarrow$ MC, Weyl criterion & 185 \\
 \code{Adelic/UniformConductor.lean} & UCE hypothesis, conductor counting; UCE at $M{=}1$ is RoughLPFEquidist (false, \#160) & 298 \\
 \code{Adelic/ProfiniteGeneration.lean} & Primes generate $(\ZZ/N\ZZ)^\times$; MC$\Rightarrow$full generation & 176 \\
 \code{FunctionField/Analog.lean} & FF-EM over $\FF_p[t]$, Galois/monodromy, cyclotomic obstruction, Dead Ends~\#127, \#129 & 965 \\
@@ -136,15 +136,15 @@
 \code{FunctionField/SubgroupEscape.lean} & SE for large $p$ via Weil contradiction, threshold $(d{-}1)^2{+}1$ & 552 \\
 \code{FunctionField/MultiplierCCSB.lean} & 4 routes to FF-MC, population/fiber/selection hierarchy & 768 \\
 \code{FunctionField/WeakMC.lean} & Degree escape, pool partition, capture exhaustion (Dead End~\#129 revival) & 472 \\
-\code{FunctionField/FactorTree.lean} & FF factor tree: mixed selection, coprimality cascade, injectivity, start not capturable & 455 \\
+\code{FunctionField/FactorTree.lean} & FF factor tree: mixed selection, coprimality cascade, injectivity, start not capturable & 450 \\
 \code{FunctionField/PopulationEquidist.lean} & Weil $\Rightarrow$ population diversity, degree growth $\to \infty$, weak first moment & 362 \\
 \code{FunctionField/StochasticMC.lean} & FF stochastic MC, phase transition ($\varepsilon = 0$ critical), pigeonhole capture & 431 \\
 \code{FunctionField/Finiteness.lean} & FFFiniteIrreduciblesPerDegree PROVED (unconditional), coefficient injection & 188 \\
 \code{FunctionField/NecklaceFormula.lean} & Necklace identity $\sum_{d \mid n} d\,\pi_p(d) = p^n$ PROVED (Galois theory) & 446 \\
 \code{FunctionField/FFCharacterSums.lean} & Character cancellation, PNT-in-APs, FCD (all unconditional) & 237 \\
-\code{FunctionField/FFSieve.lean} & Sieve chain: SPV $\to$ PSCD $\to$ almost-all GenMixedMC (zero hypotheses) & 325 \\
+\code{FunctionField/FFSieve.lean} & Sieve chain: SPV $\to$ PSCD $\to$ almost-all GenMixedMC (zero hypotheses) & 317 \\
 \code{FunctionField/DensityMC.lean} & Genuine trapped-density statement: exact congruence sieve, pigeonhole, density $\to 0$ from Kornblum divergence (sole hypothesis) & 1550 \\
-\code{FunctionField/Master.lean} & Theorems A/B/C/D assembly: factor tree + stochastic MC + sieve chain & 306 \\
+\code{FunctionField/Master.lean} & Theorems A/B/C/D assembly: factor tree + stochastic MC + sieve chain & 307 \\
 \code{FunctionField/AutonomousMap.lean} & $\Phi_3$ criterion: $-1$ unreachable for $p \equiv 2 \pmod{3}$, orbit dynamics & 230 \\
 \code{GaussEM/GaussEMDefs.lean} & Gaussian EM over $\ZZ[i]$: sequence, irreducibility, coprimality & 291 \\
 \code{GaussEM/GaussWalkStructure.lean} & Gaussian walk: split/inert classification, norm kernel, orbit barrier & 334 \\
@@ -166,21 +166,21 @@
 \code{Stochastic/EpsilonWalk.lean} & Ensemble $\varepsilon$-walk: sigma-walk equidist, death fiber density, SigmaCRTPropagationStep (open), 8-clause landscape & 283 \\
 \code{Stochastic/TransitionKernel.lean} & Epsilon-mixed walk step PMF, weight lower bounds & 279 \\
 \code{Stochastic/PathMeasure.lean} & Reachable Finsets, branching distinctness, factor residues & 333 \\
-\code{Stochastic/GeometricCapture.lean} & Block capture weight, geometric decay, TSD$\to$PositiveProbCapture & 380 \\
+\code{Stochastic/GeometricCapture.lean} & Block capture weight, geometric decay, TSD$\to$PositiveProbCapture & 353 \\
 \code{Stochastic/RandomFactorMC.lean} & Pure random-factor variant MC, purification lemma, MC$\Rightarrow$PureRandomMC & 390 \\
 \code{Stochastic/IteratedProductCoverage.lean} & Cauchy--Davenport iterated product coverage: card growth, diameter $|G|{-}1$, safe prime instantiation & 420 \\
 \code{Stochastic/FactorDiversity.lean} & Ensemble factor diversity: genFactorSet, spectral contraction from $\geq 2$ distinct residues, vanishing & 346 \\
 \code{Stochastic/DiverseStepsToCapture.lean} & Factor diversity $\to$ reachable set growth, DiversityImpliesReachable, TSD bridge & 281 \\
-\code{Stochastic/StochasticEM.lean} & Stochastic EM process: StochasticMC, phase transition at $\varepsilon = 0$, geometric capture & 336 \\
+\code{Stochastic/StochasticEM.lean} & Stochastic EM process: StochasticMC, phase transition at $\varepsilon = 0$, geometric capture & 319 \\
 \code{Stochastic/DenseCapture.lean} & Topological density of capturing selection sequences: captureSet open (unconditional), Baire category $\Rightarrow$ comeager full capture, DenseCaptureHypothesis (open) & 301 \\
 \code{Stochastic/MixedWalk.lean} & Mixed selection walk: definitions and structure (Parts 1--11) & 471 \\
 \code{Stochastic/MixedMC.lean} & Mixed MC variants and hitting (Parts 12--20b) & 577 \\
 \code{Stochastic/RandomVariant.lean} & Random Euclid--Mullin process as an object: kernels, a.s.\ capture from odd starts & 1112 \\
 \code{Stochastic/ThreeAlmostSure.lean} & Failure weight, almost-sure capture of $q=3$ by the $\varepsilon$-process & 755 \\
-\code{Stochastic/ReachableSets.lean} & Reachable sets, factor confinement (Parts 21--26) & 895 \\
+\code{Stochastic/ReachableSets.lean} & Reachable sets, factor confinement (Parts 21--26) & 813 \\
 \code{Stochastic/PerpetualPrimality.lean} & Perpetual primality: recurrence, periodic orbits, multi-exclusion & 521 \\
 \code{Stochastic/PositiveProbCapture.lean} & Path weights and positive-probability capture (Parts 1--6) & 399 \\
-\code{Stochastic/TreeSieveDecay.lean} & Tree sieve decay and regeneration (Parts 7--12, 14) & 1247 \\
+\code{Stochastic/TreeSieveDecay.lean} & Block coverage and tree sieve decay (Parts 7--12, 14) & 1112 \\
 \code{Stochastic/MissedPrimes.lean} & Missed-prime set: forward invariance along the factor tree, good-child existence, $q{=}3$ cofinal capture opportunities & 460 \\
 \midrule
 \multicolumn{3}{l}{\emph{Min--max dichotomy and obstruction calculus (new)}} \\
@@ -189,7 +189,7 @@
 \code{Obstruction/MaxVariant.lean} & Second (maxFac) EM sequence; Cox--van der Poorten $5 \notin$ mseq machine-verified & 566 \\
 \code{Obstruction/RuleTransition.lean} & Rule-parameterised CvdP class; fragment empty at every modulus; min/max dichotomy & 284 \\
 \code{Obstruction/Anatomy.lean} & min selection is congruence-determined, max is not; anatomy-state proofs project away & 243 \\
-\code{Obstruction/NoInvariant.lean} & No-Invariant Theorem: no CvdP obstruction for the min sequence & 875 \\
+\code{Obstruction/NoInvariant.lean} & No-Invariant Theorem: no CvdP obstruction for the min sequence & 880 \\
 \code{Obstruction/Calculus.lean} & Obstruction calculus: enrichments, certificates, Emptiness Theorem; graded certificates and one-step killability & 660 \\
 \code{Obstruction/Fragment.lean} & Proof-theoretic dichotomy: congruence-invariant induction fragment, soundness, unprovability, provability $\Leftrightarrow$ appearance; graded + size-guarded widening & 1192 \\
 \code{Reciprocity/SymbolAlgebra.lean} & Reciprocity symbol algebra: multiplicativity, $\chi$ non-constancy & 197 \\
@@ -204,6 +204,7 @@
 \code{Meta/Registry.lean} & Content-addressed registry, \texttt{@[publish]}/\texttt{@[open\_point]} annotations & 948 \\
 \code{Meta/DeadEnds.lean} & Dead end registry: 159 documented, 27 witnessed, 10 revivable & 803 \\
 \code{Meta/OrbitBarrier.lean} & Orbit-specificity barrier witnessed: Dead Ends~\#90 and~\#117, integer orbit-barrier thesis & 429 \\
+\code{Meta/HypothesisAudit.lean} & Review of 2026-11-10: machine-checked refutations of hypotheses false or contradictory as stated (\code{not\_uniformProfiniteEquidist}, \code{not\_strongSME}, \code{not\_regeneration}, \code{not\_factorEscapeHypothesis}, \code{not\_ffMixedMC}, \code{not\_additiveLargeSieve}; \code{strongSieveEquidist\_iff\_mc}, \code{charSumCancellation\_iff\_mc}) & 233 \\
 \code{Meta/BagInformation.lean} & What the bag determines about the next prime: coordinate blindness, fullness, exclusion, roughness, non-uniformity & 129 \\
 \midrule
 \multicolumn{3}{l}{\emph{Iwaniec--Kowalski infrastructure}} \\
@@ -216,11 +217,11 @@
 \code{IK/Ch4.lean} & Iwaniec--Kowalski Ch.\,4: summation formulas & 649 \\
 \code{IK/Ch5.lean} & Iwaniec--Kowalski Ch.\,5: classical theory of $L$-functions (reference tier) & 916 \\
 \code{IK/Ch7Foundations.lean} & Iwaniec--Kowalski Ch.\,7: foundations, norm bounds & 326 \\
-\code{IK/Ch7AdditiveLS.lean} & Iwaniec--Kowalski Ch.\,7: additive large sieve & 1079 \\
-\code{IK/Ch7MultiplicativeLS.lean} & Iwaniec--Kowalski Ch.\,7: multiplicative large sieve & 462 \\
-\code{IK/Ch7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications (prime case) & 940 \\
+\code{IK/Ch7AdditiveLS.lean} & Iwaniec--Kowalski Ch.\,7: additive large sieve & 1124 \\
+\code{IK/Ch7MultiplicativeLS.lean} & Iwaniec--Kowalski Ch.\,7: multiplicative large sieve & 471 \\
+\code{IK/Ch7SieveApplications.lean} & Iwaniec--Kowalski Ch.\,7: sieve applications (prime case) & 967 \\
 \code{IK/Ch7SieveCRT.lean} & Iwaniec--Kowalski Ch.\,7: Linnik, CRT general squarefree & 607 \\
-\code{IK/Ch7Hilbert.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram & 750 \\
+\code{IK/Ch7Hilbert.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram & 744 \\
 \code{IK/Ch7HilbertB.lean} & Iwaniec--Kowalski Ch.\,7: Hilbert rescaling, Mittag-Leffler, Gram (cont.) & 533 \\
 \code{IK/Ch7CesaroChain.lean} & Iwaniec--Kowalski Ch.\,7: Ces\`aro convergence, circular ALS chain & 1039 \\
 \code{IK/DirichletDensity.lean} & Unconditional Dirichlet density: $\sum_{p\equiv a\,(q)} 1/p$ diverges (covering-space log of $L(\sigma,\chi)$) & 1054 \\
@@ -246,7 +247,7 @@
 \code{Population/LemmaD.lean} & Lemma D, analytic side: the AP window mass from Karamata at window scale ($A=2$), uniform in the class & 278 \\
 \code{Population/LemmaDBox.lean} & Lemma D, box side: \code{lemma\_D\_z} --- large steps land in any prescribed class $a$ coprime to $q$ with proportion $\ge \kappa = e^{-128}/(16\varphi(q))$, uniformly in cell, type and seed & 815 \\
 \code{Population/TheoremC.lean} & Theorem C: good uncaptured seeds are an $\exp(-(3/8)\kappa((c_1/2)n - K_0))$ fraction of one period; \code{captured\_of\_visited\_full} & 719 \\
-\code{Population/AlmostAllGenMC.lean} & \code{almost\_all\_genmc}: for fixed $q$ and every $\varepsilon>0$, at most an $\varepsilon$-fraction of one period is coprime to $q$ and uncaptured (period-fraction form) & 468 \\
+\code{Population/AlmostAllGenMC.lean} & \code{almost\_all\_genmc}: for fixed $q$ and every $\varepsilon>0$, at most an $\varepsilon$-fraction of one period is coprime to $q$ and uncaptured (period-fraction form) & 475 \\
 \code{Population/FiberTheoremC.lean} & \code{FiberGood} and \code{theorem\_C\_fiber}: Theorem C with the two non-periodic clauses weakened to fibre statements, same constants & 335 \\
 \code{Population/TypeBadSmall.lean} & \code{type\_bad\_small}: the three fibre-measurable bad types are an $\varepsilon$-fraction of the period --- every clause a function of $m \bmod M_Y$ & 137 \\
 \code{Population/AlmostAllDensity.lean} & \code{almost\_all\_genmc\_density}: the natural-density form of the seed-average theorem ($Y$ eliminated); \code{finite\_simultaneous\_density} over any finite set of primes & 302 \\
@@ -275,7 +276,7 @@
 \code{Population/ProfiniteHeadline.lean} & \code{measure\_some\_prime\_missed\_eq\_zero}: $\mu$-almost every profinite point captures every prime whose coordinate it does not annihilate; the union over $q$ by countable additivity, with no $q$-uniform rate & 393 \\
 \midrule
 \multicolumn{3}{l}{\emph{Adelic and profinite framework (new)}} \\
-\code{FunctionField/StableTower.lean} & $\FF_5[t]$: every level polynomial $\Phi_6^n(t)+1$ irreducible (stable tower, Frobenius-orbit proof); \code{FFMullinConjecture 5} is \textbf{false} & 435 \\
+\code{FunctionField/StableTower.lean} & $\FF_5[t]$: every level polynomial $\Phi_6^n(t)+1$ irreducible (stable tower, Frobenius-orbit proof); \code{FFMullinConjecture 5} is \textbf{false} & 443 \\
 \code{FunctionField/GenericTower.lean} & Level polynomials $\Phi_6^n(x)+1$ irreducible over $\ZZ$ and $\mathbb{Q}$ (via mod 5); the generic seed-$x$ sequence is a Sylvester tower; $g_3(2)=13\cdot139$ & 133 \\
 \code{FunctionField/CompositeFloors.lean} & Composite floor as a theorem: $\FF_2[t]$ (no four consecutive irreducible Euclid polynomials) and $p\equiv1\pmod 3$ (no two); $C_{\mathrm{FF}}=0$ for every sequence there & 219 \\
 \code{FunctionField/QuadraticSeeds.lean} & $\FF_5$: seeds $t^2+1$, $t^2+2$ are perpetual towers too ($g_n(t^2+c)$ irreducible; every valid selection follows the tower) & 237 \\
@@ -284,7 +285,7 @@
 \code{FunctionField/CharTwoHead.lean} & \code{monic\_irreducible\_natDegree\_le\_two}: the monic irreducibles of degree $\le 2$ over $\mathbb F_2$ are $X$, $X+1$, $X^2+X+1$; \code{ffMCBelow\_three}: every sequence has collected everything below degree 3; \code{cubic\_capture}: for $n\ge2$ a cubic dividing $E_n$ forces a cubic multiplier --- at the head, capture is a bare hit & 125 \\
 \code{FunctionField/CharThree.lean} & $\FF_3$: $\Phi_3(P)=(P-1)^2$, composite floor with constant 1, first five terms forced ($t,t+1,t+2,t^3+2t+1,t^3+2t+2$) & 164 \\
 \code{FunctionField/AutonomousDegrees.lean} & After an irreducible stage every factor has even degree ($p\equiv2\pmod3$); over $\FF_2$ after two, degree divisible by 4 & 76 \\
-\code{FunctionField/AutonomousThreshold.lean} & The $\FF_2$ threshold: $1\in\operatorname{Im}(F+1)^k$ on $\FF_{2^d}$ iff $k<2^{v_2(d)}$ (\code{one\_mem\_sylv\_iterate\_image\_iff}; necessity by the exact period $2^{v+1}$ of a solution of $z^{2^{2^v}}=z+1$, sharpness by root counting); for the Euclid sequence, after $k$ consecutive irreducible stages every factor of the next Euclid polynomial has degree $D$ with $k<2^{v_2(D)}$ (\code{lt\_two\_pow\_padicValNat\_natDegree\_of\_run}), attained at $k=3$, $D=4$ by the actual sequence & 314 \\
+\code{FunctionField/AutonomousThreshold.lean} & The $\FF_2$ threshold: $1\in\operatorname{Im}(F+1)^k$ on $\FF_{2^d}$ iff $k<2^{v_2(d)}$ (\code{one\_mem\_sylv\_iterate\_image\_iff}; necessity by the exact period $2^{v+1}$ of a solution of $z^{2^{2^v}}=z+1$, sharpness by root counting); exact factor degrees $2^{\lfloor\log_2 k\rfloor+1}$ of the level polynomials (\code{natDegree\_eq\_of\_irreducible\_dvd\_level}, the source of the floor constant~3); the residue-autonomous form (\code{lt\_two\_pow\_padicValNat\_natDegree\_of\_residue\_run}); for runs of irreducible stages the sequence form is empty beyond $k=3$ & 437 \\
 \code{FunctionField/LinearSeeds.lean} & $\FF_5$: every linear seed $t+a$ is a perpetual tower (period is invariant under subtracting a constant) & 117 \\
 \midrule
 \multicolumn{3}{l}{\emph{Min--max dichotomy and obstruction calculus (new)}} \\
@@ -293,5 +294,5 @@
 \midrule
 \multicolumn{3}{l}{\emph{Euclid systems theory (new)}} \\
 \code{Population/GreedyRigidity.lean} & Rigidity of the greedy step (the equivariance scoping pass): \code{affine\_commute\_eq\_id}, the only affine map $m\mapsto am+b$ commuting with $T$ on seeds is the identity; \code{eq\_of\_itinerary\_eq}, two seeds with the same multiplier sequence are equal, so the branch determines its seed and a symmetry preserving the itinerary is trivial (\code{eq\_id\_of\_preserves\_itinerary}); \code{genProd\_comm\_of\_step\_comm}: a map commuting with $T$ maps forward orbits to forward orbits; \code{step\_two\_eq\_step\_three}: $T$ is not injective & 163 \\
-\code{Population/FeedbackSelection.lean} & Feedback selection: every Euclid rule is the Sylvester map divided by its cofactor, $P_{n+1}c_n=P_n^2+P_n$ (\code{walkZ\_succ\_mul\_cofactor}); \code{sel\_cast\_eq\_of\_autonomous}, a rule whose multiplier mod $q$ is a function of the state mod $q$ is take-all mod $q$ (Dirichlet); \code{greedy\_not\_autonomous}; \code{deviates\_of\_dvd\_two\_mod\_three}, a capture of $q\equiv 2\ (3)$ is immediately preceded by a cofactor $\not\equiv 1\ (q)$; \code{frozen\_of\_autonomous\_tail}; \code{capture\_iff\_of\_autonomous\_tail}, capture on a residue-autonomous tail is decided in $<q$ steps; \code{autonomous\_rung}, MC $\Rightarrow$ NoFrozen $\Rightarrow$ NoAutonomousTail $\Rightarrow(\mathrm{C}\infty)$. & 363 \\
+\code{Population/FeedbackSelection.lean} & Feedback selection: every Euclid rule is the Sylvester map divided by its cofactor, $P_{n+1}c_n=P_n^2+P_n$ (\code{walkZ\_succ\_mul\_cofactor}); \code{sel\_cast\_eq\_of\_autonomous}, a rule whose multiplier mod $q$ is a function of the state mod $q$ is take-all mod $q$ (Dirichlet); \code{greedy\_not\_autonomous}; \code{deviates\_of\_dvd\_two\_mod\_three}, a capture of $q\equiv 2\ (3)$ is immediately preceded by a cofactor $\not\equiv 1\ (q)$; \code{frozen\_of\_autonomous\_tail}; \code{capture\_iff\_of\_autonomous\_tail}, capture on a residue-autonomous tail is decided in $<q$ steps; \code{autonomous\_rung}, MC $\Rightarrow$ NoFrozen $\Rightarrow$ NoAutonomousTail $\Rightarrow(\mathrm{C}\infty)$; \code{level\_prime\_of\_capture\_after\_run}, a prime captured after $k$ residue-autonomous stages is a level-$k$ prime of the Sylvester tree (the $\mathbb{Z}$-twin of the $\FF_2$ threshold; density of level-$k$ primes $\to 0$ by Odoni--Jones, cited); \code{stageAutonomous\_iff\_dvd\_cofactor\_sub\_one}, autonomy at stage $n$ is $q \mid c_n-1$. & 435 \\
 \end{longtable}

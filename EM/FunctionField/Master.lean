@@ -171,7 +171,11 @@ theorem theorem_C_phase_transition :
     WORKS unconditionally in the function field setting.
 
     The gap from "almost all" to "all" (= deterministic FF-MC) is exactly
-    the orbit-specificity barrier (Dead End #127). -/
+    the orbit-specificity barrier (Dead End #127).
+
+    A fifth clause `FFGenMixedMC p → FFAlmostAllGenMixedMC p` was dropped on 2026-11-10:
+    `FFGenMixedMC` is false (`FunctionFieldAnalog.not_ffGenMixedMC`); see
+    `EM/Archive/FunctionField/FFGenMixedMCArchive.lean` (RED #19). -/
 theorem theorem_D_sieve_chain :
     -- (1) Almost-all GenMixedMC (ZERO open hypotheses)
     FFAlmostAllGenMixedMC p ∧
@@ -180,14 +184,11 @@ theorem theorem_D_sieve_chain :
     -- (3) Full sieve chain is unconditional
     (FFSieveProductVanishing p ∧ FFPSCD p) ∧
     -- (4) Every implication composes
-    (FFFCD p → FFAlmostAllGenMixedMC p) ∧
-    -- (5) MC hierarchy: MC → GenMixedMC → almost-all (unconditional)
-    (FFGenMixedMC p → FFAlmostAllGenMixedMC p) :=
+    (FFFCD p → FFAlmostAllGenMixedMC p) :=
   ⟨ff_almost_all_unconditional p,
    ⟨ff_char_sum_cancellation_proved p, ff_pnt_in_aps_proved p, ff_fcd_proved p⟩,
    ⟨ff_spv_proved p, ff_pscd_proved p⟩,
-   ff_fcd_implies_almost_all p,
-   ff_gen_mixed_mc_implies_almost_all p⟩
+   ff_fcd_implies_almost_all p⟩
 
 /-! ## Landscape: Full hierarchy -/
 

@@ -30,7 +30,8 @@ Two documents, both with clickable links to the Lean source for every formally v
 - **Technical report** — [download PDF](https://github.com/marcellop71/EM/releases/latest) (sources in [`paper/`](paper/)):
   everything the formalization does — the above plus the variants, the spectral and variance
   routes, the obstruction calculus, the function-field analogue (placeholders marked; the
-  conjecture is machine-checked *false* over 𝔽₅[t], `EM/FunctionField/StableTower.lean`), the
+  conjecture is machine-checked *false* over 𝔽₅[t], `EM/FunctionField/StableTower.lean`, an
+  instance of the failure mechanism found by Kurokawa and Satoh, Experiment. Math. 17 (2008)), the
   complete catalogue of documented dead ends, and the methodology.  Nothing in the short paper
   depends on it.
 
@@ -45,12 +46,12 @@ Several general-purpose results developed in this formalization fill genuine gap
 
 ## Content-Addressed Registry
 
-The project includes a machine-readable registry of all key results and open hypotheses, using the [CA](https://github.com/marcellop71/CA) (Content Addressing for Lean 4) package.
+The project includes a machine-readable registry of all key results and open hypotheses, using the [CA](https://github.com/proofinity-it/CA) (Content Addressing for Lean 4) package.
 
 **How it works:** The CA package provides `@[publish]` and `@[open_point]` attributes that tag declarations for inclusion in a decentralized formal math registry. Each tagged declaration gets a content address — a deterministic hash of its canonicalized type expression (universe-renamed, metadata-stripped). The `#ca_registry` command at the end of [`EM/Meta/Registry.lean`](EM/Meta/Registry.lean) generates the registry files automatically during `lake build`.
 
 - [`EM/Meta/Registry.lean`](EM/Meta/Registry.lean) — `@[open_point]` annotations (unproved hypotheses) and `@[publish]` annotations (proved theorems)
-- [`registry/declarations.json`](registry/declarations.json) — entries with name, module, kind, status, SHA-256 content hash, pretty-printed type, and dependency list (CA `v0.1.0`; earlier CA versions emitted empty dependency lists and `Prop` for every type)
+- [`registry/declarations.json`](registry/declarations.json) — entries with name, module, kind, status, SHA-256 content hash, pretty-printed type, and dependency list (CA `v0.4.0`; earlier CA versions emitted empty dependency lists and `Prop` for every type)
 - [`registry/meta.json`](registry/meta.json) — project summary (open points, proved, conditional)
 
 The registry is regenerated automatically by `lake build`.
@@ -58,8 +59,8 @@ The registry is regenerated automatically by `lake build`.
 ## Building
 
 Requires the pinned Lean toolchain in [`lean-toolchain`](lean-toolchain).  All dependencies are
-git requires fetched by `lake`: Mathlib `v4.33.0`, [CA](https://github.com/marcellop71/CA)
-`v0.1.0` (the content-addressing registry) and LeanArchitect (pinned to `main`).  Then
+git requires fetched by `lake`: Mathlib `v4.35.0`, [CA](https://github.com/proofinity-it/CA)
+`v0.4.0` (the content-addressing registry) and LeanArchitect (pinned to `v4.35.0`).  Then
 `lake build` at the repo root.  Two libraries are built: `EM` (the mathematics; depends only on
 Mathlib) and `EMRegistry` (root `EMRegistry.lean`: `EM` plus the registry tooling
 `EM/Meta/{Registry,Blueprint}.lean`, which need CA and LeanArchitect).

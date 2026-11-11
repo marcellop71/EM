@@ -350,20 +350,22 @@ set determined by~$R_\infty$
 (\lean{EM/Stochastic/ReachableSets.lean}{factor\_confinement}
 {\color{leanink}$\checkmark$}).
 
-\begin{property}[FactorEscapeHypothesis ---
-\lean{EM/Stochastic/ReachableSets.lean}{FactorEscapeHypothesis}]
+\begin{remark}[FactorEscapeHypothesis: false as formalized]
 \label{prop:factor-escape}
-For every prime $q \geq 3$, the Euclid numbers of $\mathcal{T}(2)$
-eventually have a prime factor outside the forbidden set induced by any
-proper $R \subsetneq (\ZZ/q\ZZ)^\times$.
-\end{property}
-
-\begin{theorem}[\lean{EM/Stochastic/ReachableSets.lean}{factor\_escape\_implies\_mixed\_mc\_at}
-{\color{leanink}$\checkmark$}]
-$\mathrm{FactorEscapeHypothesis}(q) \;\Longrightarrow\;
-R_\infty(q, 2) = (\ZZ/q\ZZ)^\times
-\;\Longrightarrow\;$ every prime~$q$ appears in $\mathcal{T}(2)$.
-\end{theorem}
+An earlier version closed this argument with a
+\defname{FactorEscapeHypothesis}: for every step-dependent family of
+proper subsets $F(n) \subsetneq \ZZ/q\ZZ$, the Euclid numbers
+$P(n){+}1$ are not eventually factor-confined to~$F(n)$.  As formalized
+this is \emph{false} for every prime~$q$: the proper set
+$F(n) = \{x \neq 0\}$ eventually contains every prime factor of every
+Euclid number
+(\lean{EM/Meta/HypothesisAudit.lean}{not\_factorEscapeHypothesis}
+{\color{leanink}$\checkmark$}).  The conditional theorems built on it
+(FactorEscape $\Rightarrow$ $R_\infty$ full $\Rightarrow$ every prime
+appears in $\mathcal{T}(2)$) were therefore vacuous and have been
+archived.  A correct hypothesis would have to restrict to sets $F(n)$
+missing a \emph{nonzero} residue; none is currently formalized.
+\end{remark}
 
 \noindent
 The comparison between the standard walk and the factor tree is stark:
@@ -577,7 +579,7 @@ $\sum_k 1/\omega(P_k{+}1) = \infty$ --- so almost-sure capture of~$3$
 needs only an $\omega$-bound on Euclid numbers along walks (true for
 the normal order $\omega \sim \log\log P_k \sim k$, unprovable from
 the trivial $\omega \leq \log_2 P_k$), plus a path-measure layer.
-Regeneration, the open gap for general~$q$, is thus \emph{free} for
+Reachability, the open gap for general~$q$, is thus \emph{free} for
 $q = 3$.
 
 \begin{deadend}[title={Dead End \#117: MultCancelToWalkCancel}]
@@ -637,45 +639,30 @@ primes shares a common density-$1$ set of starting points.  (The
 original PEAP-conditional route is retained as
 \lean{EM/Stochastic/PositiveProbCapture.lean}{almost\_all\_positive\_prob\_capture}.)
 
-\paragraph{Layer 2: cofinal and iterated hitting via regeneration.}
-Layer~1 proves a \emph{single} hit with positive weight.  Stronger
-conclusions require \defname{Regeneration}
-(\lean{EM/Stochastic/TreeSieveDecay.lean}{Regeneration}): every
-accumulator encountered along any valid walk from~$m$ is \emph{good},
-i.e., every unit of~$(\ZZ/q\ZZ)^\times$ remains reachable.  The
-evidence is strong: accumulators grow super-exponentially and are
-squarefree, so by CRT blindness they should behave generically mod~$q$.
-
-Under Regeneration, the formalization proves:
-\begin{itemize}
-\item \textbf{Block coverage}
+\paragraph{Layer 2: block coverage; the regeneration hypothesis was unsatisfiable.}
+Layer~1 proves a \emph{single} hit with positive weight.  Call an
+accumulator \emph{good} if every unit of~$(\ZZ/q\ZZ)^\times$ is
+reachable from it.  From a good accumulator there is a uniform depth
+bound~$N_0$ such that every unit can be reached within~$N_0$ steps
 (\lean{EM/Stochastic/TreeSieveDecay.lean}{block\_coverage}
-{\color{leanink}$\checkmark$}):
-from a good accumulator, there is a uniform depth bound~$N_0$ such
-that every unit can be reached within~$N_0$ steps.
-\item \textbf{Cofinal hitting}
-(\lean{EM/Stochastic/TreeSieveDecay.lean}{regeneration\_implies\_cofinal\_hitting}
-{\color{leanink}$\checkmark$}):
-for every threshold~$K$, there exists a valid path that hits
-$-1\bmod q$ at some step~$n \geq K$, with positive weight.
-\item \textbf{Iterated hitting}
-(\lean{EM/Stochastic/TreeSieveDecay.lean}{regeneration\_implies\_iterated\_hitting}
-{\color{leanink}$\checkmark$}):
-for every target number of $-1$ hits, there exists a valid path
-achieving at least that many hits, each with positive weight.
-The proof proceeds by induction on the target, concatenating walks
-via \code{concatMixedSelection} and using Regeneration to obtain
-fresh good accumulators past each existing hit.
-\end{itemize}
-Regeneration is the sole open hypothesis in this layer; it is
-implied by CME (equivalently by MC; whether the implication is strict is
-not known) and concerns
-the persistence of a qualitative property (full reachability) along
-the walk, not a quantitative equidistribution statement.
+{\color{leanink}$\checkmark$}).
+
+An earlier version derived cofinal and iterated hitting from a
+hypothesis \defname{Regeneration}: every accumulator encountered along
+\emph{any} valid walk from~$m$ is good.  As formalized this is
+\emph{unsatisfiable} for every odd prime~$q$ and $m \geq 2$: it makes
+$m$ good, so some walk captures~$q$, after which every reachable
+accumulator is $0 \bmod q$ and cannot be good
+(\lean{EM/Meta/HypothesisAudit.lean}{not\_regeneration}
+{\color{leanink}$\checkmark$}).  The conditional theorems of this layer
+(cofinal hitting, iterated hitting, capture at every step) were
+therefore vacuous and have been archived.  A correct hypothesis would
+have to restrict to walks that have not yet captured~$q$; none is
+currently formalized.
 
 \paragraph{TreeSieveDecay: the sieve-theoretic bridge.}
-Regeneration asks that \emph{every} intermediate accumulator is good.
-A weaker, sieve-flavored variant is \defname{TreeSieveDecay}
+A sieve-flavored hypothesis that does respect absorption is
+\defname{TreeSieveDecay}
 (\lean{EM/Stochastic/TreeSieveDecay.lean}{TreeSieveDecay}):
 there exists a threshold~$P_0$ such that every squarefree~$P \geq P_0$
 coprime to~$q$ is a good accumulator.
@@ -683,8 +670,8 @@ TSD is a ``large-$P$'' hypothesis: all sufficiently generic starting
 points support full reachability.
 The coprimality condition is necessary: when $q \mid P$, absorption
 traps the walk at~$0$ permanently, so no unit is reachable.
-TSD bypasses Regeneration entirely---for a single hit (which suffices
-for MC), a cleaner dichotomy argument works.
+For a single hit (which suffices for MC), TSD needs no statement about
+intermediate accumulators: a dichotomy argument works.
 The formalization proves two bridges:
 \begin{itemize}
 \item \textbf{Squarefree propagation}

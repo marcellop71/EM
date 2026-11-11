@@ -461,7 +461,8 @@ theorem strongSieveEquidist_implies_sieveEquidist (hsse : StrongSieveEquidist) :
   -- Apply SSE with ε' = ε/2, L₀ = 1
   set ε' := ε / 2 with hε'_def
   have hε'_pos : 0 < ε' := by positivity
-  obtain ⟨N₀, hN₀⟩ := hsse q hq hne a ε' hε'_pos 1 Nat.one_pos
+  obtain ⟨L₀, hL₀, hwin⟩ := hsse q hq hne ε' hε'_pos
+  obtain ⟨N₀, hN₀⟩ := hwin a
   -- For N ≥ N₀, the window [N₀, N₀ + (N - N₀)) has count ≥ (N-N₀)·(1/φ - ε/2).
   -- The cumulative [0,N) count is at least as large.
   -- We need: (N-N₀)·(1/φ - ε/2) ≥ N·(1/φ - ε), i.e., N₀·(1/φ-ε/2) ≤ N·ε/2.
@@ -472,7 +473,7 @@ theorem strongSieveEquidist_implies_sieveEquidist (hsse : StrongSieveEquidist) :
   -- Just pick N₁ such that N₁ ≥ N₀ and N₁ · (ε/2) ≥ N₀ (real arithmetic).
   -- A clean choice: N₁ = N₀ + ⌈2·N₀/ε⌉.
   -- Actually, let's just existentially pick a large enough N₁ and do real arithmetic.
-  refine ⟨N₀ + Nat.ceil (2 * N₀ / ε) + 1, fun N hN => ?_⟩
+  refine ⟨N₀ + L₀ + Nat.ceil (2 * N₀ / ε) + 1, fun N hN => ?_⟩
   -- Key: N ≥ N₀
   have hN_ge_N₀ : N₀ ≤ N := by omega
   -- Key: N > 0
@@ -481,7 +482,7 @@ theorem strongSieveEquidist_implies_sieveEquidist (hsse : StrongSieveEquidist) :
   set L := N - N₀ with hL_def
   have hL_ge_1 : L ≥ 1 := by omega
   -- Apply SSE: window [N₀, N₀ + L) = [N₀, N)
-  have hsse_app := hN₀ N₀ le_rfl L hL_ge_1
+  have hsse_app := hN₀ N₀ le_rfl L (by omega)
   -- The hit count in [N₀, N₀+L) ≥ L·(1/φ - ε')
   -- The cumulative hit count in [0,N) ≥ hit count in [N₀, N)
   -- Build injective map from window filter to cumulative filter

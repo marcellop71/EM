@@ -36,6 +36,59 @@ section AdditiveLargeSieve
 def IsSpaced {R : ℕ} (α : Fin R → ℝ) (δ : ℝ) : Prop :=
   ∀ r s : Fin R, r ≠ s → δ ≤ |Int.fract (α r) - Int.fract (α s)|
 
+/-- **Circular spacing**: points α_r ∈ ℝ/ℤ are **circularly δ-spaced** if
+    their ℝ/ℤ distance (distance to nearest integer of α_r − α_s) is ≥ δ
+    for all r ≠ s.  This is the IK condition.  `IsSpaced` above compares fractional parts
+    and is strictly weaker: it does not see the wrap-around (`0` and `4/5` are `4/5` apart
+    as fractional parts and `1/5` apart on the circle). -/
+def IsCircularSpaced {R : ℕ} (α : Fin R → ℝ) (δ : ℝ) : Prop :=
+  ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|
+
+/-- Circular spacing implies spacing of fractional parts. -/
+theorem isSpaced_of_isCircularSpaced {R : ℕ} {α : Fin R → ℝ} {δ : ℝ}
+    (h : IsCircularSpaced α δ) : IsSpaced α δ := by
+  intro r s hrs
+  calc δ ≤ |α r - α s - round (α r - α s)| := h r s hrs
+    _ ≤ |(α r - α s) - ↑(⌊α r⌋ - ⌊α s⌋)| := round_le _ _
+    _ = |Int.fract (α r) - Int.fract (α s)| := by
+        congr 1
+        have hr := Int.floor_add_fract (α r)
+        have hs := Int.floor_add_fract (α s)
+        push_cast
+        linarith
+
+/-- If `δ ≤ |d| ≤ 1 - δ` then `d` is at distance at least `δ` from every integer. -/
+theorem le_abs_sub_round_of_abs {d δ : ℝ} (h1 : δ ≤ |d|) (h2 : |d| ≤ 1 - δ) :
+    δ ≤ |d - round d| := by
+  have key : ∀ k : ℤ, δ ≤ |d - k| := by
+    intro k
+    rcases lt_trichotomy k 0 with hk | rfl | hk
+    · have hk' : (k : ℝ) ≤ -1 := by
+        have : k ≤ -1 := by omega
+        exact_mod_cast this
+      have := neg_abs_le d
+      have := le_abs_self (d - k)
+      linarith
+    · simpa using h1
+    · have hk' : (1 : ℝ) ≤ k := by exact_mod_cast hk
+      have := le_abs_self d
+      have := neg_le_abs (d - k)
+      linarith
+  exact key _
+
+/-- Points in `[0, 1 - δ]` whose fractional parts are `δ`-spaced are circularly `δ`-spaced:
+    the wrap-around is excluded by the range. -/
+theorem isCircularSpaced_of_isSpaced_of_le {R : ℕ} {α : Fin R → ℝ} {δ : ℝ} (hδ : 0 < δ)
+    (hrange : ∀ r, 0 ≤ α r ∧ α r ≤ 1 - δ) (h : IsSpaced α δ) : IsCircularSpaced α δ := by
+  intro r s hrs
+  have hfr : ∀ t, Int.fract (α t) = α t := fun t =>
+    Int.fract_eq_self.mpr ⟨(hrange t).1, by linarith [(hrange t).2]⟩
+  have h1 := h r s hrs
+  rw [hfr r, hfr s] at h1
+  refine le_abs_sub_round_of_abs h1 ?_
+  rw [abs_le]
+  constructor <;> linarith [(hrange r).1, (hrange r).2, (hrange s).1, (hrange s).2]
+
 /-- **Lemma 7.8** (Montgomery-Vaughan): Generalized Hilbert inequality — IK (7.23).
     If λ_r are distinct with |λ_r − λ_s| ≥ δ for r ≠ s, then
     |∑∑_{r≠s} z_r z̄_s / (λ_r − λ_s)| ≤ (π/δ) ∑ |z_r|². -/
@@ -49,11 +102,15 @@ def HilbertInequality : Prop :=
 
 /-- **Theorem 7.7** (Selberg, Montgomery-Vaughan): Optimal additive large sieve —
     IK (7.22). For δ-spaced points α_r ∈ ℝ/ℤ and a_n with M < n ≤ M+N:
-    ∑_r |∑_n a_n e(α_r n)|² ≤ (δ⁻¹ + N − 1) ‖a‖². -/
+    ∑_r |∑_n a_n e(α_r n)|² ≤ (δ⁻¹ + N − 1) ‖a‖².
+
+    The spacing is circular (`IsCircularSpaced`).  Repaired 2026-11-10 (review H19): the
+    earlier statement used `IsSpaced` (fractional parts) and was false — points
+    `0, 2/5, 4/5`, `N = 1` give `3 ≤ 5/2` (`IK.not_additiveLargeSieve_fractSpaced`). -/
 def AdditiveLargeSieve : Prop :=
   ∀ (R N : ℕ) (α : Fin R → ℝ) (a : Fin N → ℂ) (δ : ℝ),
     0 < δ → δ ≤ 1/2 → 1 ≤ N →
-    IsSpaced α δ →
+    IsCircularSpaced α δ →
     (∑ r, ‖∑ n : Fin N, a n * eAN (α r * ↑(n : ℕ))‖ ^ 2) ≤
       (1 / δ + ↑N - 1) * l2NormSq a
 
@@ -528,6 +585,7 @@ theorem gram_row_sum_optimal_implies_als
       GramRowSumBound N α (1/δ + ↑N - 1)) :
     AdditiveLargeSieve := by
   intro R N α a δ hδ hδ2 hN hspaced
+  have hspaced := isSpaced_of_isCircularSpaced hspaced
   have hC : (0 : ℝ) ≤ 1/δ + ↑N - 1 := by
     have : 1 ≤ (N : ℝ) := Nat.one_le_cast.mpr hN
     have : 0 < 1/δ := by positivity
@@ -920,6 +978,7 @@ theorem gram_diag_re {R N : ℕ} (b : Fin R → ℂ) :
 theorem gram_offdiag_bilinear_implies_als
     (hoff : GramOffDiagBilinearBound) : AdditiveLargeSieve := by
   intro R N α a δ hδ hδ2 hN hspaced
+  have hspaced := isSpaced_of_isCircularSpaced hspaced
   -- The constant 1/δ + N - 1 is nonneg
   have hC : (0 : ℝ) ≤ 1/δ + ↑N - 1 := by
     have : 1 ≤ (N : ℝ) := Nat.one_le_cast.mpr hN
@@ -983,21 +1042,16 @@ Bridge between the two open large-sieve Props of this development:
 (`EM/LargeSieve/Basic.lean`).
 
 Normalization notes:
-* Spacing: `AnalyticLargeSieve` assumes the ℝ/ℤ distance bound
-  `δ ≤ |α r − α s − round (α r − α s)|`, which is *stronger* than the
-  `δ ≤ |Int.fract (α r) − Int.fract (α s)|` required by `IsSpaced`
-  (the circle distance is a min over integer shifts, `round_le`), so the
-  analytic hypotheses instantiate the IK ones.
+* Spacing: both statements now use the ℝ/ℤ distance
+  `δ ≤ |α r − α s − round (α r − α s)|` (`IsCircularSpaced`); until 2026-11-10 the IK
+  statement used spacing of fractional parts, which does not see the wrap-around and made
+  it false (`IK.not_additiveLargeSieve_fractSpaced`).
 * Range of `δ`: `AnalyticLargeSieve` allows `δ ≤ 1` while
   `IK.AdditiveLargeSieve` requires `δ ≤ 1/2`. For `R ≥ 2` the ℝ/ℤ spacing
   forces `δ ≤ 1/2` (`round_sep_delta_le_half`); the degenerate cases
   `R ≤ 1` are proved directly by Cauchy–Schwarz using `δ⁻¹ ≥ 1`.
 * Constant and exponential: `1/δ + N − 1` vs `N − 1 + δ⁻¹` and
-  `eAN (α r · n)` vs `exp(2πi·n·α r)` agree up to `ring`.
-
-The **converse is not an instantiation**: `IsSpaced` (fract-difference
-spacing) does not control the circle distance — e.g. `α = (ε, 1−ε)` is
-`(1−2ε)`-fract-spaced but only `2ε`-close on ℝ/ℤ — so no `iff` is stated. -/
+  `eAN (α r · n)` vs `exp(2πi·n·α r)` agree up to `ring`. -/
 theorem ik_als_implies_analytic_als (h : AdditiveLargeSieve) :
     _root_.AnalyticLargeSieve := by
   intro N hN a R α δ hδ hδ1 hsep
@@ -1016,16 +1070,7 @@ theorem ik_als_implies_analytic_als (h : AdditiveLargeSieve) :
   · -- R ≥ 2: direct instantiation of the IK statement.
     obtain ⟨r0, s0, hr0s0⟩ := hR2
     have hδhalf : δ ≤ 1 / 2 := round_sep_delta_le_half α δ hsep r0 s0 hr0s0
-    have hspaced : IsSpaced α δ := by
-      intro r s hrs
-      calc δ ≤ |α r - α s - round (α r - α s)| := hsep r s hrs
-        _ ≤ |(α r - α s) - ↑(⌊α r⌋ - ⌊α s⌋)| := round_le _ _
-        _ = |Int.fract (α r) - Int.fract (α s)| := by
-            congr 1
-            have hr := Int.floor_add_fract (α r)
-            have hs := Int.floor_add_fract (α s)
-            push_cast
-            linarith
+    have hspaced : IsCircularSpaced α δ := hsep
     have key := h R N α a δ hδ hδhalf hN hspaced
     rw [hl2] at key
     calc (∑ r, ‖∑ n : Fin N, a n * eAN (α r * ↑(n : ℕ))‖ ^ 2)

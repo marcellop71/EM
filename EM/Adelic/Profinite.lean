@@ -53,9 +53,12 @@ noncomputable def collapseTime (q : Nat) : Nat :=
     the primality hypothesis.
 
     For k=1: reduces to ComplexCharSumBound (CCSB).
-    For k=2: gives CrossPrimeDecorrelation (CPD). -/
+    For k=2: gives CrossPrimeDecorrelation (CPD).
+
+    The level `k` is positive: at `k = 0` the product is empty and the sum is `N`, so the
+    unrestricted statement is false (repaired 2026-11-10, review H2). -/
 def UniformProfiniteEquidist : Prop :=
-  ∀ (k : Nat) (qs : Fin k → Nat)
+  ∀ (k : Nat) (_hk : 0 < k) (qs : Fin k → Nat)
     (hqs_prime : ∀ i, Nat.Prime (qs i))
     (_hqs_inj : Function.Injective qs)
     (hqs_ne : ∀ i, ∀ n, seq n ≠ qs i)
@@ -100,7 +103,7 @@ theorem uniform_profinite_implies_ccsb
   -- Since qs i = q definitionally, (ZMod (qs i))x = (ZMod q)x definitionally
   let χs : ∀ i : Fin 1, (ZMod (qs i))ˣ →* ℂˣ := fun _ => χ
   have hχs : ∀ i : Fin 1, χs i ≠ 1 := fun _ => hχ
-  obtain ⟨N₀, hN₀⟩ := h 1 qs hqs_prime hqs_inj hqs_ne χs hχs ε hε
+  obtain ⟨N₀, hN₀⟩ := h 1 Nat.one_pos qs hqs_prime hqs_inj hqs_ne χs hχs ε hε
   refine ⟨N₀, fun N hN => ?_⟩
   have key := hN₀ N hN
   -- The product over Fin 1 is just the single term at index 0
@@ -144,7 +147,7 @@ theorem uniform_profinite_implies_cpd
     intro i; fin_cases i
     · exact hχ_q
     · exact hχ_r
-  obtain ⟨N₀, hN₀⟩ := h 2 qs hqs_prime hqs_inj hqs_ne χs hχs ε hε
+  obtain ⟨N₀, hN₀⟩ := h 2 Nat.two_pos qs hqs_prime hqs_inj hqs_ne χs hχs ε hε
   refine ⟨N₀, fun N hN => ?_⟩
   have key := hN₀ N hN
   -- The product over Fin 2 is f 0 * f 1

@@ -22,7 +22,7 @@ This is a concrete instance of the orbit-specificity barrier (Dead End #90).
 
 (2026-09-02) For `p = 5` the hypothesis "perpetual irreducibility" is a THEOREM for the seed `X`
 at every stage (`EM/FunctionField/StableTower.lean`, `tower_euclid_irreducible`), so the
-exclusion is unconditional there: `X + 2` and `X + 3` are never selected, and
+exclusion is unconditional there: `X + 2`, `X + 3` and `X + 4` are never selected, and
 `FFMullinConjecture 5` is false (`not_ffMullinConjecture_five`).
 -/
 

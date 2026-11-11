@@ -23,9 +23,11 @@ and how much of it does one orbit inherit?*
   SubgroupEscape free via PRE).  MC is a hitting statement, exactly.
 * **The growth constant.**  `C = lim log Tⁿ(2)/2ⁿ` exists, `C(Tm) = 2C(m)`, and
   `C = 0 ⟺ (C∞) ⟺ ¬ eventual perpetual primality` (`DefectTelescope`).  `C` semiconjugates
-  `(X,T)` to doubling; doubling has no invariant probability except at `0`; so `(X,T)` has
-  none and "generic orbit" is meaningless.  This is the ergodic content of the four-way
-  blocker, and it is a theorem.
+  `(X,T)` to doubling (`sgrowth_T`).  `(X,T)` has no invariant probability, for the trivial
+  reason that `m < T m`; so "generic orbit" is meaningless.  (Corrected 2026-11-10: the
+  earlier text derived this from the semiconjugacy, which only shows an invariant measure would
+  live on `{C = 0}`, and called it a theorem; neither the statement nor that inference is in
+  Lean, and `C` may be identically `0` — that is the open `MixedDiversity`.)
 
 ## 3. The top: CME, and why nothing sits under it
 
@@ -46,6 +48,11 @@ of three fates:
   vacuous.  Also false: the uncentered ensemble character layer (SD, CSVB, ECSC, FourPointPCV,
   SMSB, TWD) at `χ ≡ 1`, and fixed-step ensemble multiplier equidistribution at step 0
   (odd seeds ⇒ multiplier 2) — all refuted in Lean by argument (`UncenteredRefutations`).
+  For the fixed-modulus layer itself Lean has the series equivalence and the finite-head
+  criterion, not an instance: the falsity at a given `q` is a finite computation that is
+  asserted, not machine-checked (at `q = 5` the class of 7 exceeds `1/15` on its first 19
+  primes).  A further batch of hypotheses false or contradictory as stated was found by the
+  2026-11-10 review and is refuted in `EM/Meta/HypothesisAudit.lean`.
   What ANT delivers, now unconditionally: Mertens in progressions, asymptotic form (Karamata).
 
 ## 4. The floor: (C∞)
@@ -68,7 +75,8 @@ continuous extension to any compactification), which is why generic-point argume
 ## 6. The comparison class
 
 Ensemble, factor tree, two-point, ε-random, function field: change one thing and see what
-survives.  Almost-all tree hitting is unconditional; the ε-perturbed rule captures a.s. yet
+survives.  Almost-all tree hitting is unconditional; the ε-perturbed rule has an exact finite-horizon failure weight (a.s. capture is proved only
+conditionally, and only for `q = 3`), yet
 ε→0 is a faithful reformulation of MC (#159); Booker's steered variant hits everything;
 `maxFac` misses.  **Selection is where the difficulty lives** — access to the factor bag is
 not the problem, the deterministic choice of its least element is.  Over `𝔽_p[t]` the Weil
@@ -110,7 +118,8 @@ The *orbit* direction of the sure (per-path) layer is closed (#169–#174).
 
 ## 8. Dead ends as the coastline
 
-175 numbers, 165 entries, 33 witnessed (`EM/Meta/DeadEnds.lean`, generated from
+183 numbers, 173 entries, 41 with a Lean declaration attached (see the 2026-11-10 review, T18:
+about a dozen of these are lemmas near the entry rather than proofs of it) (`EM/Meta/DeadEnds.lean`, generated from
 `tools/dead_ends.tsv`); #90/#117 carry the thesis and are witnessed in `(ℤ/5)^×`; the rest
 are peripheral instances of the four-way blocker or of head domination.  #175 (2026-08-20)
 is a reminder that statements about the generalized sequence must exclude the primes dividing

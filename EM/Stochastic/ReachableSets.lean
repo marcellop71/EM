@@ -22,8 +22,9 @@ Key structural results (all proved):
 - factor_confinement: if R_inf is proper, ALL factors are sieve-confined
 - mixed_hitting_iff_neg_one_reachable: hitting = reachability of -1
 
-The sole remaining gap is FactorEscapeHypothesis: along the standard
-EM orbit, Euclid numbers eventually escape step-dependent factor confinement.
+The hypothesis `FactorEscapeHypothesis` (Euclid numbers along the standard EM orbit
+escape every step-dependent proper factor confinement) was found false on 2026-11-10
+(`HypothesisAudit.not_factorEscapeHypothesis`) and archived with its consumers.
 
 ## Contents
 
@@ -43,8 +44,6 @@ EM orbit, Euclid numbers eventually escape step-dependent factor confinement.
 * Part 26: Factor confinement and sieve obstruction -- `allowedFactors`,
   `forbiddenFactors`, `AllFactorsInSet`, `factor_confinement`,
   `all_factors_confined`, `standard_euclid_factors_confined`,
-  `FactorEscapeHypothesis`, `factor_escape_implies_mixed_hitting`,
-  `factor_escape_implies_reachable_full`, `factor_escape_implies_mixed_mc_at`,
   `factor_confinement_arbitrary`, `reachable_closed_under_allowed`,
   `factor_confinement_landscape`
 -/
@@ -624,10 +623,10 @@ residues mod q.
 * `standard_euclid_factors_confined` — specialization to the standard EM walk
 * `forbidden_nonempty_of_unit` — if c is a unit and R ≠ univ, the forbidden set
   is nonempty (since multiplication by a unit is bijective)
-* `FactorEscapeHypothesis` — open hypothesis: EM Euclid numbers escape any proper
-  factor confinement
-* `factor_escape_implies_mixed_hitting` — FactorEscapeHypothesis + MC(< q) ⇒
-  MixedHitting at q (the chain: confinement + escape = contradiction)
+
+`FactorEscapeHypothesis` and the theorems `factor_escape_implies_*` that consumed it
+are archived: the hypothesis was found false on 2026-11-10
+(`HypothesisAudit.not_factorEscapeHypothesis`).
 
 ### Connection to sieve theory
 
@@ -742,20 +741,11 @@ theorem allFactorsInSet_one {q : ℕ} {F : Set (ZMod q)} :
     AllFactorsInSet q 1 F :=
   fun p hp hdvd => absurd (Nat.le_of_dvd Nat.one_pos hdvd) (by have := hp.two_le; omega)
 
-/-! ### Factor Escape Hypothesis -/
+/-! ### Factor Escape Hypothesis — archived -/
 
-/-- **Factor Escape Hypothesis**: The standard EM walk's Euclid numbers do not
-    eventually have ALL prime factors confined to any proper subset of residues.
-
-    Formally: for any step-dependent family of proper sets F(n) ⊊ ZMod q,
-    the Euclid numbers prod(n) + 1 are not eventually all-factors-confined to F(n).
-
-    This captures the sieve-theoretic content: the EM sequence's Euclid numbers
-    produce prime factors in every residue class, not just a proper subset. -/
-def FactorEscapeHypothesis (q : ℕ) : Prop :=
-  ∀ (F : ℕ → Set (ZMod q)),
-    (∀ n, F n ≠ Set.univ) →
-    ¬(∃ N₀, ∀ n ≥ N₀, AllFactorsInSet q (prod n + 1) (F n))
+-- FactorEscapeHypothesis: found false on 2026-11-10
+-- (`HypothesisAudit.not_factorEscapeHypothesis`); its definition now lives next to that
+-- refutation in EM/Meta/HypothesisAudit.lean (RED #18).
 
 /-- Under MC(< q) and q never in seq, the walk position prod(n) mod q is
     nonzero in ZMod q. (Restated from CosetImpossibility section.) -/
@@ -773,69 +763,9 @@ private theorem walk_pos_isUnit {q : ℕ} [hfact : Fact (Nat.Prime q)]
     IsUnit ((prod n : ℕ) : ZMod q) :=
   IsUnit.mk0 _ (walk_pos_ne_zero' hne n)
 
-/-- **Factor escape implies mixed hitting**: If the FactorEscapeHypothesis holds
-    at q, and MC(< q) and q never appears in seq, then -1 ∈ R_∞(q, 2),
-    which means there exists a valid mixed walk capturing q.
-
-    Proof by contradiction: Suppose -1 ∉ R_∞. Then R_∞ ≠ Set.univ.
-    Factor confinement gives: for all n, every prime factor of prod(n) + 1
-    is in allowedFactors(prod(n) mod q, R_∞). Since prod(n) mod q is a unit
-    (from hne) and R_∞ ≠ univ, each allowedFactors set is proper (by
-    `allowed_ne_univ_of_unit`). This contradicts FactorEscapeHypothesis. -/
-theorem factor_escape_implies_mixed_hitting
-    (q : ℕ) [hfact : Fact (Nat.Prime q)]
-    (hne : ∀ k, seq k ≠ q)
-    (hFE : FactorEscapeHypothesis q) :
-    (-1 : ZMod q) ∈ reachableEver q 2 := by
-  by_contra h_not_neg_one
-  -- R_∞ ≠ Set.univ since -1 ∉ R_∞
-  have hR_ne : reachableEver q 2 ≠ Set.univ := by
-    intro heq
-    exact h_not_neg_one (heq ▸ Set.mem_univ _)
-  -- Define F(n) = allowedFactors at walk position prod(n)
-  let F : ℕ → Set (ZMod q) := fun n =>
-    allowedFactors q ((prod n : ℕ) : ZMod q) (reachableEver q 2)
-  -- Each F(n) is proper: prod(n) is a unit and R_∞ ≠ univ
-  have hF_proper : ∀ n, F n ≠ Set.univ := by
-    intro n
-    exact allowed_ne_univ_of_unit (walk_pos_isUnit hne n) hR_ne
-  -- Factor confinement gives AllFactorsInSet for all n (with N₀ = 0)
-  have hconf : ∃ N₀, ∀ n ≥ N₀, AllFactorsInSet q (prod n + 1) (F n) :=
-    ⟨0, fun n _ => standard_euclid_factors_confined' q n⟩
-  -- Contradiction with FactorEscapeHypothesis
-  exact hFE F hF_proper hconf
-
-/-- **Factor escape implies reachable set is full**: Under q never in seq,
-    FactorEscapeHypothesis forces R_∞(q, 2) = Set.univ.
-
-    Proof: if R_∞ ≠ univ, factor confinement + walk_pos_isUnit give each
-    allowedFactors set proper, contradicting FactorEscapeHypothesis. -/
-theorem factor_escape_implies_reachable_full
-    (q : ℕ) [hfact : Fact (Nat.Prime q)]
-    (hne : ∀ k, seq k ≠ q)
-    (hFE : FactorEscapeHypothesis q) :
-    reachableEver q 2 = Set.univ := by
-  by_contra hR_ne
-  let F : ℕ → Set (ZMod q) := fun n =>
-    allowedFactors q ((prod n : ℕ) : ZMod q) (reachableEver q 2)
-  have hF_proper : ∀ n, F n ≠ Set.univ :=
-    fun n => allowed_ne_univ_of_unit (walk_pos_isUnit hne n) hR_ne
-  have hconf : ∃ N₀, ∀ n ≥ N₀, AllFactorsInSet q (prod n + 1) (F n) :=
-    ⟨0, fun n _ => standard_euclid_factors_confined' q n⟩
-  exact hFE F hF_proper hconf
-
-/-- **Factor escape implies mixed MC at q**: combining with the hitting ↔ reachable
-    bridge, FactorEscapeHypothesis gives a valid mixed walk capturing q. -/
-theorem factor_escape_implies_mixed_mc_at
-    (q : ℕ) [hfact : Fact (Nat.Prime q)]
-    (hne : ∀ k, seq k ≠ q)
-    (hFE : FactorEscapeHypothesis q) :
-    ∃ (σ : MixedSelection) (n : ℕ),
-      ValidMixedSelection 2 σ ∧ q ∣ (mixedWalkProd 2 σ n + 1) := by
-  rw [mixed_hitting_iff_neg_one_reachable]
-  have hmem := factor_escape_implies_mixed_hitting q hne hFE
-  rw [reachableEver, Set.mem_iUnion] at hmem
-  exact hmem
+-- factor_escape_implies_mixed_hitting archived to EM/Archive/Stochastic/FactorEscapeArchive.lean (RED #18)
+-- factor_escape_implies_reachable_full archived to EM/Archive/Stochastic/FactorEscapeArchive.lean (RED #18)
+-- factor_escape_implies_mixed_mc_at archived to EM/Archive/Stochastic/FactorEscapeArchive.lean (RED #18)
 
 /-! ### Confinement strength: factor confinement constrains ALL walks -/
 
@@ -860,36 +790,24 @@ theorem reachable_closed_under_allowed {q acc : ℕ}
 
 /-- **Factor confinement landscape**: summary of the factor confinement results.
 
-    1. factor_confinement — prime factors of reachable Euclid numbers are confined
-    2. standard_euclid_factors_confined' — specialization to standard EM walk
-    3. forbidden_nonempty_of_unit — forbidden set nonempty when R ⊊ univ and c is unit
-    4. allowed_ne_univ_of_unit — allowed set proper when R ⊊ univ and c is unit
-    5. factor_escape_implies_mixed_hitting — FEH ⇒ -1 ∈ R_∞
-    6. factor_escape_implies_reachable_full — FEH ⇒ R_∞ = univ -/
+    1. standard_euclid_factors_confined' — prime factors of the standard Euclid numbers
+       are confined to the allowed sets
+    2. walk positions are units when q never appears in the sequence
+
+    The three further clauses of the original statement were conditional on
+    `FactorEscapeHypothesis`, found false on 2026-11-10
+    (`HypothesisAudit.not_factorEscapeHypothesis`); the original statement is archived in
+    `EM/Archive/Stochastic/FactorEscapeArchive.lean` (RED #18). -/
 theorem factor_confinement_landscape
     (q : ℕ) [hfact : Fact (Nat.Prime q)]
-    (hne : ∀ k, seq k ≠ q)
-    (hFE : FactorEscapeHypothesis q) :
+    (hne : ∀ k, seq k ≠ q) :
     -- 1. Factor confinement: all factors of prod(n)+1 are confined
     (∀ n, AllFactorsInSet q (prod n + 1)
       (allowedFactors q ((prod n : ℕ) : ZMod q) (reachableEver q 2)))
     ∧
     -- 2. Walk positions are units
-    (∀ n, IsUnit ((prod n : ℕ) : ZMod q))
-    ∧
-    -- 3. Factor escape gives -1 ∈ R_∞
-    ((-1 : ZMod q) ∈ reachableEver q 2)
-    ∧
-    -- 4. Factor escape gives R_∞ = univ
-    (reachableEver q 2 = Set.univ)
-    ∧
-    -- 5. Factor escape gives mixed MC at q
-    (∃ (σ : MixedSelection) (n : ℕ),
-      ValidMixedSelection 2 σ ∧ q ∣ (mixedWalkProd 2 σ n + 1)) :=
+    (∀ n, IsUnit ((prod n : ℕ) : ZMod q)) :=
   ⟨standard_euclid_factors_confined' q,
-   walk_pos_isUnit hne,
-   factor_escape_implies_mixed_hitting q hne hFE,
-   factor_escape_implies_reachable_full q hne hFE,
-   factor_escape_implies_mixed_mc_at q hne hFE⟩
+   walk_pos_isUnit hne⟩
 
 end FactorConfinement

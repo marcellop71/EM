@@ -24,15 +24,17 @@ the accumulator follows the take-all map `Φ₆(P) = P(P+1)`, so `P_n = Φ₆ⁿ
 `E_n = g_n(X)` with `g_n := Φ₆ⁿ + 1` (the level polynomials of the arboreal tower).  For the
 seed `X` the branch is perpetual iff every `g_n` is irreducible over `𝔽_p`.
 
-By Capelli's lemma and the finite-field norm criterion, `g_n` is irreducible iff `g_{n-1}` is
-and `Φ₆^{n-1}(-1/4) + 1` is a non-square mod `p`.  Over `𝔽_5` we have `-1/4 = 1`, the orbit of
+By Capelli's lemma and the finite-field norm criterion, for `n ≥ 2` the polynomial `g_n` is
+irreducible iff `g_{n-1}` is and `Φ₆^{n-1}(-1/4) + 1` is a non-square mod `p`; `g_1 = y² + y + 1`
+is irreducible iff `-3` is a non-square, i.e. `p ≡ 2 (mod 3)` (the norm carries the sign
+`(-1)^{2^{n-1}}`, which is `-1` only at level one; corrected 2026-11-10).  Over `𝔽_5` we have `-1/4 = 1`, the orbit of
 `1` under `y ↦ y² + y` is the 2-cycle `1, 2, 1, 2, …`, and the shifted values `3, 2` are both
 non-squares mod 5.  So every `g_n` is irreducible over `𝔽_5`, the sequence is
 
     X, X+1, X²+X+1, X⁴+2X³+2X²+X+1, g₃(X), g₄(X), …
 
 (one irreducible of each degree `2^k`, no ties ever), and every irreducible of degree not a power
-of two — as well as the linear polynomials `X + 2` and `X + 3` — is missed.
+of two — as well as the linear polynomials `X + 2`, `X + 3` and `X + 4` — is missed.
 
 ## The proof, without Capelli
 
@@ -61,7 +63,7 @@ divides `g_n`.  So `g_n` *is* the minimal polynomial, hence irreducible.
 The composite floor `(C∞)_FF` and FF-MC fail *together* over `𝔽_5[X]` for the seed `X`: the
 perpetually irreducible Sylvester tower that cannot be excluded over `ℤ` is realised.  The
 function-field conjecture therefore cannot be stated uniformly in `p`; the honest form excludes
-the *exceptional primes* (those whose critical orbit of `-1/4` under `y² + y` avoids all
+the *exceptional primes* (those for which every `Φ₆^j(-1/4)`, `j ≥ 1`, avoids all
 squares-minus-one; they are `≡ 2 (mod 3)` and rare — `11, 17, 23, 29, 41, 47` are not
 exceptional).  Contrast: over `𝔽_2[X]` and over `𝔽_p[X]` with `p ≡ 1 (mod 3)` the composite
 floor is a theorem (`EM/FunctionField/CompositeFloors.lean`), and over `ℤ` it is open.  The

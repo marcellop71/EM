@@ -1,24 +1,25 @@
 import EM.Stochastic.PositiveProbCapture
 
 /-!
-# Tree Sieve Decay: Block Coverage, Regeneration, and TSD Composition
+# Tree Sieve Decay: Block Coverage and TSD Composition
 
 ## Overview
 
 This file (Parts 7-12 and 14 of the original interpolation MC development,
-"Layer 2") develops the block-coverage / regeneration machinery for iterated
-hitting, defines the `TreeSieveDecay` (TSD) hypothesis, and composes TSD into
-`MixedMC` and `MixedMullinConjecture`.
+"Layer 2") develops the block-coverage machinery, defines the `TreeSieveDecay`
+(TSD) hypothesis, and composes TSD into `MixedMC` and `MixedMullinConjecture`.
+
+The hypothesis `Regeneration` of the original Layer 2 was found unsatisfiable on
+2026-11-10 (`HypothesisAudit.not_regeneration`) and archived together with its
+consumers (`EM/Archive/Stochastic/RegenerationArchive.lean`).
 
 ## Contents
 
-* Part 7: Block coverage and iterated hitting -- `GoodAccumulator`, `Regeneration`,
+* Part 7: Block coverage -- `GoodAccumulator`,
   `block_coverage`, `good_accumulator_neg_one_reachable`,
   `good_accumulator_implies_capture`, `concat_prefix`, `concat_walk_prefix`,
-  `concat_walk_tail`, `concat_valid`, `regeneration_implies_cofinal_hitting`,
-  `regeneration_implies_capture_at_every_step`,
-  `regeneration_implies_iterated_hitting`, `layer2_landscape`
-* Part 8: TreeSieveDecay and bridge to regeneration -- `mixedWalkProd_squarefree`,
+  `concat_walk_tail`, `concat_valid`, `layer2_landscape`
+* Part 8: TreeSieveDecay -- `mixedWalkProd_squarefree`,
   `TreeSieveDecay`, `TreeSieveDecayHitting`, `mixedWalkProd_coprime_of_no_death`,
   `treeSieveDecay_implies_good_at`, `tsd_implies_neg_one_reachable`,
   `tsd_implies_tsdh`, `tsd_implies_good`, `tsd_implies_capture`,
@@ -45,17 +46,18 @@ open Classical
 
 open Mullin Euclid MullinGroup RotorRouter
 
-/-! ## Part 7: Block Coverage and Iterated Hitting (Layer 2)
+/-! ## Part 7: Block Coverage (Layer 2)
 
 Layer 2 extends the positive-probability capture framework with:
 1. **Block coverage**: if every unit of (Z/qZ)× is reachable from m, there exists
    a uniform depth bound N₀ such that every unit can be reached within N₀ steps.
-2. **GoodAccumulator / Regeneration**: definitions for the regeneration property.
-3. **Iterated hitting**: under Regeneration, from a good accumulator, every target
-   number of -1 hits is achievable by some valid path with positive weight.
+2. **GoodAccumulator**: the definition of a good accumulator.
+
+The iterated-hitting part of the original Layer 2 was conditional on `Regeneration`,
+found unsatisfiable on 2026-11-10 (`HypothesisAudit.not_regeneration`) and archived.
 -/
 
-/-! ### Part 7a: GoodAccumulator and Regeneration Definitions -/
+/-! ### Part 7a: GoodAccumulator Definition -/
 
 section RegenerationDefs
 
@@ -65,21 +67,8 @@ section RegenerationDefs
 def GoodAccumulator (q : ℕ) (P : ℕ) : Prop :=
   ∀ a : (ZMod q)ˣ, (a : ZMod q) ∈ reachableEver q P
 
-/-- The regeneration property: every valid walk from a good starting point
-    leads to good intermediate accumulators at every step.
-
-    **Evidence**: Accumulators grow super-exponentially and are squarefree.
-    By CRT blindness, large squarefree integers behave generically mod q.
-    The density-1 set of good starting points should include almost all
-    accumulators encountered during the walk.
-
-    This is the sole gap between single-hit capture (Layer 1) and
-    iterated/almost-sure capture (Layer 2).
-
-    **Status**: open hypothesis. -/
-def Regeneration (q : ℕ) (m : ℕ) : Prop :=
-  ∀ (σ : MixedSelection) (K : ℕ), ValidMixedSelection m σ →
-    GoodAccumulator q (mixedWalkProd m σ K)
+-- Regeneration: found unsatisfiable on 2026-11-10 (`HypothesisAudit.not_regeneration`); its
+-- definition now lives next to that refutation in EM/Meta/HypothesisAudit.lean (RED #17).
 
 end RegenerationDefs
 
@@ -233,133 +222,31 @@ private theorem concat_valid (acc : ℕ) (σ₁ σ₂ : MixedSelection) (n : ℕ
 
 end WalkConcat
 
-/-! ### Part 7e: Iterated Hitting from Regeneration -/
+/-! ### Part 7e: Iterated Hitting from Regeneration — archived -/
 
-section IteratedHitting
-
-/-- Under Regeneration, cofinal hitting: for every threshold K, there exists a valid
-    path from m that hits -1 mod q at some step n ≥ K, with positive path weight.
-
-    This formulation avoids the counting subtlety of tracking multiple distinct hits.
-    It directly shows that -1 can be hit at arbitrarily late steps, which is the
-    essential content for ergodic-type conclusions.
-
-    Proof: The accumulator at step K is good by Regeneration (applied to the all-minFac
-    path). So -1 is reachable from P_K. Extract a path σ₁ of length n₁ from P_K
-    reaching -1. Concatenate the minFac path (length K) with σ₁. The resulting path
-    hits -1 at step K + n₁ ≥ K. -/
-theorem regeneration_implies_cofinal_hitting
-    (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)
-    (m : ℕ) (hm : 2 ≤ m)
-    (hregen : Regeneration q m)
-    (ε : ℝ) (hε : 0 < ε)
-    (K : ℕ) :
-    ∃ (σ : MixedSelection) (n : ℕ),
-      K ≤ n ∧
-      ValidMixedSelection m σ ∧
-      (mixedWalkProd m σ n : ZMod q) = -1 ∧
-      0 < pathWeightLB ε m σ n := by
-  -- The all-minFac path is valid
-  have hv_mf : ValidMixedSelection m minFacMixed := minFacMixed_valid m
-  -- The accumulator at step K (via minFac path) is good by Regeneration
-  have hgoodK : GoodAccumulator q (mixedWalkProd m minFacMixed K) :=
-    hregen minFacMixed K hv_mf
-  -- So -1 is reachable from P_K
-  have hreach : (-1 : ZMod q) ∈ reachableEver q (mixedWalkProd m minFacMixed K) :=
-    good_accumulator_neg_one_reachable q hq hq2 _ hgoodK
-  -- Extract witness: path σ₁ of length n₁ from P_K reaching -1
-  rw [reachableEver, Set.mem_iUnion] at hreach
-  obtain ⟨n₁, σ₁, hv₁, hmod₁⟩ := hreach
-  -- Concatenate minFac path (length K) with σ₁
-  let σ' := concatMixedSelection minFacMixed σ₁ K
-  have hv' : ValidMixedSelection m σ' := concat_valid m minFacMixed σ₁ K hv_mf hv₁
-  -- At step K + n₁, the walk hits -1
-  have hhit : (mixedWalkProd m σ' (K + n₁) : ZMod q) = -1 := by
-    rw [concat_walk_tail]; exact hmod₁
-  exact ⟨σ', K + n₁, Nat.le_add_right K n₁, hv', hhit, pathWeightLB_pos hε hm hv'⟩
-
-/-- Under Regeneration, for each step K along any valid walk, the accumulator
-    at step K supports positive probability capture of q. -/
-theorem regeneration_implies_capture_at_every_step
-    (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)
-    (m : ℕ) (hm : 2 ≤ m)
-    (hregen : Regeneration q m)
-    (ε : ℝ) (hε : 0 < ε)
-    (σ : MixedSelection) (hv : ValidMixedSelection m σ) (K : ℕ) :
-    PositiveProbCapture q (mixedWalkProd m σ K) ε := by
-  have hgoodK : GoodAccumulator q (mixedWalkProd m σ K) := hregen σ K hv
-  have hmK : 2 ≤ mixedWalkProd m σ K := mixedWalkProd_ge_two m hm σ hv K
-  exact good_accumulator_implies_capture q hq hq2 _ hmK hgoodK ε hε
-
-/-- Under Regeneration, iterated hitting: for every target number of -1 hits,
-    there exists a valid path from m that hits -1 mod q at least that many times,
-    with positive path weight at each hit step.
-
-    The proof proceeds by induction on target_hits. At each step we:
-    1. Take the existing path to step n₀ (with K hits).
-    2. Advance one step from n₀ (via minFac) to ensure the walk moves to a NEW position.
-    3. From the new accumulator (which is good by Regeneration), reach -1 again.
-    4. The new hit at step n₀ + 1 + n₁ is strictly past n₀, hence genuinely new. -/
-theorem regeneration_implies_iterated_hitting
-    (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)
-    (m : ℕ) (hm : 2 ≤ m)
-    (_hgood : GoodAccumulator q m)
-    (hregen : Regeneration q m)
-    (ε : ℝ) (hε : 0 < ε)
-    (target_hits : ℕ) :
-    ∃ (σ : MixedSelection) (steps : Finset ℕ),
-      ValidMixedSelection m σ ∧
-      target_hits ≤ steps.card ∧
-      (∀ n ∈ steps, (mixedWalkProd m σ n : ZMod q) = -1) ∧
-      (∀ n ∈ steps, 0 < pathWeightLB ε m σ n) := by
-  induction target_hits with
-  | zero =>
-    exact ⟨minFacMixed, ∅, minFacMixed_valid m, Nat.zero_le _,
-      fun _ h => absurd h (by simp),
-      fun _ h => absurd h (by simp)⟩
-  | succ K ih =>
-    obtain ⟨σ₀, steps₀, hv₀, hcard₀, hhits₀, _⟩ := ih
-    -- n₀ is strictly past all existing hit steps; accumulator there is good by Regeneration
-    let n₀ := steps₀.sup id + 1
-    have hreach : (-1 : ZMod q) ∈ reachableEver q (mixedWalkProd m σ₀ n₀) :=
-      good_accumulator_neg_one_reachable q hq hq2 _ (hregen σ₀ n₀ hv₀)
-    rw [reachableEver, Set.mem_iUnion] at hreach
-    obtain ⟨n₁, σ₁, hv₁, hmod₁⟩ := hreach
-    let σ' := concatMixedSelection σ₀ σ₁ n₀
-    have hv' : ValidMixedSelection m σ' := concat_valid m σ₀ σ₁ n₀ hv₀ hv₁
-    have hnew_not_old : n₀ + n₁ ∉ steps₀ := by
-      intro h; have := Finset.le_sup (f := id) h; simp at this; omega
-    refine ⟨σ', insert (n₀ + n₁) steps₀, hv', ?_, ?_, ?_⟩
-    · rw [Finset.card_insert_of_notMem hnew_not_old]; omega
-    · intro n hn
-      rw [Finset.mem_insert] at hn
-      rcases hn with rfl | hn
-      · rw [concat_walk_tail]; exact hmod₁
-      · rw [mixedWalkProd_depends_on_prefix m _ σ₀ n (fun i hi =>
-            concat_prefix σ₀ σ₁ n₀ i (by
-              have := Finset.le_sup (f := id) hn; simp at this; omega))]
-        exact hhits₀ n hn
-    · intro n _; exact pathWeightLB_pos hε hm hv'
-
-end IteratedHitting
+-- regeneration_implies_cofinal_hitting archived to EM/Archive/Stochastic/RegenerationArchive.lean (RED #17)
+-- regeneration_implies_capture_at_every_step archived to EM/Archive/Stochastic/RegenerationArchive.lean (RED #17)
+-- regeneration_implies_iterated_hitting archived to EM/Archive/Stochastic/RegenerationArchive.lean (RED #17)
 
 /-! ### Part 7f: Layer 2 Landscape Summary -/
 
 section Layer2Landscape
 
-/-- **Layer 2 Landscape**: Summary of the block coverage + regeneration framework.
+/-- **Layer 2 Landscape**: Summary of the block coverage framework.
 
     Given a prime q ≥ 3, a starting point m ≥ 2, epsilon > 0:
     1. Block coverage: GoodAccumulator → uniform depth for all units
     2. GoodAccumulator → -1 reachable → PositiveProbCapture
-    3. Regeneration → cofinal hitting (hit -1 past any threshold K)
-    4. Regeneration → iterated hitting (hit -1 at least target_hits times)
-    5. Regeneration → capture at every intermediate step -/
+
+    The three further clauses of the original statement (cofinal hitting, iterated
+    hitting, capture at every intermediate step) were conditional on `Regeneration`,
+    found unsatisfiable on 2026-11-10 (`HypothesisAudit.not_regeneration`); the original
+    five-clause statement is archived in
+    `EM/Archive/Stochastic/RegenerationArchive.lean` (RED #17). -/
 theorem layer2_landscape
     (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)
     (m : ℕ) (hm : 2 ≤ m)
     (hgood : GoodAccumulator q m)
-    (hregen : Regeneration q m)
     (ε : ℝ) (hε : 0 < ε) :
     -- 1. Block coverage: uniform depth for all targets
     (∃ N₀, ∀ a : (ZMod q)ˣ, ∃ (σ : MixedSelection) (n : ℕ),
@@ -367,40 +254,18 @@ theorem layer2_landscape
       (mixedWalkProd m σ n : ZMod q) = a ∧ 0 < pathWeightLB ε m σ n)
     ∧
     -- 2. Single capture (from GoodAccumulator)
-    PositiveProbCapture q m ε
-    ∧
-    -- 3. Cofinal hitting: for every K, hit -1 at some step ≥ K
-    (∀ K, ∃ (σ : MixedSelection) (n : ℕ),
-      K ≤ n ∧ ValidMixedSelection m σ ∧
-      (mixedWalkProd m σ n : ZMod q) = -1 ∧
-      0 < pathWeightLB ε m σ n)
-    ∧
-    -- 4. Iterated hitting: for every target, achieve that many -1 hits
-    (∀ target_hits, ∃ (σ : MixedSelection) (steps : Finset ℕ),
-      ValidMixedSelection m σ ∧
-      target_hits ≤ steps.card ∧
-      (∀ n ∈ steps, (mixedWalkProd m σ n : ZMod q) = -1) ∧
-      (∀ n ∈ steps, 0 < pathWeightLB ε m σ n))
-    ∧
-    -- 5. Capture at every intermediate step
-    (∀ (σ : MixedSelection), ValidMixedSelection m σ →
-      ∀ K, PositiveProbCapture q (mixedWalkProd m σ K) ε) :=
+    PositiveProbCapture q m ε :=
   ⟨block_coverage q hq hq2 m hm hgood ε hε,
-   good_accumulator_implies_capture q hq hq2 m hm hgood ε hε,
-   regeneration_implies_cofinal_hitting q hq hq2 m hm hregen ε hε,
-   regeneration_implies_iterated_hitting q hq hq2 m hm hgood hregen ε hε,
-   regeneration_implies_capture_at_every_step q hq hq2 m hm hregen ε hε⟩
+   good_accumulator_implies_capture q hq hq2 m hm hgood ε hε⟩
 
 end Layer2Landscape
 
-/-! ## Part 8: TreeSieveDecay and Bridge to Regeneration
+/-! ## Part 8: TreeSieveDecay
 
 TreeSieveDecay is a pointwise sieve-theoretic hypothesis asserting that all
-sufficiently large squarefree integers have "good" factor trees (covering all
-units mod q). Combined with the proved infrastructure (squarefree accumulators,
-monotone growth), it implies Regeneration and hence iterated hitting.
-
-The conditional chain: PEAP + TreeSieveDecay -> Regeneration -> Iterated Hitting
+sufficiently large squarefree integers coprime to q have "good" factor trees
+(covering all units mod q). Combined with the proved infrastructure (squarefree
+accumulators, monotone growth), it gives a single hit of -1.
 -/
 
 /-! ### Part 8a: Mixed Walk Squarefree -/
@@ -596,8 +461,8 @@ section FullInterpolationLandscape
     3. TreeSieveDecay implies -1 reachable above threshold (coprime)
     4. TreeSieveDecay implies single capture above threshold (coprime)
 
-    The sole sieve-theoretic input is TreeSieveDecay. Regeneration and iterated
-    hitting require extra infrastructure to handle post-absorption walks.
+    The sole sieve-theoretic input is TreeSieveDecay. Iterated hitting would
+    require extra infrastructure to handle post-absorption walks.
     For single hitting (which suffices for MC), the dichotomy argument is clean. -/
 theorem full_interpolation_landscape
     (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)

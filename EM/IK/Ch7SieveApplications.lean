@@ -853,7 +853,34 @@ theorem als_implies_farey_large_sieve_proper (hals : AdditiveLargeSieve) :
       exact farey_spacing_proved Q (by omega) qr qs hqr_pos hqr_le hqs_pos hqs_le
         (br : ℤ) (bs : ℤ) hfrac_ne
     -- Apply ALS
-    have hals_bound := hals R N α a (1 / (Q : ℝ) ^ 2) hδ hδ_le hN hspaced
+    -- The points lie in [0, 1 - 1/Q²], so there is no wrap-around: circular spacing.
+    have hcirc : IsCircularSpaced α (1 / (Q : ℝ) ^ 2) := by
+      refine isCircularSpaced_of_isSpaced_of_le hδ (fun r => ?_) hspaced
+      have hmr' : (e.symm r).val ∈ Qs.sigma Bs := (e.symm r).prop
+      rw [Finset.mem_sigma] at hmr'
+      have hqr_mem := Finset.mem_filter.mp hmr'.1
+      have hqr_pos : 0 < (e.symm r).val.1 := hqr_mem.2
+      have hqr_le : (e.symm r).val.1 ≤ Q := Nat.lt_succ_iff.mp (Finset.mem_range.mp hqr_mem.1)
+      have hbr_lt : (e.symm r).val.2 < (e.symm r).val.1 :=
+        Finset.mem_range.mp (Finset.mem_filter.mp hmr'.2).1
+      have hqr_pos_r : (0 : ℝ) < ((e.symm r).val.1 : ℝ) := Nat.cast_pos.mpr hqr_pos
+      have hb1 : ((e.symm r).val.2 : ℝ) + 1 ≤ ((e.symm r).val.1 : ℝ) := by exact_mod_cast hbr_lt
+      have hqQ : ((e.symm r).val.1 : ℝ) ≤ Q := by exact_mod_cast hqr_le
+      have hQ1' : (1 : ℝ) ≤ Q := by exact_mod_cast (by omega : 1 ≤ Q)
+      show 0 ≤ ((e.symm r).val.2 : ℝ) / ((e.symm r).val.1 : ℝ) ∧
+        ((e.symm r).val.2 : ℝ) / ((e.symm r).val.1 : ℝ) ≤ 1 - 1 / (Q : ℝ) ^ 2
+      refine ⟨by positivity, ?_⟩
+      have h1 : ((e.symm r).val.2 : ℝ) / ((e.symm r).val.1 : ℝ) ≤
+          1 - 1 / ((e.symm r).val.1 : ℝ) := by
+        rw [div_le_iff₀ hqr_pos_r]
+        have : (1 - 1 / ((e.symm r).val.1 : ℝ)) * ((e.symm r).val.1 : ℝ) =
+            ((e.symm r).val.1 : ℝ) - 1 := by field_simp
+        linarith
+      have h2 : 1 / (Q : ℝ) ^ 2 ≤ 1 / ((e.symm r).val.1 : ℝ) := by
+        apply one_div_le_one_div_of_le hqr_pos_r
+        nlinarith
+      linarith
+    have hals_bound := hals R N α a (1 / (Q : ℝ) ^ 2) hδ hδ_le hN hcirc
     -- Simplify 1/(1/Q²) = Q²
     have hsimp : 1 / (1 / (Q : ℝ) ^ 2) + ↑N - 1 = (Q : ℝ) ^ 2 + ↑N - 1 := by
       rw [one_div_one_div]

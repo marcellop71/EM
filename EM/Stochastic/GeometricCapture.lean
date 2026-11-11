@@ -136,9 +136,9 @@ We formalize this abstractly: given a sequence of "block success" probabilities
 δ_k ≥ δ > 0 for all k, the probability of failing all K blocks is at most
 (1 - δ)^K.
 
-The connection to the mixed walk: under Regeneration, each intermediate accumulator
-is good (GoodAccumulator), so block_coverage gives a capturing path at each block.
-The pathWeightLB gives a positive lower bound on each block's capture probability.
+The intended connection to the mixed walk: at each good intermediate accumulator
+(GoodAccumulator), block_coverage gives a capturing path, and pathWeightLB gives a
+positive lower bound on that block's capture probability.
 -/
 
 section BlockGeometric
@@ -191,13 +191,12 @@ end BlockGeometric
 
 /-! ## Part 4: Connection to Mixed Walk
 
-Under Regeneration, each intermediate accumulator along ANY valid walk is good.
-Combined with block_coverage, each block of N₀ steps starting from a good accumulator
+By block_coverage, each block of N₀ steps starting from a good accumulator
 has a capturing path with positive weight ≥ pathWeightLB > 0.
 
-The key theorem: Regeneration + block_coverage gives a uniform positive lower
-bound on the per-block capture weight, which feeds into the geometric decay
-framework above. -/
+The hypothesis `Regeneration` (every intermediate accumulator along any valid walk is
+good), under which this section originally iterated the block bound, was found
+unsatisfiable on 2026-11-10 (`HypothesisAudit.not_regeneration`) and archived. -/
 
 section MixedWalkGeometric
 
@@ -226,33 +225,7 @@ theorem capture_weight_pos
   exact ⟨min (pathWeightLB ε m σ n) 1, lt_min hpos one_pos, min_le_right _ _, σ, n,
     hv, hmod, min_le_left _ _⟩
 
-/-- Under Regeneration, the cofinal capture property yields a sequence of independent
-    block capture opportunities, each with positive weight. The failure probability
-    at each block is bounded away from 1.
-
-    **Mathematical content**: After K blocks of N₀ steps each, the probability that
-    NONE of the K blocks captured q is at most (1 - δ)^K where δ > 0 is the
-    minimum per-block capture probability.
-
-    **Formal content**: Under Regeneration from a good starting point m, for any K,
-    there exists a path that hits -1 at least once in K·N₀ steps with total weight
-    ≥ 1 - (1-δ)^K. As K → ∞, this approaches 1.
-
-    We express this as: for any ε > 0, there exists K such that the cofinal hitting
-    path has weight ≥ 1 - ε. -/
-theorem regeneration_geometric_capture
-    (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)
-    (m : ℕ) (hm : 2 ≤ m)
-    (_hgood : GoodAccumulator q m)
-    (hregen : Regeneration q m)
-    (ε : ℝ) (hε : 0 < ε) :
-    -- For any number of rounds, we can find a valid path hitting -1
-    ∀ K : ℕ, ∃ (σ : MixedSelection) (n : ℕ),
-      K ≤ n ∧
-      ValidMixedSelection m σ ∧
-      (mixedWalkProd m σ n : ZMod q) = -1 ∧
-      0 < pathWeightLB ε m σ n :=
-  fun K => regeneration_implies_cofinal_hitting q hq hq2 m hm hregen ε hε K
+-- regeneration_geometric_capture archived to EM/Archive/Stochastic/RegenerationArchive.lean (RED #17)
 
 /-- Under TreeSieveDecay, from acc = 2, for any ε > 0, there exists a valid
     capturing path with positive weight. This is the entry point: TSD gives
@@ -279,8 +252,8 @@ gives N₀(P) and a capturing path. Among all 2^N₀ binary decision paths of
 depth N₀, at least one captures -1. We count the fraction of paths that capture.
 
 The fraction is at least 1/2^N₀ (since at least one path out of 2^N₀ captures).
-Under Regeneration, after K blocks, the fraction of total paths (of depth K·N₀)
-that capture at least once is at least 1 - (1 - 1/2^N₀)^K.
+If every one of K successive blocks starts from a good accumulator, the fraction of
+total paths (of depth K·N₀) that capture at least once is at least 1 - (1 - 1/2^N₀)^K.
 -/
 
 section CountingArgument

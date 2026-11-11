@@ -8,7 +8,9 @@ import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
 
 Character-analytic program for the Euclid-Mullin walk:
 
-* §24: Character sum framework — collision counts, cancellation hypotheses
+* §24: Character sum framework — collision counts (the hypothesis `CharSumCancellation` was
+  found contradictory at `N = 0` on 2026-11-10 and archived, see
+  `HypothesisAudit.charSumCancellation_iff_mc`)
 * §25: TailSE → DH reduction via character chains
 * §26: Multi-modulus sieve and GlobalTailSE decomposition
 * §27: Decorrelation principle and multiplier equidistribution
@@ -88,33 +90,10 @@ def WalkCollisionCount (q : Nat) (N : Nat) : Nat :=
   Finset.card ((Finset.range N ×ˢ Finset.range N).filter
     fun p => walkZ q p.1 = walkZ q p.2)
 
-/-- **CharSumCancellation**: the atomic estimate for the analytic program.
-    If for each non-trivial character χ mod q, the character sum over the
-    walk satisfies |S_χ(N)| ≤ N^{1-δ}, then the walk equidistributes
-    mod q and hits -1 for N large enough.
-
-    This is stated as a pure Prop (no sorry) — it's the open analytic
-    hypothesis that would complete the proof of Mullin's Conjecture
-    via the character sum / collision count route.
-
-    Specifically: if for every proper subgroup H of (ℤ/qℤ)ˣ and every N,
-    there exist at least N/(q-1) - ε·N steps where the walk is NOT confined
-    to any single coset of H, then the walk equidistributes.
-    This is strictly weaker than DH and could serve as an intermediate. -/
-def CharSumCancellation : Prop :=
-  ∀ (q : Nat) [Fact (Nat.Prime q)]
-    (_hq : IsPrime q) (_hne : ∀ k, seq k ≠ q),
-    ∀ N, (WalkCollisionCount q N : ℚ) < (N : ℚ)^2 / ((q : ℚ) - 2)
-
-/-- **CharSumCancellation → DynamicalHitting → MC**: by character orthogonality,
-    the collision bound implies walk equidistribution, which implies the walk
-    hits -1. Combined with the machine-verified `dh_reduction_chain`, this
-    gives MC. The bridge CSC → DH is standard analytic NT (Cauchy–Schwarz +
-    character orthogonality) but requires ℂ-valued Dirichlet characters not
-    yet available in Mathlib's ZMod API, so it is stated as a Prop.
-
-    The reduction chain: CSC → DH → MC (first arrow open, second proved). -/
-def CSCImpliesDH : Prop := CharSumCancellation → DynamicalHitting
+-- CharSumCancellation: found contradictory at a missing prime (`0 < 0` at `N = 0`), hence
+-- equivalent to MC by logic alone, on 2026-11-10 (`HypothesisAudit.charSumCancellation_iff_mc`);
+-- its definition now lives next to that theorem in EM/Meta/HypothesisAudit.lean.
+-- CSCImpliesDH archived to EM/Archive/Equidist/FourierArchive.lean (RED #16)
 
 end CharacterSumFramework
 

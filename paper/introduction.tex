@@ -45,8 +45,8 @@ natural order ($5$ not until position~$6$, $11$ at position~$11$,
 $37$ at position~$17$), while enormous primes---a 7-digit number at
 position~$7$, a 14-digit number at position~$8$---appear early.  As of
 2025, only 51~terms are known and some primes like $41$ and $47$ are
-not yet observed.  Computing further terms requires \emph{complete}
-factorization of $\Prod{2}(n)+1$ (where $\Prod{2}(n) \coloneqq a(0)\cdots a(n)$
+not yet observed.  Computing further terms requires the \emph{least}
+prime factor of $\Prod{2}(n)+1$ (where $\Prod{2}(n) \coloneqq a(0)\cdots a(n)$
 is the running product): finding any prime factor is not
 enough---one must certify that no smaller factor exists.  Since
 $\Prod{2}(n)$ grows super-exponentially, this quickly exceeds the reach
@@ -119,7 +119,7 @@ test for independence.  In the EM sequence, the running product
 $\Prod{2}(n)$ determines $\Prod{2}(n)+1$, whose smallest prime factor
 becomes the next multiplier; but the $O(\log q)$ bits visible in the
 residue $\Prod{2}(n) \bmod q$ cannot control the outcome of factoring the
-${\sim}2^n$-bit integer $\Prod{2}(n)+1$.  This \emph{information
+integer of up to $2^n$ bits $\Prod{2}(n)+1$.  This \emph{information
 bottleneck} is why the multiplier residues behave as if
 independent---and why the walk on $(\ZZ/q\ZZ)^\times$ should visit
 every element, including the ``death state'' $-1$ that would put~$q$
@@ -128,12 +128,12 @@ cases the pseudorandomness claim concerns a fully deterministic process
 whose forward map is easy but whose outputs resist structural
 prediction---the difference being that $\minFac$ achieves this not by
 cryptographic design but accidentally, through the information
-bottleneck of projecting a ${\sim}2^n$-bit integer onto $O(\log q)$
-bits.  Our formalization makes this intuition precise: we
-identify the exact mathematical content---Conditional Multiplier
-Equidistribution (CME)---needed to convert ``the factoring channel destroys
-correlation'' into a proof of MC, and show it implies the conjecture
-through a verified chain of reductions.
+bottleneck of projecting a integer of up to $2^n$ bits onto $O(\log q)$
+bits.  The formalization states this intuition precisely, as Conditional
+Multiplier Equidistribution (CME), and proves that CME implies MC through a
+verified chain.  Since CME is quantified over missing primes the converse is
+vacuous: CME is an equivalent reformulation of the conjecture in the language
+of the heuristic, not a reduction to something weaker.
 
 \subsection*{The story, told from above}
 \label{sec:story}

@@ -445,7 +445,16 @@ theorem als_implies_mls_prime : AdditiveLargeSieve → MultiplicativeLargeSieveP
     rw [div_le_div_iff₀ hp_pos (by norm_num : (0 : ℝ) < 2)]
     simp only [one_mul]
     exact_mod_cast hp_prime.two_le
-  have hspaced := unit_points_spaced hp_prime e α rfl
+  have hspaced : IsCircularSpaced α (1 / (p : ℝ)) := by
+    refine isCircularSpaced_of_isSpaced_of_le hδ (fun r => ?_) (unit_points_spaced hp_prime e α rfl)
+    have hlt : ZMod.val (↑(e r) : ZMod p) < p := ZMod.val_lt _
+    have h1 : (ZMod.val (↑(e r) : ZMod p) : ℝ) + 1 ≤ p := by exact_mod_cast hlt
+    show 0 ≤ (ZMod.val (↑(e r) : ZMod p) : ℝ) / (p : ℝ) ∧
+      (ZMod.val (↑(e r) : ZMod p) : ℝ) / (p : ℝ) ≤ 1 - 1 / (p : ℝ)
+    refine ⟨by positivity, ?_⟩
+    rw [div_le_iff₀ hp_pos]
+    have : (1 - 1 / (p : ℝ)) * (p : ℝ) = (p : ℝ) - 1 := by field_simp
+    linarith
   have hals_bound := hals R N α a (1 / (p : ℝ)) hδ hδ_le hN hspaced
   have hals_lhs_eq := als_reindex N a S rfl e α rfl
   rw [hals_lhs_eq] at hals_bound

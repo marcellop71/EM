@@ -154,12 +154,15 @@ def NoLongRunsAt (q : Nat) [Fact (Nat.Prime q)] (L : Nat) : Prop :=
 
     Analytically this follows from a quantitative sieve transfer with an error
     term that is uniform in the starting point (e.g., via effective
-    Chebotarev or Siegel-Walfisz bounds applied to the EM subsequence). -/
+    Chebotarev or Siegel-Walfisz bounds applied to the EM subsequence).
+
+    The window threshold `L₀` is existential and chosen before the class `a` (repaired
+    2026-11-10, review H4: with `L₀` universally quantified the statement forced every single
+    multiplier to equal every unit, and was equivalent to MC by logic alone). -/
 def StrongSieveEquidist : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-  ∀ (a : (ZMod q)ˣ),
   ∀ (ε : ℝ) (_hε : 0 < ε),
-  ∀ (L₀ : ℕ) (_hL₀ : 0 < L₀),
+  ∃ (L₀ : ℕ) (_hL₀ : 0 < L₀), ∀ (a : (ZMod q)ˣ),
   ∃ N₀ : ℕ, ∀ n₀ ≥ N₀, ∀ L ≥ L₀,
     let hitW : ℕ := (Finset.range L).filter (fun k => emMultUnit q hq hne (n₀ + k) = a) |>.card
     (hitW : ℝ) ≥ (L : ℝ) * (1 / (Finset.univ (α := (ZMod q)ˣ)).card - ε)
@@ -181,14 +184,22 @@ open Classical in
 theorem strongSieveEquidist_noLongRunsAt (hsse : StrongSieveEquidist)
     (q : Nat) [hqfact : Fact (Nat.Prime q)] :
     ∃ (L : Nat), 0 < L ∧ NoLongRunsAt q L := by
-  -- Let φ := card of (ZMod q)ˣ (Euler's φ(q)), L := φ+1.
   set φ := (Finset.univ (α := (ZMod q)ˣ)).card with hφ_def
   have hφ_pos : 0 < φ := by
     rw [hφ_def]
     apply Finset.card_pos.mpr
     exact ⟨1, Finset.mem_univ _⟩
-  refine ⟨φ + 1, Nat.succ_pos _, ?_⟩
-  intro hq hne χ hχ
+  -- Set ε = 1/(2φ).
+  set ε := (1 : ℝ) / (2 * φ) with hε_def
+  have hε_pos : (0 : ℝ) < ε := by positivity
+  by_cases hmiss : IsPrime q ∧ ∀ k, seq k ≠ q
+  swap
+  · exact ⟨1, Nat.one_pos, fun hq hne => absurd ⟨hq, hne⟩ hmiss⟩
+  obtain ⟨hq, hne⟩ := hmiss
+  -- The window length is the threshold supplied by the hypothesis.
+  obtain ⟨L₀, hL₀, hwin⟩ := hsse q hq hne ε hε_pos
+  refine ⟨L₀, hL₀, ?_⟩
+  intro _ _ χ hχ
   -- Pick a unit a with χ(a) ≠ 1.
   have ⟨a, ha⟩ : ∃ a : (ZMod q)ˣ, χ a ≠ 1 := by
     by_contra hall
@@ -197,18 +208,11 @@ theorem strongSieveEquidist_noLongRunsAt (hsse : StrongSieveEquidist)
       have := hall a
       simp only [MonoidHom.one_apply] at this ⊢
       exact_mod_cast Units.ext_iff.mpr (Units.val_eq_one.mpr this)))
-  -- Set ε = 1/(2φ).
-  set ε := (1 : ℝ) / (2 * φ) with hε_def
-  have hε_pos : (0 : ℝ) < ε := by positivity
-  -- Apply StrongSieveEquidist with L₀ = φ+1.
-  obtain ⟨N₀, hN₀⟩ := hsse q hq hne a ε hε_pos (φ + 1) (Nat.succ_pos _)
+  obtain ⟨N₀, hN₀⟩ := hwin a
   refine ⟨N₀, fun n hn => ?_⟩
-  -- The hit count for a in [n, n+(φ+1)) is ≥ (φ+1)·(1/φ - 1/(2φ)) = (φ+1)/(2φ).
-  have hcount := hN₀ n hn (φ + 1) (le_refl _)
+  have hcount := hN₀ n hn L₀ (le_refl _)
   simp only at hcount
-  -- The count is a natural number, so count ≥ 1.
-  -- Abbreviate the filter for readability.
-  set S := (Finset.range (φ + 1)).filter (fun k => emMultUnit q hq hne (n + k) = a)
+  set S := (Finset.range L₀).filter (fun k => emMultUnit q hq hne (n + k) = a)
   have hcount_pos : 0 < S.card := by
     by_contra hle
     push Not at hle
@@ -216,7 +220,7 @@ theorem strongSieveEquidist_noLongRunsAt (hsse : StrongSieveEquidist)
     rw [hzero] at hcount
     simp only [Nat.cast_zero] at hcount
     have hφr : (0 : ℝ) < (φ : ℝ) := by exact_mod_cast hφ_pos
-    have hLr : (0 : ℝ) < ((φ + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.succ_pos φ
+    have hLr : (0 : ℝ) < (L₀ : ℝ) := by exact_mod_cast hL₀
     have hεr : (0 : ℝ) < 1 / (φ : ℝ) - ε := by
       rw [hε_def]
       have h1 : (0 : ℝ) < 1 / (φ : ℝ) := div_pos one_pos hφr

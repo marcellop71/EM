@@ -23,7 +23,7 @@ statement of the dichotomy behind #171 and #181 (§1.3).
 
 | axis | generic object | theorem | why it stops at `2` |
 |---|---|---|---|
-| seed (Haar on `Ω = ∏ 𝔽_r`) | a.a. seeds | `AlmostAllGenMC.almost_all_genmc` | countable sets are null (#90, #155) |
+| seed (Haar on `Ω = ∏ 𝔽_r`) | a.a. seeds | `ProfiniteHeadline.measure_some_prime_missed_eq_zero` (density form: `AlmostAllDensity.almost_all_genmc_density`) | countable sets are null (#90, #155) |
 | branch (factor tree) | random / Baire-generic branch | `RandomFactorMC`, `DenseCapture` | purification: the greedy branch is one point of the branch space |
 | time (Cesàro, ultrafilter hull) | stationary joint law | logic memo §1.3 | #90 witness `(2,2,3,3)` vs `(2,3,2,3)` |
 | type of `2` (model theory) | hyperseed with the type of `2` | #158, #171, logic memo §5 | Loeb-null; axioms weak enough to admit it admit `genSeqAvoid` |

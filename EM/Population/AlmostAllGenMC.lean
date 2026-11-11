@@ -446,7 +446,14 @@ What is **not** claimed:
   anywhere in the chain.
 
 *Proof.*  Split the uncaptured seeds by `uncaptured_decomposition` and feed
-`TheoremC.theorem_C` to the generic assembly `three_type_union_small`. -/
+`TheoremC.theorem_C` to the generic assembly `three_type_union_small`.
+
+**Audit 2026-11-10: this is a one-scale count, not a density statement, and as stated it is
+weak.** The scale `Y` is existential with no lower bound; at `Y = 0` the sample space is `{1}`,
+whose generalized sequence is the Euclid–Mullin sequence itself, so the statement is trivially
+true for every `q` that occurs there.  Cite `AlmostAllDensity.almost_all_genmc_density`,
+`almost_all_genmc_limsup` and `never_captures_limsup_eq_zero` for the seed-average law; those
+are the density theorems and do not go through this one. -/
 theorem almost_all_genmc (q : ℕ) (hq : q.Prime) :
     ∀ ε : ℝ, 0 < ε → ∃ n Y : ℕ,
       (((sampleSpace q Y).filter (fun m => ¬ q ∣ m ∧ ¬ ∃ j < n, genSeq m j = q)).card : ℝ)

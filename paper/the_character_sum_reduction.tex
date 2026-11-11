@@ -638,17 +638,19 @@ finitely many moduli.
 
 \begin{theorem}[\lean{EM/LargeSieve/Basic.lean}{mmcsb\_implies\_mc}]
 \label{thm:mmcsb-mc}
-$\mathrm{MultiModularCSB} \;\Longrightarrow\; \MC$.
+$\mathrm{MultiModularCSB}$ with threshold~$Q_0$, together with $\MC$ for
+the primes below~$Q_0$, implies $\MC$.  (In Lean the second hypothesis is
+stated at the threshold chosen from the first, \code{FiniteMCBelow}.)
 \end{theorem}
 
 The proof composes the per-prime Fourier bridge
 (Theorem~\ref{thm:fourier-step}) with the inductive bootstrap: for
 $q \geq Q_0$, MMCSB gives hit count $\sim N/(q{-}1) > 0$ at~$-1$,
 contradicting permanent avoidance; for the finitely many primes
-$q < Q_0$, the bootstrap (Section~\ref{sec:bootstrap}) handles
-them---once MC holds for all primes below~$q$, the sieve gap and
-one-prime gap (Theorem~\ref{thm:one-prime-gap}) reduce MC($q$) to a
-single hitting event.
+$q < Q_0$, MC is an additional hypothesis.  The bootstrap
+(Section~\ref{sec:bootstrap}) does not supply it: it reduces MC($q$) to a
+single hitting event once MC holds for all primes below~$q$, and that
+hitting event below the threshold is exactly what is assumed.
 
 Three parallel routes to MultiModularCSB are formalized:
 
@@ -661,7 +663,8 @@ the death channel---a single progression---gets its fair share of
 multipliers, breaking the avoidance.
 
 \begin{theorem}[\lean{EM/LargeSieve/Basic.lean}{bv\_chain\_mc}]
-$\mathrm{BV} + \mathrm{BVImpliesMMCSB} \;\Longrightarrow\; \MC$.
+$\mathrm{BV} + \mathrm{BVImpliesMMCSB} \;\Longrightarrow\; \MC$, given
+$\MC$ for the primes below the resulting threshold (\code{FiniteMCBelow}).
 \end{theorem}
 \noindent\emph{Correction (2026-08-18).}  Until this revision the Lean
 statement \code{BombieriVinogradov} was `$\exists E,\ E \le x/(\log x)^A

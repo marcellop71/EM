@@ -239,12 +239,6 @@ We define `IsCircularSpaced` for the stronger condition, prove the bridge
 under it, and show the key applications satisfy it.
 -/
 
-/-- **Circular spacing**: points α_r ∈ ℝ/ℤ are **circularly δ-spaced** if
-    their ℝ/ℤ distance (distance to nearest integer of α_r − α_s) is ≥ δ
-    for all r ≠ s. This is the standard IK definition (stronger than `IsSpaced`). -/
-def IsCircularSpaced {R : ℕ} (α : Fin R → ℝ) (δ : ℝ) : Prop :=
-  ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|
-
 /-- `IsCircularSpaced` implies `IsSpaced`: circular distance ≥ δ implies
     |fract diff| ≥ δ, since circular distance ≤ |fract diff| and when
     |fract diff| > 1/2 we use δ ≤ 1/2 < |fract diff|. -/

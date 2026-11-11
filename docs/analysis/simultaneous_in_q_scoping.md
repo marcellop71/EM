@@ -144,7 +144,9 @@ Two small facts make the dynamics total:
 * **(T2)** Every event in the chain is a cylinder event, by (P2); and `μ(E) = (count on one
   period)/(period)` for cylinder events.
 
-Hence `almost_all_genmc` transfers verbatim: for every `ε > 0` there is `n` with
+Hence (note 2026-11-10: `almost_all_genmc` itself is a one-scale count with an unconstrained
+scale and should not be cited; the density statement is `AlmostAllDensity.almost_all_genmc_density`)
+the argument transfers: for every `ε > 0` there is `n` with
 `μ(F_q^{(n)}) ≤ ε`, and since `F_q ⊆ F_q^{(n)}` for every `n`,
 
 > **`μ(F_q) = 0` for every prime `q`**, and by **countable additivity** `μ(⋃_q F_q) = 0`:

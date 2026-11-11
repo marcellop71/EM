@@ -42,7 +42,7 @@ the FF-EM sequence, proves the refutation over~$\FF_5$, an unconditional
 six-step sieve chain and the $\Phi_3$ exclusion criterion, and presents
 three formally verified dead ends that delineate the boundary of current
 techniques.  The function-field module of the formalization comprises
-19~files and ${\sim}9{,}200$~lines with zero \texttt{sorry}.
+29~files and ${\sim}11{,}100$~lines with zero \texttt{sorry}.
 
 \medskip\noindent\textbf{What is and is not machine-checked here (audit
 2026-08-17).}\enspace The Weil bound is not formalized: \code{WeilBound},
@@ -111,7 +111,7 @@ Consequently the sequence is
 no tie ever occurs, the selected irreducibles are $t$, $t+1$ and exactly
 one of each degree $2^k$ for $k \geq 1$, and every other monic
 irreducible---every one of degree not a power of two, and the linear
-polynomials $t+2$, $t+3$---never appears.  In particular $\neg\FFMC$ for
+polynomials $t+2$, $t+3$, $t+4$---never appears.  In particular $\neg\FFMC$ for
 $p = 5$, for every choice function.
 \end{theorem}
 
@@ -140,13 +140,19 @@ terms are $t$ and $t+1$.
 \end{proof}
 
 The mechanism is a \emph{stable tower}.  By Capelli's lemma and the
-finite-field square criterion, $g_n$ is irreducible over~$\Fp$ iff
-$g_{n-1}$ is and $\Phi_6^{\,n-1}(-1/4)+1$ is a non-square mod~$p$; the
+finite-field square criterion, for $n\ge2$ the polynomial $g_n$ is
+irreducible over~$\Fp$ iff $g_{n-1}$ is and $\Phi_6^{\,n-1}(-1/4)+1$ is a
+non-square mod~$p$ (the relevant norm is
+$\prod_i(1+4\alpha_i)=4^{d}(-1)^{d}g_{n-1}(-1/4)$ with $d=2^{n-1}$, and the
+sign is $+$ for $n\ge2$), while $g_1=y^2+y+1$ is irreducible iff $-3$ is a
+non-square, i.e.\ $p\equiv2\pmod3$; the
 first values of these constants over~$\mathbb{Q}$ are $13/16$, $217/256$,
 $57073/65536$---the level constants of \S\ref{sec:level-tower}, made
 rational again by the norm.  Call $p$ \emph{exceptional} if $p \equiv 2
-\pmod 3$ and every value on the (finite) orbit of $-1/4$ under
-$y \mapsto y^2+y$ in $\Fp$ is one less than a non-square.  For $p = 5$
+\pmod 3$ and every value $\Phi_6^{\,j}(-1/4)$, $j\ge1$, on the (finite)
+forward orbit of $-1/4$ under $y \mapsto y^2+y$ in $\Fp$ is one less than
+a non-square (the starting value $-1/4$ itself is not tested unless it
+recurs: at level one the condition is $p\equiv2\pmod3$).  For $p = 5$
 one has $-1/4 = 1$, the orbit is the two-cycle $1,2,1,2,\dots$, and the
 shifted values $3, 2$ are both non-squares: $5$ is exceptional.  The
 primes $11, 17, 23, 29, 41, 47$ are not (for $17, 23, 29$ already $13$
@@ -245,17 +251,23 @@ FF-EM data, i.e.\ for every choice function:
   single step; over $\FF_2$, after two irreducible stages every factor has
   degree divisible by~$4$
   (\lean{EM/FunctionField/AutonomousDegrees.lean}{four\_dvd\_ffSeq\_natDegree\_of\_two\_irreducible}).
-  The closed form over $\FF_2$: after $k$ consecutive irreducible stages
-  every irreducible factor of the next Euclid polynomial has degree $D$
-  with $k < 2^{v_2(D)}$
-  (\lean{EM/FunctionField/AutonomousThreshold.lean}{lt\_two\_pow\_padicValNat\_natDegree\_of\_run}),
-  because $1$ lies in the image of $(F+1)^k$ on $\FF_{2^d}$ exactly when
+  The closed form over $\FF_2$ is a statement about the residue field: $1$
+  lies in the image of $(F+1)^k$ on $\FF_{2^d}$ exactly when
   $k < 2^{v_2(d)}$
-  (\lean{EM/FunctionField/AutonomousThreshold.lean}{one\_mem\_sylv\_iterate\_image\_iff}):
+  (\lean{EM/FunctionField/AutonomousThreshold.lean}{one\_mem\_sylv\_iterate\_image\_iff});
   a solution of $z^{2^{2^v}} = z + 1$ has Frobenius period exactly
-  $2^{v+1}$, and root counting gives sharpness.  The actual sequence attains
-  the bound at $k = 3$, $D = 4$
-  (\lean{EM/FunctionField/AutonomousThreshold.lean}{threshold\_attained\_at\_three}).
+  $2^{v+1}$, and root counting gives sharpness.  Consequently every
+  irreducible factor of the level polynomial $g_k$ over $\FF_2$ has
+  degree exactly $2^{\lfloor\log_2 k\rfloor+1}$
+  (\lean{EM/FunctionField/AutonomousThreshold.lean}{natDegree\_eq\_of\_irreducible\_dvd\_level}),
+  so that polynomial is irreducible only for $k\le 2$: this is the source of
+  the constant~$3$ in the composite floor.  For runs of irreducible stages
+  the threshold therefore adds nothing to the two statements above (a run
+  has length at most~$3$, and $k=3$ repeats $k=2$); its unbounded range
+  applies to runs in which the cofactor is $\equiv 1$ modulo the captured
+  irreducible $f$ without the stage being irreducible, where $k$ such stages
+  force $k < 2^{v_2(\deg f)}$
+  (\lean{EM/FunctionField/AutonomousThreshold.lean}{lt\_two\_pow\_padicValNat\_natDegree\_of\_residue\_run}).
 \end{itemize}
 
 \paragraph{The generic sequence, and a corollary over $\mathbb{Q}$.}
@@ -657,7 +669,8 @@ the walk of the seed-$t$ sequence modulo $t+3$ never returns to~$-1$.
 \paragraph{The \texorpdfstring{$\Phi_3$}{Phi3} exclusion criterion.}
 
 We now develop a structural obstruction with no integer analog.  When
-all irreducible factors of $\ffprod(n)+1$ have degree~$1$, the walk
+the Euclid polynomial $\ffprod(n)+1$ is itself irreducible (so that the
+selected factor is all of it), the walk
 $\ffprod(n) \bmod Q$ for a degree-one target $Q = (t-a)$ follows the
 \emph{autonomous map} $f(w) = w(w+1)$ on $\Fp$.  The target $Q$ divides
 $\ffprod(n)+1$ iff the walk position $w_n = -1$.  Hence degree-one
@@ -723,12 +736,12 @@ $5, 11, 17, 23, 29, 41, 47, \dots$
 \end{remark}
 
 \begin{remark}[The criterion is unconditional for $p = 5$]
-The hypothesis of the criterion---that every factor of $\ffprod(n)+1$
-has degree one, so that the walk follows the autonomous map---is a
-special case of perpetual irreducibility, which for $p = 5$ and the
+The hypothesis of the criterion---that each Euclid polynomial
+$\ffprod(n)+1$ is irreducible, so that the walk follows the autonomous
+map---is perpetual irreducibility, which for $p = 5$ and the
 seed~$t$ is a theorem at every stage (Theorem~\ref{thm:ffmc-false-five}).
-There the exclusion says outright that the linear irreducibles $t+2$ and
-$t+3$ are never selected: their walks start at $2, 3 \neq -1$ and follow
+There the exclusion says outright that the linear irreducibles $t+2$,
+$t+3$ and $t+4$ are never selected: their walks start at $3, 2, 1 \neq -1$ and follow
 $w \mapsto w(w+1)$ forever, and $\Phi_3$ has no root in~$\FF_5$.
 \end{remark}
 

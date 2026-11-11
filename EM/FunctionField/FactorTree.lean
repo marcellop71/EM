@@ -4,7 +4,7 @@ import EM.FunctionField.WeakMC
 /-!
 # Factor Tree and Mixed MC for the Function Field EM Sequence
 
-This file defines the factor tree, mixed selection, and GenMixedMC over F_p[t],
+This file defines the factor tree and mixed selection over F_p[t],
 mirroring the integer mixed walk infrastructure in `EM/Stochastic/EpsilonRandomMC.lean`.
 
 Over F_p[t], monic irreducible polynomials play the role of primes. At each step
@@ -18,8 +18,6 @@ branching tree of possible walks.
 * `ffMixedWalkProd` -- accumulated product under a mixed selection
 * `FFMixedSelectionValid` -- validity: each selection is a monic irred factor of acc+1
 * `ffMixedCaptures` -- a selection captures a target polynomial
-* `FFMixedMC` -- mixed MC: every monic irreducible is capturable from every valid start
-* `FFGenMixedMC` -- generalized mixed MC for all monic irreducibles
 * `ffTreeReachable` -- a target is reachable in the factor tree (root or selected)
 
 ## Main results
@@ -32,6 +30,10 @@ branching tree of possible walks.
 * `ffmc_implies_tree_reachable_from_X` -- FFMC implies every irred is reachable from X
 * `ffMixedWalkProd_coprime_succ` -- acc product and acc+1 share no irreducible factor
 * `start_not_capturable` -- the starting polynomial can never be captured
+
+The definitions `FFMixedMC` / `FFGenMixedMC` ("every monic irreducible is capturable from
+every valid start") were found false on 2026-11-10 (no guard `¬ Q ∣ start`;
+`FunctionFieldAnalog.not_ffMixedMC`, `not_ffGenMixedMC`) and archived.
 -/
 
 namespace FunctionFieldAnalog
@@ -70,16 +72,9 @@ def ffMixedCaptures (_start : Polynomial (ZMod p))
     (σ : FFMixedSelection p) (Q : Polynomial (ZMod p)) : Prop :=
   ∃ n, σ.sel n = Q
 
-/-- Mixed MC at target Q: for every valid starting point,
-    there exists a valid selection capturing Q. -/
-def FFMixedMC (Q : Polynomial (ZMod p)) : Prop :=
-  ∀ start : Polynomial (ZMod p), start.Monic → 0 < start.natDegree →
-  ∃ σ : FFMixedSelection p, FFMixedSelectionValid p start σ ∧
-    ffMixedCaptures p start σ Q
-
-/-- Generalized Mixed MC: for all monic irreducible Q, FFMixedMC holds. -/
-def FFGenMixedMC : Prop :=
-  ∀ Q : Polynomial (ZMod p), Q.Monic → Irreducible Q → FFMixedMC p Q
+-- FFMixedMC, FFGenMixedMC: found false on 2026-11-10 (`FunctionFieldAnalog.not_ffMixedMC`,
+-- `not_ffGenMixedMC`); their definitions now live next to those refutations in
+-- EM/Meta/HypothesisAudit.lean (RED #19).
 
 /-- Q is reachable in the factor tree from start: either Q = start (root),
     or Q is captured by some valid selection from start.

@@ -186,9 +186,14 @@ theorem exists_tail_coprime (m : ℕ) (hm : m ≠ 0) :
 
 DESIGN CHOICE: `Transition` admits *any* natural number `N` in the residue class as a
 candidate, not merely those integers actually realizable as Euclid–Mullin candidates.
-Hence `Transition` is strictly **larger** than the true orbit dynamics.  This makes an
-invariant's job strictly **easier**, so the nonexistence statement proved below is
-strictly **stronger** than nonexistence for the true dynamics. -/
+Hence `Transition` is strictly **larger** than the true orbit dynamics.  A set closed under
+a larger relation is closed under the true one, but not conversely: fewer sets are
+`Propagating`, so the nonexistence statement proved below is **weaker** than nonexistence
+for the true dynamics (corrected 2026-11-10; the papers had this right).  What it excludes
+is a certificate that knows the candidate only through its residue class.  Note also that
+`CvdPObstruction` is not by itself a certificate of omission: for a prime `q` that *does*
+occur, the multiples of `q` form one at any rich modulus.  The theorem therefore reads
+"an obstruction for `q` implies `q` occurs". -/
 def Transition (m : ℕ) (r r' : ZMod m) : Prop :=
   ∃ N : ℕ, Odd N ∧ 3 ≤ N ∧ (N : ZMod m) = r + 1 ∧ r' = r * (Nat.minFac N : ZMod m)
 

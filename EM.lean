@@ -128,6 +128,7 @@ import EM.LargeSieve.Structural
 import EM.LargeSieve.WalkAnalysis
 import EM.LargeSieve.WalkDecomposition
 import EM.Meta.DeadEnds
+import EM.Meta.HypothesisAudit
 import EM.Meta.OrbitBarrier
 import EM.Meta.BagInformation
 import EM.Meta.Diamonds

@@ -1,6 +1,6 @@
 # Mathlib Contribution Candidates from the Euclid–Mullin Formalization
 
-The repository [EM](https://github.com/marcellop71/EM) (208 files, ~107,000 lines, zero
+The repository [EM](https://github.com/marcellop71/EM) (241 files, ~115,000 lines, zero
 `sorry`) formalizes reductions of Mullin's Conjecture against **Mathlib `v4.33.0`**
 (toolchain `leanprover/lean4:v4.33.0`). Along the way it developed general-purpose
 mathematics that appears to fill genuine gaps in Mathlib. This file lists the candidates.
@@ -12,7 +12,7 @@ number — line numbers rot on every edit, names do not. Everything below is gre
 grep -rn "necklace_identity_proved" EM/ --include="*.lean"
 ```
 
-A machine-readable index of all 358 published declarations is in `registry/`.
+A machine-readable index of all 451 published declarations is in `registry/`.
 
 **Scope.** Only live code is offered.  The repository's `EM/Archive/` (retired, `#exit`-guarded
 files) is kept locally and is not part of the public tree; no candidate below lives there

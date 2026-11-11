@@ -41,8 +41,10 @@ epsilon-process. No measure theory on infinite sequences is needed.
 * `stochastic_mc_zero_trivial` -- StochasticMC(0, q) is false for q > 2
 * `standard_em_is_valid_selection` -- all-minFac selection is always valid
 
-### Part 6: Almost Sure Capture
-* `almost_sure_capture_of_regeneration` -- Regeneration gives cofinal hitting
+### Part 6: Capture under TSD
+* `tsd_positive_capture_two` -- TSD gives positive-probability capture from acc = 2
+  (`almost_sure_capture_of_regeneration` was conditional on `Regeneration`, found
+  unsatisfiable on 2026-11-10, `HypothesisAudit.not_regeneration`, and archived)
 
 ### Part 7: Landscape
 * `stochastic_em_landscape` -- summary conjunction
@@ -76,8 +78,8 @@ section Definitions
     ANY valid factor choice under the (1-epsilon) minFac + epsilon uniform process.
 
     Note: this is a **positive probability** statement, not an **almost sure** one.
-    Almost sure capture follows from the geometric decay framework in GeometricCapture.lean
-    when combined with Regeneration. -/
+    (The almost-sure statement was only ever derived from the hypothesis `Regeneration`,
+    which is unsatisfiable: `HypothesisAudit.not_regeneration`.) -/
 def StochasticMC (ε : ℝ) (q : ℕ) : Prop :=
   q = 2 ∨ (q.Prime ∧ 0 < ε ∧ ε ≤ 1 ∧ PositiveProbCapture q 2 ε)
 
@@ -250,34 +252,15 @@ theorem standard_em_is_valid_selection (m : ℕ) :
 
 end DeterministicLimit
 
-/-! ## Part 6: Geometric Decay for Almost Sure Capture
+/-! ## Part 6: Capture under TSD
 
-Under Regeneration, each block of steps from a GoodAccumulator has a positive-probability
-capturing path. After K blocks, the non-capture probability decays geometrically as
-(1 - delta)^K -> 0. This gives almost sure capture in the limit.
-
-We formalize this as: for any number of rounds K, there exists a valid capturing
-path beyond step K with positive weight. -/
+The original content of this part, cofinal hitting under `Regeneration`, was vacuous:
+`Regeneration` was found unsatisfiable on 2026-11-10 (`HypothesisAudit.not_regeneration`)
+and the theorem is archived. -/
 
 section AlmostSureCapture
 
-/-- **Almost sure capture under Regeneration**: if GoodAccumulator holds at m >= 2
-    and Regeneration propagates goodness, then for any round count K,
-    there exists a valid path hitting -1 beyond step K with positive weight.
-
-    This wraps `regeneration_geometric_capture` from GeometricCapture.lean. -/
-theorem almost_sure_capture_of_regeneration
-    (q : ℕ) (hq : Nat.Prime q) (hq2 : 2 < q)
-    (m : ℕ) (hm : 2 ≤ m)
-    (hgood : GoodAccumulator q m)
-    (hregen : Regeneration q m)
-    (ε : ℝ) (hε : 0 < ε) :
-    ∀ K : ℕ, ∃ (σ : MixedSelection) (n : ℕ),
-      K ≤ n ∧
-      ValidMixedSelection m σ ∧
-      (mixedWalkProd m σ n : ZMod q) = -1 ∧
-      0 < pathWeightLB ε m σ n :=
-  regeneration_geometric_capture q hq hq2 m hm hgood hregen ε hε
+-- almost_sure_capture_of_regeneration archived to EM/Archive/Stochastic/RegenerationArchive.lean (RED #17)
 
 /-- **TSD implies PositiveProbCapture from acc = 2**: under TSD for prime q >= 3,
     there exists a valid capturing path with positive weight from acc = 2.
