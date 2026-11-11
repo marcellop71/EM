@@ -90,11 +90,11 @@
    `sve_implies_mc`, `scd_implies_mc` state their second hypothesis on `Exists.choose` of the
    first and cannot be applied as written (review T3/T4, open).
 2. **The population layer PE / MFRE / DSL is false** (head domination, dead end #160); the old
-   DSL ⇒ CME rung is archived.  *Not machine-checked:* `EM/Population/HeadDomination.lean` proves
-   the series equivalence (`roughLPFEquidist_iff`) and the finite-head criterion
-   (`not_roughLPFEquidist_of_head`), but no instance; the failure at a given `q` is a finite
-   rational computation left out by the project's no-certificate rule (at `q = 5` the class of
-   `7` exceeds its share `1/15` on its first 19 primes, up to `347`).
+   DSL ⇒ CME rung is archived.  `EM/Population/HeadDomination.lean` proves the series
+   equivalence (`roughLPFEquidist_iff`), the finite-head criterion
+   (`not_roughLPFEquidist_of_head`) and, since 2026-11-11, one instance:
+   `not_roughLPFEquidist_five` (at `q = 5` the class of `7` exceeds its share `1/15` on its first
+   19 primes, up to `347`).  Other moduli are not certified.
 3. **Seed-average law, unconditional, natural density**
    (`EM/Population/AlmostAllDensity.lean`): for a fixed prime `q` and `ε > 0` there is a
    horizon `n` such that the seeds `m ≤ X` coprime to `q` that have not selected `q` within

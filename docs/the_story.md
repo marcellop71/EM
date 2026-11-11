@@ -48,10 +48,9 @@ of three fates:
   vacuous.  Also false: the uncentered ensemble character layer (SD, CSVB, ECSC, FourPointPCV,
   SMSB, TWD) at `χ ≡ 1`, and fixed-step ensemble multiplier equidistribution at step 0
   (odd seeds ⇒ multiplier 2) — all refuted in Lean by argument (`UncenteredRefutations`).
-  For the fixed-modulus layer itself Lean has the series equivalence and the finite-head
-  criterion, not an instance: the falsity at a given `q` is a finite computation that is
-  asserted, not machine-checked (at `q = 5` the class of 7 exceeds `1/15` on its first 19
-  primes).  A further batch of hypotheses false or contradictory as stated was found by the
+  For the fixed-modulus layer itself Lean has the series equivalence, the finite-head
+  criterion and one instance, `HeadDomination.not_roughLPFEquidist_five` (at `q = 5` the class
+  of 7 exceeds `1/15` on its first 19 primes).  A further batch of hypotheses false or contradictory as stated was found by the
   2026-11-10 review and is refuted in `EM/Meta/HypothesisAudit.lean`.
   What ANT delivers, now unconditionally: Mertens in progressions, asymptotic form (Karamata).
 

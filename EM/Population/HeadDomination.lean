@@ -1,3 +1,4 @@
+import Mathlib.Tactic.NormNum.Prime
 import EM.IK.Karamata
 
 /-!
@@ -45,22 +46,22 @@ theorem about counting functions of primes — is silent about it: asymptotic eq
 `π(x; q, a)` constrains the tail of the series, and the tail carries no mass in the limit.
 What decides the value is the *head*: the first few primes above `q`.  Concretely, let `p₀` be
 the least prime above `q` (Bertrand: `p₀ < 2q`).  Its own weight is the fraction `1/p₀` of the
-whole `q`-rough mass, already almost the full equidistributed share `1/(q−1)`; if the remaining
-mass `1 − 1/p₀` were split evenly, the class of `p₀` would receive about `2/q`, twice its
-share.  Equidistribution therefore requires the primes `≡ p₀ (mod q)` to be *systematically
-deficient* — in the `w`-weighted sense — for ever after, at every prime `q`.  There is no reason
-for that, and it does not happen: the informal derivations of these hypotheses
+whole `q`-rough mass, a large part of the equidistributed share `1/(q−1)`.  Equidistribution
+therefore requires the later primes `≡ p₀ (mod q)` to be *deficient* in the `w`-weighted sense
+by exactly the right amount.  There is no reason for that, and at `q = 5` it does not happen
+(Part 8; the excess there is about `2.6·10⁻³` of the share, not a factor of two as an earlier
+version of this text suggested): the informal derivations of these hypotheses
 ("size-dependent weights are equidistributed by Dirichlet") mistook a statement about
 divergent counting functions for one about a convergent weighted sum.  The same mechanism, one
 step earlier, is what Dead Ends #137/#157 recorded for the unconditioned ensemble.
 
 For a *given* `q`, "the class of `p₀` exceeds its share" is a finite quantitative fact — a
 rational inequality between finitely many values of `cfun` — certifiable through
-`not_roughLPFEquidist_of_head` by exact arithmetic on a finite head.  Deliberately, no such
-certificate is included here: the mathematics of the situation is the equivalence, and the
-project's rule is proofs, not computation.  What is asserted, and what the reader can check
-against the criterion in a few lines of arithmetic, is that the identity fails at small `q`
-(already at `q = 5`, in the class of `p₀ = 7`).
+`not_roughLPFEquidist_of_head` by exact arithmetic on a finite head.  One such certificate is
+included, `not_roughLPFEquidist_five` (Part 8, added 2026-11-11 as a deliberate exception to the
+project's proofs-not-computation rule, so that the falsity is machine-checked at least once):
+at `q = 5` the class of `p₀ = 7` exceeds its share `1/15` on its nineteen primes up to `347`.
+Other moduli are not certified; the mathematics of the situation is the equivalence.
 
 ## Consequences
 
@@ -867,6 +868,209 @@ theorem sum_tsum_wcls {q : ℕ} (hq : Nat.Prime q) :
   · rw [if_neg hn]
     apply Finset.sum_eq_zero
     intro a _; rw [if_neg]; intro h; exact hn ⟨h.1, h.2.1⟩
+
+/-! ## Part 8: an instance of the criterion at `q = 5`
+
+`RoughLPFEquidist 5` is false: the class `2 (mod 5)` receives more than its share `1/15` already
+on its first nineteen primes `7, 17, …, 347`.  This is the one finite certificate in the file
+(added 2026-11-11 on the author's decision, after the review of 2026-11-10 pointed out that the
+falsity was asserted but had no machine-checked instance).  The excess is small
+(`≈ 1.7·10⁻⁴`), which is why the head has to be taken that far.  The proof propagates rational
+lower bounds for `cfun` from prime to prime, rounded down at `10⁻¹⁰`. -/
+
+/-- `cfun` does not move across a gap free of primes. -/
+theorem cfun_eq_of_no_prime {a b : ℕ} (hab : a ≤ b) (h : ∀ n, a ≤ n → n < b → ¬ Nat.Prime n) :
+    cfun b = cfun a := by
+  induction b, hab using Nat.le_induction with
+  | base => rfl
+  | succ b hb ih =>
+    rw [cfun_succ_of_not_prime (h b hb (Nat.lt_succ_self b))]
+    exact ih (fun n h1 h2 => h n h1 (Nat.lt_succ_of_lt h2))
+
+/-- From a prime `r` to the next checkpoint `r'` (no prime strictly between):
+`cfun r' = cfun r · (1 − 1/r)`. -/
+theorem cfun_next_eq {r r' : ℕ} (hr : Nat.Prime r) (hrr : r < r')
+    (hgap : ∀ n, r < n → n < r' → ¬ Nat.Prime n) : cfun r' = cfun r * (1 - 1 / (r : ℝ)) := by
+  rw [cfun_eq_of_no_prime (Nat.succ_le_of_lt hrr) (fun n h1 h2 => hgap n h1 h2)]
+  have := w_eq_cfun_sub hr
+  unfold w at this
+  have hr0 : (r : ℝ) ≠ 0 := by exact_mod_cast hr.ne_zero
+  field_simp
+  field_simp at this
+  linarith
+
+/-- Lower bounds propagate along `cfun_next_eq`. -/
+theorem cfun_next_ge {r r' : ℕ} {lo lo' : ℝ} (hr : Nat.Prime r) (hrr : r < r')
+    (hgap : ∀ n, r < n → n < r' → ¬ Nat.Prime n) (h : lo ≤ cfun r)
+    (hlo : lo' ≤ lo * (1 - 1 / (r : ℝ))) : lo' ≤ cfun r' := by
+  rw [cfun_next_eq hr hrr hgap]
+  have h1 : (0 : ℝ) ≤ 1 - 1 / (r : ℝ) := by
+    have : (1 : ℝ) ≤ r := by exact_mod_cast hr.one_le
+    rw [sub_nonneg, div_le_one (by linarith)]
+    exact this
+  exact hlo.trans (mul_le_mul_of_nonneg_right h h1)
+
+theorem cfun_two : cfun 2 = 1 := by
+  have h1 : cfun 1 = cfun 0 := cfun_succ_of_not_prime (by norm_num)
+  have h2 : cfun 2 = cfun 1 := cfun_succ_of_not_prime (by norm_num)
+  rw [h2, h1]
+  simp [cfun, Apr, Npr]
+
+set_option maxHeartbeats 1600000 in
+/-- **Fixed-modulus equidistribution of the least prime factor fails at `q = 5`.**  The class
+`2 (mod 5)` exceeds its share `cfun 6 / 4 = 1/15` on the primes `7, 17, …, 347`. -/
+theorem not_roughLPFEquidist_five : ¬ RoughLPFEquidist 5 := by
+  have e3 : cfun 3 = 1 / 2 := by
+    rw [cfun_next_eq Nat.prime_two (by norm_num) (by intro n h1 h2; omega), cfun_two]; norm_num
+  have e5 : cfun 5 = 1 / 3 := by
+    rw [cfun_next_eq Nat.prime_three (by norm_num)
+      (by intro n h1 h2; interval_cases n; norm_num), e3]; norm_num
+  have e6 : cfun 6 = 4 / 15 := by
+    rw [cfun_next_eq Nat.prime_five (by norm_num) (by intro n h1 h2; omega), e5]; norm_num
+  have e7 : cfun 7 = 4 / 15 := by
+    rw [cfun_eq_of_no_prime (a := 6) (by norm_num) (by intro n h1 h2; interval_cases n; norm_num), e6]
+  have h7 : (4 / 15 : ℝ) ≤ cfun 7 := e7.ge
+  have h11 : (457142857 / 2000000000 : ℝ) ≤ cfun 11 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h7 (by norm_num)
+  have h13 : (2077922077 / 10000000000 : ℝ) ≤ cfun 13 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h11 (by norm_num)
+  have h17 : (1918081917 / 10000000000 : ℝ) ≤ cfun 17 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h13 (by norm_num)
+  have h19 : (28207087 / 156250000 : ℝ) ≤ cfun 19 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h17 (by norm_num)
+  have h23 : (855120111 / 5000000000 : ℝ) ≤ cfun 23 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h19 (by norm_num)
+  have h29 : (1635881951 / 10000000000 : ℝ) ≤ cfun 29 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h23 (by norm_num)
+  have h31 : (394868057 / 2500000000 : ℝ) ≤ cfun 31 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h29 (by norm_num)
+  have h37 : (152852151 / 1000000000 : ℝ) ≤ cfun 37 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h31 (by norm_num)
+  have h41 : (1487210117 / 10000000000 : ℝ) ≤ cfun 41 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h37 (by norm_num)
+  have h43 : (1450936699 / 10000000000 : ℝ) ≤ cfun 43 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h41 (by norm_num)
+  have h47 : (283438797 / 2000000000 : ℝ) ≤ cfun 47 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h43 (by norm_num)
+  have h53 : (1387040921 / 10000000000 : ℝ) ≤ cfun 53 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h47 (by norm_num)
+  have h59 : (1360870337 / 10000000000 : ℝ) ≤ cfun 59 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h53 (by norm_num)
+  have h61 : (668902369 / 5000000000 : ℝ) ≤ cfun 61 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h59 (by norm_num)
+  have h67 : (164484189 / 1250000000 : ℝ) ≤ cfun 67 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h61 (by norm_num)
+  have h71 : (162029201 / 1250000000 : ℝ) ≤ cfun 71 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h67 (by norm_num)
+  have h73 : (319494199 / 2500000000 : ℝ) ≤ cfun 73 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h71 (by norm_num)
+  have h79 : (157558783 / 1250000000 : ℝ) ≤ cfun 79 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h73 (by norm_num)
+  have h83 : (9722773 / 78125000 : ℝ) ≤ cfun 83 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h79 (by norm_num)
+  have h89 : (307380197 / 2500000000 : ℝ) ≤ cfun 89 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h83 (by norm_num)
+  have h97 : (1215705947 / 10000000000 : ℝ) ≤ cfun 97 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h89 (by norm_num)
+  have h101 : (37599153 / 312500000 : ℝ) ≤ cfun 101 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h97 (by norm_num)
+  have h103 : (1191260293 / 10000000000 : ℝ) ≤ cfun 103 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h101 (by norm_num)
+  have h107 : (1179694659 / 10000000000 : ℝ) ≤ cfun 107 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h103 (by norm_num)
+  have h109 : (46746779 / 400000000 : ℝ) ≤ cfun 109 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h107 (by norm_num)
+  have h113 : (144743467 / 1250000000 : ℝ) ≤ cfun 113 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h109 (by norm_num)
+  have h127 : (114770041 / 1000000000 : ℝ) ≤ cfun 127 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h113 (by norm_num)
+  have h131 : (569331699 / 5000000000 : ℝ) ≤ cfun 131 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h127 (by norm_num)
+  have h137 : (112997131 / 1000000000 : ℝ) ≤ cfun 137 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h131 (by norm_num)
+  have h139 : (70107709 / 625000000 : ℝ) ≤ cfun 139 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h137 (by norm_num)
+  have h149 : (1113653391 / 10000000000 : ℝ) ≤ cfun 149 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h139 (by norm_num)
+  have h151 : (1106179207 / 10000000000 : ℝ) ≤ cfun 151 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h149 (by norm_num)
+  have h157 : (274713379 / 2500000000 : ℝ) ≤ cfun 157 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h151 (by norm_num)
+  have h163 : (1091854449 / 10000000000 : ℝ) ≤ cfun 163 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h157 (by norm_num)
+  have h167 : (217031191 / 2000000000 : ℝ) ≤ cfun 167 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h163 (by norm_num)
+  have h173 : (215731603 / 2000000000 : ℝ) ≤ cfun 173 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h167 (by norm_num)
+  have h179 : (1072422997 / 10000000000 : ℝ) ≤ cfun 179 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h173 (by norm_num)
+  have h181 : (1066431807 / 10000000000 : ℝ) ≤ cfun 181 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h179 (by norm_num)
+  have h191 : (530269959 / 5000000000 : ℝ) ≤ cfun 191 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h181 (by norm_num)
+  have h193 : (131873419 / 1250000000 : ℝ) ≤ cfun 193 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h191 (by norm_num)
+  have h197 : (131190137 / 1250000000 : ℝ) ≤ cfun 197 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h193 (by norm_num)
+  have h199 : (1044193577 / 10000000000 : ℝ) ≤ cfun 199 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h197 (by norm_num)
+  have h211 : (1038946373 / 10000000000 : ℝ) ≤ cfun 211 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h199 (by norm_num)
+  have h223 : (129252807 / 1250000000 : ℝ) ≤ cfun 223 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h211 (by norm_num)
+  have h227 : (64336599 / 625000000 : ℝ) ≤ cfun 227 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h223 (by norm_num)
+  have h229 : (204970169 / 2000000000 : ℝ) ≤ cfun 229 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h227 (by norm_num)
+  have h233 : (1020375513 / 10000000000 : ℝ) ≤ cfun 233 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h229 (by norm_num)
+  have h239 : (507998109 / 5000000000 : ℝ) ≤ cfun 239 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h233 (by norm_num)
+  have h241 : (1011745187 / 10000000000 : ℝ) ≤ cfun 241 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h239 (by norm_num)
+  have h251 : (503773537 / 5000000000 : ℝ) ≤ cfun 251 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h241 (by norm_num)
+  have h257 : (501766471 / 5000000000 : ℝ) ≤ cfun 257 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h251 (by norm_num)
+  have h263 : (62476759 / 625000000 : ℝ) ≤ cfun 263 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h257 (by norm_num)
+  have h269 : (248956819 / 2500000000 : ℝ) ≤ cfun 269 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h263 (by norm_num)
+  have h271 : (198425063 / 2000000000 : ℝ) ≤ cfun 271 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h269 (by norm_num)
+  have h277 : (197692867 / 2000000000 : ℝ) ≤ cfun 277 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h271 (by norm_num)
+  have h281 : (984895871 / 10000000000 : ℝ) ≤ cfun 281 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h277 (by norm_num)
+  have h283 : (981390903 / 10000000000 : ℝ) ≤ cfun 283 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h281 (by norm_num)
+  have h293 : (97792309 / 1000000000 : ℝ) ≤ cfun 293 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h283 (by norm_num)
+  have h307 : (243646367 / 2500000000 : ℝ) ≤ cfun 307 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h293 (by norm_num)
+  have h311 : (485705461 / 5000000000 : ℝ) ≤ cfun 311 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h307 (by norm_num)
+  have h313 : (484143707 / 5000000000 : ℝ) ≤ cfun 313 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h311 (by norm_num)
+  have h317 : (965193843 / 10000000000 : ℝ) ≤ cfun 317 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h313 (by norm_num)
+  have h331 : (962149067 / 10000000000 : ℝ) ≤ cfun 331 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h317 (by norm_num)
+  have h337 : (29976321 / 312500000 : ℝ) ≤ cfun 337 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h331 (by norm_num)
+  have h347 : (191279171 / 2000000000 : ℝ) ≤ cfun 347 :=
+    cfun_next_ge (by norm_num) (by norm_num) (by intro n h1 h2; interval_cases n <;> norm_num) h337 (by norm_num)
+  refine not_roughLPFEquidist_of_head (q := 5) (a := 2) (by norm_num) (by norm_num) (by norm_num)
+    {7, 17, 37, 47, 67, 97, 107, 127, 137, 157, 167, 197, 227, 257, 277, 307, 317, 337, 347} ?_ ?_
+  · intro p hp
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hp
+    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> norm_num
+  · rw [e6]
+    simp only [Finset.sum_insert, Finset.mem_insert, Finset.mem_singleton, Finset.sum_singleton,
+      w, Nat.reduceEqDiff, or_self, not_false_eq_true]
+    push_cast
+    norm_num
+    linarith [h7, h17, h37, h47, h67, h97, h107, h127, h137, h157, h167, h197, h227, h257, h277, h307, h317, h337, h347]
 
 end HeadDomination
 

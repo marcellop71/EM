@@ -46,8 +46,8 @@ $w_p=p^{-1}\prod_{r<p}(1-1/r)$, the $w_p$ telescope, and the class of
 $\lpf\bmod q$ among $q$-rough integers has the \emph{convergent} density
 $\sum_{p\equiv a}w_p$; so fixed-modulus equidistribution of the least
 prime factor is equivalent to a family of series identities untouched by
-Dirichlet's theorem; the identities fail by head domination (a finite
-computation at a given modulus, not part of the formalization).  On
+Dirichlet's theorem; the identity fails by head domination (machine-checked
+at the modulus~$5$).  On
 the progression $m\equiv1\pmod P$ containing the Euclid numbers, the least
 prime outside the bag is selected with relative density exactly
 $1/q$---Shanks' heuristic made precise, and the $n=0$ case of an exact
@@ -170,8 +170,8 @@ $\sum_{p\equiv a}w_p$: a convergent series dominated by its first terms.
 Fixed-modulus equidistribution of the least prime factor---an assumption
 that a previous version of this project placed beneath CME---is therefore
 equivalent to a family of identities that Dirichlet's theorem does not
-touch, and it is false (the refutation at a given modulus is a finite
-computation that we state but do not formalize; \S\ref{sec:population}).  What is true is the \emph{bag-conditioned} law:
+touch, and it is false (machine-checked at the modulus~$5$;
+\S\ref{sec:population}).  What is true is the \emph{bag-conditioned} law:
 on the progression $m\equiv1\pmod P$ that contains every Euclid number
 with accumulator~$P$, the least prime outside the bag has relative density
 exactly $1/q$.  Unconditionally, for each prime~$q$ almost every squarefree
@@ -595,15 +595,14 @@ $\sum_{p\equiv a}w_p=c(q{+}1)/(q-1)$ for every unit class~$a$.
 
 These identities fail: the series is dominated by its first terms, and
 Dirichlet's theorem, which controls the massless tail, cannot restore the
-balance.  In Lean we have the equivalence and the finite-head criterion
+balance.  In Lean we have the equivalence, the finite-head criterion
 (\lean{EM/Population/HeadDomination.lean}{not\_roughLPFEquidist\_of\_head}:
 a finite set of primes of one class whose weights already exceed the share
-refutes the identity), but \emph{not} an instance of it: the failure at a
-given~$q$ is a finite rational computation which, by a standing rule of this
-project, is not included.  For the record, at $q=5$ the class of~$7$ exceeds
-its share $1/15$ on its first $19$ primes ($7,17,\dots,347$); the excess is
-small, and the head must be taken that far.  The falsity is thus a
-mathematical fact that this paper asserts and does not machine-check; the shifted version (Euclid
+refutes the identity), and one instance of it: at $q=5$ the class of~$7$
+exceeds its share $1/15$ on its first $19$ primes ($7,17,\dots,347$)
+(\lean{EM/Population/HeadDomination.lean}{not\_roughLPFEquidist\_five}).
+The excess is small, about $1.7\cdot10^{-4}$, and the head must be taken
+that far.  Other moduli are not certified; the shifted version (Euclid
 numbers) and its uniform-conductor version fail identically, and the
 statement over all integers is refuted outright
 (\lean{EM/Equidist/SieveTransfer.lean}{not\_genericLPFEquidist}: $\lpf n\equiv1
