@@ -219,6 +219,7 @@ import EM.SDDS.Reduction
 import EM.Stochastic.DenseCapture
 import EM.Stochastic.DiverseStepsToCapture
 import EM.Stochastic.EpsilonDegeneration
+import EM.Stochastic.EpsilonOrder
 import EM.Stochastic.EpsilonWalk
 import EM.Stochastic.FactorDiversity
 import EM.Stochastic.GeometricCapture
