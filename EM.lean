@@ -225,6 +225,7 @@ import EM.Stochastic.GeometricCapture
 import EM.Stochastic.IteratedProductCoverage
 import EM.Stochastic.MissedPrimes
 import EM.Stochastic.MixedMC
+import EM.Stochastic.MixedTree
 import EM.Stochastic.MixedWalk
 import EM.Stochastic.NonFaithfulCharacterEscape
 import EM.Stochastic.PathMeasure

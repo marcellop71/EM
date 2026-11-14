@@ -321,7 +321,13 @@ def TreeSieveDecay (q : ℕ) : Prop :=
     -1 to be reachable (not ALL units). This suffices for the MC chain since
     we only need to hit -1 mod q.
 
-    TreeSieveDecay implies TreeSieveDecayHitting (for q prime, q >= 3). -/
+    TreeSieveDecay implies TreeSieveDecayHitting (for q prime, q >= 3).
+
+    Note (2026-11-14): the threshold `P₀` is illusory. Trapped seeds are closed under
+    children, so this is equivalent to "no squarefree seed `≥ 2` coprime to `q` is trapped"
+    (`MixedTree.treeSieveDecayHitting_iff_no_trapped_seed`), and `MixedMC q` is its instance
+    at the seed `2` (`MixedTree.treeSieveDecayHitting_implies_mixedMC`): a generalisation of
+    `MixedMC`, not a reduction of it. -/
 def TreeSieveDecayHitting (q : ℕ) : Prop :=
   ∃ P₀ : ℕ, ∀ P : ℕ, P₀ ≤ P → Squarefree P → Nat.Coprime P q →
     (-1 : ZMod q) ∈ reachableEver q P
