@@ -14,7 +14,9 @@ analytic large sieve kernel infrastructure.
 * `walkAutocorrelation` : walk autocorrelation function definition
 * `gaussSum_norm_sq_eq_prime` : |τ(χ)|² = p (PROVED)
 * `zmod_dft_plancherel_complex` : bilinear Plancherel identity (PROVED)
-* `kernel_row_sum_implies_als` : kernel bound → analytic large sieve (PROVED)
+* (archived 2026-11-11, RED #27) `KernelRowSumBound`, `kernel_row_sum_implies_als` : the absolute
+  row-sum hypothesis is false (`not_kernelRowSumBound`, `EM/Meta/HypothesisAudit.lean`), so the
+  reduction to the analytic large sieve was vacuous
 * `eAN` : standard exponential e(α) = exp(2πiα)
 -/
 
@@ -752,7 +754,7 @@ theorem abs_schur_bound {N : ℕ} (a : Fin N → ℂ) (c : Fin N → Fin N → �
       _ = C * ∑ n : Fin N, ‖a n‖ ^ 2 := by linarith
   linarith
 
-/-! ### ALS from kernel row-sum bound -/
+/-! ### Rewriting the ALS left-hand side with `eAN` -/
 
 /-- The ALS exponential matches `eAN`. -/
 theorem als_exp_eq (n : ℤ) (α : ℝ) :
@@ -768,46 +770,9 @@ theorem als_lhs_eq_eAN (N R : ℕ) (a : Fin N → ℂ) (α : Fin R → ℝ) :
   apply Finset.sum_congr rfl; intro n _
   congr 1; exact als_exp_eq _ _
 
-/-- The kernel row-sum hypothesis: for well-separated α with min distance δ,
-    ∀ m : Fin N, ∑_{n : Fin N} ‖K(m-n)‖ ≤ N - 1 + δ⁻¹.
-
-    This is a quantitative consequence of the well-separation condition and
-    standard trigonometric estimates (geometric series bounds on exponential
-    sums with well-separated frequencies). -/
-def KernelRowSumBound : Prop :=
-  ∀ (N : ℕ) (_hN : 0 < N) (R : ℕ) (α : Fin R → ℝ) (δ : ℝ) (_hδ : 0 < δ) (_hδ1 : δ ≤ 1)
-    (_hsep : ∀ r s : Fin R, r ≠ s → δ ≤ |α r - α s - round (α r - α s)|),
-    ∀ m : Fin N, ∑ n : Fin N, ‖trigKernel R α (↑m - ↑n)‖ ≤ (N : ℝ) - 1 + δ⁻¹
-
-set_option maxHeartbeats 1600000 in
-/-- **Kernel row-sum bound implies ALS**: the main reduction.
-    Once the kernel estimate is established, the ALS follows by
-    the bilinear expansion + Schur test. -/
-theorem kernel_row_sum_implies_als (h : KernelRowSumBound) : AnalyticLargeSieve := by
-  intro N hN a R α δ hδ hδ1 hsep
-  -- Rewrite LHS from Complex.exp to eAN
-  rw [als_lhs_eq_eAN]
-  -- Establish the kernel row-sum bound
-  have hkernel := h N hN R α δ hδ hδ1 hsep
-  -- Derive column sum bound from row sum bound by symmetry
-  have hC : (0 : ℝ) ≤ (N : ℝ) - 1 + δ⁻¹ := by
-    have : (0 : ℝ) < δ⁻¹ := inv_pos.mpr hδ
-    have : (1 : ℝ) ≤ (N : ℝ) := Nat.one_le_cast.mpr hN
-    linarith
-  have hcol : ∀ n : Fin N, ∑ m : Fin N, ‖trigKernel R α (↑m - ↑n)‖ ≤ (N : ℝ) - 1 + δ⁻¹ := by
-    intro n
-    have hsym : ∀ m : Fin N, ‖trigKernel R α (↑m - ↑n)‖ = ‖trigKernel R α (↑n - ↑m)‖ := by
-      intro m
-      rw [show (↑m : ℤ) - ↑n = -(↑n - ↑m) by ring, trigKernel_neg,
-          norm_starRingEnd_complex]
-    simp_rw [hsym]; exact hkernel n
-  -- Apply bilinear expansion then Schur bound
-  calc ∑ r : Fin R, ‖∑ n : Fin N, a n * eAN (↑(n : ℤ) * α r)‖ ^ 2
-      = (∑ m : Fin N, ∑ n : Fin N,
-          a m * starRingEnd ℂ (a n) * trigKernel R α (↑m - ↑n)).re :=
-        als_bilinear_expansion N R a α
-    _ ≤ ((N : ℝ) - 1 + δ⁻¹) * ∑ n : Fin N, ‖a n‖ ^ 2 :=
-        abs_schur_bound a (fun m n => trigKernel R α (↑m - ↑n))
-          ((N : ℝ) - 1 + δ⁻¹) hC hkernel hcol
+-- KernelRowSumBound moved to EM/Meta/HypothesisAudit.lean (RED #27): false
+-- (`not_kernelRowSumBound`: R = 2, α = (0, 1/3), δ = 1/3, N = 7 gives row sum 10 > 9).
+-- kernel_row_sum_implies_als archived to EM/Archive/LargeSieve/HarmonicArchive.lean (RED #27).
+-- The Schur-test lemma `abs_schur_bound` and the bilinear expansion above stay live.
 
 end AnalyticLargeSieveInfra

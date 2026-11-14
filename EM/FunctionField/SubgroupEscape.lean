@@ -71,9 +71,10 @@ requires more detailed analysis of the specific sequence.
 1. `FFSEThreshold` -- the critical threshold p_0(d) = (d-1)^2 + 1
 2. `WeilCharSumBoundFF` -- open Prop for the Weil character sum bound
 3. `FFSubgroupEscape` -- the SE statement for the FF-EM walk
-4. `weil_implies_ff_se` -- WeilCharSumBound + large p => SE
-5. `ff_se_degree_one` -- SE for d = 1, all p >= 3 (no Weil needed)
-6. `FFDH_from_SE` -- open Prop: SE => DH (generation-to-coverage gap)
+4. `weil_implies_ff_se` -- placeholder witness (`FFSubgroupEscape` is a `True` stub)
+5. `ff_se_degree_one` -- placeholder witness (same)
+6. (archived 2026-11-11, RED #25) `FFDH_from_SE` -- placeholder → FF-MC, i.e. FF-MC itself;
+   see `EM/Meta/HypothesisAudit.lean`
 7. `ff_se_landscape` -- summary theorem
 -/
 
@@ -209,42 +210,23 @@ def FFSubgroupEscape (d : ℕ) : Prop :=
   -- substantial Mathlib infrastructure (AdjoinRoot, finite field theory).
   True
 
-/-- The Weil bound implies FF-SE for large p.
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing.
 
-    When p >= FFSEThreshold d = (d-1)^2 + 1, the Weil character sum bound
-    gives a contradiction with the assumption that all degree-1 images lie
-    in a proper subgroup.
-
-    Proof structure (mathematical, not fully machine-checked due to the
-    abstract nature of the character theory):
-
-    1. Assume for contradiction: all {alpha - a : a in F_p} lie in proper H.
-    2. H has index >= 2, so pick a prime l dividing the index.
-    3. There exists a character chi of order l with chi|_H = 1.
-    4. Then sum_{a} chi(alpha - a) = p (all terms = 1).
-    5. Weil bound: |sum| <= (d-1) * sqrt(p).
-    6. So p <= (d-1) * sqrt(p), giving sqrt(p) <= d-1.
-    7. But p >= (d-1)^2 + 1 > (d-1)^2, so sqrt(p) > d-1. Contradiction.
-
-    The proof uses the Weil bound as an axiom (WeilCharSumBoundFF) since
-    the algebraic geometry is beyond current Lean/Mathlib. -/
+    Intended statement (not formalized): when `p ≥ FFSEThreshold d = (d-1)^2 + 1`, the Weil
+    character-sum bound `|∑_a χ(α - a)| ≤ (d-1)√p` contradicts the assumption that all
+    `α - a` lie in a proper subgroup (which would make the sum equal to `p` for a suitable
+    `χ`).  The only part of that argument checked in Lean is the arithmetic
+    `weil_arithmetic_contradiction` below.  Neither hypothesis is used. -/
 theorem weil_implies_ff_se (d : ℕ) (_hd : d ≥ 1)
     (_hweil : WeilCharSumBoundFF p) (_hp_large : p ≥ FFSEThreshold d) :
     FFSubgroupEscape p d := by
   intro _ _ _ _
   trivial
 
-/-- For d = 1, FFSubgroupEscape holds for all primes p (no Weil bound needed).
+/-- PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing.
 
-    When Q has degree 1, (F_p[t]/(Q))* = F_p* has order p - 1.
-    The images of degree-1 irreducibles {(t-a) mod Q : a in F_p} include
-    all nonzero elements of F_p (since Q = t - c for some c, and
-    (t - a) mod (t - c) = c - a, which ranges over all of F_p as a varies).
-    Removing the one zero element (when a = c), we get p - 1 nonzero elements,
-    which is the ENTIRE unit group F_p*. No proper subgroup can contain all
-    p - 1 elements when p >= 3 (since then |F_p*| = p - 1 >= 2).
-
-    This is a purely combinatorial argument, not requiring character theory. -/
+    Intended statement (not formalized): for `deg Q = 1` the images of the linear
+    polynomials are all of `𝔽_p^×`. -/
 theorem ff_se_degree_one : FFSubgroupEscape p 1 := by
   intro _ _ _ _
   trivial
@@ -352,19 +334,9 @@ barrier: population-level generation does not imply orbit-level coverage.
 
 This is the same barrier as DSL, expressed in group-theoretic language. -/
 
-/-- The SE-to-DH gap: SubgroupEscape does not imply DynamicalHitting.
-    This is an open Prop because it captures the hardest part of the problem.
-
-    Over F_p[t], this is the function field analog of the integer SE-to-DH gap.
-    The walk w(n) = ffProd(n) mod Q generates all of (F_p[t]/(Q))* (by SE),
-    but whether it actually visits -1 (the death value) depends on the
-    specific order of multipliers, not just the subgroup they generate.
-
-    The formal statement: FFSubgroupEscape at all degrees implies FF-MC.
-    This is strictly weaker than FFDSL (which gives equidistribution) but
-    the gap is the same barrier (orbit specificity). -/
-def FFDH_from_SE : Prop :=
-  (∀ d, FFSubgroupEscape p d) → FFMullinConjecture p
+-- FFDH_from_SE moved to EM/Meta/HypothesisAudit.lean (RED #25): its premise
+-- `∀ d, FFSubgroupEscape p d` is a `True` placeholder, so it is FFMullinConjecture p itself;
+-- false at p = 5.
 
 /-! ## Section 6: Structural Consequences of SE
 
@@ -493,19 +465,19 @@ images generate the full unit group.
 /-- Summary of the FF SubgroupEscape landscape.
 
     (1) The threshold p_0(d) = (d-1)^2 + 1 is explicitly computed.
-    (2) For d = 1, SE holds for all primes (no threshold needed).
-    (3) The Weil bound implies SE for p >= threshold.
-    (4) SE does NOT imply DH (the generation-to-coverage gap is open).
+    (2), (3) PLACEHOLDER WITNESS clauses: `FFSubgroupEscape` is a `True`-bodied stub, so
+        these two clauses prove nothing.
+    (4) a literal `True`.
     (5) The arithmetic core of the Weil contradiction is fully proved. -/
 theorem ff_se_landscape :
     -- (1) Threshold is well-defined
     (FFSEThreshold 1 = 1 ∧ FFSEThreshold 2 = 2) ∧
-    -- (2) SE for d = 1 holds unconditionally
+    -- (2) placeholder
     FFSubgroupEscape p 1 ∧
-    -- (3) Weil + large p implies SE (for any d)
+    -- (3) placeholder
     (∀ d, d ≥ 1 → WeilCharSumBoundFF p → p ≥ FFSEThreshold d →
       FFSubgroupEscape p d) ∧
-    -- (4) SE-to-DH gap is a well-posed open Prop
+    -- (4) placeholder
     True ∧
     -- (5) The arithmetic core is proved for all d and p
     (∀ d_val p_val, p_val > (d_val - 1) ^ 2 → 0 < p_val →
@@ -531,11 +503,9 @@ for FF-MC:
 The gap between SE and DH/DSL is the orbit-specificity barrier, which is
 the same fundamental difficulty in both the integer and function field settings. -/
 
-/-- The SE + coprimality cascade give two of three ingredients for FF-MC.
-    The third ingredient (DH or DSL) remains open.
-
-    This theorem witnesses the conjunction of SE (for large p) and
-    coprimality (for all p), showing what is proved and what is open. -/
+/-- The coprimality cascade, bundled with two placeholder clauses.
+    PLACEHOLDER WITNESS for the first and third clauses (`FFSubgroupEscape` is a `True`-bodied
+    stub; the third clause is a literal `True`); only the middle clause has content. -/
 theorem ff_se_coprimality_conjunction {n : ℕ} (d : ℕ) (hd : d ≥ 1)
     (hweil : WeilCharSumBoundFF p) (hp_large : p ≥ FFSEThreshold d) :
     -- SE holds

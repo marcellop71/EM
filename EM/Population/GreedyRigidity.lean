@@ -1,29 +1,46 @@
 import EM.Population.AdelicShadow
 
 /-!
-# Rigidity of the greedy step: nothing acts on the branch
+# Rigidity of the greedy step: affine maps and itinerary-preserving maps
 
 Session 324 (2026-11-07).  Memo: `docs/analysis/equivariance_scoping_2026-11-07.md`.
+Header rewritten 2026-11-10 (review row T11): the earlier title, "nothing acts on the branch",
+and the sentence "There is nothing between" claimed more than the theorems below prove.
 
 Question: is there a structure in which the Euclid–Mullin step `T m = m · minFac (m + 1)` is
 equivariant, so that the orbit of `2` becomes an orbit of a group acting on seeds (the
-"generic object" reading, the Zilber–Pink lower bound of dead end #181)?  This file records
-the two theorems that make the negative answer precise on the seed space `ℕ`.
+"generic object" reading, the Zilber–Pink lower bound of dead end #181)?  This file proves two
+rigidity theorems on the seed space `ℕ`, each for a *specific class* of maps.
 
 * **Affine rigidity** (`affine_commute_eq_id`): the only map `m ↦ a m + b` with `a ≥ 1`
   commuting with `T` on seeds `m ≥ 1` is the identity.  The proof is two lines of
   arithmetic: `m = 1` forces `b = 0`, and for every prime `r` the seed `m = r − 1` forces
   `r ∣ a − 1`.
 * **Itinerary rigidity** (`eq_of_itinerary_eq`): two seeds `m, m' ≥ 1` with the same
-  multiplier sequence are equal.  Equal itineraries give `p_k ∣ (m − m') ∏_{j<k} p_j` with
-  `p_k` coprime to the product (distinct primes, `AdelicShadow.genSeq_ne_of_lt`), hence
-  `p_k ∣ m − m'` for every `k`; the multipliers are unbounded.
+  multiplier sequence *from index `0`* are equal.  Equal itineraries give
+  `p_k ∣ (m − m') ∏_{j<k} p_j` with `p_k` coprime to the product (distinct primes,
+  `AdelicShadow.genSeq_ne_of_lt`), hence `p_k ∣ m − m'` for every `k`; the multipliers are
+  unbounded.
 
-Consequences (`eq_id_of_preserves_itinerary`, `genProd_comm_of_step_comm`): a symmetry of the
-seed space that preserves the itinerary is the identity, and a symmetry that merely commutes
-with `T` maps whole forward orbits to forward orbits.  The itinerary is the finite-horizon
-data of #158; the forward orbit is the only symmetry #181 found.  There is nothing between:
-a group action on seeds either fixes the branch pointwise or is unconstrained by arithmetic.
+Consequences (`eq_id_of_preserves_itinerary`, `genProd_comm_of_step_comm`): a self-map of the
+seed space that preserves the *entire* itinerary `k ↦ genSeq m k` of every seed is the
+identity, and a map that commutes with `T` maps whole forward orbits to forward orbits.
+
+## What is and is not excluded
+
+Excluded: (i) affine maps commuting with `T`; (ii) maps preserving the full itinerary from
+index `0`.  Class (ii) is very small: it already excludes `T` itself and its iterates, which
+commute with `T`, are not affine, and *shift* the itinerary (`genSeq (T m) k = genSeq m (k+1)`)
+rather than preserve it.  So `T` is a nontrivial map commuting with `T` that neither theorem
+sees, and the claim "a group action on seeds either fixes the branch pointwise or is
+unconstrained by arithmetic" does not follow from what is proved.
+
+Not excluded: the class dead end #181 actually asks about — a non-affine map `φ` commuting
+with `T` and preserving the *event* `Misses q` (or the tail of the itinerary, or the itinerary
+up to a shift), rather than the itinerary term by term.  Nothing in this file constrains such
+a `φ` beyond `genProd_comm_of_step_comm` (it maps forward orbits to forward orbits).  The
+witness these theorems give for #181 is therefore partial: they close the affine case and the
+full-itinerary case, and leave the general commuting case open.
 
 `step_two_eq_step_three`: `T` is not injective (`T 2 = T 3 = 6`), so no inverse dynamics
 exists and the ambient object of any action is the backward *tree*, not a group orbit.

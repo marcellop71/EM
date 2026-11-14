@@ -276,7 +276,12 @@ section BSESMSBChain
     BSE requires CME, so the chain SMSB + BSE -> MC collapses to
     SMSB + CME -> MC, where CME alone already suffices.
 
-    **Status**: open hypothesis (depends on BSE which collapses to CME). -/
+    **Status**: VACUOUSLY TRUE, not an open hypothesis.  Its second premise
+    `∃ D > 0, SecondMomentSquaredBound D` is false: `SecondMomentSquaredBound D` quantifies
+    over every bounded `χ`, and the constant `χ ≡ 1` refutes it for every `D`
+    (`UncenteredRefutations.not_secondMomentSquaredBound`, Dead End #156).  Proved as
+    `UncenteredRefutations.bseSMSBChainImpliesMC_vacuous` (review 2026-11-10, row H26).
+    The statement therefore carries no information about BSE. -/
 def BSESMSBChainImpliesMC : Prop :=
   BadSetEquidistribution →
   (∃ D : ℝ, 0 < D ∧ SecondMomentSquaredBound D) →

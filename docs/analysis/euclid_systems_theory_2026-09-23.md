@@ -169,7 +169,7 @@ Lean (small, one file, e.g. `EM/Population/QuadraticStep.lean`):
 2. (T1): odd prime `ℓ ∣ E(n+1)` ⟹ `IsSquare ((1 − 4c : ZMod ℓ))`; recover the `ClassInfinitude`
    `≡ 1 (mod 3)` lemma as the `c = 1` case.
 3. The elementary norm bound behind (T3) (no class groups needed): `y ≠ 0 ⟹ 4(x²+xy+cy²) ≥ 4c − 1`.
-4. `Frozen`, `NoFrozen`, and `noFrozen_implies_infinitelyManyComposite`.
+4. `Frozen`, `NoFrozen`, and `infinitelyManyComposite_of_noFrozen` (`EM/Population/QuadraticStep.lean`; this memo first cited it as `noFrozen_implies_infinitelyManyComposite`, a name no declaration has).
 5. Over `𝔽_q[t]`: the one-line proof of the `p ≡ 1 (3)` floor via the split norm (a second proof
    of `ffGrowthConstant_eq_zero_of_one_mod_three`), which tests whether the dictionary is right.
 

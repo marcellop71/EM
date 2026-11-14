@@ -5,8 +5,12 @@ import EM.IK.Ch2
 
 This file proves a one-sided Tauberian lemma for nonnegative Dirichlet-type series,
 establishes upper and lower bounds on the L-series of Lambda in residue classes,
-proves Dirichlet's theorem, and reduces `WeightedPNTinAP` to a real-variable
-Wiener-Ikehara hypothesis.
+proves Dirichlet's theorem, and records two reductions of `WeightedPNTinAP` (the Mertens-type
+estimate `∑_{n≤x, n≡a (q)} Λ(n)/n = (log x)/φ(q) + O(1)`).  Note on names: the definitions
+`WienerIkeharaForWeightedPNT` and `MertensInAP` below are both *definitionally*
+`WeightedPNTinAP`, a Mertens-type statement; neither is a Tauberian theorem.  Only
+`RealWienerIkeharaTauberian` (the prime number theorem in progressions with error
+`O(x / log x)`) is the kind of statement a Wiener–Ikehara argument yields.
 
 ## Main results
 
@@ -189,14 +193,20 @@ def AbelSummationPNT : Prop :=
       |∑ n ∈ (Icc 1 (Nat.floor x)).filter (fun n => n % q = a % q),
         Λ n / n - Real.log x / Nat.totient q| ≤ C
 
-/-- WeightedPNTinAP follows from the Wiener-Ikehara hypothesis plus Abel summation. -/
+/-- `WeightedPNTinAP` from the PNT-in-progressions hypothesis `RealWienerIkeharaTauberian`
+    plus the hypothesis `AbelSummationPNT`.  The proof uses only `AbelSummationPNT`, whose
+    conclusion is `WeightedPNTinAP`; as its docstring says, partial summation from the
+    `O(x / log x)` error does not give the `O(1)` of the Mertens-type estimate. -/
 theorem real_wiener_ikehara_implies_wpnt
     (hwi : RealWienerIkeharaTauberian)
     (habel : AbelSummationPNT) : WeightedPNTinAP := by
   intro q a hq hcop
   exact habel q a hq hcop hwi
 
-/-- Alternate: WeightedPNTinAP follows directly from a combined hypothesis. -/
+/-- The Mertens-type estimate `∑_{n≤x, n≡a (q)} Λ(n)/n = (log x)/φ(q) + O(1)`.  Despite the
+    name this is not a Wiener–Ikehara (Tauberian) statement: it is word for word
+    `WeightedPNTinAP` (`wiener_ikehara_weighted_iff_wpnt` is `Iff.rfl`).  The name is
+    historical. -/
 def WienerIkeharaForWeightedPNT : Prop :=
   ∀ (q : ℕ) (a : ℕ), 1 < q → Nat.Coprime a q →
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, 2 ≤ x →
@@ -219,6 +229,8 @@ end WeightedPNT
 
 section CorrectedAnalysis
 
+/-- Mertens' first theorem in arithmetic progressions, in von Mangoldt form with `O(1)`
+    error: an alias of `WeightedPNTinAP`. -/
 def MertensInAP : Prop := WeightedPNTinAP
 
 theorem mertens_iff_wpnt : MertensInAP ↔ WeightedPNTinAP := Iff.rfl

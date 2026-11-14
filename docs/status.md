@@ -19,6 +19,63 @@
   `EM/Archive/`, RED #15–#19); 19 theorems weaker than their description; 21
   defects in the written record, among them two short-paper theorems wrong as printed (fixed).
   The review file tracks what is fixed and what is open.
+- **2026-11-11.** Second remediation batch of the same review (walk layer, ensemble,
+  stochastic; rows H1, H5, H6, H10–H13, H26).  Collapsed to MC or refuted in Lean and
+  archived (RED #20–#24, definitions in the audit file): `CharSumBound`
+  (`charSumBound_iff_mc`; it was an unused argument of `char_sum_bound_mc`, now dropped),
+  `BoundedMaxExcursion`/`UniversalBoundedMax` (`universalBoundedMax_iff_mc`) and
+  `ExcursionIndependence`/`UniversalEIP` (every excursion sum forced to vanish) with
+  `eip_bounded_implies_mc`, `PathSurvival` (`not_pathSurvival_three`) with
+  `tca_path_survival_implies_random_mc_proved`, `JSEMarginalEquidist`
+  (`not_jseMarginalEquidist`) with the three `jse_base_case*` theorems, `FactorBagCoverage`
+  (`not_factorBagCoverage`).  Repaired in place: `EnsembleConcentration` (now the `(ε, δ)`
+  shape of its siblings; still an open point), `DenseCapture.lean` (`minFacSeq` is the
+  all-`minFac` selection; `DenseCaptureHypothesis` and the Baire theorems carry
+  `¬ q ∣ acc`).  `BSESMSBChainImpliesMC` proved vacuous; `jse_transfer_implies_mc` lost
+  its unused false hypothesis; `uce_cme_implies_mc` and the PathSurvival theorem unpublished
+  (registry 475 → 473).
+- **2026-11-11.** Third remediation batch (function field, analytic layer, GaussEM; rows
+  H15–H25, T16, T17, P11, P15, P19; RED #25–#32).  *Function field:* the five "bridges"
+  `FFMultCCSBImpliesFFDH`, `FFDSLImpliesFFDH`, `FFDH_from_SE`, `FFCMEImpliesFFMC`,
+  `FFLMChainImpliesFFMC` are each equivalent to `FFMullinConjecture p` and false at `p = 5`
+  (`ffMultCCSBImpliesFFDH_iff_ffmc`, …, `not_ffBridges_five`); they and the eight theorems
+  assuming them are archived, so **no reduction of FF-MC to a character-sum hypothesis is
+  formalized** (only `FFDynamicalHitting ⟺ FFMullinConjecture`).  `FFLargeMonodromy` (the
+  proxy `|Gal| > 1`) is a theorem (`ffLargeMonodromy`), while Dead End #129 is now witnessed
+  by `ffGaloisGroup_isCyclic`; `WeilDoesNotImplyFFDSL` refuted (#127 has no formal statement);
+  `DegreeBoundedHitting` trivially true as stated and *false* in the cofinal form
+  (`not_degreeBoundedHittingCofinal`), so not repaired.  New: `Nonempty (FFEMData p)` for
+  every prime (`ffGreedyData`), and uniqueness of the sequence over `𝔽_5`
+  (`ffEMData_five_eq_tower`: the refutation of FF-MC at `p = 5` holds for every choice
+  function, in Lean).  Docstrings of `Master.lean`, `FFSieve.lean`, `FFCharacterSums.lean`
+  and the paper's function-field section now say that `FFStochasticMC` is degree growth
+  along mixed walks and that the "ANT chain" is a set of counting proxies.  *Analytic layer:*
+  `GramOffDiagBilinearBound`, `CscBilinearBound`, `HilbertCscBilinearBridge` restated with
+  circular spacing (the constant `1/δ − 1` there is a hypothesis, not a quoted theorem);
+  `KernelRowSumBound` refuted (`not_kernelRowSumBound`) and archived with
+  `kernel_row_sum_implies_als`; `IK.LinnikSmallQNR` restated as Linnik's theorem (open), the
+  proof of its degenerate former statement archived; `EMHasLevelOfDistribution` shown
+  trivially true (`emHasLevelOfDistribution_iff`) and archived with the LoD chain; four
+  mis-stated IK Ch1 transcriptions, seventeen IK Ch5 definitions with a free variable in
+  place of an L-function datum (three refuted in Lean as samples), and two Ch4 Mellin
+  formulas archived.  *GaussEM:* five trivially true existential stubs archived.
+  Placeholder count 150 → 148; dead-end witnesses 41 → 43 (#63, #129; #96's witness
+  replaced); registry size unchanged (`ff_cyclotomic_dead_end` unpublished in favour of
+  `ffGaloisGroup_isCyclic`).
+- **2026-11-11, close-out of the review** (section 2 and loose ends; tracker §5).
+  *Thresholds:* `MultiModularCSBAt Q₀`, `SubquadraticVisitEnergyAt Q₀`,
+  `VisitEquidistributionAt Q₀` name the threshold; `mmcsbAt_implies_mc`,
+  `mmcsbAt_small_threshold_mc`, `sveAt_implies_mc`, `veAt_implies_mc`, `bv_chainAt_mc` are the
+  usable chain theorems (the `Exists.choose` forms stay as corollaries).  MMCSB, SVE, VE are each
+  equivalent to `MissingFinite` (`mmcsb_iff_missingFinite`, `sve_iff_missingFinite`,
+  `ve_iff_missingFinite`); SCD is equivalent to MC (`scd_iff_mc`, via `scd_implies_mc'`).  The
+  chain no longer needs `PrimeResidueEscape`: `exists_seq_eq_of_cofinal_dvd`.  *Dead ends:*
+  ten witnesses that were lemmas near the entry cleared (43 → 33); #90, #58/#117 scoped to
+  what is proved; #181 marked partial; #183 scoped to the rule on all integers.  *Docstrings:*
+  T7, T8, T11–T15, T19 (no statement changed); `genSeq_zero_eq_of_dvd` added.
+  *Flagged, not refuted:* `JSEConditionalEquidist`, `PerPrimeConditionalEquidist` are false as
+  stated (the class `genSeq n 1 = q` has positive conditional density); warnings in place.
+  Registry unchanged at 473 (the new theorems are not published).
 - **2026-11-07/08.** Equivariance scoping (`EM/Population/GreedyRigidity.lean`, #181 witness,
   catalogue sweep memo); feedback selection (`EM/Population/FeedbackSelection.lean`, #183:
   a rule that is autonomous modulo `q` on all inputs is take-all; deviation principle;
@@ -56,27 +113,30 @@
   law and the frozen rung `MC ⟹ NoFrozen ⟹ (C∞)`.  Dead ends #180–#182.  Counts below are
   from Session 320 except where regenerated.
 
-- **Code.** 242 live files / ~115.4k lines under `EM/` (`paper/codebase_stats.tex` is the
+- **Code.** 242 live files / ~116.4k lines under `EM/` (`paper/codebase_stats.tex` is the
   generated figure); `EM.lean` imports every live module; `EM/Archive/` (retired mathematics,
   `#exit`-stubbed) is local-only and imported by nothing.  Lean v4.35.0, Mathlib v4.35.0.
 - **Verified set.** No `sorry`, user axioms, `native_decide`, `unsafe` or `implemented_by` in
   the live tree.  `tools/check_axioms.py` walks **every** declaration of the `EM` library
-  (~5.4k) plus the registry set; `tools/check_forbidden.py` is the source-level lint;
+  (6,099 on 2026-11-11, the number the gate prints) plus the registry set; `tools/check_forbidden.py` is the source-level lint;
   `tools/check_placeholders.py` enforces that every `True`-bodied `Prop` is marked.  All run
   in CI (`.github/workflows/ci.yml`) with `lake build`, `tools/check_lean_refs.py` and a
   generated-file drift check; the papers compile in a second job.
-- **Registry** (`registry/meta.json`): 475 declarations — 410 proved, 40 conditional,
-  25 open points (including the targets `MullinConjecture`, `HittingHypothesis`); 450 published.
+- **Registry** (`registry/meta.json`): 473 declarations — 409 proved, 39 conditional,
+  25 open points (including the targets `MullinConjecture`, `HittingHypothesis`); 448 published.
   CA pinned to its release `v0.4.0` (2026-10-29): `type_hash` scheme 2 (Merkle), exact
   `stmt`/`ref` ids, `statements.json`.  "Conditional" means a *hypothesis* reaches an
   `@[open_point]`; open hypotheses not marked `@[open_point]` (e.g. `WalkEquidistribution`,
   `AdelicEquidist`) leave their implications counted as proved.  The paper's L1 column is refreshed by
-  `tools/update_l1_hashes.py`, which CI runs in the drift check; six rows citing archived
+  `tools/update_l1_hashes.py`, which CI runs in the drift check; seven rows citing archived
   declarations are now marked "(archived)" with no hash.
 - **Dead ends.** `tools/dead_ends.tsv` is the single source of truth; `EM/Meta/DeadEnds.lean`,
   `paper/dead_ends_table.tex`, `docs/dead_ends_catalog.md` are generated.  183 numbers,
-  173 entries, 41 with a Lean declaration attached (review T18: about a dozen are lemmas near
-  the entry, not proofs of it), 15 with revival score ≥ 2 (read the `deadEndCount`
+  173 entries, 33 with a Lean witness (2026-11-11, review T18: ten declarations that were
+  true lemmas near the entry rather than proofs of it — #26, #120, #121, #137, #142, #145,
+  #147, #148, #149, #178 — were moved from the witness column to "related lemma" in the status
+  text; #90 and #58/#117 keep their witnesses with the text cut down to what is proved; #181's
+  witness is marked partial), 15 with revival score ≥ 2 (read the `deadEndCount`
   family from the Lean file rather than trusting this line).
 
 ## Headline results (machine-verified except where a line says otherwise)
@@ -85,10 +145,17 @@
    vacuous (`EM/CME/Equivalences.lean`).  CME is a *reformulation* of MC, never a weaker
    hypothesis; the content is the direction CME ⇒ MC.  The whole walk layer
    (CME, CCSB, DH, SHH, HH, WE, WFG) is one equivalence class (`walk_layer_equivalences`);
-   for Dec, MMCSB, SVE, VE, SCD only `MC ⇒ ·` is proved.  VE, SVE and MMCSB carry a threshold
-   `∃ Q₀` and are reformulations of *cofinite* MC; the theorems `mmcsb_implies_mc`,
-   `sve_implies_mc`, `scd_implies_mc` state their second hypothesis on `Exists.choose` of the
-   first and cannot be applied as written (review T3/T4, open).
+   SCD joins it since 2026-11-11 (`scd_iff_mc`: `SelfCorrectingDrift` is quantified over all
+   primes, so `scd_implies_mc'` needs no finite verification).  VE, SVE and MMCSB carry a
+   threshold `∃ Q₀` and are reformulations of *cofinite* MC, now machine-checked:
+   `mmcsb_iff_missingFinite`, `sve_iff_missingFinite`, `ve_iff_missingFinite`
+   (`walk_layer_cofinite_equivalences`).  They reach MC with finite verification at the same
+   *explicit* threshold: `mmcsbAt_implies_mc (h : MultiModularCSBAt Q₀) (hfin : FiniteMCBelow Q₀)`,
+   `mmcsbAt_small_threshold_mc`, `sveAt_implies_mc`, `veAt_implies_mc`, `bv_chainAt_mc`.  The
+   older `mmcsb_implies_mc`, `sve_implies_mc`, `scd_implies_mc` and the `*_chain_mc` /
+   `*_small_threshold_mc` family state that hypothesis on an `Exists.choose` and cannot be
+   applied to a known threshold; they are kept as corollaries (registry) and say so.  For
+   `DecorrelationHypothesis` only `MC ⇒ Dec` is proved.
 2. **The population layer PE / MFRE / DSL is false** (head domination, dead end #160); the old
    DSL ⇒ CME rung is archived.  `EM/Population/HeadDomination.lean` proves the series
    equivalence (`roughLPFEquidist_iff`), the finite-head criterion
@@ -140,7 +207,10 @@
    factor map to doubling; no propagating congruence / reciprocity invariant can block a
    *missing* prime at a rich modulus (`no_cvdp_obstruction`; the transition relation is
    over-approximated, so this excludes certificates that see the candidate only through its
-   residue class, not invariants of the true dynamics); orbit-specificity witnessed in `(ℤ/5)^×` (#90/#117).
+   residue class, not invariants of the true dynamics); orbit-specificity illustrated by two
+   abstract examples in `(ℤ/5)^×` (#90: equal one-point multiplier counts in aligned blocks of
+   four, opposite hitting; #117: cancellation of multiplier sums but not walk sums for one
+   character on a periodic sequence).
 6. **Generalized seeds.** `GenMullinConjecture n` quantifies over primes `q ∤ n`
    (the unrestricted form is false for every `n ≥ 2`, #175, `gen_mc_unrestricted_false`);
    `gen_mc_two_iff_mc`; cofinal hitting ⇒ GenMC(n) for squarefree `n` (`EM/Ensemble/WeylChain.lean`).
@@ -164,14 +234,16 @@ The narrative is `docs/the_story.md`; the papers are `paper/` (long) and `paper/
 
 ## Known issues / housekeeping (from the 2026-08-20 review)
 
-- **150 `True`-bodied placeholder `Prop`s** remain in the live tree (IK/Ch3–Ch5 are mostly
+- **148 `True`-bodied placeholder `Prop`s** remain in the live tree (150 before the
+  2026-11-11 archive of two GRH-conditional stubs; IK/Ch3–Ch5 are mostly
   stubs; FunctionField `FFDirichletEquidist`, `FareyLargeSieve`, …).  All are marked and
   lint-enforced; 12 trivial witness theorems were deleted, 24 kept because cited by
   `EM/Meta/DeadEnds.lean` or summary bundles.  Candidates for archiving wholesale:
   `EM/IK/Ch3.lean`, `Ch4.lean`, `Ch5.lean`.
 - Heartbeat hot spots (all `… in`-scoped): `EM/LargeSieve/PrimeArithLS.lean:229` (3.2M),
-  `PrimeArithLS.lean:137`, `LargeSieve/Harmonic.lean:782`, `LargeSieve/Analytic.lean:692`
-  (1.6M), `IK/DirichletDensity.lean:518` (1M).  Split before the next Mathlib bump.
+  `PrimeArithLS.lean:137`, `LargeSieve/Analytic.lean:692`
+  (1.6M; the third 1.6M spot, `kernel_row_sum_implies_als` in `Harmonic.lean`, was archived
+  2026-11-11), `IK/DirichletDensity.lean:518` (1M).  Split before the next Mathlib bump.
 - 12 × `linter.unusedSectionVars false`, 2 × `linter.unusedVariables false`.
 - `MertensInAP` (`EM/IK/Tauberian.lean`) is a bare alias of the retired `WeightedPNTinAP`.
 - Duplicate definitions the statement-hash caught: `ProfiniteDynamics.iota` vs

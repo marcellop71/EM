@@ -1,10 +1,23 @@
 import EM.FunctionField.PopulationEquidist
 
 /-!
-# Stochastic MC for the Function Field EM Sequence
+# Degree growth along mixed walks over `F_p[t]` (file name: "Stochastic MC")
 
-This file combines epsilon-mixed selection, factor diversity, stochastic MC,
-phase transition characterization, and unconditional structural theorems for
+Note (2026-11-10, review rows P11/T19).  **No stochastic statement is proved in this file.**
+There is no probability measure, no `ε`, and no capture theorem.  The definition named
+`FFStochasticMC` says only that along every valid mixed walk the degree of `acc(n) + 1`
+eventually exceeds `deg Q` — a consequence of degree growth
+(`ff_factor_pool_degree_grows`), true for trivial reasons and with no reference to `Q` being
+a factor of anything.  `weil_implies_stochastic_mc` does not use its hypothesis `WeilBound`
+(a `True`-bodied placeholder), and `FFPhaseTransition` is the conjunction of two degree-growth
+statements.  The names are kept because they are in the registry; the prose below is the
+*intended* picture (capture under `ε`-perturbation), which is **not formalized** over
+`F_p[t]`.  Over `ℤ`, almost-sure capture under the perturbed rule is proved only for `q = 3`
+and only conditionally (`EM/Stochastic/ThreeAlmostSure.lean`,
+`EM/Stochastic/RandomVariant.lean`).
+
+This file combines epsilon-mixed selection, factor diversity, the degree-budget proxy called
+"stochastic MC", and unconditional structural theorems for
 the function field Euclid-Mullin sequence over F_p[t].
 
 ## Mathematical context
@@ -26,7 +39,8 @@ captures every monic irreducible. This is exactly the FF Mullin Conjecture.
 
 * `FFEpsMixedWalk` -- qualitative epsilon-mixed walk property
 * `FFFactorDiversityGrows` -- factor diversity grows from degree growth
-* `FFStochasticMC` -- stochastic MC: epsilon > 0 suffices for capture
+* `FFStochasticMC` -- degree-budget proxy (the degree of `acc(n)+1` eventually exceeds
+  `deg Q`); *not* a capture statement, despite the name
 * `FFPhaseTransition` -- sharp boundary at epsilon = 0
 * `FFCapturedDegreeGrows` -- captured irreducibles have growing degree
 
@@ -38,8 +52,9 @@ captures every monic irreducible. This is exactly the FF Mullin Conjecture.
   irreducible (PROVED, from validity)
 * `ff_capture_degree_grows_of_finiteness` -- finiteness per degree implies
   captured degree grows (PROVED, from injectivity + pigeonhole)
-* `weil_implies_stochastic_mc` -- Weil => stochastic MC
-* `ff_phase_transition_from_weil` -- Weil => phase transition
+* `weil_implies_stochastic_mc` -- the degree-budget proxy (the `WeilBound` hypothesis is
+  an unused placeholder)
+* `ff_phase_transition_from_weil` -- two degree-growth statements (same remark)
 * `ff_stochastic_mc_landscape` -- master landscape theorem (5 clauses)
 
 ## Key insight: phase transition at epsilon = 0
@@ -158,7 +173,12 @@ theorem factor_diversity_unconditional :
     The content captured here: for any target Q and any valid walk, the
     factor pool eventually has degree budget exceeding deg(Q), so Q is
     a POTENTIAL factor at some step. Whether the greedy walk selects it
-    is the orbit-specificity barrier (FF-MC itself). -/
+    is the orbit-specificity barrier (FF-MC itself).
+
+    Note (2026-11-10): the body below is a degree inequality and nothing else.  It does not
+    say that `Q` divides `acc(n) + 1` for some `n` on some walk, let alone that a perturbed
+    walk captures `Q` with positive probability or almost surely.  The Borel–Cantelli
+    paragraph above is the intended argument and is not formalized. -/
 def FFStochasticMC : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q →
   -- For any valid walk, the factor pool eventually has degree exceeding
@@ -167,10 +187,12 @@ def FFStochasticMC : Prop :=
   ∀ (σ : FFMixedSelection p), FFMixedSelectionValid p start σ →
   ∃ n, Q.natDegree ≤ (ffMixedWalkProd p start σ n + 1).natDegree
 
-/-- Weil bound + factor diversity implies stochastic FF-MC.
+/-- The degree-budget proxy `FFStochasticMC`, stated with a `WeilBound` hypothesis.
 
-    Chain: Weil => PopDiversity => MixedPopEquidist => factor tree has
-    Q-divisible nodes at every depth => epsilon-exploration hits them. -/
+    Note (2026-11-10): the hypothesis is not used (and `WeilBound` is a `True`-bodied
+    placeholder); the proof is `ff_factor_pool_degree_grows`.  The chain
+    "Weil => PopDiversity => MixedPopEquidist => factor tree has Q-divisible nodes at every
+    depth => epsilon-exploration hits them" is the intended argument, not what is proved. -/
 theorem weil_implies_stochastic_mc :
     WeilBound p → FFStochasticMC p := by
   intro _ Q _ _ start hm hd σ hv
@@ -179,10 +201,9 @@ theorem weil_implies_stochastic_mc :
   obtain ⟨i, hi⟩ := htend Q.natDegree
   exact ⟨i, hi i le_rfl⟩
 
-/-- Stochastic FF-MC is unconditional in the following weak sense:
-    the structural prerequisites (factor pool growth, injectivity)
-    are all proved. The remaining gap is the population-to-orbit
-    transfer, which is the FF-DSL barrier. -/
+/-- The degree-budget proxy `FFStochasticMC` holds unconditionally: it is degree growth.
+    Note (2026-11-10): this is not "stochastic MC" in any probabilistic sense; no capture
+    statement, for any `ε`, is proved over `F_p[t]`. -/
 theorem stochastic_mc_unconditional :
     FFStochasticMC p := by
   intro Q _ _ start hm hd σ hv
@@ -205,8 +226,12 @@ theorem stochastic_mc_unconditional :
 
     The sharp boundary at epsilon = 0 mirrors the integer case exactly.
 
-    Clause 1: stochastic MC holds (from Weil or unconditionally)
-    Clause 2: the standard greedy walk (epsilon=0) has degree growth -/
+    Clause 1: the degree-budget proxy `FFStochasticMC`
+    Clause 2: the standard greedy walk (epsilon=0) has degree growth
+
+    Note (2026-11-10): both clauses are degree-growth statements and neither mentions `ε`.
+    The "phase transition" described above is the intended picture; this definition does not
+    express it, and its proofs below do not establish it. -/
 def FFPhaseTransition : Prop :=
   -- (1) For any epsilon > 0: stochastic MC holds
   FFStochasticMC p ∧
@@ -389,11 +414,15 @@ theorem ff_integer_comparison : FFIntegerComparison p :=
 
 /-- The stochastic MC landscape for the function field EM sequence.
 
+    Note (2026-11-10): clauses (3) and (4) are the degree-budget proxies described at
+    `FFStochasticMC` / `FFPhaseTransition`, with an unused placeholder hypothesis; they are
+    not capture statements.
+
     Summary of proved results:
     (1) Mixed walk explores infinitely many distinct irreducibles (PROVED)
     (2) Factor pool degree tends to infinity (PROVED, from PopulationEquidist)
-    (3) Weil => stochastic MC (PROVED)
-    (4) Weil => phase transition (PROVED)
+    (3) Weil => degree-budget proxy "stochastic MC" (PROVED; hypothesis unused)
+    (4) Weil => degree-growth pair "phase transition" (PROVED; hypothesis unused)
     (5) Mixed selection injective (PROVED, from FactorTree)
     (6) Captured degree grows given finiteness per degree (PROVED)
     (7) Only finitely many small selections given finiteness (PROVED) -/

@@ -89,7 +89,16 @@ theorem not_represents_of_lt {c m : ℤ} (hc : 0 < c) (hm : m < c) : ¬ Represen
   exact absurd (principalForm_ge_of_ne_zero hc hy) (not_le.mpr hm)
 
 /-- **Class-order bound.**  If `q^k` is represented with `y ≠ 0` (the ideal `𝔮^k` is principal),
-then `q^k ≥ c`; so the class of a prime ideal of norm `q` has order at least `log c / log q`. -/
+then `q^k ≥ c`; so the class of a prime ideal of norm `q` has order at least `log c / log q`.
+
+Note (2026-11-10): the theorem is the inequality `c ≤ q ^ k` for a represented `q ^ k` and
+nothing more.  The class-order gloss is a heuristic reading that needs hypotheses not present
+here: `D = 1 − 4c` is in general *not* a fundamental discriminant, so the order is non-maximal,
+and "the class of the prime ideal of norm `q`" makes sense only for `q` prime to the conductor
+(invertible ideals) and split, with `q ∤ D`.  At a ramified `q` (or `q` dividing the conductor)
+a representation of `q ^ k` with `y ≠ 0` does not translate into "`𝔮^k` is principal" in the
+form class group, and conversely a non-primitive representation of `q ^ k` corresponds to a
+product `𝔮^a 𝔮̄^b`, not to `𝔮^k`.  No class group is defined in this file. -/
 theorem represents_pow_imp_le {c q : ℤ} (hc : 0 < c) {k : ℕ} (h : Represents c (q ^ k)) :
     c ≤ q ^ k := by
   obtain ⟨x, y, hy, hxy⟩ := h
@@ -158,7 +167,16 @@ theorem exists_eq_seq_add_two_of_mem {q : ℕ} (h2 : q ≠ 2) (h3 : q ≠ 3)
 /-- **MC in class-group language.**  For every prime `q ≥ 5` there is a stage `n` at which
 `q` is the least prime factor of `E_{n+1} = Q_n(−1, p_{n+1})` — the least norm among the prime
 ideals in the principal relation `(p_{n+1} ω_n − 1) = ∏ 𝔮_i` of the order of discriminant
-`D_n` — and, whenever `q < c_n`, the ideal of norm `q` is non-principal. -/
+`D_n` — and, whenever `q < c_n`, the ideal of norm `q` is non-principal.
+
+Note (2026-11-10): only the first conjunct uses MC.  The second, `q ∣ E_{n+1}`, follows from
+the first (`seq (n + 2)` is the least prime factor of `E_{n+1}`), and the third is
+`not_represents_of_lt`, which holds for every integer below `c_n` with no reference to `q`
+being prime, to the sequence, or to MC.  So the content of this theorem is
+"MC ⟹ every prime `q ≥ 5` is `seq (n + 2)` for some `n`"
+(`exists_eq_seq_add_two_of_mem`), dressed in the vocabulary of the form; the "non-principal"
+reading is subject to the caveats at `represents_pow_imp_le` (it is literal only for `q`
+unramified and prime to the conductor of the order of discriminant `D_n`). -/
 theorem mullin_implies_nonprincipal_least_factor (hmc : MullinConjecture) {q : ℕ}
     (hq : q.Prime) (h2 : q ≠ 2) (h3 : q ≠ 3) :
     ∃ n, Mullin.seq (n + 2) = q ∧ (q : ℤ) ∣ ((prod (n + 1) + 1 : ℕ) : ℤ) ∧

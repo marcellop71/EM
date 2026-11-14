@@ -46,6 +46,7 @@ is at most p^{1/(4√e) + ε}.
 - `Lemma715`: the individual modulus bound h(q)|S(0)|² ≤ Σ* |S(a/q)|²
 - `LargeSieveAsSieve`: Theorem 7.14, the sifted set upper bound
 - `LinnikSmallQNR`: Theorem 7.16, Linnik's result on small quadratic non-residues
+  (defined in `Ch7SieveCRT.lean`; open statement, restated correctly 2026-11-11)
 -/
 
 section LargeSieveAsSieve

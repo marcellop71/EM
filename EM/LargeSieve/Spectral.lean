@@ -212,6 +212,15 @@ theorem nontrivial_char_sq_le_excess {N : ℕ} (w : Fin N → (ZMod p)ˣ)
   exact Finset.single_le_sum (f := fun χ => ‖∑ n : Fin N, χ (↑(w n) : ZMod p)‖ ^ 2)
     (fun χ _ => sq_nonneg _) hmem
 
+/-- **SubquadraticVisitEnergy at an explicit threshold** (added 2026-11-10): the body of
+    `SubquadraticVisitEnergy` with the threshold `Q₀` as a parameter. -/
+def SubquadraticVisitEnergyAt (Q₀ : ℕ) : Prop :=
+  ∀ (q : Nat) [Fact (Nat.Prime q)], q ≥ Q₀ →
+  ∀ (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
+  ∀ (ε : ℝ) (_hε : 0 < ε),
+  ∃ N₀ : ℕ, ∀ N ≥ N₀,
+    excessEnergy (fun (n : Fin N) => emWalkUnit q hq hne n.val) ≤ ε * (N : ℝ) ^ 2
+
 /-- **SubquadraticVisitEnergy**: the excess energy of the EM walk mod q
     is subquadratic — `o(N²)`. This is the spectral gap hypothesis:
     the EM walk visits all residue classes with approximately equal frequency.
@@ -222,7 +231,12 @@ theorem nontrivial_char_sq_le_excess {N : ℕ} (w : Fin N → (ZMod p)ˣ)
         excessEnergy(emWalk mod q restricted to [0,N)) ≤ ε · N²
 
     Here `emWalkFin` restricts the EM walk `emWalkUnit q : ℕ → (ZMod q)ˣ`
-    to `Fin N → (ZMod q)ˣ`. -/
+    to `Fin N → (ZMod q)ˣ`.
+
+    Note (2026-11-10): like `MultiModularCSB`, this is a reformulation of *cofinite* MC
+    (`sve_iff_missingFinite`, `EM/Population/WeakMullin.lean`), and the threshold is
+    existential; the form with a named threshold is `SubquadraticVisitEnergyAt Q₀`
+    (`subquadraticVisitEnergy_iff_exists_at` is `Iff.rfl`). -/
 def SubquadraticVisitEnergy : Prop :=
   ∃ Q₀ : ℕ, ∀ (q : Nat) [Fact (Nat.Prime q)], q ≥ Q₀ →
   ∀ (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
@@ -230,15 +244,14 @@ def SubquadraticVisitEnergy : Prop :=
   ∃ N₀ : ℕ, ∀ N ≥ N₀,
     excessEnergy (fun (n : Fin N) => emWalkUnit q hq hne n.val) ≤ ε * (N : ℝ) ^ 2
 
-/-- **SVE → MMCSB**: SubquadraticVisitEnergy implies MultiModularCSB.
+/-- **SVE → MMCSB at the same threshold.**
 
     Proof: For each nontrivial character χ and ε > 0, pick ε' = ε².
     SVE gives excessEnergy ≤ ε'·N² = ε²·N² for large N.
     Then ‖S_χ‖² ≤ excessEnergy ≤ ε²·N², so ‖S_χ‖ ≤ ε·N.
     This gives MMCSB. -/
-theorem sve_implies_mmcsb (hsve : SubquadraticVisitEnergy) : MultiModularCSB := by
-  obtain ⟨Q₀, hQ₀⟩ := hsve
-  use Q₀
+theorem sveAt_implies_mmcsbAt {Q₀ : ℕ} (hQ₀ : SubquadraticVisitEnergyAt Q₀) :
+    MultiModularCSBAt Q₀ := by
   intro q _inst hge hq hne χ _hχ ε hε
   -- Choose ε' = ε² > 0 for SVE
   have hε2 : (0 : ℝ) < ε ^ 2 := by positivity
@@ -284,17 +297,42 @@ theorem sve_implies_mmcsb (hsve : SubquadraticVisitEnergy) : MultiModularCSB := 
   -- S ≤ ε * N by monotonicity of sqrt on nonneg reals
   exact le_of_sq_le_sq hle' hεN
 
-/-- **SVE → MC with finite verification**: SubquadraticVisitEnergy plus finite
-    verification for primes below the threshold implies Mullin's Conjecture. -/
+/-- `SubquadraticVisitEnergy` is `SubquadraticVisitEnergyAt Q₀` for some `Q₀`. -/
+theorem subquadraticVisitEnergy_iff_exists_at :
+    SubquadraticVisitEnergy ↔ ∃ Q₀ : ℕ, SubquadraticVisitEnergyAt Q₀ := Iff.rfl
+
+/-- **SVE → MMCSB**: SubquadraticVisitEnergy implies MultiModularCSB (same threshold:
+    `sveAt_implies_mmcsbAt`). -/
+theorem sve_implies_mmcsb (hsve : SubquadraticVisitEnergy) : MultiModularCSB :=
+  let ⟨Q₀, hQ₀⟩ := hsve
+  ⟨Q₀, sveAt_implies_mmcsbAt hQ₀⟩
+
+/-- **SVE at an explicit threshold + finite verification below it ⟹ MC.**  The usable form
+    of `sve_implies_mc`. -/
+theorem sveAt_implies_mc {Q₀ : ℕ} (hsve : SubquadraticVisitEnergyAt Q₀)
+    (hfin : FiniteMCBelow Q₀) : MullinConjecture :=
+  mmcsbAt_implies_mc (sveAt_implies_mmcsbAt hsve) hfin
+
+/-- **SVE at a threshold `Q₀ ≤ 11` ⟹ MC.** -/
+theorem sveAt_small_threshold_mc {Q₀ : ℕ} (hsve : SubquadraticVisitEnergyAt Q₀)
+    (hQ : Q₀ ≤ 11) : MullinConjecture :=
+  mmcsbAt_small_threshold_mc (sveAt_implies_mmcsbAt hsve) hQ
+
+/-- **SVE → MC with finite verification**, `Exists.choose` form.
+
+    Note (2026-11-10): `hfin` is stated at `(sve_implies_mmcsb hsve).choose`, a number about
+    which nothing can be proved, so this theorem cannot be applied to a known threshold.
+    Use `sveAt_implies_mc (h : SubquadraticVisitEnergyAt Q₀) (hfin : FiniteMCBelow Q₀)`. -/
 theorem sve_implies_mc
     (hsve : SubquadraticVisitEnergy)
     (hfin : FiniteMCBelow (sve_implies_mmcsb hsve).choose) :
     MullinConjecture :=
   mmcsb_implies_mc (sve_implies_mmcsb hsve) hfin
 
-/-- **SVE with small threshold → MC unconditionally**: if SubquadraticVisitEnergy
-    yields a threshold Q₀ ≤ 11, then MC follows from the already-verified
-    FiniteMCBelow 11. -/
+/-- **SVE with small threshold → MC**, `Exists.choose` form.
+
+    Note (2026-11-10): `hsmall` cannot be discharged from a known threshold; use
+    `sveAt_small_threshold_mc (h : SubquadraticVisitEnergyAt Q₀) (hQ : Q₀ ≤ 11)`. -/
 theorem sve_small_threshold_mc
     (hsve : SubquadraticVisitEnergy)
     (hsmall : (sve_implies_mmcsb hsve).choose ≤ 11) :

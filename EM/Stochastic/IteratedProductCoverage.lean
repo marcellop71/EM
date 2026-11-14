@@ -194,21 +194,15 @@ theorem iterated_product_diameter (hmo : minOrder G = Fintype.card G)
     iteratedMulFinset S (Fintype.card G - 1) = Finset.univ :=
   iteratedMulFinset_eq_univ hmo hcard_pos S hS hS2 le_rfl
 
-/-! ### Part 7: Connection to factor bags -/
+/-! ### Part 7: Connection to factor bags
 
-section Application
-open Mullin MullinGroup
-
-/-- The iterated product of factor unit sets covers (ZMod q)x when each factor set
-    has size >= 2 and enough steps are taken. This is an open hypothesis connecting
-    the abstract coverage lemma to EM-specific factor sets. -/
-def FactorBagCoverage (q : ℕ) : Prop :=
-  ∀ [Fact (Nat.Prime q)], ∀ (S : ℕ → Finset (ZMod q)ˣ),
-    (∀ k, (S k).Nonempty) →
-    (∀ k, 2 ≤ (S k).card) →
-    ∀ a : (ZMod q)ˣ, a ∈ iteratedMulFinset S (Fintype.card (ZMod q)ˣ - 1)
-
-end Application
+-- FactorBagCoverage: asserted full coverage of `(ZMod q)ˣ` by the iterated product of *any*
+-- sets of size ≥ 2, with no hypothesis on the group order.  False for every prime `q ≥ 5`:
+-- with `S k = {1, -1}` the iterated product stays inside `{1, -1}`
+-- (`HypothesisAudit.not_factorBagCoverage`, review 2026-11-10 row H13).  It had no consumers;
+-- its definition now lives next to that refutation in EM/Meta/HypothesisAudit.lean (RED #24).
+-- The correct statement needs `minOrder G = |G|` (`target_reached`, `safe_prime_coverage`).
+-/
 
 /-! ### Part 8: Instantiation for units of ZMod p (safe prime case) -/
 

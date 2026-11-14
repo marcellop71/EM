@@ -39,8 +39,8 @@ direction CME ⇒ MC.  Every attempt to put something under it met one
 of three fates:
 * **CME by definition** — `OCE`, `SP`, `CRTPointwiseTransferBridge` (its input PCE is a
   `True` placeholder), Doeblin convergence; all `rfl`/iff collapses.
-* **Walled by orbit-specificity** — #90/#117, witnessed in `(ℤ/5)^×`: two multiplier
-  sequences with identical statistics, one hits `−1`, one never does.
+* **Walled by orbit-specificity** — #90/#117, illustrated in `(ℤ/5)^×`: two multiplier
+  sequences with identical one-point counts in blocks of four, one hits `−1`, one never does.
 * **False** — the whole fixed-modulus population layer (PE, MFRE, RoughLPFEquidist,
   MFREConditional, GenericLPFEquidist, UCE): the class density of `minFac mod q` is the
   convergent, head-dominated series `∑_{p≡a} w_p`, `w_p = c(p) − c(p+1)`; Dirichlet's
@@ -80,10 +80,13 @@ conditionally, and only for `q = 3`), yet
 `maxFac` misses.  **Selection is where the difficulty lives** — access to the factor bag is
 not the problem, the deterministic choice of its least element is.  Over `𝔽_p[t]` the Weil
 statements in Lean are `True` placeholders (marked; badged `[placeholder]` in the paper); the
-real FF content is the exact degree telescope, `Φ₃` exclusion, `FFDirichletDensity` — and,
+real FF content is the exact degree telescope, `Φ₃` exclusion, `FFDirichletDensity`
+(`FFStochasticMC` is degree growth along mixed walks, not capture; the bridges from character
+sums to FF-MC were each FF-MC itself and are archived, 2026-11-11) — and,
 since 2026-09-02, a **refutation**: over `𝔽_5[t]` the seed-`t` sequence is a perpetually
 irreducible Sylvester tower, so `FFMullinConjecture 5` is false
-(`EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`); the phenomenon was
+(`EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`; for every choice function,
+`ffEMData_five_eq_tower`); the phenomenon was
 found by Kurokawa–Satoh (Experiment. Math. 2008), who characterised the failing cases and
 reported numerics supporting the conjecture otherwise, 𝔽_2[t] included.  The branch (C∞) denies
 over `ℤ` is realised there; the FF conjecture is a statement about non-exceptional primes.
@@ -117,9 +120,11 @@ The *orbit* direction of the sure (per-path) layer is closed (#169–#174).
 
 ## 8. Dead ends as the coastline
 
-183 numbers, 173 entries, 41 with a Lean declaration attached (see the 2026-11-10 review, T18:
-about a dozen of these are lemmas near the entry rather than proofs of it) (`EM/Meta/DeadEnds.lean`, generated from
-`tools/dead_ends.tsv`); #90/#117 carry the thesis and are witnessed in `(ℤ/5)^×`; the rest
+183 numbers, 173 entries, 33 with a Lean witness (after the 2026-11-10 review, T18, cleared
+ten that were lemmas near the entry rather than proofs of it) (`EM/Meta/DeadEnds.lean`, generated from
+`tools/dead_ends.tsv`); #90/#117 carry the thesis and are illustrated in `(ℤ/5)^×` by single
+abstract examples (one-point block counts for #90, one character for #117 — neither is a
+theorem about the Euclid–Mullin walk); the rest
 are peripheral instances of the four-way blocker or of head domination.  #175 (2026-08-20)
 is a reminder that statements about the generalized sequence must exclude the primes dividing
 the seed.
@@ -172,7 +177,8 @@ unconditional seed-average law.  The abstract and introduction now say it that w
   Paper: `composite_floor.tex` §"The seeded growth constant".
 * **The genuinely distinct open statements** are now short: CME, CCSB, DH/HH/SHH, VE/SVE/SCD,
   DecorrelationHypothesis, MultiModularCSB (+ BV bridge), StrongSieveEquidist/window gains,
-  EnsembleConcentration, and the floor ladder (WeakMullin, RD, (C∞), MixedDiversity — the
+  EnsembleConcentration (restated 2026-11-11 in the `(ε, δ)` form; the earlier fixed-`K`
+  density-zero form was false), and the floor ladder (WeakMullin, RD, (C∞), MixedDiversity — the
   last now read as "the doubling factor map `C` has empty positive part").
 
 ## The growth projection, measured (2026-08-18)

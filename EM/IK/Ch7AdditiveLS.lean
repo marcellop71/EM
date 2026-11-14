@@ -578,14 +578,22 @@ theorem gram_row_sum_implies_lsi
     Additive Large Sieve inequality holds.
 
     This is the key reduction: it separates the Schur-test / duality machinery
-    (proved) from the analytic bound on row sums (the Hilbert inequality content). -/
+    (proved) from the analytic bound on row sums (the Hilbert inequality content).
+
+    The hypothesis is stated for circularly δ-spaced points (repaired 2026-11-11, review H19;
+    with `IsSpaced` it asked for the bound on configurations where the sieve inequality
+    itself fails).  Even so, the hypothesis is not satisfiable for all configurations: an
+    *absolute* row-sum bound loses a logarithm (for `R` equally spaced points and `N ≈ R/2`
+    the row sums `∑_s |sin(πN(α_r-α_s))/sin(π(α_r-α_s))|` are of order `(R log R)/π`, against
+    `1/δ + N - 1 ≈ 3R/2`; argument not machine-checked), which is why the sharp inequality
+    is proved by other means.  This theorem is a formal reduction only; compare
+    `not_kernelRowSumBound` in `EM/Meta/HypothesisAudit.lean` for the dual kernel. -/
 theorem gram_row_sum_optimal_implies_als
     (hyp : ∀ (R N : ℕ) (α : Fin R → ℝ) (δ : ℝ),
-      0 < δ → δ ≤ 1/2 → 1 ≤ N → IsSpaced α δ →
+      0 < δ → δ ≤ 1/2 → 1 ≤ N → IsCircularSpaced α δ →
       GramRowSumBound N α (1/δ + ↑N - 1)) :
     AdditiveLargeSieve := by
   intro R N α a δ hδ hδ2 hN hspaced
-  have hspaced := isSpaced_of_isCircularSpaced hspaced
   have hC : (0 : ℝ) ≤ 1/δ + ↑N - 1 := by
     have : 1 ≤ (N : ℝ) := Nat.one_le_cast.mpr hN
     have : 0 < 1/δ := by positivity
@@ -915,11 +923,28 @@ proposition `GramOffDiagBilinearBound` and prove steps 1–3 compositionally.
 
     This is open because it requires continuous Fourier analysis infrastructure
     (properties of `sin`, the geometric-sum-to-sin identity, and the Cohen
-    limiting argument) not present in the codebase. -/
+    limiting argument) not present in the codebase.
+
+    **Repaired 2026-11-11 (review H19).**  The spacing is circular (`IsCircularSpaced`).
+    The earlier statement used `IsSpaced` (fractional parts) and was false for the same
+    reason as the fractional-parts large sieve (`IK.not_additiveLargeSieve_fractSpaced`):
+    it implied that inequality by the proof of `gram_offdiag_bilinear_implies_als`, and
+    the points `0, 2/5, 4/5` with `N = 1` violate it.  (That derivation is not repeated in
+    Lean.)
+
+    **Status of the constant.**  The norm bound is two-sided: since the off-diagonal form
+    is Hermitian, it says `(N + 1 - δ⁻¹)‖b‖² ≤ ∑_n |∑_r b_r e(n α_r)|² ≤ (N - 1 + δ⁻¹)‖b‖²`.
+    The upper half is Selberg's theorem.  The lower half with this constant, and the csc
+    form `CscBilinearBound` it is derived from, are sharper than the Montgomery–Vaughan
+    bound `δ⁻¹` proved in the literature for the csc kernel (the "Cohen trick" applies to
+    the large sieve inequality, not to the csc form); equality holds for equally spaced
+    points.  They are recorded as hypotheses, not as known theorems.  The chain with the
+    constant `δ⁻¹`, which needs no such refinement, is `GramOffDiagBilinearBoundCircular` /
+    `hilbert_chain_als_circular` in `Ch7CesaroChain.lean`. -/
 def GramOffDiagBilinearBound : Prop :=
   ∀ (R N : ℕ) (α : Fin R → ℝ) (b : Fin R → ℂ) (δ : ℝ),
     0 < δ → δ ≤ 1/2 → 1 ≤ N →
-    IsSpaced α δ →
+    IsCircularSpaced α δ →
     ‖∑ r, ∑ s ∈ Finset.univ.filter (· ≠ r),
       b r * starRingEnd ℂ (b s) * gramMatrix N α r s‖ ≤
       (1/δ - 1) * l2NormSq b
@@ -978,7 +1003,6 @@ theorem gram_diag_re {R N : ℕ} (b : Fin R → ℂ) :
 theorem gram_offdiag_bilinear_implies_als
     (hoff : GramOffDiagBilinearBound) : AdditiveLargeSieve := by
   intro R N α a δ hδ hδ2 hN hspaced
-  have hspaced := isSpaced_of_isCircularSpaced hspaced
   -- The constant 1/δ + N - 1 is nonneg
   have hC : (0 : ℝ) ≤ 1/δ + ↑N - 1 := by
     have : 1 ≤ (N : ℝ) := Nat.one_le_cast.mpr hN

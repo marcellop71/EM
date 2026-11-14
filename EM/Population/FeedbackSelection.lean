@@ -23,9 +23,13 @@ a prime `q` is a function of the residue of `E` (on inputs coprime to `q`), then
 prime the rule has no choice, and the function is therefore the identity on units.  Hence
 the cofactor of an autonomous rule is `≡ 1` (`cofactor_cast_eq_one_of_autonomous`), the
 walk modulo `q` is the Sylvester walk, and the greedy rule is autonomous modulo no odd prime
-(`greedy_not_autonomous`).  No Galois-theoretic or arboreal control of the walk can be
-bought by making the selection autonomous: the only autonomous rule is the one whose prime
-support has density zero (Odoni).
+(`greedy_not_autonomous`).  **Scope:** `Autonomous` quantifies over *all* integers `E ≥ 2`
+coprime to `q`, and the witness against the greedy rule is an even `E`, which no Euclid number
+is.  These are statements about the rule as a function on integers, not about the walk: they
+do not exclude that the greedy *orbit* is autonomous modulo `q` from some stage on (it is, on
+a prime tower), which is the open `NoAutonomousTail` of part 3.  What they say is that
+autonomy cannot be arranged by choosing a different rule: the only rule autonomous on all
+inputs is take-all, whose prime support has density zero (Odoni).
 
 **2. All steering happens at deviations.**  Call stage `n` **`q`-autonomous** if
 `c_n ≡ 1 (mod q)` (`StageAutonomous`; a prime Euclid number is autonomous modulo every
@@ -44,7 +48,8 @@ autonomous run the walk modulo `q` is the Sylvester iteration (`walkZ_add_of_run
   (`exists_iterate_lt_card_of_exists`).
 
 **3. A rung.**  `NoAutonomousTail` — for every `q ≡ 2 (mod 3)` outside the bag the cofactors are
-not eventually `≡ 1 (mod q)` — sits strictly between the frozen rung and `(C∞)`:
+not eventually `≡ 1 (mod q)` — sits between the frozen rung and `(C∞)` (no strictness is
+claimed or provable without settling open problems):
 `MC ⟹ NoFrozen ⟹ NoAutonomousTail ⟹ (C∞)` (`autonomous_rung`).  It is the most elementary
 open statement about cofactor residues, and it already implies infinitely many composite
 Euclid numbers.

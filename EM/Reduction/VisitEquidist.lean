@@ -127,13 +127,77 @@ end FiberRecurrence
 
 section VisitEquidist
 
+/-- **Visit Equidistribution at an explicit threshold** (added 2026-11-10): the body of
+    `VisitEquidistribution` with the threshold `Q₀` as a parameter. -/
+def VisitEquidistributionAt (Q₀ : ℕ) : Prop :=
+  ∀ (q : Nat) [Fact (Nat.Prime q)], q ≥ Q₀ →
+  ∀ (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
+  ∀ (ε : ℝ) (_hε : 0 < ε),
+  ∃ N₀ : ℕ, ∀ N ≥ N₀, ∀ a : (ZMod q)ˣ,
+    |((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card / (N : ℝ) -
+      1 / ((q : ℝ) - 1)| ≤ ε
+
+/-- **VE at `Q₀` gives cofinal visits**: for a missing prime `q ≥ Q₀` the walk visits every
+    unit `a` at arbitrarily late times (a positive limiting frequency forces infinitely many
+    visits). -/
+theorem veAt_walk_cofinal {Q₀ : ℕ} (h : VisitEquidistributionAt Q₀)
+    {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+    (hge : q ≥ Q₀) (a : (ZMod q)ˣ) :
+    ∀ M, ∃ n, M ≤ n ∧ emWalkUnit q hq hne n = a := by
+  intro M
+  by_contra hno
+  push_neg at hno
+  have hq1 : (1 : ℝ) < q := by exact_mod_cast (Fact.out : Nat.Prime q).one_lt
+  have hpos : (0 : ℝ) < (q : ℝ) - 1 := by linarith
+  set ε : ℝ := 1 / (2 * ((q : ℝ) - 1)) with hε
+  have hεpos : 0 < ε := by positivity
+  have he : ε * (2 * ((q : ℝ) - 1)) = 1 := by rw [hε]; field_simp
+  have he' : 1 / ((q : ℝ) - 1) = 2 * ε := by rw [hε]; field_simp
+  obtain ⟨N₀, hN₀⟩ := h q hge hq hne ε hεpos
+  have hb := hN₀ (max N₀ (2 * q * (M + 1))) (le_max_left _ _) a
+  have hcard : ((Finset.range (max N₀ (2 * q * (M + 1)))).filter
+      (fun n => emWalkUnit q hq hne n = a)).card ≤ M := by
+    calc _ ≤ (Finset.range M).card := Finset.card_le_card (by
+            intro n hn
+            rw [Finset.mem_filter] at hn
+            rw [Finset.mem_range]
+            by_contra hlt
+            exact hno n (not_lt.mp hlt) hn.2)
+      _ = M := Finset.card_range M
+  have hcardR : (((Finset.range (max N₀ (2 * q * (M + 1)))).filter
+      (fun n => emWalkUnit q hq hne n = a)).card : ℝ) ≤ M := by exact_mod_cast hcard
+  have hNge : (2 * (q : ℝ) * ((M : ℝ) + 1)) ≤ ((max N₀ (2 * q * (M + 1)) : ℕ) : ℝ) := by
+    exact_mod_cast le_max_right N₀ (2 * q * (M + 1))
+  have hNpos : (0 : ℝ) < ((max N₀ (2 * q * (M + 1)) : ℕ) : ℝ) := by
+    have : (0 : ℝ) < 2 * (q : ℝ) * ((M : ℝ) + 1) := by positivity
+    linarith
+  have h1 := (abs_le.mp hb).1
+  rw [he'] at h1
+  have h2 : ε ≤ (((Finset.range (max N₀ (2 * q * (M + 1)))).filter
+      (fun n => emWalkUnit q hq hne n = a)).card : ℝ) /
+      ((max N₀ (2 * q * (M + 1)) : ℕ) : ℝ) := by linarith
+  rw [le_div_iff₀ hNpos] at h2
+  have h3 : ε * (2 * (q : ℝ) * ((M : ℝ) + 1)) ≤
+      ε * ((max N₀ (2 * q * (M + 1)) : ℕ) : ℝ) :=
+    mul_le_mul_of_nonneg_left hNge hεpos.le
+  have h4 : ε * (2 * (q : ℝ) * ((M : ℝ) + 1)) =
+      (ε * (2 * ((q : ℝ) - 1))) * ((M : ℝ) + 1) + 2 * ε * ((M : ℝ) + 1) := by ring
+  have h5 : (0 : ℝ) ≤ 2 * ε * ((M : ℝ) + 1) := by positivity
+  rw [he] at h4
+  linarith
+
 /-- **Visit Equidistribution**: the EM walk visits every residue class
     mod q with asymptotic frequency 1/(q−1).
 
     By `excessEnergy_eq_visit_deviation`, VE is equivalent to SVE
     (SubquadraticVisitEnergy), which implies MC via `sve_implies_mc`.
 
-    VE is a consequence of CME since CME → CCSB → SVE ↔ VE. -/
+    VE is a consequence of CME since CME → CCSB → SVE ↔ VE.
+
+    Note (2026-11-10): the equivalence with SVE is not proved in Lean as a single theorem;
+    what is proved is that VE, SVE and MMCSB are each equivalent to *cofinite* MC,
+    `MissingFinite` (`ve_iff_missingFinite`, `EM/CME/Equivalences.lean`).  The threshold is
+    existential; the form with a named threshold is `VisitEquidistributionAt Q₀`. -/
 def VisitEquidistribution : Prop :=
   ∃ Q₀ : ℕ, ∀ (q : Nat) [Fact (Nat.Prime q)], q ≥ Q₀ →
   ∀ (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
@@ -141,6 +205,10 @@ def VisitEquidistribution : Prop :=
   ∃ N₀ : ℕ, ∀ N ≥ N₀, ∀ a : (ZMod q)ˣ,
     |((Finset.range N).filter (fun n => emWalkUnit q hq hne n = a)).card / (N : ℝ) -
       1 / ((q : ℝ) - 1)| ≤ ε
+
+/-- `VisitEquidistribution` is `VisitEquidistributionAt Q₀` for some `Q₀`. -/
+theorem visitEquidistribution_iff_exists_at :
+    VisitEquidistribution ↔ ∃ Q₀ : ℕ, VisitEquidistributionAt Q₀ := Iff.rfl
 
 end VisitEquidist
 

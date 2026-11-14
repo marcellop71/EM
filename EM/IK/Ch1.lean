@@ -25,6 +25,10 @@ Only the root `EM.lean` imports it.
 - §1.5: Summatory functions, hyperbola method
 - §1.6–1.7: Forward references
 
+Four mis-stated transcriptions (`WirsingTheorem`, `ErdosKac`, `AdditiveMeanFormula`,
+`DivisorPowerAverage`) were removed on 2026-11-11 (review H23, RED #30); they were unused.
+They have not been restated.
+
 ## References
 - [IK] H. Iwaniec, E. Kowalski, *Analytic Number Theory*, 2004
 -/
@@ -330,12 +334,8 @@ def DivisorEpsilonBound : Prop :=
   ∀ (ε : ℝ), 0 < ε → ∃ C : ℝ, 0 < C ∧
     ∀ n : ℕ, 0 < n → (σ 0 n : ℝ) ≤ C * (n : ℝ) ^ ε
 
-/-- `∑_{n≤x} τ(n)^ℓ ≪ x(log x)^{k^ℓ−1}` — IK (1.80). -/
-def DivisorPowerAverage (k ℓ : ℕ) : Prop :=
-  1 ≤ k → 1 ≤ ℓ → ∃ C : ℝ, 0 < C ∧
-    ∀ x : ℝ, 3 ≤ x →
-      ∑ n ∈ Finset.Icc 1 (Nat.floor x), (σ 0 n : ℝ) ^ ℓ ≤
-        C * x * Real.log x ^ (k ^ ℓ - 1)
+-- DivisorPowerAverage archived to EM/Archive/IK/Ch1Archive.lean (RED #30): it used the divisor
+-- function τ in place of τ_k, and is false at k = 1.
 
 end MultiplicativeBounds
 
@@ -375,13 +375,8 @@ def HardyRamanujan : Prop :=
           z * Real.sqrt (Real.log (Real.log x)))).card : ℝ) ≤
       C / z ^ 2 * x
 
-/-- Mean value of additive function — IK (1.103). -/
-def AdditiveMeanFormula : Prop :=
-  ∃ C : ℝ, 0 < C ∧
-    ∀ (f : ArithmeticFunction ℝ), IsAdditiveFunction f →
-      ∀ x : ℝ, 3 ≤ x →
-        |summatoryFunction f x - x * additiveExpectation f x| ≤
-        C * Real.sqrt x * Real.sqrt (additiveDispersionSq f x)
+-- AdditiveMeanFormula archived to EM/Archive/IK/Ch1Archive.lean (RED #30): the error term
+-- C·√x·D(x) is false already for f = ω.
 
 end TuranKubilius
 
@@ -391,36 +386,8 @@ end TuranKubilius
 
 section ForwardReferences
 
-/-- Wirsing's theorem — IK Theorem 1.1. -/
-def WirsingTheorem : Prop :=
-  ∀ (f : ArithmeticFunction ℝ), f.IsMultiplicative →
-    ∀ (κ : ℝ), -1/2 < κ →
-      (∃ B : ℝ, ∀ x : ℝ, 2 ≤ x →
-        |∑ n ∈ (Finset.Icc 2 (Nat.floor x)).filter Nat.Prime,
-          f n * Real.log n / n - κ * Real.log x| ≤ B) →
-      ∃ (c_f : ℝ) (C : ℝ), 0 < C ∧
-        ∀ x : ℝ, 3 ≤ x →
-          |summatoryFunction f x - c_f * Real.log x ^ κ| ≤
-            C * Real.log x ^ (|κ| - 1)
-
-/-- Erdős-Kac theorem — IK Theorem 1.5: additive functions with bounded prime values
-    and divergent second moment have Gaussian limiting distribution. -/
-def ErdosKac : Prop :=
-  ∀ (f : ArithmeticFunction ℝ), IsAdditiveFunction f →
-    (∀ (p : ℕ), p.Prime → ∀ (a : ℕ), 0 < a → |f (p ^ a)| ≤ 1 ∧ f (p ^ a) = f p) →
-    (Filter.Tendsto
-      (fun (N : ℕ) => ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, f p ^ 2 / (p : ℝ))
-      Filter.atTop Filter.atTop) →
-    ∀ (z : ℝ),
-      Filter.Tendsto
-        (fun (N : ℕ) =>
-          let A := ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, f p / (p : ℝ)
-          let B := Real.sqrt (∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, f p ^ 2 / (p : ℝ))
-          ((Finset.Icc 1 N).filter (fun n => f n - A ≤ z * B)).card / (N : ℝ))
-        Filter.atTop
-        (nhds ((1 / Real.sqrt (2 * Real.pi)) *
-          Real.exp (-(z ^ 2) / 2) * z +
-          1 / 2))  -- Gaussian CDF Φ(z); exact formula suppressed for simplicity
+-- WirsingTheorem, ErdosKac archived to EM/Archive/IK/Ch1Archive.lean (RED #30): the first mixes
+-- two normalisations, the second has a limit that is not the Gaussian distribution function.
 
 /-- Landau's formula for sums of two squares — IK (1.87):
     `B(x) ~ C x (log x)^{-1/2}` where

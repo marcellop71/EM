@@ -193,11 +193,24 @@ gives the optimal `(1/δ − 1) · l2NormSq b`.
     argument that sharpens `1/δ` to `1/δ − 1`.
 
     The `sin` in the denominator is `Real.sin(π · (α_r − α_s))` — note this uses
-    the actual real difference, not the fract difference. -/
+    the actual real difference, not the fract difference.
+
+    **Repaired 2026-11-11 (review H19).**  The spacing is circular (`IsCircularSpaced`);
+    the earlier statement used `IsSpaced` (fractional parts), for which points near `0` and
+    near `1` count as far apart although `1/sin(π(α_r − α_s))` blows up, so that no bound
+    of this kind can hold (and it implied the false fractional-parts large sieve, see
+    `IK.not_additiveLargeSieve_fractSpaced`).
+
+    **Status of the constant.**  Montgomery–Vaughan prove this inequality with the constant
+    `1/δ` (that is `CscBilinearBoundCircular` below, obtained in `Ch7CesaroChain.lean` from
+    `HilbertInequality`).  The constant `1/δ − 1` stated here is attained for equally spaced
+    points, but it is not a consequence of "Hilbert + Cohen" as the paragraph above
+    suggests: Cohen's dilation argument sharpens the large sieve inequality, not the csc
+    form.  This is recorded as a hypothesis, not as a known theorem. -/
 def CscBilinearBound : Prop :=
   ∀ (R : ℕ) (α : Fin R → ℝ) (c : Fin R → ℂ) (δ : ℝ),
     0 < δ → δ ≤ 1/2 →
-    IsSpaced α δ →
+    IsCircularSpaced α δ →
     ‖∑ r, ∑ s ∈ Finset.univ.filter (· ≠ r),
       c r * starRingEnd ℂ (c s) /
       (↑(Real.sin (Real.pi * (α r - α s))) : ℂ)‖ ≤
@@ -212,7 +225,13 @@ def CscBilinearBound : Prop :=
     2. The product-index trick: lift R points on ℝ/ℤ to R·(2K+1) points on ℝ.
     3. Apply HilbertInequality to the lifted points.
     4. Take K → ∞ and use Mittag-Leffler convergence.
-    5. The Cohen trick sharpens `1/δ` to `1/δ − 1`. -/
+    5. The Cohen trick sharpens `1/δ` to `1/δ − 1`.
+
+    Steps 1–4 are carried out in `Ch7CesaroChain.lean` and give `CscBilinearBoundCircular`
+    (constant `1/δ`).  Step 5 is not a known argument for the csc form (see
+    `CscBilinearBound`); since `HilbertInequality` is a theorem of Montgomery–Vaughan, this
+    bridge is equivalent in content to `CscBilinearBound` itself.  Stated with circular
+    spacing since 2026-11-11 (review H19). -/
 def HilbertCscBilinearBridge : Prop :=
   HilbertInequality → CscBilinearBound
 
@@ -235,8 +254,9 @@ The circular distance condition guarantees all lifted point pairs are
 δ-separated on ℝ. In all applications (unit points for prime p ≥ 3,
 Farey fractions), the circular distance condition is satisfied.
 
-We define `IsCircularSpaced` for the stronger condition, prove the bridge
-under it, and show the key applications satisfy it.
+Since 2026-11-11 every hypothesis of this chain (`CscBilinearBound`,
+`GramOffDiagBilinearBound`, `AdditiveLargeSieve`) is stated with `IsCircularSpaced`
+(`Ch7AdditiveLS.lean`); the fractional-parts forms were false.
 -/
 
 /-- `IsCircularSpaced` implies `IsSpaced`: circular distance ≥ δ implies

@@ -13,8 +13,9 @@ as the chosen factor at some step). The main result is that captureSet is **open
 product topology (Cantor space N -> Bool), unconditionally.
 
 Combined with density (which requires hypotheses), this gives a Baire category argument:
-the intersection of captureSet(q, acc) over all primes q is comeager (residual), meaning
-a "generic" selection sequence captures every prime.
+the intersection of captureSet(q, acc) over all primes q not dividing acc is comeager
+(residual), meaning a "generic" selection sequence captures every prime that does not divide
+the seed.  (A prime dividing the seed is never captured: `captureSet_eq_empty_of_dvd`.)
 
 ## Key Results
 
@@ -24,12 +25,15 @@ a "generic" selection sequence captures every prime.
 * `captureSet_level_isOpen` -- each level set {sigma | factor(k) = q} is open
 * `captureSet_isOpen` -- captureSet is open (unconditional)
 * `epsWalkProdFrom_tail_restart` -- walk from step K onward is a fresh walk
-* `fullCapture_residual` -- open + dense => intersection over countably many primes is residual
+* `captureSet_eq_empty_of_dvd` -- a prime dividing the seed is never captured
+* `epsWalkFactorFrom_two_minFacSeq` -- the all-minFac walk from 2 is the EM sequence
+* `fullCapture_residual` -- open + dense => intersection over the primes not dividing acc is residual
 * `fullCapture_exists_residual` -- existential form: open + dense => exists comeager G
 * `dense_capture_landscape` -- summary conjunction
 
 ### Open Hypotheses
-* `DenseCaptureHypothesis` -- captureSet is dense for acc >= 2
+* `DenseCaptureHypothesis` -- captureSet q acc is dense for acc >= 2 with q not dividing acc
+  (guard added 2026-11-11; the unguarded form was false for every prime q)
 
 ## Mathematical Content
 
@@ -55,8 +59,14 @@ abbrev SelectionSeq := ℕ → Bool
 def captureSet (q acc : ℕ) : Set SelectionSeq :=
   {σ | ∃ k, epsWalkFactorFrom acc σ k = q}
 
-/-- The all-false selection sequence (always choose minFac = standard EM walk). -/
-def minFacSeq : SelectionSeq := fun _ => false
+/-- The all-`true` selection sequence: always choose `minFac` (the standard EM walk).
+
+    In `epsWalkFactorFrom` the value `true` selects `minFac` and `false` selects
+    `secondMinFac`.  Until 2026-11-11 this was defined as `fun _ => false`, which is the
+    all-*second*-factor walk (`HypothesisAudit.epsWalkFactorFrom_const_false`); repaired
+    (review `docs/analysis/review_2026-11-10.md`, row H11).  It is the same sequence as
+    `emDecision`. -/
+def minFacSeq : SelectionSeq := fun _ => true
 
 /-- MC at (q, acc) means the minFac walk from acc captures q. -/
 def MC_at (q acc : ℕ) : Prop := minFacSeq ∈ captureSet q acc
@@ -64,6 +74,43 @@ def MC_at (q acc : ℕ) : Prop := minFacSeq ∈ captureSet q acc
 /-- MC_at is definitionally equivalent to membership in captureSet. -/
 theorem MC_at_iff (q acc : ℕ) : MC_at q acc ↔ minFacSeq ∈ captureSet q acc := by
   rfl
+
+/-- `minFacSeq` selects the least prime factor at every step. -/
+theorem epsWalkFactorFrom_minFacSeq (acc k : ℕ) :
+    epsWalkFactorFrom acc minFacSeq k = (epsWalkProdFrom acc minFacSeq k + 1).minFac := by
+  simp [epsWalkFactorFrom, minFacSeq]
+
+/-- From the accumulator `2`, the `minFacSeq` walk is the Euclid–Mullin sequence. -/
+theorem epsWalkFactorFrom_two_minFacSeq (n : ℕ) :
+    epsWalkFactorFrom 2 minFacSeq n = seq (n + 1) := by
+  rw [epsWalkFactorFrom_minFacSeq, epsWalkProdFrom_two_eq,
+    show minFacSeq = emDecision from rfl, epsWalkProd_emDecision, seq_succ]
+  exact (euclid_minFac_eq_nat_minFac _ (by have := prod_ge_two n; omega)).symm
+
+/-- `MC_at q 2` says that `q` is a term `seq (k + 1)` of the Euclid–Mullin sequence. -/
+theorem MC_at_two_iff (q : ℕ) : MC_at q 2 ↔ ∃ k, seq (k + 1) = q := by
+  simp only [MC_at, captureSet, Set.mem_ofPred_eq, epsWalkFactorFrom_two_minFacSeq]
+
+/-- The starting accumulator divides every later accumulator. -/
+theorem dvd_epsWalkProdFrom (acc : ℕ) (σ : SelectionSeq) (k : ℕ) :
+    acc ∣ epsWalkProdFrom acc σ k := by
+  induction k with
+  | zero => exact dvd_rfl
+  | succ k ih => rw [epsWalkProdFrom_succ]; exact ih.mul_right _
+
+/-- **A divisor of the seed is never captured**: if `q ∣ acc` (with `q, acc ≥ 2`) then
+    `captureSet q acc` is empty.  Every chosen factor divides `P + 1` for an accumulator `P`
+    that is a multiple of `acc`, hence of `q`.  This is why density of `captureSet q acc`
+    can only be asked for `¬ q ∣ acc`. -/
+theorem captureSet_eq_empty_of_dvd {q acc : ℕ} (hq : 2 ≤ q) (hacc : 2 ≤ acc) (h : q ∣ acc) :
+    captureSet q acc = ∅ := by
+  ext σ
+  simp only [captureSet, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists]
+  intro k hk
+  have h1 : q ∣ epsWalkProdFrom acc σ k + 1 := hk ▸ epsWalkFactorFrom_dvd acc hacc σ k
+  have h2 : q ∣ epsWalkProdFrom acc σ k := h.trans (dvd_epsWalkProdFrom acc σ k)
+  have := Nat.le_of_dvd one_pos ((Nat.dvd_add_right h2).mp h1)
+  omega
 
 end Definitions
 
@@ -180,14 +227,18 @@ end TailRestart
 
 section BaireCapture
 
-/-- Dense capture hypothesis: for acc >= 2, captureSet(q, acc) is dense.
+/-- Dense capture hypothesis: for `acc ≥ 2` not divisible by `q`, `captureSet q acc` is dense.
     This is the key hypothesis connecting the topological framework to number theory.
     It asserts that the set of decision sequences capturing q is dense in Cantor space,
     meaning every cylinder (finite prefix) can be extended to capture q.
 
+    The guard `¬ q ∣ acc` was added on 2026-11-11 (review row H11): for `q ∣ acc` the
+    capture set is empty (`captureSet_eq_empty_of_dvd`), so the unguarded statement was
+    false for every prime `q` (`HypothesisAudit.not_denseCapture_unguarded`).
+
     **Status**: open hypothesis. -/
 def DenseCaptureHypothesis (q : ℕ) : Prop :=
-  ∀ (acc : ℕ), 2 ≤ acc →
+  ∀ (acc : ℕ), 2 ≤ acc → ¬ q ∣ acc →
     Dense (captureSet q acc)
 
 /-- Cantor space N -> Bool is compact Hausdorff, hence a Baire space.
@@ -202,70 +253,84 @@ instance : BaireSpace SelectionSeq :=
 private theorem primes_countable : ({q : ℕ | q.Prime}).Countable :=
   Set.Countable.mono (Set.subset_univ _) Set.countable_univ
 
-/-- If captureSet(q, acc) is open AND dense for every prime q, then the intersection
-    over all primes is residual (comeager), meaning a generic selection sequence
-    captures every prime.
+/-- If captureSet(q, acc) is open AND dense for every prime q not dividing acc, then the
+    intersection over these primes is residual (comeager), meaning a generic selection
+    sequence captures every prime that does not divide the seed.
 
     Uses Baire category theorem: countable intersection of open dense sets is dense
     in a Baire space (Cantor space = compact Hausdorff = Baire).
 
     The result is stated using the `residual` filter (= comeager sets). A set belongs
-    to `residual X` iff it contains a countable intersection of open dense sets. -/
+    to `residual X` iff it contains a countable intersection of open dense sets.
+
+    The restriction to `¬ q ∣ acc` is necessary: for `q ∣ acc` the capture set is empty
+    (`captureSet_eq_empty_of_dvd`), and the unrestricted density hypothesis this theorem
+    carried until 2026-11-11 was unsatisfiable
+    (`HypothesisAudit.not_forall_prime_dense_captureSet`). -/
 theorem fullCapture_residual (acc : ℕ)
-    (h_dense : ∀ q, Nat.Prime q → Dense (captureSet q acc)) :
-    (⋂ q ∈ {q : ℕ | q.Prime}, captureSet q acc) ∈ residual SelectionSeq := by
+    (h_dense : ∀ q, Nat.Prime q → ¬ q ∣ acc → Dense (captureSet q acc)) :
+    (⋂ q ∈ {q : ℕ | q.Prime ∧ ¬ q ∣ acc}, captureSet q acc) ∈ residual SelectionSeq := by
   -- Build the set of open dense sets
-  have h_open : ∀ s ∈ (captureSet · acc) '' {q : ℕ | q.Prime}, IsOpen s := by
+  have h_open : ∀ s ∈ (captureSet · acc) '' {q : ℕ | q.Prime ∧ ¬ q ∣ acc}, IsOpen s := by
     intro s hs
     obtain ⟨q, _, rfl⟩ := hs
     exact captureSet_isOpen q acc
-  have h_dense' : ∀ s ∈ (captureSet · acc) '' {q : ℕ | q.Prime}, Dense s := by
+  have h_dense' : ∀ s ∈ (captureSet · acc) '' {q : ℕ | q.Prime ∧ ¬ q ∣ acc}, Dense s := by
     intro s hs
     obtain ⟨q, hq, rfl⟩ := hs
-    exact h_dense q hq
-  have h_count : ((captureSet · acc) '' {q : ℕ | q.Prime}).Countable :=
-    primes_countable.image _
+    exact h_dense q hq.1 hq.2
+  have h_count : ((captureSet · acc) '' {q : ℕ | q.Prime ∧ ¬ q ∣ acc}).Countable :=
+    (primes_countable.mono (fun _ hq => hq.1)).image _
   -- Apply dense_sInter_of_isOpen and then residual_of_dense_Gδ
-  have h_isGδ : IsGδ (⋂₀ ((captureSet · acc) '' {q : ℕ | q.Prime})) :=
+  have h_isGδ : IsGδ (⋂₀ ((captureSet · acc) '' {q : ℕ | q.Prime ∧ ¬ q ∣ acc})) :=
     IsGδ.sInter (fun s hs => by
-      simp only [Set.mem_image, Set.mem_ofPred_eq] at hs
       obtain ⟨q, _, rfl⟩ := hs
       exact (captureSet_isOpen q acc).isGδ) h_count
   have h_dense_inter := dense_sInter_of_isOpen h_open h_count h_dense'
   -- Convert sInter of images to biInter
-  have h_eq : ⋂₀ ((captureSet · acc) '' {q : ℕ | q.Prime}) =
-      ⋂ q ∈ {q : ℕ | q.Prime}, captureSet q acc := by
+  have h_eq : ⋂₀ ((captureSet · acc) '' {q : ℕ | q.Prime ∧ ¬ q ∣ acc}) =
+      ⋂ q ∈ {q : ℕ | q.Prime ∧ ¬ q ∣ acc}, captureSet q acc := by
     ext σ
-    simp only [Set.mem_sInter, Set.mem_image, Set.mem_ofPred_eq, Set.mem_iInter]
+    simp only [Set.mem_sInter, Set.mem_image, Set.mem_iInter]
     constructor
     · intro h q hq; exact h _ ⟨q, hq, rfl⟩
     · rintro h _ ⟨q, hq, rfl⟩; exact h q hq
   rw [← h_eq]
   exact residual_of_dense_Gδ h_isGδ h_dense_inter
 
-/-- If captureSet(q, acc) is open AND dense for every prime q, then there exists
-    a residual (comeager) set G such that every sigma in G captures every prime.
-    This is the existential form of the Baire argument. -/
+/-- If captureSet(q, acc) is open AND dense for every prime q not dividing acc, then there
+    exists a residual (comeager) set G such that every sigma in G captures every prime not
+    dividing acc.  This is the existential form of the Baire argument. -/
 theorem fullCapture_exists_residual (acc : ℕ)
-    (h_dense : ∀ q, Nat.Prime q → Dense (captureSet q acc)) :
+    (h_dense : ∀ q, Nat.Prime q → ¬ q ∣ acc → Dense (captureSet q acc)) :
     ∃ G : Set SelectionSeq,
-      G ∈ residual SelectionSeq ∧ ∀ σ ∈ G, ∀ q, q.Prime → σ ∈ captureSet q acc := by
-  refine ⟨⋂ q ∈ {q : ℕ | q.Prime}, captureSet q acc,
+      G ∈ residual SelectionSeq ∧
+        ∀ σ ∈ G, ∀ q, q.Prime → ¬ q ∣ acc → σ ∈ captureSet q acc := by
+  refine ⟨⋂ q ∈ {q : ℕ | q.Prime ∧ ¬ q ∣ acc}, captureSet q acc,
     fullCapture_residual acc h_dense, ?_⟩
-  intro σ hσ q hq
-  simp only [Set.mem_iInter, Set.mem_ofPred_eq] at hσ
-  exact hσ q hq
+  intro σ hσ q hq hndvd
+  simp only [Set.mem_iInter] at hσ
+  exact hσ q ⟨hq, hndvd⟩
 
 /-- The Baire intersection is nonempty: under density, there exists a selection sequence
-    that captures every prime. Uses that residual sets in nonempty Baire spaces are nonempty
-    (via density of the intersection). -/
+    that captures every prime not dividing the seed. Uses that residual sets in nonempty
+    Baire spaces are nonempty (via density of the intersection).
+
+    (The primes dividing `acc` can never be captured: `captureSet_eq_empty_of_dvd`.) -/
 theorem fullCapture_nonempty (acc : ℕ)
-    (h_dense : ∀ q, Nat.Prime q → Dense (captureSet q acc)) :
-    ∃ σ : SelectionSeq, ∀ q, q.Prime → σ ∈ captureSet q acc := by
+    (h_dense : ∀ q, Nat.Prime q → ¬ q ∣ acc → Dense (captureSet q acc)) :
+    ∃ σ : SelectionSeq, ∀ q, q.Prime → ¬ q ∣ acc → σ ∈ captureSet q acc := by
   obtain ⟨G, hG, hGprop⟩ := fullCapture_exists_residual acc h_dense
   have hd := dense_of_mem_residual hG
   obtain ⟨σ, hσ⟩ := hd.nonempty
   exact ⟨σ, hGprop σ hσ⟩
+
+/-- Under `DenseCaptureHypothesis` for every prime, from any seed `acc ≥ 2` some selection
+    sequence captures every prime not dividing `acc`. -/
+theorem fullCapture_nonempty_of_denseCapture (acc : ℕ) (hacc : 2 ≤ acc)
+    (h : ∀ q, Nat.Prime q → DenseCaptureHypothesis q) :
+    ∃ σ : SelectionSeq, ∀ q, q.Prime → ¬ q ∣ acc → σ ∈ captureSet q acc :=
+  fullCapture_nonempty acc (fun q hq hndvd => h q hq acc hacc hndvd)
 
 end BaireCapture
 
@@ -290,10 +355,10 @@ theorem dense_capture_landscape (q : ℕ) (_hq : Nat.Prime q) (acc : ℕ) (_hacc
     -- 2. MC_at iff minFacSeq in captureSet (definitional)
     (MC_at q acc ↔ minFacSeq ∈ captureSet q acc)
     ∧
-    -- 3. Comeager full capture from open + dense (conditional)
-    ((∀ q', q'.Prime → Dense (captureSet q' acc)) →
+    -- 3. Comeager full capture from open + dense (conditional), for primes not dividing acc
+    ((∀ q', q'.Prime → ¬ q' ∣ acc → Dense (captureSet q' acc)) →
       ∃ G : Set SelectionSeq, G ∈ residual SelectionSeq ∧
-        ∀ σ ∈ G, ∀ q', q'.Prime → σ ∈ captureSet q' acc) :=
+        ∀ σ ∈ G, ∀ q', q'.Prime → ¬ q' ∣ acc → σ ∈ captureSet q' acc) :=
   ⟨captureSet_isOpen q acc,
    MC_at_iff q acc,
    fun h_dense => fullCapture_exists_residual acc h_dense⟩

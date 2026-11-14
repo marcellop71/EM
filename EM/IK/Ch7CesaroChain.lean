@@ -690,11 +690,10 @@ theorem cross_r_cesaro_convergence_proved : CrossRCesaroConvergence := by
 /-!
 ### Circular-spacing chain: HilbertInequality → AdditiveLargeSieveCircular
 
-The Cohen trick sharpens the constant from `1/δ` to `1/δ - 1`, but requires
-converting between circular and non-circular spacing. Since all downstream
-applications (Farey fractions, unit points for primes) use circularly-spaced
-points, we can bypass the Cohen trick entirely by threading `IsCircularSpaced`
-through the chain with the slightly weaker constant `1/δ`.
+The chain through `CscBilinearBound` / `GramOffDiagBilinearBound` asks for the constant
+`1/δ - 1`, which is a hypothesis there (see the docstring of `CscBilinearBound`).  Here
+the constant `1/δ` is carried through instead, and every step is proved.  Both chains use
+`IsCircularSpaced` (the other one since the repair of 2026-11-11, review H19).
 
 Chain:
   CscBilinearBoundCircular (PROVED: `hilbert_csc_circular_of_cesaro`)

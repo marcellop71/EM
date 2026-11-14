@@ -3,33 +3,26 @@ import EM.CME.Reduction
 import EM.Equidist.SelfCorrecting
 
 /-!
-# Excursion Independence Principle (EIP)
+# Walk excursions
 
-This file formalizes the **Excursion Independence Principle** — a hypothesis
-situated between CME and CCSB in the reduction hierarchy for Mullin's Conjecture.
-
-An **excursion** at position `c` is a segment of the walk between two consecutive
-returns to `c`. The key structural fact is `excursionMultProd_eq_one`: the product
+An **excursion** at position `c` is a segment of the walk between two visits to `c`
+(any two visits: the structure does not require a *first* return). The key structural fact is `excursionMultProd_eq_one`: the product
 of multipliers during any excursion is trivial (since the walk returns to its
 starting position).
 
-The **Excursion Independence** hypothesis says that character sums over
-disjoint excursions are approximately independent (their total variance is
-bounded by the sum of individual variances, up to a constant). Combined with
-a **bounded max excursion** hypothesis, this gives CCSB and hence MC.
+The **Excursion Independence** and **bounded max excursion** hypotheses that this file used
+to state (EIP + BME ⇒ CCSB ⇒ MC) were found defective on 2026-11-11 and archived (RED #21):
+see Section 3 below and `EM/Meta/HypothesisAudit.lean`.  What remains live is the structural
+theory of excursions.
 
 ## Main Results
 
-* `Excursion` : structure for a walk segment between returns to a fixed position
+* `Excursion` : structure for a walk segment between two visits to a fixed position
 * `excursionMultProd` : product of multipliers during an excursion
 * `excursionMultProd_eq_one` : the multiplier product is trivial (PROVED)
 * `excursionCharSum_le_len` : triangle inequality bound on excursion char sum (PROVED)
 * `walkCharSum_excursion` : walk char sum within excursion = chi(c) * excursionCharSum (PROVED)
-* `ExcursionIndependence` : open hypothesis (approximate independence)
-* `BoundedMaxExcursion` : open hypothesis (no dominating excursion)
-* `CMEImpliesEIP` : open hypothesis (CME -> EIP)
 * `avoidanceDiscrepancy` : the avoidance bias 1/(q-2) - 1/(q-1) (PROVED positive)
-* `eip_bounded_implies_mc` : universal EIP + BoundedMax -> MC (PROVED)
 -/
 
 open Mullin Euclid MullinGroup RotorRouter
@@ -190,109 +183,26 @@ theorem sum_sq_le_bound_mul_sum {ι : Type*} (s : Finset ι) (x : ι → ℝ) (M
         exact mul_le_mul_of_nonneg_right (hM i hi) (hx i hi)
     _ = M * ∑ i ∈ s, x i := by rw [← Finset.mul_sum]
 
-/-! ## Section 3: Open Hypotheses -/
+/-! ## Section 3: Excursion hypotheses (archived 2026-11-11)
 
-/-- **Excursion Independence Principle (EIP)**: For a fixed prime `q`, position `c`,
-    and nontrivial character chi, the squared norm of the sum of excursion character
-    sums is bounded by a constant times the sum of individual squared norms.
+The hypotheses `ExcursionIndependence`, `BoundedMaxExcursion` and their universal forms
+`UniversalEIP`, `UniversalBoundedMax` were found defective as stated (review
+`docs/analysis/review_2026-11-10.md`, row H6): an `Excursion` is *any* pair of visits to `c`,
+not a first return, and the lists in `ExcursionIndependence` may repeat an excursion.
 
-    This is a form of approximate orthogonality: the excursion character sums
-    behave as if they were independent random variables (up to a multiplicative
-    constant). The constant `C` may depend on `q` but not on the number or
-    arrangement of excursions. -/
-def ExcursionIndependence (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q)
-    (hne : ∀ k, seq k ≠ q) (c : (ZMod q)ˣ) (χ : (ZMod q)ˣ →* ℂˣ) : Prop :=
-  ∃ C : ℝ, C > 0 ∧ ∀ (excs : List (Excursion q hq hne c)),
-    ‖(excs.map (excursionCharSum χ)).sum‖ ^ 2 ≤
-      C * (excs.map (fun e => ‖excursionCharSum χ e‖ ^ 2)).sum
+* `UniversalBoundedMax` is contradictory at a missing prime — some position is visited
+  infinitely often, and the excursion from a fixed visit to a far later one has length
+  `> N/2` — hence equivalent to MC by logic alone: `HypothesisAudit.universalBoundedMax_iff_mc`.
+* `ExcursionIndependence` forces every excursion character sum to vanish (repeat one excursion
+  more than `C` times): `HypothesisAudit.excursionCharSum_eq_zero_of_excursionIndependence`.
 
-/-- **Bounded Maximum Excursion**: no single excursion dominates the total walk.
-    For any delta > 0, eventually all excursions ending before step N have
-    length at most delta * N.
+The four definitions now live in `EM/Meta/HypothesisAudit.lean` next to these theorems.
 
-    This is a regularity condition ensuring the walk returns to `c` frequently
-    enough that no excursion is macroscopic relative to the total walk length. -/
-def BoundedMaxExcursion (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q)
-    (hne : ∀ k, seq k ≠ q) (c : (ZMod q)ˣ) : Prop :=
-  ∀ (δ : ℝ), δ > 0 → ∃ N₀ : ℕ, ∀ N ≥ N₀,
-    ∀ (exc : Excursion q hq hne c), exc.stop ≤ N →
-      (exc.len : ℝ) ≤ δ * N
-
-/-- **Universal Excursion Independence**: EIP holds for all primes, all positions,
-    and all nontrivial characters simultaneously. -/
-def UniversalEIP : Prop :=
-  ∀ (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-  ∀ (c : (ZMod q)ˣ) (χ : (ZMod q)ˣ →* ℂˣ) (_hχ : χ ≠ 1),
-    ExcursionIndependence q hq hne c χ
-
-/-- **Universal Bounded Maximum Excursion**: holds for all primes and positions. -/
-def UniversalBoundedMax : Prop :=
-  ∀ (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-  ∀ (c : (ZMod q)ˣ),
-    BoundedMaxExcursion q hq hne c
-
-/-- **CME implies EIP**: Conditional Multiplier Equidistribution should imply
-    excursion independence. CME gives per-step conditional decorrelation, which
-    should aggregate to per-excursion approximate independence.
-
-    This is a non-trivial but plausible implication: if the multiplier at each
-    step is equidistributed conditioned on the walk position, then the partial
-    products within different excursions should be approximately independent. -/
-def CMEImpliesEIP : Prop :=
-  ConditionalMultiplierEquidist → UniversalEIP
-
-/-! ## Section 4: Reductions -/
-
-/-- **EIP + Bounded Max -> CCSB at a single prime**: Given excursion independence
-    and bounded maximum excursion at prime `q`, the complex character sum bound
-    holds at `q`.
-
-    Proof outline:
-    1. Decompose the walk char sum into excursion contributions
-    2. Apply EIP: `‖sum sigma_j‖^2 ≤ C * sum ‖sigma_j‖^2`
-    3. Bound `sum ‖sigma_j‖^2 ≤ sum Lj^2 ≤ max(Lj) * sum Lj ≤ (delta*N) * N`
-    4. So `‖S_chi‖^2 ≤ C * delta * N^2`, choose `delta = eps^2/C`
-
-    This is formalized as an open Prop because the decomposition of a general
-    walk interval `[0, N)` into excursions requires a covering argument
-    (finding the return times) that depends on the walk being recurrent at `c`. -/
-def EIPBoundedImpliesCCSBAt (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q)
-    (hne : ∀ k, seq k ≠ q) : Prop :=
-  (∀ (c : (ZMod q)ˣ) (χ : (ZMod q)ˣ →* ℂˣ) (_hχ : χ ≠ 1),
-    ExcursionIndependence q hq hne c χ) →
-  (∀ (c : (ZMod q)ˣ), BoundedMaxExcursion q hq hne c) →
-  ∀ (χ : (ZMod q)ˣ →* ℂˣ) (_hχ : χ ≠ 1),
-  ∀ (ε : ℝ) (_hε : 0 < ε),
-  ∃ N₀ : ℕ, ∀ N ≥ N₀,
-    ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ ε * N
-
-/-- **Universal EIP + Bounded Max -> CCSB -> MC**: the full chain from universal
-    excursion hypotheses to Mullin's Conjecture.
-
-    This encapsulates the reduction: if we know EIP and bounded max excursion
-    at every prime, we get CCSB at every prime, which gives MC via the
-    proved `complex_csb_mc'`. -/
-def UniversalEIPBoundedImpliesCCSB : Prop :=
-  UniversalEIP → UniversalBoundedMax →
-  ∀ (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-    EIPBoundedImpliesCCSBAt q hq hne
-
-/-- **EIP + Bounded Max -> MC** (assuming the covering decomposition):
-    If `UniversalEIPBoundedImpliesCCSB` holds (the covering argument works),
-    then `UniversalEIP + UniversalBoundedMax -> MC`. -/
-theorem eip_bounded_implies_mc
-    (hcover : UniversalEIPBoundedImpliesCCSB)
-    (heip : UniversalEIP) (hbmax : UniversalBoundedMax) :
-    MullinConjecture := by
-  have hccsb : ComplexCharSumBound := by
-    intro q inst hq hne χ hχ ε hε
-    have : Fact (Nat.Prime q) := inst
-    have hcover_q := hcover heip hbmax q hq hne
-    exact hcover_q
-      (fun c χ' hχ' => heip q hq hne c χ' hχ')
-      (fun c => hbmax q hq hne c)
-      χ hχ ε hε
-  exact complex_csb_mc' hccsb
+-- CMEImpliesEIP archived to EM/Archive/Transfer/ExcursionArchive.lean (RED #21)
+-- EIPBoundedImpliesCCSBAt archived to EM/Archive/Transfer/ExcursionArchive.lean (RED #21)
+-- UniversalEIPBoundedImpliesCCSB archived to EM/Archive/Transfer/ExcursionArchive.lean (RED #21)
+-- eip_bounded_implies_mc archived to EM/Archive/Transfer/ExcursionArchive.lean (RED #21)
+-/
 
 /-! ## Section 5: Avoidance Discrepancy -/
 
@@ -412,13 +322,6 @@ theorem excursionCharSum_norm_nonneg (χ : (ZMod q)ˣ →* ℂˣ)
 - `excursionMultProd` : product of multipliers during excursion
 - `excursionCharSum` : partial-product character sum within excursion
 - `walkCharSumRange` : walk character sum from step a to step b
-- `ExcursionIndependence` : open hypothesis (approximate independence of excursion char sums)
-- `BoundedMaxExcursion` : open hypothesis (no dominating excursion)
-- `UniversalEIP` : universal excursion independence
-- `UniversalBoundedMax` : universal bounded max excursion
-- `CMEImpliesEIP` : open hypothesis (CME -> EIP)
-- `EIPBoundedImpliesCCSBAt` : open hypothesis (covering decomposition at single prime)
-- `UniversalEIPBoundedImpliesCCSB` : open hypothesis (covering decomposition universally)
 - `avoidanceDiscrepancy` : bias from death-value avoidance
 - `Excursion.append` : composition of consecutive excursions
 
@@ -429,7 +332,6 @@ theorem excursionCharSum_norm_nonneg (χ : (ZMod q)ˣ →* ℂˣ)
 - `excursion_walk_at` : walk position at interior point
 - `walkCharSum_excursion` : walk char sum = chi(c) * excursion char sum
 - `sum_sq_le_bound_mul_sum` : sum x_i^2 ≤ M * sum x_i
-- `eip_bounded_implies_mc` : universal EIP + bounded max + covering -> MC
 - `avoidanceDiscrepancy_eq` : closed form 1/((q-1)(q-2))
 - `avoidanceDiscrepancy_pos` : positive for q >= 4
 - `avoidanceDiscrepancy_le` : upper bound 1/(q-2)^2
@@ -441,21 +343,9 @@ theorem excursionCharSum_norm_nonneg (χ : (ZMod q)ˣ →* ℂˣ)
 - `excursionCharSum_sq_le_len_sq` : ‖sigma‖^2 ≤ L^2
 - `excursionCharSum_norm_nonneg` : ‖sigma‖ >= 0
 
-### Open hypotheses (7 total):
-- `ExcursionIndependence` : approximate independence of excursion char sums
-- `BoundedMaxExcursion` : no dominating excursion
-- `UniversalEIP` : universal excursion independence
-- `UniversalBoundedMax` : universal bounded max excursion
-- `CMEImpliesEIP` : CME -> EIP (non-trivial, plausible)
-- `EIPBoundedImpliesCCSBAt` : covering decomposition at single prime
-- `UniversalEIPBoundedImpliesCCSB` : covering decomposition universally
-
-### Position in hierarchy:
-```
-CME -> [CMEImpliesEIP] -> UniversalEIP
-                               | (+ UniversalBoundedMax + covering)
-                               v
-                             CCSB -> MC
-```
-This places EIP strictly between CME and CCSB.
+### Open hypotheses: none
+The seven excursion hypotheses formerly listed here (`ExcursionIndependence`,
+`BoundedMaxExcursion`, `UniversalEIP`, `UniversalBoundedMax`, `CMEImpliesEIP`,
+`EIPBoundedImpliesCCSBAt`, `UniversalEIPBoundedImpliesCCSB`) were archived on 2026-11-11
+(RED #21); see Section 3.
 -/

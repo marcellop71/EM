@@ -339,7 +339,15 @@ section Diversity
     one prime factor available. This means the nondeterministic walk has genuine
     branching at infinitely many steps.
 
-    **Status**: open hypothesis. -/
+    **Status**: open hypothesis.
+
+    Note (2026-11-10): the statement is about the *minFac* walk from every starting
+    accumulator `acc ≥ 2` (it asks that `genProd`-type Euclid numbers be composite infinitely
+    often for every seed).  Every consumer in the repository uses only the instance `acc = 2`
+    (`mixed_diversity_weak_implies_mixed_mc` and the theorems built on it), and at `acc = 2`
+    the walk is the Euclid–Mullin accumulator (`mixedWalkProd_two_minFac_eq_prod`), so that instance is exactly
+    (C∞), `AutonomousBranch.InfinitelyManyComposite`.  The instances `acc ≠ 2` are further
+    demands that nothing here uses. -/
 def MixedDiversity : Prop :=
   ∀ (acc : ℕ), 2 ≤ acc → ∀ N : ℕ, ∃ n, N ≤ n ∧
     ¬ (mixedWalkProd acc minFacMixed n + 1).Prime

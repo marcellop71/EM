@@ -23,6 +23,15 @@ files) is kept locally and is not part of the public tree; no candidate below li
 checkout re-grepped. **Three** previously-listed items have since landed in Mathlib and are
 recorded as withdrawn rather than silently dropped (§B2, §B7, §B8).
 
+*Added 2026-11-11.* The repository's toolchain has since moved to Mathlib `v4.35.0`
+(`lean-toolchain`, `lake-manifest.json`), and the "missing from Mathlib" claims in this
+document have **not** been re-verified against it; the dated statement above is about
+`v4.33.0` only. The review of 2026-11-10 checked three entries against the `v4.35.0` checkout
+and found Mathlib prior art for each; they are annotated in place
+(`char_norm_one_of_hom`: `IsOfFinOrder.norm_eq_one`; the helper `stdAddChar_sum_eq` of §A2:
+`AddChar.sum_mulShift`; §B14 `PeriodicDensity.card_fiber_le`: `Nat.Ioc_filter_modEq_card` /
+`Nat.count_modEq_card`).
+
 **Prior art outside Mathlib matters too, and two entries have it.** Absence from Mathlib is
 necessary but not sufficient for a contribution to be worth a reviewer's time: if a result
 already exists in another Lean development, or sits in an open PR, that is the first thing a
@@ -100,6 +109,13 @@ one reaches for in an application.
 | `zmod_dft_parseval_complex` (= `ZMod.dft_mul_conj_sum`) | `EM/ForMathlib/ZModDftParseval.lean` | Complex inner-product Parseval |
 | `zmod_dft_plancherel_complex` | `EM/LargeSieve/Harmonic.lean` | Bilinear Plancherel for `ZMod.dft` |
 | `char_parseval_units` | `EM/LargeSieve/Analytic.lean` | `∑_χ ‖∑ g(a)·χ(a)‖² = (p−1)·∑ ‖g(a)‖²` on `(ℤ/pℤ)ˣ` |
+
+*Note (2026-11-11, checked against `v4.35.0`).* The helper `stdAddChar_sum_eq` in
+`EM/ForMathlib/ZModDftParseval.lean` (`∑_k stdAddChar (a * k) = if a = 0 then N else 0`) is
+**not** a candidate: it is the specialisation of Mathlib's `AddChar.sum_mulShift`
+(`Mathlib/NumberTheory/LegendreSymbol/AddCharacter.lean`) to the primitive character
+`ZMod.stdAddChar`, and its proof is that one call. A submission of the Parseval statements
+should use `AddChar.sum_mulShift` directly.
 
 ---
 
@@ -187,7 +203,7 @@ If a finite `S ⊆ G` generates the finite commutative group `G`, contains `1`, 
 
 | Identifier | Description |
 |---|---|
-| `char_norm_one_of_hom` | `‖χ(g)‖ = 1` for `χ : G →* ℂˣ`, `G` finite |
+| `char_norm_one_of_hom` | `‖χ(g)‖ = 1` for `χ : G →* ℂˣ`, `G` finite. **Not a candidate** (checked 2026-11-11 against `v4.35.0`): essentially Mathlib's `IsOfFinOrder.norm_eq_one` (`Mathlib/Analysis/Normed/Ring/Finite.lean`), whose accompanying `example` is this statement for a monoid hom into a normed ring |
 | `exists_ne_one_of_nontrivial` | Nontrivial `χ` on generators: `∃ s ∈ S`, `χ(s) ≠ 1` |
 | `norm_add_lt_two_of_ne` | `‖z + w‖ < 2` for unit-norm `z ≠ w` |
 | `spectral_gap_with_identity` | `‖∑ χ(s)‖ < \|S\|` |
@@ -495,7 +511,7 @@ nowhere.
 |---|---|
 | `PeriodicDensity.periodRep` | Representative of `m` in `[1, M]` (`M` in place of `0`) |
 | `PeriodicDensity.periodRep_modEq`, `…_mem_Ico`, `…_eq_self` | Its basic API |
-| `PeriodicDensity.card_fiber_le` | Fibre count over one block |
+| `PeriodicDensity.card_fiber_le` | Fibre count over one block. **Not a candidate by itself** (checked 2026-11-11 against `v4.35.0`): the bound `≤ X/M + 1` is weaker than Mathlib's exact counts `Nat.Ioc_filter_modEq_card` / `Nat.count_modEq_card` (`Mathlib/Data/Int/CardIntervalMod.lean`); a submission should derive it from those |
 | `PeriodicDensity.eventually_density_le` | `#{m ≤ X : P m}/X ≤ #T/M + o(1)` for `M`-periodic `P` |
 | `PeriodicDensity.limsup_density_le` | `limsup` form |
 

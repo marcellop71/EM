@@ -168,21 +168,51 @@ theorem ffExistsIrreducibleOfDegree (d : ℕ) (hd : 0 < d) :
     exact GaloisField.finrank p hd.ne'
   exact ⟨Q, hmonic, hirr, hdeg⟩
 
-/-! ### From MultiplierCCSB.lean -/
+-- ff_mc_mult_ccsb_landscape_unconditional archived to
+-- EM/Archive/FunctionField/FFBridgesArchive.lean (RED #25): every clause assumed
+-- `FFMultCCSBImpliesFFDH p` or `FFDSLImpliesFFDH p`, each of which is `FFMullinConjecture p`.
 
-/-- **MultCCSB landscape unconditional in finiteness.**
-    The four routes to FF-MC now only need FFMultCCSBImpliesFFDH
-    (not finiteness, which is proved). -/
-theorem ff_mc_mult_ccsb_landscape_unconditional
-    (hbridge : FFMultCCSBImpliesFFDH p) :
-    -- Route 1: MultCCSB => FF-MC
-    (FFMultiplierCCSB p → FFMullinConjecture p) ∧
-    -- Route 2: Weil + SBN => FF-MC
-    (WeilBound p → SelectionBiasNeutral p → FFMullinConjecture p) ∧
-    -- Route 3: Weil + ConditionalCharEquidist => FF-MC
-    (WeilBound p → ConditionalCharEquidist p → FFMullinConjecture p) ∧
-    -- Route 4: FFDSLAnalog + bridge => FF-MC
-    (FFDSLImpliesFFDH p → FFDSLAnalog p → FFMullinConjecture p) :=
-  ff_mc_mult_ccsb_landscape p hbridge ffFiniteIrreduciblesPerDegree_proved
+/-! ### The monodromy proxy is a theorem (review 2026-11-10, H15) -/
+
+/-- A polynomial over `𝔽_p` that does not split has a nontrivial Galois group. -/
+theorem one_lt_card_gal_of_not_splits {f : (ZMod p)[X]} (hf : ¬ f.Splits) :
+    1 < Fintype.card f.Gal := by
+  rw [Fintype.one_lt_card_iff_nontrivial]
+  by_contra hnt
+  rw [not_nontrivial_iff_subsingleton] at hnt
+  apply hf
+  rw [IsSplittingField.splits_iff f.SplittingField f]
+  have h1 : Module.finrank (ZMod p) f.SplittingField = 1 := by
+    rw [← IsGalois.card_aut_eq_finrank]
+    exact Nat.card_eq_one_iff_unique.mpr ⟨hnt, ⟨1⟩⟩
+  exact (Subalgebra.bot_eq_top_of_finrank_eq_one h1).symm
+
+/-- **`FFLargeMonodromy p` holds for every prime `p`.**  The selected degree tends to
+    infinity, so from some stage on the selected factor is not linear; by minimality the Euclid
+    polynomial `ffProd n + 1` then has no linear factor, hence no root in `𝔽_p`, hence does not
+    split, hence has a nontrivial Galois group.
+
+    `FFLargeMonodromy` is only the proxy `|Gal| > 1`; the intended "Gal ⊇ A_d" is false
+    (`ffGaloisGroup_isCyclic`, Dead End #129). -/
+theorem ffLargeMonodromy : FFLargeMonodromy p := by
+  intro d
+  have ht := ffSeq_degree_tendsto_atTop_unconditional d
+  obtain ⟨N₀, hN₀⟩ := (Filter.tendsto_atTop.mp ht 2).exists_forall_of_atTop
+  refine ⟨N₀, fun n hn => one_lt_card_gal_of_not_splits fun hs => ?_⟩
+  have hpos : 0 < (d.ffProd n).natDegree :=
+    lt_of_lt_of_le (by rw [d.ffProd_zero, natDegree_X]; exact one_pos)
+      ((ffProd_natDegree_strict_mono p d).monotone (Nat.zero_le n))
+  have hdeg : (d.ffProd n + 1).degree ≠ 0 := by
+    have hne : d.ffProd n + 1 ≠ 0 := fun h0 => by
+      have := ffProdPlusOne_natDegree p d n hpos
+      rw [h0, natDegree_zero] at this; omega
+    rw [degree_eq_natDegree hne, ffProdPlusOne_natDegree p d n hpos]
+    exact_mod_cast hpos.ne'
+  obtain ⟨a, ha⟩ := hs.exists_eval_eq_zero hdeg
+  have hdvd : (X - C a) ∣ d.ffProd n + 1 := dvd_iff_isRoot.mpr ha
+  have h1 := d.ffSeq_minimal n _ (monic_X_sub_C a) (irreducible_X_sub_C a) hdvd
+  rw [natDegree_X_sub_C] at h1
+  have h2 := hN₀ (n + 1) (by omega)
+  omega
 
 end FunctionFieldAnalog

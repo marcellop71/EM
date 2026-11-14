@@ -119,6 +119,63 @@ theorem mc_implies_rd (hmc : MullinConjecture) : ReciprocalDivergence :=
 
 end MissingPrimesAndWeakMullin
 
+/-! ## MMCSB and SVE are reformulations of cofinite MC
+
+Added 2026-11-10 (review row T3/T4).  `MultiModularCSB` and `SubquadraticVisitEnergy` ask for
+their bound only at primes `q ≥ Q₀` *that never appear*.  A bound at a missing prime `q ≥ Q₀`
+forces `q` to appear (`mmcsbAt_appears`: cofinal hitting plus a pigeonhole on the finitely many
+values below `q`, with no hypothesis on smaller primes), so each of them says exactly "no prime
+`≥ Q₀` is missing for some `Q₀`", i.e. `MissingFinite`.  They are therefore *not* sufficient
+conditions for MC by themselves; with `FiniteMCBelow Q₀` at the same `Q₀` they are
+(`mmcsbAt_implies_mc`, `sveAt_implies_mc`). -/
+
+section CofiniteReformulations
+
+/-- `MissingFinite` says that every prime beyond some threshold appears. -/
+theorem missingFinite_iff_exists_threshold :
+    MissingFinite ↔ ∃ Q₀ : ℕ, ∀ q, IsPrime q → Q₀ ≤ q → ∃ k, seq k = q := by
+  constructor
+  · intro hfin
+    obtain ⟨B, hB⟩ := hfin.bddAbove
+    refine ⟨B + 1, fun q hq hge => ?_⟩
+    by_contra hne
+    have hmem : q ∈ MissingPrimes := ⟨(isPrime_iff_natPrime q).mp hq, fun k e => hne ⟨k, e⟩⟩
+    have := hB hmem
+    omega
+  · rintro ⟨Q₀, h⟩
+    refine (Set.finite_Iio Q₀).subset ?_
+    rintro q ⟨hqp, hne⟩
+    by_contra hge
+    simp only [Set.mem_Iio, not_lt] at hge
+    obtain ⟨k, hk⟩ := h q ((isPrime_iff_natPrime q).mpr hqp) hge
+    exact hne k hk
+
+/-- **`MultiModularCSB` ⟺ `MissingFinite`**: MMCSB is cofinite MC in the language of the
+    walk. -/
+theorem mmcsb_iff_missingFinite : MultiModularCSB ↔ MissingFinite := by
+  rw [missingFinite_iff_exists_threshold]
+  constructor
+  · rintro ⟨Q₀, h⟩
+    exact ⟨Q₀, fun q hq hge => mmcsbAt_appears (Q₀ := Q₀) h hq hge⟩
+  · rintro ⟨Q₀, h⟩
+    refine ⟨Q₀, fun q _ hge hq hne => ?_⟩
+    obtain ⟨k, hk⟩ := h q hq hge
+    exact absurd hk (hne k)
+
+/-- **`SubquadraticVisitEnergy` ⟺ `MissingFinite`.** -/
+theorem sve_iff_missingFinite : SubquadraticVisitEnergy ↔ MissingFinite := by
+  refine ⟨fun h => mmcsb_iff_missingFinite.mp (sve_implies_mmcsb h), fun h => ?_⟩
+  obtain ⟨Q₀, hQ₀⟩ := missingFinite_iff_exists_threshold.mp h
+  refine ⟨Q₀, fun q _ hge hq hne => ?_⟩
+  obtain ⟨k, hk⟩ := hQ₀ q hq hge
+  exact absurd hk (hne k)
+
+/-- MMCSB ⟹ WeakMullin, with no threshold hypothesis. -/
+theorem mmcsb_implies_wm (h : MultiModularCSB) : WeakMullin :=
+  missing_finite_implies_wm (mmcsb_iff_missingFinite.mp h)
+
+end CofiniteReformulations
+
 /-! ## S88. Product Divergence -/
 
 section ProductDivergence
@@ -297,12 +354,19 @@ def JointSVE : Prop :=
         ((isPrime_iff_natPrime q.val).mpr (hQ q.val q.prop).1) (hQ q.val q.prop).2 N
     ) ≤ ε * (N : ℝ) ^ 2 * Q.card
 
-/-- EMBV → MC (conditional on Q₀ ≤ 11). -/
+/-- EMBV → MC (conditional on Q₀ ≤ 11).
+
+    Note (2026-11-10): `hsmall` is about `hembv.choose` and cannot be discharged from a known
+    threshold; use `mmcsbAt_small_threshold_mc (h : MultiModularCSBAt Q₀) (hQ : Q₀ ≤ 11)`. -/
 theorem embv_implies_mc (hembv : EMBV)
     (hsmall : hembv.choose ≤ 11) : MullinConjecture :=
   mmcsb_small_threshold_mc hembv hsmall
 
-/-- EMBV → WM (via MC). -/
+/-- EMBV → WM (via MC).
+
+    Note (2026-11-10): the hypothesis `hsmall` is superfluous (and not dischargeable):
+    `EMBV = MultiModularCSB ⟺ MissingFinite` (`mmcsb_iff_missingFinite`), and
+    `MissingFinite → WeakMullin` (`missing_finite_implies_wm`); see `mmcsb_implies_wm`. -/
 theorem embv_implies_wm (hembv : EMBV)
     (hsmall : hembv.choose ≤ 11) : WeakMullin :=
   mc_implies_wm (embv_implies_mc hembv hsmall)

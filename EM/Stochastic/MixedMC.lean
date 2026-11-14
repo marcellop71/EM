@@ -95,7 +95,12 @@ section DiversityWeak
     Given diversity (cofinally many composite P+1), we can steer the walk
     to capture any target prime q >= 5.
 
-    **Status**: open hypothesis. This is the sole gap for MixedMullinConjecture. -/
+    **Status**: open hypothesis. This is the sole gap for MixedMullinConjecture.
+
+    Note (2026-11-10): the "main theorem" `mixed_diversity_weak_implies_mixed_mc` uses this
+    only at `acc = 2`, where it is the statement "(C∞) ⟹ `MixedMC q` for every prime `q ≥ 5`";
+    so calling it "the sole gap" means that it is `MixedMullinConjecture` conditional on (C∞),
+    restated. -/
 def MixedDiversityWeak : Prop :=
   ∀ (q : ℕ), q.Prime → 5 ≤ q →
     ∀ (acc : ℕ), 2 ≤ acc → ¬(q ∣ acc) →
@@ -134,7 +139,17 @@ private theorem prime_ge_five_of_ne {q : ℕ} (hq : q.Prime) (hne2 : q ≠ 2) (h
     - q = 2: trivial (2 | acc = 2)
     - q = 3: unconditional from mixed_capture_three
     - q >= 5: apply MixedDiversityWeak with acc = 2, using MixedDiversity for the
-      cofinality hypothesis and the inductive hypothesis for MixedMCBelow. -/
+      cofinality hypothesis.
+
+    Note (2026-11-10): this is a restatement, not a reduction.  For `q ≥ 5` the conclusion
+    `MixedMC q` is, word for word, the conclusion of `MixedDiversityWeak` at `acc = 2`, whose
+    only premise is the instance `acc = 2` of `MixedDiversity`.  The induction on `q` in the
+    proof is inert (the inductive hypothesis is never used in the case `q = k + 1`, and
+    `MixedDiversityWeak` has no `MixedMCBelow` premise).  So the theorem says
+    "`MixedDiversityWeak` at `acc = 2` plus (C∞) gives `MixedMullinConjecture`", and
+    `MixedDiversityWeak` restricted to `acc = 2` *is* "(C∞) ⟹ MixedMC for all `q ≥ 5`".
+    `MixedDiversity` is consumed only at `acc = 2`, where it is
+    `AutonomousBranch.InfinitelyManyComposite` (via `mixedWalkProd_two_minFac_eq_prod`). -/
 theorem mixed_diversity_weak_implies_mixed_mc
     (hdw : MixedDiversityWeak) (hdiv : MixedDiversity) :
     MixedMullinConjecture := by

@@ -17,6 +17,24 @@ The formalization is **combinatorial/finitary**: capture is expressed via existe
 a finite valid mixed walk path with positive weight (pathWeightLB > 0) under the
 epsilon-process. No measure theory on infinite sequences is needed.
 
+Note (2026-11-10), what this file does and does not prove.
+
+* `StochasticMC ε q` is a *positive-probability* statement, and for `0 < ε ≤ 1` it does not
+  depend on `ε`: every finite valid path has positive weight when `ε > 0`
+  (`reachable_implies_positive_prob_capture`), so `StochasticMC ε q` says "some valid mixed
+  path from `2` captures `q`", i.e. reachability of `-1` in the factor tree, i.e. `MixedMC q`
+  (`stochastic_mc_implies_mixed_mc` is one direction; the equivalence is not stated as a
+  single theorem).  Nothing here is a statement about the `ε`-process beyond that.
+* **Almost-sure capture under the `ε`-perturbed rule is not a theorem of this repository for
+  any prime `q ≥ 5`.**  It is proved only for `q = 3`, and only conditionally on an anatomy
+  hypothesis (`OmegaBlockLB` with divergent sums):
+  `three_almost_sure_capture_of_omega_divergence` (`EM/Stochastic/ThreeAlmostSure.lean`) and
+  `three_eps_almost_sure_general` (`EM/Stochastic/RandomVariant.lean`).
+* `StochasticMC 0 q` is false for `q ≠ 2` *by the convention* `0 < ε` built into the
+  definition (`stochastic_mc_zero_trivial`).  That says nothing about the `ε = 0` process,
+  which is the Euclid–Mullin sequence itself; there is no "phase transition at `ε = 0`"
+  theorem here, only the remark that the definition excludes `ε = 0`.
+
 ## Key Results
 
 ### Part 1: Definitions
@@ -79,7 +97,12 @@ section Definitions
 
     Note: this is a **positive probability** statement, not an **almost sure** one.
     (The almost-sure statement was only ever derived from the hypothesis `Regeneration`,
-    which is unsatisfiable: `HypothesisAudit.not_regeneration`.) -/
+    which is unsatisfiable: `HypothesisAudit.not_regeneration`.)
+
+    Note (2026-11-10): for `0 < ε ≤ 1` the statement does not depend on `ε` — positivity of
+    the path weight is automatic — and is tree reachability (`MixedMC q`,
+    `stochastic_mc_implies_mixed_mc`).  At `ε = 0` it is false for `q ≠ 2` only because of the
+    conjunct `0 < ε`; it is *not* the Euclid–Mullin statement "`q` appears". -/
 def StochasticMC (ε : ℝ) (q : ℕ) : Prop :=
   q = 2 ∨ (q.Prime ∧ 0 < ε ∧ ε ≤ 1 ∧ PositiveProbCapture q 2 ε)
 
@@ -226,16 +249,23 @@ end PhaseTransition
 /-! ## Part 5: Deterministic Limit (epsilon = 0 is standard EM)
 
 When epsilon = 0, the stochastic process reduces to the standard EM walk.
-StochasticMC at epsilon = 0 is vacuously true for q > 2 since
-0 < epsilon is required. For q = 2, it holds via the left disjunct.
 
-We also show that MixedMC (which does not depend on epsilon) sits strictly
-between StochasticMC(epsilon > 0) and standard MC. -/
+Note (2026-11-10).  This header used to say that `StochasticMC` at `ε = 0` is "vacuously
+true" for `q > 2`.  It is the opposite: `StochasticMC 0 q` is **false** for `q ≠ 2`, because
+the definition carries the conjunct `0 < ε`.  That falsity is a convention of the definition
+and carries no information: the `ε = 0` process is the Euclid–Mullin sequence, and whether it
+captures `q` is MC at `q`, which `StochasticMC 0 q` does not express.  Nor is it shown here
+that `MixedMC` sits "strictly between" anything: `StochasticMC ε q` for `0 < ε ≤ 1` is
+`MixedMC q` (see the module docstring), and `MC → MixedMC` is the only other implication. -/
 
 section DeterministicLimit
 
-/-- StochasticMC at epsilon = 0 is false for q > 2:
-    the left disjunct `q = 2` fails, and the right disjunct requires `0 < epsilon`. -/
+/-- StochasticMC at epsilon = 0 is false for q ≠ 2:
+    the left disjunct `q = 2` fails, and the right disjunct requires `0 < epsilon`.
+
+    Note (2026-11-10): the proof uses nothing but the conjunct `0 < ε` of the definition.  It
+    is a statement about the definition's convention, not about the `ε = 0` process (the
+    Euclid–Mullin sequence, which does capture e.g. `3, 5, 7`). -/
 theorem stochastic_mc_zero_trivial (q : ℕ) (hq2 : q ≠ 2) :
     ¬ StochasticMC 0 q := by
   intro h

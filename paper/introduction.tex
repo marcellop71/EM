@@ -249,7 +249,10 @@ comparison class isolating what makes the problem hard.
 \item \textbf{The comparison class.}  Ensemble, factor tree, two-point,
   $\varepsilon$-random and function-field variants each change one
   thing: almost-all tree hitting is unconditional, the perturbed rule
-  captures almost surely yet its $\varepsilon \to 0$ limit is a faithful
+  is expected to capture almost surely (machine-checked only for
+  $q = 3$, and there conditionally on an anatomy hypothesis; not
+  formalized for $q \ge 5$) while the family of its failure
+  probabilities, as $\varepsilon \to 0$, is a faithful
   reformulation of MC, Booker's steered variant hits everything,
   $\mathrm{maxFac}$ provably misses, and over $\FF_5[t]$ the
   function-field conjecture is provably \emph{false}---the greedy sequence
@@ -398,7 +401,9 @@ residue class with equal frequency---also implies MC through a
 separate machine-verified chain
 (\code{sve\_implies\_mc}, \code{cancel\_weyl\_implies\_mc}).
 VE is stated with a threshold ($q \ge Q_0$) and reaches MC only together
-with a finite check below the threshold; like CME it is implied by MC
+with a finite check below the same explicit threshold
+(\code{veAt\_implies\_mc}); by itself it is equivalent to cofinite MC
+(\code{ve\_iff\_missingFinite}), and like CME it is implied by MC
 vacuously.  The two are different \emph{routes}, not independent
 hypotheses.
 

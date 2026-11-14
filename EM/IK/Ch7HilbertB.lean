@@ -81,14 +81,12 @@ theorem liftedPtsA_sep_all {R : ℕ} {δ : ℝ} (α : Fin R → ℝ) (K : ℕ)
     exact liftedPtsA_sep_same α K r j l hjl δ hδ hδ2
   · exact liftedPtsA_sep_diff α K hcirc r s hrs j l
 
-/-- **CscBilinearBound implies CscBilinearBoundCircular**: the weaker bound `(1/δ - 1)`
-    with IsSpaced implies the `1/δ` bound with IsCircularSpaced, since
-    IsCircularSpaced → IsSpaced and `1/δ - 1 ≤ 1/δ`. -/
+/-- **CscBilinearBound implies CscBilinearBoundCircular**: both are stated for circularly
+    δ-spaced points; the first has the sharper constant `1/δ - 1 ≤ 1/δ`. -/
 theorem csc_bilinear_implies_circular (hcsc : CscBilinearBound) :
     CscBilinearBoundCircular := by
   intro R α c δ hδ hδ2 hcirc
-  have hspaced := isCircularSpaced_implies_isSpaced α δ hδ2 hcirc
-  have hbound := hcsc R α c δ hδ hδ2 hspaced
+  have hbound := hcsc R α c δ hδ hδ2 hcirc
   -- (1/δ - 1) * l2NormSq c ≤ (1/δ) * l2NormSq c
   calc ‖∑ r, ∑ s ∈ Finset.univ.filter (· ≠ r),
         c r * starRingEnd ℂ (c s) /
@@ -261,7 +259,8 @@ theorem isSpaced_sin_ne_zero {R : ℕ} (α : Fin R → ℝ) (δ : ℝ)
     6. Combine: `(1/2) · 2 · (1/δ − 1) · l2NormSq b = (1/δ − 1) · l2NormSq b`. -/
 theorem csc_bilinear_implies_gram_offdiag
     (hcsc : CscBilinearBound) : GramOffDiagBilinearBound := by
-  intro R N α b δ hδ hδ2 _hN hspaced
+  intro R N α b δ hδ hδ2 _hN hcirc
+  have hspaced : IsSpaced α δ := isSpaced_of_isCircularSpaced hcirc
   -- Define phase-shifted coefficients
   set d : Fin R → ℂ := fun r => b r * _root_.eAN ((↑(2 * N) - 1) / 2 * α r) with hd_def
   set d' : Fin R → ℂ := fun r => b r * _root_.eAN (-(1 : ℝ) / 2 * α r) with hd'_def
@@ -269,8 +268,8 @@ theorem csc_bilinear_implies_gram_offdiag
   have hl2d : l2NormSq d = l2NormSq b := l2NormSq_mul_eAN b _ α
   have hl2d' : l2NormSq d' = l2NormSq b := l2NormSq_mul_eAN b _ α
   -- Step 5: Apply CscBilinearBound to d and d'
-  have hcsc_d := hcsc R α d δ hδ hδ2 hspaced
-  have hcsc_d' := hcsc R α d' δ hδ hδ2 hspaced
+  have hcsc_d := hcsc R α d δ hδ hδ2 hcirc
+  have hcsc_d' := hcsc R α d' δ hδ hδ2 hcirc
   rw [hl2d] at hcsc_d
   rw [hl2d'] at hcsc_d'
   -- Step 3: Rewrite the Gram bilinear form

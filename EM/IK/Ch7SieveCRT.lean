@@ -21,8 +21,8 @@ open Complex Finset BigOperators
 /-!
 ### Theorem 7.16 (Linnik): Small quadratic non-residues for almost all primes
 
-For any ε > 0, all but O(1/ε) primes p have the property that the least
-quadratic non-residue mod p is at most p^{1/(4√e) + ε}.
+For any ε > 0, the number of primes p ≤ N whose least quadratic non-residue
+exceeds N^ε is bounded in terms of ε only.
 
 More precisely, let X_ε be the number of primes p ≤ √N with q(p) > N^ε.
 Then X_ε ≪ 1/ε.
@@ -35,123 +35,40 @@ This uses the large sieve as sieve (Theorem 7.14) with:
 Combined with a lower bound for the number of smooth numbers, one gets X_ε ≪ 1.
 -/
 
-/-- **Theorem 7.16** (Linnik, 1941): For any ε > 0, the number of primes p ≤ x
-    whose least quadratic non-residue exceeds x^ε is bounded by a constant
-    depending only on ε. In particular, for almost all primes p, the least QNR
-    is at most p^{1/(4√e) + ε}.
+/-- **Theorem 7.16** (Linnik, 1941): for every `ε > 0` the number of primes `p ≤ x` whose
+    least quadratic non-residue exceeds `x^ε` is bounded by a constant depending only on `ε`.
 
-    This follows from the large sieve as sieve (Theorem 7.14) applied with
-    Ω_p = {quadratic non-residues mod p} for primes p with large QNR. -/
+    "Least quadratic non-residue of `p` exceeds `x^ε`" is expressed as: every positive integer
+    `n ≤ x^ε` is a square modulo `p`.  (The prime `p = 2`, which has no non-residue at all,
+    is counted; it contributes at most `1`.)  Open `def`: nothing is proved about it here.
+
+    **Repaired 2026-11-11 (review H21).**  The earlier statement did not use `ε` and asked
+    that *every* `n` with `1 < n < p`, `n ≤ x` be a non-residue of `p`; since `4 = 2²` is a
+    residue of every `p ≥ 5`, its filter was contained in `{2, 3}` and the statement was
+    trivially true (the archived `largeSieveAsSieve_implies_linnik_proved`, RED #28, proved
+    exactly that, ignoring its hypothesis). -/
 def LinnikSmallQNR : Prop :=
   ∀ (ε : ℝ), 0 < ε →
     ∃ C : ℝ, 0 < C ∧
       ∀ (x : ℕ), 2 ≤ x →
         ((Finset.filter (fun p =>
-            Nat.Prime p ∧ p ≤ x ∧
-            ∀ (n : ℕ), 1 < n → n ≤ x → (n : ℕ) < p →
-              ¬(∃ k, k ^ 2 ≡ n [MOD p]))
+            Nat.Prime p ∧
+            ∀ (n : ℕ), 0 < n → (n : ℝ) ≤ (x : ℝ) ^ ε → IsSquare (n : ZMod p))
           (Finset.range (x + 1))).card : ℝ) ≤ C
 
 /-- **Reduction**: Theorem 7.14 implies Linnik's theorem (Theorem 7.16).
     The proof uses Theorem 7.14 with P = {primes with large QNR} and
     Ω_p = QNRs mod p, combined with a lower bound for smooth numbers.
     This is stated as an open Prop since it requires the smooth number
-    lower bound and additional combinatorial arguments. -/
+    lower bound and additional combinatorial arguments.  (With `LinnikSmallQNR` repaired on
+    2026-11-11 this is a genuine open reduction; nothing is proved about it.) -/
 def LargeSieveAsSieveImpliesLinnik : Prop :=
   LargeSieveAsSieve → LinnikSmallQNR
 
-/-- For any prime p ≥ 5, the number 4 = 2² is a quadratic residue mod p,
-    and 4 lies in the range (1, p). This means p cannot have the property
-    that ALL integers in (1, x] ∩ [2, p-1] are quadratic non-residues,
-    provided x ≥ 4. -/
-private theorem four_is_qr_mod (p : ℕ) (_hp : 5 ≤ p) :
-    ∃ k : ℕ, k ^ 2 ≡ 4 [MOD p] :=
-  ⟨2, rfl⟩
-
-/-- The filter in `LinnikSmallQNR` is a subset of primes less than 5.
-    For any prime p ≥ 5 and x ≥ 4, the number n = 4 witnesses that p
-    does NOT satisfy the "all small integers are QNR" condition. -/
-private theorem linnik_filter_subset_small (x : ℕ) (hx : 4 ≤ x) :
-    (Finset.filter (fun p =>
-        Nat.Prime p ∧ p ≤ x ∧
-        ∀ (n : ℕ), 1 < n → n ≤ x → (n : ℕ) < p →
-          ¬(∃ k, k ^ 2 ≡ n [MOD p]))
-      (Finset.range (x + 1))) ⊆
-    (Finset.filter (fun p => Nat.Prime p ∧ p < 5) (Finset.range (x + 1))) := by
-  intro p hp
-  rw [Finset.mem_filter] at hp ⊢
-  obtain ⟨hrange, hprime, hle, hall⟩ := hp
-  refine ⟨hrange, hprime, ?_⟩
-  by_contra h
-  push Not at h
-  -- p ≥ 5, so 4 < p and 4 ≤ x, and 1 < 4
-  have hp5 : 5 ≤ p := h
-  have h4lt : (4 : ℕ) < p := by omega
-  have h4le : (4 : ℕ) ≤ x := hx
-  have h14 : 1 < (4 : ℕ) := by omega
-  have habs := hall 4 h14 h4le h4lt
-  exact habs (four_is_qr_mod p hp5)
-
-/-- Primes less than 5 in any range form a set of cardinality at most 2 (namely {2, 3}). -/
-private theorem card_primes_lt_five (x : ℕ) :
-    (Finset.filter (fun p => Nat.Prime p ∧ p < 5) (Finset.range (x + 1))).card ≤ 2 := by
-  calc (Finset.filter (fun p => Nat.Prime p ∧ p < 5) (Finset.range (x + 1))).card
-      ≤ (Finset.filter (fun p => Nat.Prime p ∧ p < 5) (Finset.range 5)).card := by
-        apply Finset.card_le_card
-        intro p hp
-        rw [Finset.mem_filter] at hp ⊢
-        exact ⟨Finset.mem_range.mpr (by omega), hp.2⟩
-    _ ≤ 2 := by decide
-
-/-- **Theorem 7.16 proved**: `LargeSieveAsSieve → LinnikSmallQNR`.
-
-    The proof exploits the fact that `LinnikSmallQNR` as stated — bounding the
-    count of primes p ≤ x where ALL integers n ∈ (1, x] ∩ [2, p-1] are QNR mod p
-    — is trivially true. For any prime p ≥ 5, the integer 4 = 2² is a quadratic
-    residue mod p, so no such prime can satisfy the "all small are QNR" condition
-    when x ≥ 4. The filter set is thus contained in {2, 3}. -/
-theorem largeSieveAsSieve_implies_linnik_proved : LargeSieveAsSieveImpliesLinnik := by
-  intro _hlsa
-  show LinnikSmallQNR
-  intro ε _hε
-  refine ⟨3, by norm_num, ?_⟩
-  intro x hx
-  -- For x ≥ 4, the filter is ⊆ {primes < 5}, which has card ≤ 2 ≤ 3
-  -- For x = 2 or x = 3, we bound directly
-  by_cases hx4 : 4 ≤ x
-  · calc ((Finset.filter (fun p =>
-          Nat.Prime p ∧ p ≤ x ∧
-          ∀ (n : ℕ), 1 < n → n ≤ x → (n : ℕ) < p →
-            ¬(∃ k, k ^ 2 ≡ n [MOD p]))
-        (Finset.range (x + 1))).card : ℝ)
-        ≤ ((Finset.filter (fun p => Nat.Prime p ∧ p < 5)
-            (Finset.range (x + 1))).card : ℝ) := by
-          exact_mod_cast Finset.card_le_card (linnik_filter_subset_small x hx4)
-      _ ≤ 2 := by exact_mod_cast card_primes_lt_five x
-      _ ≤ 3 := by norm_num
-  · -- x < 4, so x ∈ {2, 3} (since 2 ≤ x), primes ≤ x are ⊆ {2, 3}
-    push Not at hx4
-    -- The filter is ⊆ {primes ≤ 3} ⊆ {primes < 5}
-    have hx_le : x ≤ 3 := by omega
-    have hsub : (Finset.filter (fun p =>
-          Nat.Prime p ∧ p ≤ x ∧
-          ∀ (n : ℕ), 1 < n → n ≤ x → (n : ℕ) < p →
-            ¬(∃ k, k ^ 2 ≡ n [MOD p]))
-        (Finset.range (x + 1))) ⊆
-        Finset.filter (fun p => Nat.Prime p ∧ p < 5) (Finset.range (x + 1)) := by
-      intro p hp
-      rw [Finset.mem_filter] at hp ⊢
-      exact ⟨hp.1, hp.2.1, by omega⟩
-    calc ((Finset.filter (fun p =>
-          Nat.Prime p ∧ p ≤ x ∧
-          ∀ (n : ℕ), 1 < n → n ≤ x → (n : ℕ) < p →
-            ¬(∃ k, k ^ 2 ≡ n [MOD p]))
-        (Finset.range (x + 1))).card : ℝ)
-        ≤ ((Finset.filter (fun p => Nat.Prime p ∧ p < 5)
-            (Finset.range (x + 1))).card : ℝ) := by
-          exact_mod_cast Finset.card_le_card hsub
-      _ ≤ 2 := by exact_mod_cast card_primes_lt_five x
-      _ ≤ 3 := by norm_num
+-- largeSieveAsSieve_implies_linnik_proved (with its private helpers four_is_qr_mod,
+-- linnik_filter_subset_small, card_primes_lt_five) archived to
+-- EM/Archive/IK/Ch7SieveCRTArchive.lean (RED #28): it proved the degenerate former statement
+-- of LinnikSmallQNR, ignoring the large-sieve hypothesis.
 
 /-!
 ### Proving Lemma 7.15 for general squarefree modulus

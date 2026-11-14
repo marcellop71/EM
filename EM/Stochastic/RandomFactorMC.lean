@@ -33,9 +33,15 @@ reproduces the minFac behavior.
 
 ## Motivation
 
-Random MC is provable: independence of multiplier from walk position (by
-construction) gives Diaconis-Shahshahani mixing. The sole obstruction to
-standard MC is the deterministic nature of minFac.
+Note (2026-11-10): this paragraph used to open "Random MC is provable".  It is not proved
+here or anywhere in the repository.  What is proved in this file is the *nondeterministic*
+statement `PureRandomMC q ↔ MixedMC q ↔ -1 ∈ reachableEver` (existence of a capturing path),
+unconditionally only for `q = 2, 3`.  Almost-sure capture under a random rule
+(`RandomMC`, `EM/Stochastic/RandomVariant.lean`) is proved only for `q = 3` and only
+conditionally on an anatomy hypothesis (`three_random_almost_sure`); for `q ≥ 5` it is open.
+The heuristic is: independence of the multiplier from the walk position (by construction)
+would give Diaconis–Shahshahani mixing, and the obstruction to standard MC is the
+deterministic nature of minFac.
 
 The factor tree T(m) encodes all possible factor choices. GenMixedMC asks
 whether T(m) reaches every prime -- the mathematical distillation of what

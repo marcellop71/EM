@@ -7,7 +7,9 @@ import EM.FunctionField.FrobeniusOrbit
 `StableTower.lean` treats the seed `X`; `QuadraticSeeds.lean` the seeds `X² + 1`, `X² + 2`.
 Here: for **every** `a ∈ 𝔽_5` the seed `X + a` is a perpetual tower — every `g_n(X + a)` is
 irreducible (`g_comp_linear_irreducible`), every valid factor selection from `X + a` follows the
-tower and never selects a linear irreducible (`lin_seed_perpetual`, `lin_seed_sel_natDegree`).
+tower (`lin_seed_perpetual`), and its `n`-th selected factor has degree `2^n`
+(`lin_seed_sel_natDegree`).  So the first selected factor `σ.sel 0 = X + a + 1` is linear and no
+later one is: the linear irreducibles other than `X + a` (the seed) and `X + a + 1` never appear.
 
 The proof is one line on top of the tower: `α_n − a` is a root of `g_n(X + a)`, and subtracting
 a constant does not change the Frobenius period (`minimalPeriod_sub_const`), so the period is
@@ -103,6 +105,8 @@ theorem lin_seed_perpetual (a : ZMod 5) (σ : FFMixedSelection 5)
     rw [hacc', iter_comp_add_one]
     exact g_comp_linear_irreducible a (n + 1)
 
+/-- The `n`-th selected factor from the seed `X + a` has degree `2^n`.  At `n = 0` this is the
+linear polynomial `X + a + 1`; for `n ≥ 1` the degree is at least `2`. -/
 theorem lin_seed_sel_natDegree (a : ZMod 5) (σ : FFMixedSelection 5)
     (hσ : FFMixedSelectionValid 5 (linSeed a) σ) (n : ℕ) : (σ.sel n).natDegree = 2 ^ n := by
   obtain ⟨hacc, hirr⟩ := lin_seed_perpetual a σ hσ n

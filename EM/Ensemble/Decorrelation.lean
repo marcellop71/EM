@@ -105,9 +105,13 @@ theorem genWalkCharEnergy_nonneg (n K q : Nat) (χ : Nat → ℂ) :
       (counterexample: multipliers cycling {-1,-1,+1,+1} on (Z/5Z)× give
       multiplier sums O(1) but walk sums Θ(N)).
 
-    - Dead End #117 shows this remains false even for walks with ALL
-      EM-specific structural properties (squarefree accumulator, coprime
-      cascade, minFac selection, CRT invariance, super-exponential growth).
+    - Dead End #117 (`OrbitBarrier.mult_cancel_not_walk_cancel`) is a second
+      abstract counterexample: multipliers alternating `2, 3` mod `5`, for the
+      one character with `χ(2) = i`.  Note (2026-11-10): this docstring used to
+      say that #117 "shows this remains false even for walks with ALL
+      EM-specific structural properties".  Nothing of the kind is proved: the
+      witness is an abstract periodic sequence (it repeats primes), and whether
+      the transfer holds for EM-type walks is exactly the open question.
 
     This gap is equivalent in difficulty to CCSB/CME — the core open
     problem of the project. The Marginal/Joint Barrier manifests here:

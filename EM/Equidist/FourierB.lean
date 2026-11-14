@@ -40,13 +40,15 @@ hitting count is `N/(q-1) + o(N) → ∞`, giving cofinal hitting and hence
 This section formalises:
 
 * `WalkHitCount`: the count `#{n < N : emWalkUnit q n = t}`.
-* `CharSumBound`: the o(N) cancellation property for non-trivial characters,
-  stated as an open Prop (requires ℂ-valued character theory not yet in Mathlib).
+* (`CharSumBound`, a group-theoretic stand-in for character cancellation, was found on
+  2026-11-11 to say the opposite of cancellation and to collapse to MC; it now lives in
+  `EM/Meta/HypothesisAudit.lean` next to `HypothesisAudit.charSumBound_iff_mc`.  The
+  correct hypothesis is `ComplexCharSumBound`, §30.)
 * `HitCountLowerBound`: an open Prop encapsulating the Fourier inversion
   consequence — the walk hits every target at linear rate.
 * `hitCountLowerBound_implies_we`: the proved reduction
   `HitCountLowerBound → WalkEquidistribution`.
-* `char_sum_bound_mc`: the full chain to MullinConjecture.
+* `char_sum_bound_mc`: the chain `HitCountLowerBound → MullinConjecture`.
 
 The key structural result is `cofinal_of_hitCount_unbounded`:
 if the hitting count is unbounded, cofinal hitting follows by pure monotonicity.
@@ -167,42 +169,23 @@ theorem unbounded_of_linear_lower_bound (q : Nat) [Fact (Nat.Prime q)]
   have hM2 : 2 * (q - 1) * (K + 1) ≤ M := le_max_right _ _
   nlinarith
 
-open Classical in
-/-- **CharSumBound**: the analytic hypothesis that non-trivial character sums
-    over the EM walk are `o(N)`.
-
-    For a prime `q` not in the EM sequence, `CharSumBound` asserts that for
-    every non-trivial group homomorphism `χ : (ZMod q)ˣ →* G`, the number
-    of steps `n < N` where `χ(emWalkUnit q n) ≠ 1` grows at most as `ε * N`
-    for any `ε > 0` and all sufficiently large `N`.
-
-    The standard analytic form (`∑_{n<N} χ(w(n)) = o(N)` for complex-valued
-    characters χ) implies this formulation via a pigeonhole argument.
-    `CharSumBound` is stated purely group-theoretically to avoid requiring
-    `ℂ` in the formal development.
-
-    Combined with `HitCountLowerBound`, this implies `WalkEquidistribution`
-    and hence MullinConjecture. -/
-def CharSumBound : Prop :=
-  ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-  ∀ {G : Type*} [CommGroup G] (χ : (ZMod q)ˣ →* G) (_hχ : ∃ g, χ g ≠ 1),
-  ∀ (ε_num ε_den : ℕ) (_hε : 0 < ε_den),
-  ∃ N₀ : ℕ, ∀ N ≥ N₀,
-    ((Finset.range N).filter (fun n => χ (emWalkUnit q hq hne n) ≠ 1)).card * ε_den ≤
-    ε_num * N
+-- CharSumBound: found to assert the opposite of cancellation (the walk is almost always in
+-- `ker χ`) and to be contradictory at any missing prime, hence equivalent to MC by logic alone,
+-- on 2026-11-11 (`HypothesisAudit.charSumBound_iff_mc`, review row H5, RED #20); its definition now
+-- lives next to that theorem in EM/Meta/HypothesisAudit.lean.  It was never used: the three
+-- theorems below carried it as an unused argument, which has been dropped.
 
 /-- **HitCountLowerBound**: the consequence of Fourier inversion that
     every walk target is hit at linear rate.
 
     This encapsulates the content of the character orthogonality counting
-    formula: if CharSumBound holds (all non-trivial character sums are o(N)),
+    formula: if all non-trivial character sums are `o(N)` (`ComplexCharSumBound`, §30),
     then by Fourier inversion on `(ZMod q)ˣ`, every target `t` is hit at
     least `N / (2*(q-1))` times in the first `N` steps, for large `N`.
 
-    **Open Prop**: the Fourier inversion step requires ℂ-valued Dirichlet
-    characters and the Plancherel identity on finite abelian groups, which
-    is not yet available in the Mathlib ZMod API.  Together with
-    `CharSumBound`, it implies `WalkEquidistribution`. -/
+    The Fourier inversion step from `ComplexCharSumBound` is
+    `ComplexCSBImpliesHitCountLB` (§30).  On its own, `HitCountLowerBound`
+    implies `WalkEquidistribution`. -/
 def HitCountLowerBound : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
   ∀ (t : (ZMod q)ˣ),
@@ -226,48 +209,41 @@ theorem hitCountLowerBound_implies_we
   -- Conclude cofinal hitting
   exact cofinal_of_hitCount_unbounded q hq hne t hunbd N₀
 
-/-- **CharSumBound + HitCountLowerBound → WalkEquidistribution**:
-    the bridge between the two open analytic Props and walk equidistribution.
+/-- **HitCountLowerBound → WalkEquidistribution** (historical name).
 
-    - `CharSumBound` (analytic): non-trivial character sums are `o(N)`.
-    - `HitCountLowerBound` (algebraic/Fourier): this cancellation implies
-      the walk hits every target at rate `≥ N/(2*(q-1))`.
-    Together they give cofinal hitting of every target ∈ (ZMod q)ˣ. -/
+    Until 2026-11-11 this theorem carried a second, unused argument `CharSumBound`
+    (a hypothesis since found to collapse to MC, see
+    `HypothesisAudit.charSumBound_iff_mc`).  It depends only on
+    `HitCountLowerBound` and is `hitCountLowerBound_implies_we` under its old name. -/
 theorem char_sum_bound_implies_we
-    (_hcsb : CharSumBound)
     (hlb : HitCountLowerBound) :
     WalkEquidistribution :=
   hitCountLowerBound_implies_we hlb
 
-/-- **CharSumBound + HitCountLowerBound → DynamicalHitting**: the key
-    implication for Mullin's Conjecture via walk equidistribution. -/
+/-- **HitCountLowerBound → DynamicalHitting** (historical name; depends only on
+    `HitCountLowerBound`, the unused `CharSumBound` argument was dropped 2026-11-11). -/
 theorem char_sum_bound_implies_dh
-    (hcsb : CharSumBound)
     (hlb : HitCountLowerBound) :
     DynamicalHitting :=
-  walk_equidist_implies_dh (char_sum_bound_implies_we hcsb hlb)
+  walk_equidist_implies_dh (char_sum_bound_implies_we hlb)
 
-/-- **CharSumBound + HitCountLowerBound → MullinConjecture**:
-    the complete analytic reduction chain.
+/-- **HitCountLowerBound → MullinConjecture** (historical name).
 
     ```
-    CharSumBound + HitCountLowerBound
+    HitCountLowerBound
         →[§29]→ WalkEquidistribution
         →[proved]→ DynamicalHitting
         →[proved]→ MullinConjecture
     ```
 
-    The two open Props encapsulate all analytic content:
-    - `CharSumBound`: the hard analysis — non-trivial character sums cancel.
-    - `HitCountLowerBound`: the algebra bridge — Fourier inversion converts
-      character cancellation into a linear lower bound on hitting frequency.
-    All logical implications between these Props and MullinConjecture are
-    formally verified. -/
+    The single hypothesis is `HitCountLowerBound`: every target is hit at linear
+    rate.  The unused `CharSumBound` argument was dropped 2026-11-11; the
+    analytically correct cancellation hypothesis is `ComplexCharSumBound` (§30),
+    and the corresponding chain is `complex_csb_mc`. -/
 theorem char_sum_bound_mc
-    (hcsb : CharSumBound)
     (hlb : HitCountLowerBound) :
     MullinConjecture :=
-  walk_equidist_mc (char_sum_bound_implies_we hcsb hlb)
+  walk_equidist_mc (char_sum_bound_implies_we hlb)
 
 /-! ## §30. Complex Character Sum Bound and Fourier Reduction
 

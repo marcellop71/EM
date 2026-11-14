@@ -312,7 +312,14 @@ theorem captureCount_plus_missing
 variable (p)
 
 /-- FF Missing Finite: for each degree, only finitely many irreducibles
-    fail to appear. -/
+    fail to appear.
+
+    This is a *per-degree* statement and is trivially true: there are only finitely many
+    monic polynomials of each degree (`missingFinite_from_finiteness`,
+    `ffFiniteIrreduciblesPerDegree_proved`).  It is NOT the analogue of the integer
+    `MissingFinite` ("only finitely many primes are missing altogether"), which is an open
+    weakening of MC; the function-field analogue of that would bound the set of missing
+    irreducibles over all degrees at once. -/
 def FFMissingFinite : Prop :=
   ∀ (d_data : FFEMData p) (deg : ℕ), 1 ≤ deg →
     Set.Finite {Q : Polynomial (ZMod p) |

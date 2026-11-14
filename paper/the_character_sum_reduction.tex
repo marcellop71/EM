@@ -636,21 +636,30 @@ exceptional primes below~$Q_0$.  This weakening is crucial because
 averaged results like BV naturally produce bounds that fail for
 finitely many moduli.
 
-\begin{theorem}[\lean{EM/LargeSieve/Basic.lean}{mmcsb\_implies\_mc}]
+\begin{theorem}[\lean{EM/LargeSieve/Basic.lean}{mmcsbAt\_implies\_mc}]
 \label{thm:mmcsb-mc}
-$\mathrm{MultiModularCSB}$ with threshold~$Q_0$, together with $\MC$ for
-the primes below~$Q_0$, implies $\MC$.  (In Lean the second hypothesis is
-stated at the threshold chosen from the first, \code{FiniteMCBelow}.)
+$\mathrm{MultiModularCSB}$ at an explicit threshold~$Q_0$
+(\code{MultiModularCSBAt}~$Q_0$), together with $\MC$ for
+the primes below~$Q_0$ (\code{FiniteMCBelow}~$Q_0$), implies $\MC$.
+Without the finite verification, $\mathrm{MultiModularCSB}$ is
+equivalent to cofinite $\MC$---only finitely many primes are missing
+(\lean{EM/Population/WeakMullin.lean}{mmcsb\_iff\_missingFinite}).
 \end{theorem}
+\noindent The older statement \code{mmcsb\_implies\_mc} takes its
+second hypothesis at the threshold that \code{Exists.choose} extracts
+from the first, a number about which nothing can be proved; it is true
+but cannot be applied to a known threshold, and is kept as a corollary.
+The same holds for \code{bv\_chain\_mc} below and its
+explicit-threshold form \code{bv\_chainAt\_mc}.
 
 The proof composes the per-prime Fourier bridge
 (Theorem~\ref{thm:fourier-step}) with the inductive bootstrap: for
 $q \geq Q_0$, MMCSB gives hit count $\sim N/(q{-}1) > 0$ at~$-1$,
-contradicting permanent avoidance; for the finitely many primes
-$q < Q_0$, MC is an additional hypothesis.  The bootstrap
-(Section~\ref{sec:bootstrap}) does not supply it: it reduces MC($q$) to a
-single hitting event once MC holds for all primes below~$q$, and that
-hitting event below the threshold is exactly what is assumed.
+contradicting permanent avoidance (cofinal hitting captures~$q$ by a
+pigeonhole on the finitely many primes below~$q$, with no hypothesis on
+smaller primes: \code{exists\_seq\_eq\_of\_cofinal\_dvd}); for the
+finitely many primes $q < Q_0$, MC is an additional hypothesis, which
+nothing in the argument supplies.
 
 Three parallel routes to MultiModularCSB are formalized:
 

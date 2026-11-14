@@ -5,20 +5,29 @@ import EM.FunctionField.FFSieve
 /-!
 # Function Field Unconditional Theorems — Master File
 
-This file assembles the four target theorems of the FF unconditional series:
+This file assembles four bundles of unconditional facts about the function-field sequence.
+Their historical names ("Stochastic FF-MC", "Phase Transition", "Almost-all GenMixedMC")
+promise more than the Lean statements say; what each statement IS (review 2026-11-10, P11):
 
-**Theorem A** (Factor Tree Structural): Every monic irreducible appears on some
-branch of the factor tree. Mixed walk injectivity, coprimality cascade, degree growth.
+**Theorem A** (Factor Tree Structural): injectivity of every valid mixed selection,
+coprimality cascade, degree growth, infinitely many distinct irreducibles explored.  These
+are genuine statements about every mixed walk.  (It does NOT say that every monic
+irreducible appears on some branch.)
 
-**Theorem B** (Stochastic FF-MC): With (1-ε) min-degree + ε uniform selection,
-a.s. every monic irreducible appears.
+**Theorem B** (`FFStochasticMC`): *degree growth along mixed walks* — for every target `Q`
+and every valid mixed walk, `deg(acc(n)+1)` eventually reaches `deg Q`.  No probability
+measure, no `ε`, and no capture statement is formalized; "a.s. every monic irreducible
+appears" is NOT a Lean theorem.
 
-**Theorem C** (Phase Transition): Sharp at ε=0; deterministic FF-MC is the sole
-unresolved boundary.
+**Theorem C** (`FFPhaseTransition`): `FFStochasticMC` together with degree growth of the
+standard sequence.  No `ε` occurs in the statement; the "transition at ε = 0" is prose.
 
-**Theorem D** (Sieve Chain — NEW): Almost-all GenMixedMC holds unconditionally.
-The full ANT chain (char cancellation → PNT-in-APs → FCD → SPV → PSCD →
-almost-all GenMixedMC) is unconditional over F_p[t]. Zero open hypotheses.
+**Theorem D** (`FFAlmostAllGenMixedMC` and the "ANT chain"): *counting proxies* —
+`π_p(d) ≥ 1` and `d·π_p(d) ≤ p^d` for the number `π_p(d)` of monic irreducibles of degree
+`d`, plus the necklace identity.  Not a statement about starting points.  The genuine
+density statement ("the proportion of starts from which `Q` is not tree-reachable tends to
+0") is `FFAlmostAllGenMixedDensity` in `EM/FunctionField/DensityMC.lean`, proved there
+conditionally on `FFDirichletDensity` (Kornblum).
 
 ## Proved unconditionally (zero sorry, zero open Props):
 
@@ -31,8 +40,9 @@ almost-all GenMixedMC) is unconditional over F_p[t]. Zero open hypotheses.
 7. Coprimality cascade — no irreducible divides both acc(n) and acc(n)+1
 8. Standard FF-EM degree growth — deg(ffProd(n)+1) → ∞
 9. FFDH alone implies FF-MC — finiteness no longer needed as hypothesis
-10. Almost-all GenMixedMC — UNCONDITIONAL via sieve chain (FFSieve.lean)
-11. Full ANT chain unconditional — char cancel + PNT + FCD + SPV + PSCD
+10. The counting proxy `FFAlmostAllGenMixedMC` (π_p(d) ≥ 1 and d·π_p(d) ≤ p^d; FFSieve.lean)
+11. The counting proxies `FFCharSumCancellation` (necklace identity), `FFPNTInAPs`
+    (π_p(d) ≥ 1), `FFFCD` (∑_{d ≤ D} π_p(d) ≥ D), `FFSieveProductVanishing`, `FFPSCD`
 12. Monic polynomial count — p^n monic polys of degree n (NecklaceFormula.lean)
 13. Irreducible count positive — pi_p(d) >= 1 for all d >= 1 (NecklaceFormula.lean)
 
@@ -42,11 +52,11 @@ almost-all GenMixedMC) is unconditional over F_p[t]. Zero open hypotheses.
 |------|-------|----------|------------------|
 | FactorTree.lean | 455 | 25+ | Definitions, injectivity, coprimality |
 | PopulationEquidist.lean | 370 | 18 | Degree growth, population transfer |
-| StochasticMC.lean | 420 | 15+ | Stochastic MC, phase transition, pigeonhole |
+| StochasticMC.lean | 420 | 15+ | Degree growth along mixed walks, pigeonhole |
 | Finiteness.lean | ~200 | 15+ | Finiteness proved + unconditional wrappers |
 | NecklaceFormula.lean | 151 | 10 | Monic count, irred count, necklace identity |
-| FFCharacterSums.lean | 226 | 14 | Char cancel, PNT-in-APs, FCD (all unconditional) |
-| FFSieve.lean | 342 | 15+ | PSCD chain, almost-all GenMixedMC (unconditional) |
+| FFCharacterSums.lean | 226 | 14 | Necklace identity, irreducible counts (counting proxies) |
+| FFSieve.lean | 342 | 15+ | Necklace upper bounds (counting proxies) |
 | Master.lean | ~310 | 5 | Assembly of target theorems |
 | **Total** | **~2474** | **112+** | |
 -/
@@ -107,36 +117,34 @@ theorem theorem_A_factor_tree :
 
 /-! ## Theorem B: Stochastic MC -/
 
-/-- **Theorem B**: Stochastic FF-MC holds.
+/-- **Theorem B**: degree growth along mixed walks (`FFStochasticMC`, `FFPhaseTransition`).
 
-    With any positive probability of non-greedy factor selection at each step,
-    every monic irreducible polynomial over F_p is eventually captured.
+    What is proved: for every monic irreducible `Q`, every start and every valid mixed
+    selection, some Euclid polynomial `acc(n) + 1` has degree `≥ deg Q`; and the degree of
+    the Euclid polynomials of the standard sequence tends to infinity.
 
-    This is a TRUE-bodied Prop (its mathematical content is documented
-    in StochasticMC.lean). The structural prerequisites are all proved:
-    - Factor pool grows (PROVED)
-    - Selection injectivity (PROVED)
-    - Population diversity (from Weil, PROVED as True-bodied)
-
-    The remaining gap is the population-to-orbit transfer (FF-DSL barrier),
-    which is identical to the integer case. -/
+    What is NOT proved: that a randomly perturbed selection rule captures every monic
+    irreducible.  No probability space is formalized here; the names `FFStochasticMC` and
+    `FFPhaseTransition` are historical.  The capture statement would need, at least, the
+    population-to-orbit transfer that the integer case also lacks. -/
 theorem theorem_B_stochastic_mc :
     FFStochasticMC p ∧ FFPhaseTransition p :=
   ⟨stochastic_mc_unconditional p, ff_phase_transition_unconditional p⟩
 
 /-! ## Theorem C: Phase Transition -/
 
-/-- **Theorem C**: The phase transition is sharp at ε=0.
+/-- **Theorem C**: a bundle of five unconditional facts.
 
-    (1) For ε > 0: stochastic MC captures every monic irreducible
-    (2) For ε = 0: reduces to the open FF-MC conjecture
-    (3) Captured degree grows (NOW UNCONDITIONAL — finiteness proved)
+    (1) `FFStochasticMC`: degree growth along mixed walks (see Theorem B; not a capture
+        statement)
+    (2) `FFPhaseTransition`: (1) plus degree growth of the standard sequence (no `ε` occurs)
+    (3) Captured degree grows (unconditional — finiteness proved)
     (4) Standard FF-EM degree also grows to infinity
     (5) FFDH alone implies FF-MC (finiteness no longer needed as hypothesis) -/
 theorem theorem_C_phase_transition :
-    -- (1) Stochastic MC
+    -- (1) degree growth along mixed walks
     FFStochasticMC p ∧
-    -- (2) Phase transition
+    -- (2) the same, plus the standard sequence
     FFPhaseTransition p ∧
     -- (3) Captured degree grows (unconditional)
     FFCapturedDegreeGrows (p := p) ∧
@@ -151,39 +159,36 @@ theorem theorem_C_phase_transition :
    fun d => ff_standard_degree_grows d,
    ff_dh_implies_ffmc_unconditional⟩
 
-/-! ## Theorem D: Sieve Chain — Almost-All GenMixedMC (Unconditional) -/
+/-! ## Theorem D: counting proxies for the sieve chain -/
 
-/-- **Theorem D**: Almost-all GenMixedMC holds unconditionally over F_p[t].
+/-- **Theorem D**: the counting facts that the sieve argument consumes hold over `𝔽_p[t]`.
 
-    The full analytic number theory chain is unconditional over F_p[t]:
-      FFCharSumCancellation (exact cancellation by character orthogonality)
-        → FFPNTInAPs (irreds equidistributed in residue classes)
-          → FFFCD (forbidden class reciprocal sums diverge)
-            → FFSieveProductVanishing (sieve product → 0)
-              → FFPSCD (confined density → 0)
-                → FFAlmostAllGenMixedMC (density-1 starts reach every target)
+    Every clause is a statement about the number `π_p(d)` of monic irreducibles of degree `d`
+    (COUNTING PROXIES; none is a statement about starting points, residue classes or
+    characters):
 
-    Over Z, the same chain requires `PrimesEquidistributedInAP` (standard ANT,
-    the sole remaining open hypothesis in MixedEnsemble.lean). Over F_p[t], this
-    hypothesis is free, making the entire chain unconditional.
+      `FFCharSumCancellation`  = the necklace identity `∑_{d ∣ n} d·π_p(d) = p^n`
+      `FFPNTInAPs`             = `π_p(d) ≥ 1` for `d ≥ 1`
+      `FFFCD`                  = `∑_{d ≤ D} π_p(d) ≥ D`
+      `FFSieveProductVanishing` = `n·π_p(n) ≤ p^n`
+      `FFPSCD`                 = `π_p(n) ≤ p^n / n`
+      `FFAlmostAllGenMixedMC`  = `π_p(d) ≥ 1` ∧ `n·π_p(n) ≤ p^n`
 
-    This demonstrates that the sieve-based approach to Mullin's Conjecture
-    WORKS unconditionally in the function field setting.
-
-    The gap from "almost all" to "all" (= deterministic FF-MC) is exactly
-    the orbit-specificity barrier (Dead End #127).
+    The genuine statement "from a density-1 set of starts the factor tree reaches `Q`" is
+    `FFAlmostAllGenMixedDensity` in `EM/FunctionField/DensityMC.lean`, proved there
+    (`ff_almost_all_genmixed_density`) conditionally on `FFDirichletDensity`.
 
     A fifth clause `FFGenMixedMC p → FFAlmostAllGenMixedMC p` was dropped on 2026-11-10:
     `FFGenMixedMC` is false (`FunctionFieldAnalog.not_ffGenMixedMC`); see
     `EM/Archive/FunctionField/FFGenMixedMCArchive.lean` (RED #19). -/
 theorem theorem_D_sieve_chain :
-    -- (1) Almost-all GenMixedMC (ZERO open hypotheses)
+    -- (1) π_p(d) ≥ 1 and n·π_p(n) ≤ p^n
     FFAlmostAllGenMixedMC p ∧
-    -- (2) Full ANT chain is unconditional
+    -- (2) necklace identity, π_p(d) ≥ 1, ∑_{d ≤ D} π_p(d) ≥ D
     (FFCharSumCancellation p ∧ FFPNTInAPs p ∧ FFFCD p) ∧
-    -- (3) Full sieve chain is unconditional
+    -- (3) n·π_p(n) ≤ p^n and π_p(n) ≤ p^n / n
     (FFSieveProductVanishing p ∧ FFPSCD p) ∧
-    -- (4) Every implication composes
+    -- (4) (trivially, the conclusion being unconditional)
     (FFFCD p → FFAlmostAllGenMixedMC p) :=
   ⟨ff_almost_all_unconditional p,
    ⟨ff_char_sum_cancellation_proved p, ff_pnt_in_aps_proved p, ff_fcd_proved p⟩,
@@ -202,10 +207,9 @@ theorem theorem_D_sieve_chain :
     - Product injectivity
     - Start not capturable
     - Captured degree growth (NOW UNCONDITIONAL — finiteness proved)
-    - Stochastic MC
-    - Phase transition
+    - `FFStochasticMC`, `FFPhaseTransition`: degree growth along mixed walks (not capture)
     - FFDH alone implies FF-MC
-    - Almost-all GenMixedMC (NEW — unconditional via sieve chain) -/
+    - `FFAlmostAllGenMixedMC`: the counting proxy π_p(d) ≥ 1 ∧ n·π_p(n) ≤ p^n -/
 theorem ff_unconditional_landscape :
     -- Structural properties (ALL mixed walks)
     (∀ start σ, @FFMixedSelectionValid p _ start σ →
@@ -216,7 +220,7 @@ theorem ff_unconditional_landscape :
       Function.Injective σ.sel) ∧
     (∀ start σ, @FFMixedSelectionValid p _ start σ →
       Function.Injective (ffMixedWalkProd p start σ)) ∧
-    -- Stochastic results
+    -- Degree growth along mixed walks
     FFStochasticMC p ∧
     FFPhaseTransition p ∧
     -- Captured degree (unconditional)
@@ -226,7 +230,7 @@ theorem ff_unconditional_landscape :
       Tendsto (fun n => (d.ffProd n + 1).natDegree) atTop atTop) ∧
     -- FFDH alone implies FF-MC
     (FFDynamicalHitting (p := p) → FFMullinConjecture p) ∧
-    -- Sieve chain: almost-all GenMixedMC (unconditional)
+    -- Counting proxy
     FFAlmostAllGenMixedMC p :=
   ⟨fun _ _ hv => ff_mixed_explores_infinitely_many hv,
    fun _ _ hv => ff_factor_pool_degree_grows hv,
@@ -259,17 +263,14 @@ theorem ff_unconditional_landscape :
     - FFDH alone implies FF-MC (finiteness eliminated as hypothesis)
     - Monic polynomial count: p^n monic polys of degree n (NecklaceFormula)
     - Irreducible count positive: pi_p(d) >= 1 for all d >= 1 (NecklaceFormula)
-    - Character sum cancellation (unconditional over F_p[t])
-    - PNT-in-APs (unconditional over F_p[t])
-    - Forbidden class divergence (unconditional over F_p[t])
-    - Sieve product vanishing (unconditional)
-    - PSCD (unconditional)
-    - Almost-all GenMixedMC (ZERO open hypotheses — THE headline result)
+    - Counting proxies (statements about π_p(d) only; see Theorem D): necklace identity
+      (`FFCharSumCancellation`), π_p(d) ≥ 1 (`FFPNTInAPs`), ∑_{d ≤ D} π_p(d) ≥ D (`FFFCD`),
+      n·π_p(n) ≤ p^n (`FFSieveProductVanishing`), π_p(n) ≤ p^n/n (`FFPSCD`), and their
+      conjunction `FFAlmostAllGenMixedMC`.  None of these is a density statement about
+      starting points; that is `FFAlmostAllGenMixedDensity` (DensityMC.lean, conditional).
 
-    Conditional theorems (True-bodied Props with Weil):
-    - Stochastic MC (Weil ⇒ stochastic capture)
-    - Phase transition (sharp at ε=0)
-    - Population diversity (Weil ⇒ factor diversity) -/
+    Degree growth along mixed walks (`FFStochasticMC`, `FFPhaseTransition`): NOT a statement
+    that a perturbed rule captures every irreducible. -/
 theorem ff_unconditional_grand_summary :
     -- Theorem A (structural)
     (∀ start σ, @FFMixedSelectionValid p _ start σ →
@@ -280,7 +281,7 @@ theorem ff_unconditional_grand_summary :
       Function.Injective σ.sel) ∧
     (∀ start σ, @FFMixedSelectionValid p _ start σ →
       Function.Injective (ffMixedWalkProd p start σ)) ∧
-    -- Theorem B (stochastic MC)
+    -- Theorem B (degree growth along mixed walks)
     FFStochasticMC p ∧ FFPhaseTransition p ∧
     -- Theorem C (finiteness proved, captured degree unconditional)
     FFFiniteIrreduciblesPerDegree (p := p) ∧
@@ -290,7 +291,7 @@ theorem ff_unconditional_grand_summary :
       Tendsto (fun n => (d.ffProd n + 1).natDegree) atTop atTop) ∧
     -- FFDH alone implies FF-MC
     (FFDynamicalHitting (p := p) → FFMullinConjecture p) ∧
-    -- Theorem D (sieve chain — almost-all GenMixedMC, ZERO hypotheses)
+    -- Theorem D (counting proxy)
     FFAlmostAllGenMixedMC p :=
   ⟨fun _ _ hv => ff_mixed_explores_infinitely_many hv,
    fun _ _ hv => ff_factor_pool_degree_grows hv,

@@ -13,11 +13,11 @@ exponentially, `genProd m k + 1 ≤ (m+1)^(2^k)`.  Hence:
   `[1, (m+1)^(2^k)]` miss `q`;
 * `card_misses_ge_of_squarefree` — for squarefree `m` also the halves `genProd m j / 2`
   (`1 ≤ j ≤ k`) miss `q`: they are odd `T`-preimages of the even orbit points, so at least
-  `2k + 1` seeds;
+  `2k` seeds;
 * `misses_eq_empty_or` — **gap principle**: for every prime `q` the set of seeds missing `q`
   is either empty, or has at least `k + 1` elements below `3^(2^k)` for every `k`
   (roughly `log₂ log X` below `X`);
-* `mem_seq_of_card_misses_le` — the Euclid–Mullin form: if for some `k` at most `2k` seeds in
+* `mem_seq_of_card_misses_lt` — the Euclid–Mullin form: if for some `k` fewer than `2k` seeds in
   `[1, 3^(2^k)]` miss `q`, then `q` appears in the Euclid–Mullin sequence.
 
 **Scope.**  The seed-average law gives `#{m ≤ X : m misses q} = o(X)` with no rate; the gap

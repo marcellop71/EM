@@ -229,22 +229,39 @@ is the same statement
 The population statement that \emph{is} true is the double limit
 $z\to\infty$ after $X\to\infty$; it follows from PrimeLogSum$^{\ast}$
 by partial summation, but it is not what any reduction consumed.
-Formalizing ANT further does not affect the paper's contribution: the
-reduction CME~$\Rightarrow$~MC is what this work contributes.
+Formalizing ANT further does not affect the paper's contribution: CME
+is an equivalent reformulation of MC (\code{cme\_iff\_mc}), and what
+this work contributes on that axis is the direction
+CME~$\Rightarrow$~MC, which turns a hitting problem into an
+equidistribution problem---not a hypothesis weaker than MC.
 
 \begin{center}
 \begin{tabular}{lr}
 \toprule
 Lines of Lean code & $\EMLineCount$ \\
 Files & \EMFileCount \\
-Theorems/lemmas & ${\sim}2{,}000$ \\
-Definitions & ${\sim}800$ \\
+Theorems/lemmas (top-level, live files) & $4{,}745$ \\
+Definitions (\code{def}/\code{abbrev}/\code{structure}/\code{inductive}/\code{class}) & $1{,}304$ \\
+Declarations walked by the axiom gate & $6{,}099$ \\
 \code{sorry} occurrences & \textbf{0} \\
-Open hypotheses (stated as \code{def}) & ${\sim}50$ \\
-Mathlib version & v4.33.0 \\
+Registered open points & $25$ \\
+Mathlib version & v4.35.0 \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\noindent\emph{How these are measured (2026-11-11).}  Lines and files
+are generated (\code{tools/gen\_codebase\_table.py}).  The theorem and
+definition counts are source-level counts of top-level declaration
+keywords in the live files (archive excluded).  The axiom gate
+(\code{tools/check\_axioms.py}) reports the number of declarations of
+the compiled library it walks, which includes private and
+auto-generated ones.  ``Registered open points'' is the
+\code{open\_points} field of \code{registry/meta.json}: declarations
+marked \code{@[open\_point]}, among them the targets
+\code{MullinConjecture} and \code{HittingHypothesis}.  It is not a
+count of all hypotheses stated as a \code{def}: open hypotheses that
+are not so marked exist in the tree and are not counted here.
 
 \subsection{Summary of Formally Verified Results}
 \label{sec:verified-results}
@@ -278,7 +295,7 @@ stable identifier independent of human naming.
 \endlastfoot
 %%% ---- Principal reductions ----
 \multicolumn{4}{l}{\emph{Principal reductions to MC}} \\
-\quad \textbf{CME $\Rightarrow$ CCSB $\Rightarrow$ MC} (sharpest) & \proved & \code{cme\_implies\_mc}  & 46df8bf1 \\
+\quad \textbf{CME $\Rightarrow$ CCSB $\Rightarrow$ MC} (CME $\Leftrightarrow$ MC: a reformulation) & \proved & \code{cme\_implies\_mc}  & 46df8bf1 \\
 \quad RoughLPFEquidist $\Leftrightarrow$ series identity (head domination, \#160) & \proved & \code{HeadDomination.roughLPFEquidist\_iff}  & 23e296f7 \\
 \quad UCE at $M{=}1$ is RoughLPFEquidist & \proved & \code{uce\_implies\_roughLPFEquidist}  & 461dcb84 \\
 \quad Bag-conditioned multiplier law on $m\equiv 1\ (P)$ & \proved & \code{BagConditionedLaw.tendsto\_bagClass\_div\_ap}  & 46d69110 \\
@@ -298,7 +315,7 @@ stable identifier independent of human naming.
 \quad Profinite packaging: $\mu$-a.e.\ point captures every prime & \proved & \code{ProfiniteHeadline.measure\_some\_prime\_missed\_eq\_zero}  & \textrm{---} \\
 \quad \textbf{DH $\Rightarrow$ MC} (cofinal hitting) & \proved & \code{dynamical\_hitting\_implies\_mullin}  & b024d0c3 \\
 \quad \textbf{CCSB $\Rightarrow$ MC} (char sums) & \proved & \code{complex\_csb\_mc'}  & 8aeac8d0 \\
-\quad MMCSB $\Rightarrow$ MC (multi-modular) & \proved & \code{mmcsb\_implies\_mc}  & 15120b0b \\
+\quad MMCSB $+$ MC below the threshold $\Rightarrow$ MC (\code{Exists.choose} form; usable form \code{mmcsbAt\_implies\_mc}) & \proved & \code{mmcsb\_implies\_mc}  & 15120b0b \\
 \quad VCB $+$ PED $\Rightarrow$ MC & \proved & \code{vcb\_ped\_implies\_mc}  & 11778a38 \\
 \midrule
 %%% ---- Exceptional locus ----
@@ -379,7 +396,7 @@ stable identifier independent of human naming.
 \quad UFDStrong(3) / StochasticTwoPointMC(3) & \proved & \code{variant\_mc\_three\_unconditional}  & c526c5cb \\
 \quad NFCS for $|G|$ with $\geq 2$ prime factors & \proved & \code{nonFaithfulCharSeparation\_of\_two\_prime\_factors}  & d5da1733 \\
 \quad Quotient char lift: $\bar\chi$ faithful on $G/\ker\chi$ & \proved & \code{quotientChar\_faithful}  & 83f1168c \\
-\quad TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC & \proved & \code{tca\_path\_survival\_implies\_random\_mc\_proved}  & 7acad0f2 \\
+\quad TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC (vacuous: PathSurvival means no path ever captures $q$; false at $q=3$) & \proved\ (archived) & \code{tca\_path\_survival\_implies\_random\_mc\_proved}  & --- \\
 \quad MixedDiversityWeak $+$ MixedDiversity $\Rightarrow$ MixedMC & \proved & \code{mixed\_diversity\_weak\_implies\_mixed\_mc}  & 562d15fa \\
 \quad Seeded growth constant: $C(Tm)=2C(m)$ & \proved & \code{SeededGrowth.sgrowth\_T}  & 4b7d36a8 \\
 \quad MixedDiversity $\Leftrightarrow$ $C(m)=0$ for every seed & \proved & \code{SeededGrowth.mixedDiversity\_iff\_sgrowth\_zero}  & 34caf06e \\
@@ -459,15 +476,15 @@ stable identifier independent of human naming.
 \quad FFDH $\Rightarrow$ FF-MC (competitor exhaustion) & \proved & \code{ff\_dh\_implies\_ffmc}  & 533f5de5 \\
 \quad Weil $\Rightarrow$ FF-SE for $p \geq (d{-}1)^2{+}1$ (\code{WeilCharSumBoundFF} is a \code{True} placeholder) & \placeholder & \code{weil\_implies\_ff\_se}  & 35101b73 \\
 \quad $\ZZ/4\ZZ$: generation $\neq$ coverage (Dead End~\#130) & \proved & \code{alternating\_walk\_misses\_two}  & f6901537 \\
-\quad FFLM structurally false (cyclotomic, Dead End~\#129; only the coprimality-cascade conjunct has content) & \placeholder & \code{ff\_cyclotomic\_dead\_end}  & d473d346 \\
+\quad Galois group of every Euclid polynomial over $\FF_p$ is cyclic (Dead End~\#129: no large monodromy) & \proved & \code{ffGaloisGroup\_isCyclic}  & 3dbc3952 \\
 \quad FF mixed selection injective (no irred twice) & \proved & \code{ffMixedSel\_injective}  & c10f7e34 \\
 \quad FF coprimality cascade (mixed walks) & \proved & \code{ffMixedWalkProd\_coprime\_succ}  & 25014898 \\
 \quad FF start not capturable & \proved & \code{start\_not\_capturable}  & c4fb6a2c \\
 \quad FF factor pool degree $\to \infty$ & \proved & \code{ff\_factor\_pool\_degree\_grows}  & 2b98a5ca \\
 \quad FFFiniteIrreduciblesPerDegree (unconditional) & \proved & \code{ffFiniteIrreduciblesPerDegree\_proved}  & 5ba4d350 \\
 \quad FFDH alone $\Rightarrow$ FF-MC (finiteness eliminated) & \proved & \code{ff\_dh\_implies\_ffmc\_unconditional}  & a373a519 \\
-\quad FFStochasticMC ($\varepsilon > 0 \Rightarrow$ capture) & \proved & \code{stochastic\_mc\_unconditional}  & c17bb3c6 \\
-\quad FF phase transition (sharp at $\varepsilon = 0$) & \proved & \code{ff\_phase\_transition\_unconditional}  & 80074f8d \\
+\quad \code{FFStochasticMC}: degree growth along every mixed walk (not a capture statement) & \proved & \code{stochastic\_mc\_unconditional}  & c17bb3c6 \\
+\quad \code{FFPhaseTransition}: degree growth along mixed and greedy walks (no $\varepsilon$ in the statement) & \proved & \code{ff\_phase\_transition\_unconditional}  & 80074f8d \\
 \quad Factor diversity $\Rightarrow$ spectral contraction & \proved & \code{factor\_diversity\_spectral\_contraction}  & b0918ceb \\
 \quad Diverse steps $\Rightarrow$ char product vanishes & \proved & \code{diverse\_steps\_imply\_vanishing}  & 56997f4e \\
 \quad TSD $\Rightarrow$ StochasticMC (integer side) & \proved & \code{stochastic\_mc\_of\_tsd}  & 61c3ba5b \\
@@ -498,7 +515,7 @@ stable identifier independent of human naming.
 \quad MultiModularCSB (threshold form; $\Rightarrow$ MC with FiniteMCBelow) & \openhyp & \code{MultiModularCSB}  & 96879804 \\
 \quad VisitEquidistribution (VE, threshold form) & \openhyp & \code{VisitEquidistribution}  & fa9946ba \\
 \quad SelfCorrectingDrift (SCD $\equiv$ SVE, \#120) & \openhyp & \code{SelfCorrectingDrift}  & be8aad89 \\
-\quad EnsembleConcentration (ensemble window frequencies) & \openhyp & \code{EnsembleConcentration}  & 4448cc95 \\
+\quad EnsembleConcentration (ensemble window frequencies) & \openhyp & \code{EnsembleConcentration}  & 4794410d \\
 \quad EveryPrimeDividesEuclid (V) & \openhyp & \code{WeakHitting.EveryPrimeDividesEuclid}  & 642cd53c \\
 \quad OneWindowGain ($\Rightarrow$ V) & \openhyp & \code{WeakHitting.OneWindowGain}  & ae508ce2 \\
 \quad WeakMullin (WM) & \openhyp & \code{WeakMullin}  & dab3ae2c \\

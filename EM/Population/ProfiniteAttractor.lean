@@ -30,11 +30,11 @@ exp(−Σ 1/r)`, and `Σ_{N<r≤Y} 1/r → ∞` (`not_summable_one_div_on_primes
 This sharpens "ℕ is null in `Ω`" (`measure_range_iota_eq_zero`) into a *structural*
 statement: the integers sit inside the null set of points whose Euclid numbers are
 *divisor-finite*, and the same Borel–Cantelli argument recurs at every step of the orbit.
-An integer orbit is an **infinite sequence of measure-zero coincidences** — one per step —
-so no product-type measure on the coordinates, Haar or otherwise, can charge it.  This is
-the precise content of dead end #90 in the profinite language: the obstruction is not that
-ℕ is small, it is that ℕ lies in a set on which no countably additive coordinate-compatible
-measure exists at all.  The only resource that remains is the *eventual constancy* of an
+An integer orbit is an **infinite sequence of Haar-measure-zero coincidences** — one per
+step.  This is the content of dead end #90 in the profinite language, for the Haar measure;
+the theorem is `μ DivisorFinite = 0` for that measure only.  (Corrected 2026-11-10: the
+earlier claim that no product-type measure can charge the set was false — a product of Dirac
+masses at `m mod r` gives it mass one.)  The only resource that remains is the *eventual constancy* of an
 integer's coordinates (`n mod r = n` for `r > n`), i.e. archimedean size.
 
 ## 3. Descent: the only measure-free way to empty a `T`-invariant set

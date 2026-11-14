@@ -2,40 +2,32 @@ import EM.FunctionField.FFCharacterSums
 import EM.FunctionField.FactorTree
 
 /-!
-# FF Sieve Infrastructure and Almost-All GenMixedMC
+# FF sieve chain: the counting proxies
 
-This file transfers the integer-side PSCD (Population Sieve Confinement Decay) chain
-from `MixedEnsemble.lean` to the function field F_p[t] setting, proving that
-FFFCD (which is unconditional over F_p[t]) implies an almost-all version of
-GenMixedMC.
-
-## Key insight
-
-Over F_p[t], the entire analytic number theory chain
-
-  Character Cancellation -> PNT-in-APs -> Forbidden Class Divergence
-
-is UNCONDITIONAL. Therefore the integer-side chain
+**What this file proves** (review 2026-11-10, P11): elementary facts about the number
+`π_p(d) = ffIrredCount p d` of monic irreducibles of degree `d` over `𝔽_p`, all consequences of
+the necklace identity.  The definitions carry the names of the steps of the integer-side chain
 
   PrimesEquidistInAP -> FCD -> SPV -> PSCD -> almost-all GenMixedMC
 
-becomes unconditional over F_p[t]. The final theorem `ff_almost_all_unconditional`
-has ZERO open hypotheses.
+from `MixedEnsemble.lean`, but they are COUNTING PROXIES, not the function-field analogues of
+those statements: none of them mentions a residue class, a character, a sieve product or a
+starting point.
 
-## Comparison with integer case
+| Name | Statement |
+|------|-----------|
+| `FFCharSumCancellation` | necklace identity `∑_{d ∣ n} d·π_p(d) = p^n` |
+| `FFPNTInAPs` | `π_p(d) ≥ 1` for `d ≥ 1` |
+| `FFFCD` | `∑_{d ≤ D} π_p(d) ≥ D` |
+| `FFSieveProductVanishing` | `n·π_p(n) ≤ p^n` |
+| `FFPSCD` | `π_p(n) ≤ p^n / n` |
+| `FFAlmostAllGenMixedMC` | `π_p(d) ≥ 1` ∧ `n·π_p(n) ≤ p^n` |
 
-| Step | Over Z | Over F_p[t] |
-|------|--------|-------------|
-| Character cancellation | Requires GRH | Exact (necklace identity) |
-| PNT-in-APs | Requires Siegel-Walfisz | Exact (irred count positive) |
-| FCD (reciprocal sum divergence) | Requires WPNT-in-APs | Unconditional (linear supply) |
-| Sieve product vanishing | From FCD + sparse contraction | Unconditional (necklace bound) |
-| PSCD (confined density -> 0) | From FCD + sieve product | Unconditional (irred density bound) |
-| Almost-all GenMixedMC | From PSCD + pigeonhole | Unconditional (PNT + necklace) |
-
-The orbit-specificity barrier (Dead End #127) prevents upgrading "almost-all"
-to "all" (= deterministic FF-MC). This file is about the sieve chain, not the
-orbit barrier.
+The genuine statements — per-subset confined-density decay and "the proportion of starts from
+which `Q` is not tree-reachable tends to 0" — are `ff_density_pscd` and
+`FFAlmostAllGenMixedDensity` in `EM/FunctionField/DensityMC.lean`, proved there conditionally
+on `FFDirichletDensity` (Kornblum).  Nothing in this file shows that "density-1 starts reach
+every target".
 
 ## Main definitions
 
@@ -54,8 +46,8 @@ orbit barrier.
 * `ff_fcd_implies_pscd` -- FFFCD => PSCD (composition)
 * `ff_pscd_implies_almost_all` -- PSCD => almost-all GenMixedMC
 * `ff_fcd_implies_almost_all` -- FFFCD => almost-all GenMixedMC
-* `ff_almost_all_unconditional` -- almost-all GenMixedMC (ZERO hypotheses)
-* `ff_full_chain_unconditional` -- full chain witness (ZERO hypotheses)
+* `ff_almost_all_unconditional` -- the counting proxy `FFAlmostAllGenMixedMC`
+* `ff_full_chain_unconditional` -- all six counting proxies
 * `ff_sieve_landscape` -- landscape summary (8 clauses)
 
 ## References
@@ -85,9 +77,9 @@ variable (p : ℕ) [hp : Fact (Nat.Prime p)]
     Over F_p[t] this follows from the necklace identity:
     sum_{d|n} d * pi(d) = p^n, so the single term n * pi(n) <= p^n.
 
-    This is the FF analog of `sieve_product_vanishing_proved` from
-    MixedEnsemble.lean. Over Z, this step requires FCD (which requires
-    PrimesEquidistInAP). Over F_p[t], it is unconditional. -/
+    **COUNTING PROXY.**  Despite the name, no sieve product occurs in the statement and
+    nothing is shown to vanish; it is the single-term consequence of the necklace identity.
+    It is NOT the FF analogue of `sieve_product_vanishing_proved` from MixedEnsemble.lean. -/
 def FFSieveProductVanishing : Prop :=
   ∀ n : ℕ, 0 < n → n * ffIrredCount p n ≤ p ^ n
 
@@ -185,32 +177,11 @@ theorem ff_fcd_implies_almost_all : FFFCD p → FFAlmostAllGenMixedMC p :=
 
 /-! ## Part 5: Unconditional Final Theorem -/
 
-/-- **The main unconditional theorem**: Almost-all GenMixedMC over F_p[t]
-    holds with ZERO open hypotheses.
+/-- The counting proxy `FFAlmostAllGenMixedMC` (`π_p(d) ≥ 1` and `n·π_p(n) ≤ p^n`) holds.
 
-    This assembles the full chain:
-      FFCharSumCancellation (unconditional)
-        -> FFPNTInAPs (unconditional)
-          -> FFFCD (unconditional)
-            -> FFSieveProductVanishing (unconditional)
-              -> FFPSCD (unconditional)
-                -> FFAlmostAllGenMixedMC (unconditional)
-
-    Each step is unconditional over F_p[t] because the analytic number
-    theory is free: the necklace identity holds by Galois theory,
-    irred count positivity holds by existence of irreducibles,
-    and the sieve bounds follow from the necklace identity.
-
-    Over Z, the same chain requires `PrimesEquidistributedInAP` (the sole
-    remaining open hypothesis in `MixedEnsemble.lean`). Over F_p[t], this
-    hypothesis is free, making the entire chain unconditional.
-
-    This demonstrates that the sieve-based approach to Mullin's Conjecture
-    WORKS unconditionally in the function field setting. The integer version
-    has the same structure but requires PNT-in-APs.
-
-    The gap from "almost all" to "all" (= deterministic FF-MC) is exactly
-    the orbit-specificity barrier (Dead End #127). -/
+    This is NOT the statement that the factor tree reaches every target from a density-1 set
+    of starting points; see the module docstring and `FFAlmostAllGenMixedDensity` in
+    `EM/FunctionField/DensityMC.lean` for that (conditional) statement. -/
 theorem ff_almost_all_unconditional : FFAlmostAllGenMixedMC p :=
   ff_almost_all_gen_mixed_mc_proved p
 
@@ -231,20 +202,15 @@ theorem ff_full_chain_unconditional :
 
 /-! ## Part 6: Comparison with Integer Case -/
 
-/-- The integer-side chain has exactly one open hypothesis
-    (`PrimesEquidistributedInAP`, standard ANT) that blocks the full
-    PSCD chain. Over F_p[t], this hypothesis is free.
-
-    This comparison theorem witnesses that:
-    (1) The FF chain is strictly stronger (unconditional vs conditional).
-    (2) The structure is identical (same sieve + pigeonhole argument).
-    (3) The sole difference is the ANT input (free over F_p[t]). -/
+/-- The six counting proxies and the (trivial) implications among them.  This is a statement
+    about irreducible counts only; it does not compare the integer and function-field sieve
+    chains, whose function-field form is in `DensityMC.lean`. -/
 theorem ff_vs_integer_chain :
-    -- (1) FF chain is unconditional
+    -- (1) counting proxy
     FFAlmostAllGenMixedMC p ∧
-    -- (2) Full intermediate chain is unconditional
+    -- (2) counting proxies
     (FFFCD p ∧ FFPSCD p ∧ FFSieveProductVanishing p) ∧
-    -- (3) The ANT chain (char cancel -> PNT -> FCD) is unconditional
+    -- (3) necklace identity -> π ≥ 1 -> ∑ π ≥ D
     (FFCharSumCancellation p → FFPNTInAPs p → FFFCD p) ∧
     -- (4) Each implication in the sieve chain holds
     ((FFFCD p → FFSieveProductVanishing p) ∧
@@ -286,13 +252,13 @@ theorem ff_mc_hierarchy :
 
 /-! ## Part 8: Landscape -/
 
-/-- Summary of the FF sieve chain and almost-all GenMixedMC. -/
+/-- Summary of the counting proxies of this file (see the module docstring for what each is). -/
 theorem ff_sieve_landscape :
     -- (1) Sieve product vanishing (unconditional)
     FFSieveProductVanishing p ∧
     -- (2) PSCD (unconditional)
     FFPSCD p ∧
-    -- (3) Almost-all GenMixedMC (unconditional, ZERO hypotheses)
+    -- (3) counting proxy π_p(d) ≥ 1 ∧ n·π_p(n) ≤ p^n
     FFAlmostAllGenMixedMC p ∧
     -- (4) FCD -> SPV
     (FFFCD p → FFSieveProductVanishing p) ∧

@@ -19,8 +19,9 @@ step is Abel summation (`abel_identity`): `∑_{a∈A, a≤N} 1/a = ∑_{n≤N} 
 for any set `A ∌ 0`, so a counting-function inequality `S ≥ c π` transfers to the reciprocal
 sums, and `∑_p 1/p = ∞` finishes.  No Chebyshev bound is used.
 
-**Scope.**  Every rung is open.  Not even `PositiveDensity` is known: the only proved lower
-bound on `S(x)` is the doubly-exponential one, `S(x) ≥ log₂ log₃ x` (`GapPrinciple.lean`).
+**Scope.**  Every rung is open.  Not even `PositiveDensity` is known: the only lower
+bound on `S(x)` in sight is the doubly-exponential one, `S(x) ≥ log₂ log₃ x`, which follows from
+`CompositeFloor.prod_add_one_le_three_pow` and is not stated as a theorem.
 The rungs say exactly what "few missing primes" means for the single orbit of `2`.
 -/
 

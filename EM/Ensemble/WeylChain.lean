@@ -22,7 +22,7 @@ JSE → MC chain via the Weyl test function argument.
 * `weyl_hitting_bridge_proved`       -- WeylHittingBridge (PROVED)
 * `jse_implies_nontrivial_cancellation` -- JSE + PCB → nontrivial cancellation (PROVED)
 * `cancel_weyl_implies_mc`           -- walk cancellation → MC for n=2 (PROVED)
-* `jse_transfer_implies_mc`          -- JSE + MultCancelToWalkCancel → MC (PROVED)
+* `jse_transfer_implies_mc`          -- MultCancelToWalkCancel → MC (PROVED; unused JSE argument dropped)
 
 ### Open Hypotheses (in other files)
 * `JointStepEquidist` (EM/Ensemble/PT.lean)
@@ -62,7 +62,14 @@ def GenMullinConjecture (n : Nat) : Prop :=
     argument. With cofinal hitting, we can choose a hit past the "sieve gap"
     (after all smaller primes have appeared), making the argument work.
 
-    **Status**: PROVED (gen_hitting_implies_gen_mc_proved). -/
+    **Status**: PROVED (gen_hitting_implies_gen_mc_proved).
+
+    Note (2026-11-10): the statement is for **squarefree** `n` only (`Squarefree n → 1 ≤ n →
+    …`), which the name and the prose above do not say.  The restriction is not needed
+    mathematically: in the proof squarefreeness is passed to `gen_captures_target_coprime`,
+    which uses it only through `Squarefree.ne_zero` to get `n ≠ 0` — already implied by the
+    separate hypothesis `1 ≤ n`.  So the result holds, by the same proof, for every `n ≥ 1`;
+    the statement has been left as it is (it is in the registry). -/
 def GenHittingImpliesGenMC : Prop :=
   ∀ (n : Nat), Squarefree n → 1 ≤ n →
     (∀ q : Nat, Nat.Prime q → ¬ q ∣ n → ∀ N : Nat, ∃ k : Nat, N ≤ k ∧ genWalkZ n q k = -1) →
@@ -872,28 +879,24 @@ theorem cancel_weyl_implies_mc
           -- genSeq 2 k = q
           exact ⟨k, by omega⟩
 
-/-- **Full JSE to MC chain (honest version with explicit gap).**
+/-- **MultCancelToWalkCancel → MC** (historical name `jse_transfer_implies_mc`).
 
-    This composes all links in the JSE → MC chain:
-    - JSE → multiplier cancellation for a.a. squarefree n (PROVED)
+    Composes:
     - MultCancelToWalkCancel → walk cancellation for all squarefree n (open)
     - cancel_weyl_implies_mc → MC (PROVED)
 
-    The two open hypotheses are:
-    1. JointStepEquidist (JSE) — hard, requires BV/Siegel-Walfisz infrastructure
-    2. MultCancelToWalkCancel — hard, equivalent to CCSB/CME (Dead End #117)
+    The single hypothesis is `MultCancelToWalkCancel` — hard, equivalent to CCSB/CME
+    (Dead End #117).  WeylHittingBridge and PerChiCancellationBridge are both PROVED.
 
-    Note: JSE is included for documentation (it motivates why multiplier
-    cancellation should hold) but is logically redundant here —
-    MultCancelToWalkCancel alone suffices since it gives walk cancellation
-    unconditionally. The density-based multiplier cancellation from JSE
-    cannot be extracted to pointwise bounds for specific n=2, so the
-    conditional form (multiplier→walk transfer) would require an additional
-    pointwise hypothesis. The unconditional form avoids this subtlety.
-
-    WeylHittingBridge and PerChiCancellationBridge are both PROVED. -/
+    Until 2026-11-11 this theorem carried a second, unused argument
+    `_hjse : JointStepEquidist`, "included for documentation".  `JointStepEquidist` is
+    recorded as false (small-prime domination, see the Dead End #157 notes in
+    `EM/Meta/DeadEnds.lean`), so carrying it made a sound one-hypothesis reduction look
+    like a vacuous two-hypothesis one; the argument was dropped (review
+    `docs/analysis/review_2026-11-10.md`, row H12).  The density-based multiplier
+    cancellation that JSE would give could not be extracted to a pointwise bound at
+    `n = 2` in any case. -/
 theorem jse_transfer_implies_mc
-    (_hjse : JointStepEquidist)
     (htransfer : MultCancelToWalkCancel) :
     MullinConjecture :=
   cancel_weyl_implies_mc (fun q hq hndvd χ hχb hχ0 hχs ε hε =>

@@ -189,18 +189,24 @@ third arrow is Theorem~\ref{thm:sd-cancel}.
 \paragraph{The JSE route.}
 An alternative chain uses \emph{JointStepEquidist}~(JSE): the joint
 distribution of $(\seq{n}(j), \seq{n}(k))$
-is asymptotically uniform over non-zero pairs.  The JSE base case
-($j = 0, k = 1$) is proved via the tower rule
-(\lean{EM/Ensemble/BaseCase.lean}{jse\_base\_case}):
-$P(A, B) = P(A \mid B) \cdot P(B)$, decomposing the joint density
-into conditional and marginal equidistribution.
+is asymptotically uniform over non-zero pairs.  JSE is false as
+stated: already the step-$0$ marginal is not uniform, since
+$\seq{n}(0) = 2$ for every odd seed
+(\lean{EM/Meta/HypothesisAudit.lean}{not\_jseMarginalEquidist}).  The
+tower rule $P(A, B) = P(A \mid B) \cdot P(B)$ at $(j,k) = (0,1)$ is
+formalized
+(\lean{EM/Ensemble/BaseCase.lean}{joint\_seq\_density\_eq\_conditional\_mul\_marginal}),
+but the base-case theorem that combined it with a uniform marginal
+(\archived{EM/Archive/Ensemble/BaseCaseArchive.lean}{jse\_base\_case})
+is archived as vacuous.
 
 \begin{theorem}[\lean{EM/Ensemble/WeylChain.lean}{jse\_transfer\_implies\_mc}]
-$\mathrm{JSE} + \mathrm{MultCancelToWalkCancel}
-\;\Longrightarrow\; \MC$.
+$\mathrm{MultCancelToWalkCancel} \;\Longrightarrow\; \MC$.
 \end{theorem}
 
-\noindent The composition:
+\noindent The Lean theorem keeps its historical name; until 2026-11-11
+it carried JSE as a second, unused hypothesis.  The intended
+composition, of which only steps 3--5 enter the proof:
 \begin{enumerate}[nosep]
 \item JSE gives per-chi decorrelation for non-trivial~$\chi$
   (\lean{EM/Ensemble/PT.lean}{joint\_step\_equidist\_implies\_step\_decorrelation}).
@@ -219,12 +225,13 @@ The two remaining open hypotheses are:
 \item \textbf{JointStepEquidist}: requires analytic number theory
   (Siegel--Walfisz or Bombieri--Vinogradov type estimates).
 \item \textbf{MultCancelToWalkCancel}: multiplier character cancellation
-  implies walk character cancellation.  Dead End~\#117 shows this is
-  equivalent to CCSB/CME in difficulty: an explicit counterexample
+  implies walk character cancellation.  Dead End~\#117 shows that the
+  abstract implication is false: an explicit counterexample
   (alternating multipliers $\{2, 3\} \bmod 5$ with $\chi(2) = i$) gives
-  multiplier cancellation yet $|W_K| = \Theta(K)$, and this
-  counterexample is compatible with all EM structural properties
-  (squarefree accumulator, coprime cascade, CRT invariance).
+  multiplier cancellation yet $|W_K| = \Theta(K)$.  The counterexample
+  is one character on an abstract periodic sequence (it repeats its
+  primes); that the transfer for Euclid--Mullin-type walks is as hard
+  as CCSB/CME is our assessment, not a theorem.
 \end{itemize}
 
 \noindent MultCancelToWalkCancel is the Marginal/Joint Barrier
@@ -324,8 +331,9 @@ imply cancellation of $\sum \prod_{j<k} \chi(m_j)$.
 This is Dead End~\#117 (MultCancelToWalkCancel, \S\ref{sec:oracle}):
 an explicit counterexample (alternating multipliers $\{2,3\} \bmod 5$
 with $\chi(2) = i$) achieves multiplier cancellation yet
-$|W_K| = \Theta(K)$, and is compatible with all EM structural
-properties.  The chain therefore breaks as:
+$|W_K| = \Theta(K)$ (an abstract periodic sequence, for one
+character; it is not an Euclid--Mullin-type walk).  The chain therefore
+has no proved link at:
 \[
   \mathrm{SD}
   \;\xrightarrow{\text{proved}}\;
@@ -453,7 +461,10 @@ and the transition matrix is doubly stochastic
 so the drift has zero bias.
 \textbf{SelfCorrectingDrift}~(SCD) asserts $R(N) = o(N^2)$, which
 gives $L(N) = o(N^2)$, hence VE, and therefore MC via the proved
-chain (\lean{EM/Reduction/SelfCorrecting.lean}{scd\_implies\_mc}).
+chain (\lean{EM/Reduction/SelfCorrecting.lean}{scd\_implies\_mc'}).
+Since SCD is quantified over all missing primes, no finite verification
+is needed, and SCD is one more reformulation of MC
+(\lean{EM/CME/Equivalences.lean}{scd\_iff\_mc}).
 
 \medskip
 \noindent\textbf{SCD $\equiv$ SVE (Dead End~\#120).}\enspace
@@ -462,6 +473,10 @@ The Lyapunov telescope $L(N) = 2R(N) + O(N)$ shows that SCD
 for each fixed prime~$q$ above the threshold.  The converse is also
 proved: SVE implies SCD above the SVE threshold
 (\lean{EM/Reduction/SelfCorrecting.lean}{sve\_implies\_scd\_above\_threshold}).
+(As global statements they differ in their quantifiers: SCD, over all
+primes, is equivalent to MC, while SVE, with its threshold, is
+equivalent to cofinite MC,
+\lean{EM/Population/WeakMullin.lean}{sve\_iff\_missingFinite}.)
 Therefore SCD provides no new proof leverage beyond SVE; it is a
 Lyapunov reformulation that clarifies the dynamical mechanism
 (self-correcting feedback) but does not reduce the mathematical

@@ -332,7 +332,7 @@ formalisation of that, and `ω` is not.
 * **Population Erdős–Kac.**  At a fixed stage `n`, on each type cell of the seed population
   `E_n(m)` is a linear function of `m`, so Turán–Kubilius/Erdős–Kac applies: almost all seeds
   have `ω(E_n(m)) ≈ log log X`.  Medium effort, population-only, **no MC content** (it does not
-  even give `(C∞)` for a single orbit).  `IK.ErdosKac` exists as a statement in `EM/IK/Ch1.lean`.
+  even give `(C∞)` for a single orbit).  (`IK.ErdosKac`, formerly a statement in `EM/IK/Ch1.lean`, was mis-stated and archived on 2026-11-11.)
 * **Two cheap bookkeeping lemmas**: `lpf(E_n) ≤ E_n^{1/ω(E_n)}` (the bridge above, making the
   scale mismatch a theorem rather than a remark), and `∑_{n<N} (ω(E_n) − 1) =` the number of
   wasted hits before stage `N` (§2).

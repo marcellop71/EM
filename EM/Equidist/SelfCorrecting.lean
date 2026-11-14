@@ -735,11 +735,12 @@ theorem noLongRuns_implies_noLongRunsQuadratic (L : ℕ) (hnlr : NoLongRuns L) :
 
 This section contains three components:
 
-1. **SieveEquidistribution** (open Prop): The generic sieve equidistribution
-   result from analytic number theory (Alladi 1977 / PNT in APs). States that
-   for integers coprime to a finite sieve set, the smallest prime factor
-   equidistributes among residue classes mod q. This is a known theorem but NOT
-   in Mathlib.
+1. **SieveEquidistribution** (open Prop): an ORBIT-LEVEL statement — the
+   multipliers of the Euclid–Mullin walk itself take each residue class mod q
+   with lower frequency at least `1/φ(q) − ε`.  It is not a known theorem and
+   not a statement of generic analytic number theory (corrected 2026-11-11;
+   the earlier attribution to "Alladi 1977 / PNT in APs" was wrong, see the
+   docstring of the definition).
 
 2. **dirichlet_residues_independent** (proved theorem): For any residue class
    a (mod q) coprime to q, there are infinitely many primes in that class.
@@ -754,19 +755,25 @@ This section contains three components:
 
 section SieveEquidist
 
-/-- **SieveEquidistribution**: For integers m in a residue class (mod q) that
-    are coprime to a finite set F of primes, the smallest prime factor of m
-    equidistributes among residue classes mod q as the range grows.
+/-- **SieveEquidistribution**: for every missing prime `q`, every unit class `a` mod `q` and
+    every `ε > 0`, eventually at least `(1/φ(q) − ε)·N` of the first `N` multipliers
+    `seq(n+1) mod q` of the Euclid–Mullin walk equal `a`.
 
-    More precisely: fix a modulus q, a coprimality sieve set F (a finite set of
-    primes not including q), and a target residue class a : (ZMod q)ˣ. Among
-    integers n ≤ N that are coprime to all primes in F, the fraction of those
-    for which minFac(n) ≡ a (mod q) converges to 1/φ(q) as N → ∞.
+    **This is an orbit-level hypothesis about the Euclid–Mullin sequence, not a known
+    theorem.**  (Docstring corrected 2026-11-11, review 2026-11-10.)  Earlier versions of this
+    docstring described a statement about generic integers coprime to a sieve set and called
+    it "a known theorem (Alladi 1977; follows from PNT in arithmetic progressions)".  Both
+    parts were wrong:
 
-    **This is a known theorem** (Alladi 1977; follows from the prime number
-    theorem in arithmetic progressions via partial summation) but is **NOT in
-    Mathlib**. It is the key analytic input needed to prove that the Euclid-Mullin
-    walk has positive escape density, closing the chain:
+    * the statement below quantifies over the multipliers `emMultUnit q hq hne n` of the one
+      orbit, i.e. over least prime factors of the specific integers `prod(n) + 1`; no theorem
+      about generic integers applies to them (the orbit-specificity barrier, Dead End #90);
+    * the generic statement itself — least prime factors of integers equidistribute mod `q` —
+      is false (`not_genericLPFEquidist`, `EM/Equidist/SieveTransfer.lean`, Dead End #160:
+      half of all integers have least prime factor `2`), and Alladi's theorem is the
+      Möbius-weighted identity `∑_{n≥2, P⁻(n)≡a (q)} μ(n)/n = −1/φ(q)`, a different statement.
+
+    What does follow, by the Weyl criterion, is the chain
 
         SieveEquidistribution
           → NoLongRuns(L)            [for L = φ(q)+1, combinatorial]
@@ -774,10 +781,8 @@ section SieveEquidist
           → ComplexCharSumBound      [PEDImpliesComplexCSB, open]
           → MullinConjecture         [proved in §30]
 
-    The statement here is phrased for the Euclid-Mullin setting: the "integers"
-    in question are values of `prod(n) + 1`, and the sieve set F grows with n
-    (it equals the set of primes already in the sequence). The equidistribution
-    of minFac is exactly what drives the multiplier walk. -/
+    so the hypothesis is at least as strong as multiplier equidistribution along the
+    orbit. -/
 def SieveEquidistribution : Prop :=
   ∀ (q : Nat) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
   ∀ (a : (ZMod q)ˣ),
@@ -824,6 +829,24 @@ end SieveEquidist
 
 section MultiModular
 
+/-- **MultiModularCSB at an explicit threshold** (added 2026-11-10): the body of
+    `MultiModularCSB` with the threshold `Q₀` as a parameter.  For every prime `q ≥ Q₀` that
+    never appears in the sequence, every non-trivial character sum along the walk mod `q` is
+    `o(N)`.  This is the form in which the threshold can be named, so that
+    `FiniteMCBelow Q₀` is a dischargeable side condition (`mmcsbAt_implies_mc`). -/
+def MultiModularCSBAt (Q₀ : ℕ) : Prop :=
+  ∀ (q : Nat) [Fact (Nat.Prime q)], q ≥ Q₀ →
+  ∀ (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
+  ∀ (χ : (ZMod q)ˣ →* ℂˣ) (_hχ : χ ≠ 1),
+  ∀ (ε : ℝ) (_hε : 0 < ε),
+  ∃ N₀ : ℕ, ∀ N ≥ N₀,
+    ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ ε * N
+
+/-- Raising the threshold weakens `MultiModularCSBAt`. -/
+theorem MultiModularCSBAt.mono {Q₀ Q₁ : ℕ} (h : MultiModularCSBAt Q₀) (hle : Q₀ ≤ Q₁) :
+    MultiModularCSBAt Q₁ :=
+  fun q _ hge => h q (le_trans hle hge)
+
 /-- **MultiModularCSB**: `ComplexCharSumBound` holds for all sufficiently large
     primes q. More precisely, there exists a threshold Q₀ such that for all primes
     q ≥ Q₀ not already appearing in the EM sequence, every non-trivial character
@@ -840,7 +863,16 @@ section MultiModular
     equidistributed for all large moduli simultaneously. The sieve approach would
     use `SieveEquidistribution` (above) plus character sum technology.
 
-    **Open Prop** — not yet proved. -/
+    **Open Prop** — not yet proved.
+
+    Note (2026-11-10): this is a *weakening* of `ComplexCharSumBound` (the bound is asked only
+    for `q ≥ Q₀`), not a strengthening, and it is a reformulation of *cofinite* MC: it is
+    equivalent to `MissingFinite` (`mmcsb_iff_missingFinite`, `EM/Population/WeakMullin.lean`).
+    The threshold is existentially quantified, so theorems that take a hypothesis about
+    `(h : MultiModularCSB).choose` cannot be applied to a known threshold; use
+    `MultiModularCSBAt Q₀` and the `mmcsbAt_*` theorems of `EM/LargeSieve/Basic.lean`.
+    `MultiModularCSB ↔ ∃ Q₀, MultiModularCSBAt Q₀` holds by `Iff.rfl`
+    (`multiModularCSB_iff_exists_at`). -/
 def MultiModularCSB : Prop :=
   ∃ Q₀ : ℕ, ∀ (q : Nat) [Fact (Nat.Prime q)], q ≥ Q₀ →
   ∀ (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
@@ -849,7 +881,8 @@ def MultiModularCSB : Prop :=
   ∃ N₀ : ℕ, ∀ N ≥ N₀,
     ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤ ε * N
 
-/-- **MultiModularCSB is strictly weaker than ComplexCharSumBound**: MMCSB gives
+/-- **MultiModularCSB is implied by ComplexCharSumBound** (no strictness is proved, and
+    none can be without settling MC: CCSB ⟺ MC and MMCSB ⟺ `MissingFinite`): MMCSB gives
     CCSB only for q ≥ Q₀, not for all q. The full chain to MC requires BOTH
     MultiModularCSB (for large q) and FiniteMCBelow Q₀ (for small q).
 
@@ -865,14 +898,18 @@ def MultiModularCSB : Prop :=
 def MultiModularCSBImpliesMC : Prop :=
   MultiModularCSB → MullinConjecture
 
+/-- `MultiModularCSB` is `MultiModularCSBAt Q₀` for some `Q₀` (definitionally). -/
+theorem multiModularCSB_iff_exists_at : MultiModularCSB ↔ ∃ Q₀ : ℕ, MultiModularCSBAt Q₀ :=
+  Iff.rfl
+
 end MultiModular
 
 /-! ### §36 Summary
 
 The four components of §36 are:
 
-1. **SieveEquidistribution** (open Prop): The generic sieve equidistribution
-   result for minFac (Alladi 1977 / PNT in APs). NOT in Mathlib.
+1. **SieveEquidistribution** (open Prop): multiplier equidistribution along the
+   Euclid–Mullin orbit.  An orbit-level hypothesis, not a known theorem.
 
 2. **dirichlet_residues_independent** (PROVED): Dirichlet's theorem via Mathlib.
    Documents that self-avoidance is invisible to characters.

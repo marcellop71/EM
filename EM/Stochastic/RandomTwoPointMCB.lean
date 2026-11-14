@@ -1,14 +1,14 @@
 import EM.Stochastic.RandomTwoPointMC
 
 /-!
-# Random Two-Point MC: Fourier Counting and TCA+PathSurvival Proof
+# Random Two-Point MC: Fourier Counting
 
 ## Overview
 
 This file contains Parts 7-9 of the Random Two-Point MC framework:
 * Part 7: Fourier counting infrastructure for self-consistent paths
-* Part 8: PathSurvival hypothesis and conditional theorem
-* Part 9: TCA + PathSurvival → RandomTwoPointMC (PROVED)
+* Part 8: (archived) the `PathSurvival` hypothesis, refuted at `q = 3`
+* Part 9: Fourier counting estimates for surviving paths
 
 Split from `RandomTwoPointMC.lean` for compilation performance.
 
@@ -16,7 +16,9 @@ Split from `RandomTwoPointMC.lean` for compilation performance.
 
 * `char_count_formula_units` -- Fourier counting formula for multisets over (ZMod q)ˣ
 * `survival_plus_death` -- survivalCount + deathCount = 2^N
-* `tca_path_survival_implies_random_mc_proved` -- TCA + PathSurvival → RandomTwoPointMC
+
+`PathSurvival` and `tca_path_survival_implies_random_mc_proved` were archived on 2026-11-11
+(RED #22, `HypothesisAudit.not_pathSurvival_three`).
 -/
 
 noncomputable section
@@ -37,7 +39,7 @@ count grows faster than the nontrivial character error terms.
 2. Death/survival counts and their partition property
 3. Fourier counting formula: `(q-1) * pathCount(a) = ∑_χ conj(χ(a)) * U(χ, N)`
 4. Uniform bound extraction for finitely many tendsto-zero sequences
-5. Conditional RandomTwoPointMC from TCA + PathSurvival (PROVED)
+5. Lower bound on `pathCount` in terms of `survivalCount` and `deathCount`
 
 ### Key insight
 
@@ -50,9 +52,9 @@ The Fourier argument shows: IF the survival count (unit endpoints) is positive,
 the distribution over unit classes is approximately uniform for large N,
 giving positive pathCount for each unit class.
 
-The `PathSurvival` hypothesis guarantees that the ratio survivalCount/deathCount
-grows without bound, which is the precise condition for the Fourier argument
-to yield positive pathCount at each unit class. -/
+What the argument needs is that `deathCount` be small against `survivalCount`.  The
+hypothesis `PathSurvival` that used to supply this (ratio → ∞) can only hold when no path
+ever dies; it was archived on 2026-11-11 (see Part 8). -/
 
 section FourierCounting
 
@@ -189,59 +191,35 @@ theorem survival_plus_death (N : ℕ) :
 
 end FourierCounting
 
-/-! ## Part 8: PathSurvival Hypothesis and Conditional Theorem
+/-! ## Part 8: PathSurvival (archived 2026-11-11)
 
-TreeContractionAtHalf gives vanishing pathCharSum for nontrivial chi.
-RandomTwoPointMC requires each unit class to have positive pathCount.
-The gap is that "death" paths (q | endpoint) contribute nothing to unit classes
-but do contribute to pathCharSum.
+`PathSurvival q` asked that the ratio `survivalCount / deathCount` grow without bound.  But a
+path that has died stays dead (once `q` divides the accumulator it divides every later one),
+and each dead path of length `N` has two dead extensions of length `N + 1`: the death count at
+least doubles per level while the total is `2^N`.  So after the first death the ratio is bounded,
+and `PathSurvival q` says exactly "no two-point path ever captures `q`" — the opposite of what
+the two-point model is for.  At `q = 3` every path dies at step 1 (`2 + 1 = 3`), and
+`HypothesisAudit.not_pathSurvival_three` refutes it (review
+`docs/analysis/review_2026-11-10.md`, row H10; the general collapse to
+`∀ N, deathCount q N = 0` is argued above but not machine-checked).
 
-PathSurvival: the ratio survivalCount/deathCount grows without bound.
-This ensures the Fourier counting argument has sufficient signal-to-noise
-ratio to show all unit classes are populated.
+The definition now lives in `EM/Meta/HypothesisAudit.lean` next to that refutation.
 
-For q >= 5 where 2 is not -1 mod q: PathSurvival is expected to hold
-because the walk avoids death at step 0.
-For q = 3: PathSurvival is FALSE (immediate death), but TCA(3) is also FALSE,
-so TreeContractionImpliesRandomMC(3) is vacuously true. -/
+-- TCAPathSurvivalImpliesRandomMC archived to EM/Archive/Stochastic/PathSurvivalArchive.lean (RED #22)
+-- tca_path_survival_implies_random_mc_proved archived to EM/Archive/Stochastic/PathSurvivalArchive.lean (RED #22)
+-/
 
-section ConditionalRandomMCProof
+/-! ## Part 9: Fourier counting estimates for surviving paths
 
-variable (q : ℕ) [hq : Fact (Nat.Prime q)] [NeZero q]
+The estimates below are unconditional and stay live.  They were assembled into
+`tca_path_survival_implies_random_mc_proved` (TCA + PathSurvival ⇒ RandomTwoPointMC), which is
+archived with `PathSurvival` (RED #22).
 
-/-- **PathSurvival**: the survival-to-death ratio grows without bound.
-    Formally: for any C > 0, eventually survivalCount(N) > C * deathCount(N).
-
-    Open Hypothesis: structural property of the binary walk tree. -/
-def PathSurvival (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
-  ∀ (C : ℝ), 0 < C → ∃ N₀, ∀ N, N₀ ≤ N →
-    (C : ℝ) * ↑(deathCount q N) < ↑(survivalCount q N)
-
-/-- **TCA + PathSurvival → RandomTwoPointMC.**
-
-    PROVED in Part 9. -/
-def TCAPathSurvivalImpliesRandomMC (q : ℕ) [Fact (Nat.Prime q)] : Prop :=
-  TreeContractionAtHalf q → PathSurvival q → RandomTwoPointMC q
-
-end ConditionalRandomMCProof
-
-/-! ## Part 9: TCA + PathSurvival → RandomTwoPointMC
-
-**Proof strategy** (verified mathematically, formalization in progress):
-
-The proof proceeds via Fourier counting on (ZMod q)ˣ:
-1. Define `unitEndpointCharSumInd`: character sum χ(unit(endpoint)) over surviving paths,
-   using `dite` indicator for clean handling of surviving vs death paths.
-2. Connect to `pathCharSum` via ChiAtMultiplicativity: the error from death paths is bounded.
-3. Apply Fourier counting to show all unit classes have positive count.
-4. PathSurvival provides the signal-to-noise ratio needed for positivity.
-
-Key estimates:
-- TCA gives ‖pathCharSum‖ < ε = 1/(2(q-1)) for nontrivial χ, N ≥ N₀
-- PathSurvival gives (q-1)·D < S for N ≥ N₁
-- Fourier formula: (q-1)·pathCount(a) = S + error, |error| ≤ (q-2)(2^N·ε + D)
-- Combining: (q-1)·pathCount(a) ≥ S - (q-2)(S/(2(q-1)) + D) > 0 for q ≥ 5
-- For q=3: TCA(3) is false, so vacuously true -/
+- `path_sum_decomp`: the unscaled path sum splits into surviving and death terms
+- `death_error_norm_le`: the death term has norm at most `deathCount`
+- `uecsi_norm_le`: `‖U(χ,N)‖ ≤ 2^N ‖pathCharSum‖ + deathCount`
+- `fourier_counting_identity`: `(q-1)·pathCount(a) = ∑_χ conj(χ(a))·U(χ,N)`
+- `fourier_lower_bound`: `(q-1)·pathCount(a) ≥ survivalCount − (q−2)·B` -/
 
 section TCAPathSurvivalProof
 
@@ -573,108 +551,5 @@ private theorem fourier_lower_bound (N : ℕ) (a : (ZMod q)ˣ) (B : ℝ) (_hB : 
       _ ≥ ↑(survivalCount q N : ℕ) - (↑(Fintype.card (ZMod q)ˣ) - 1) * B := by
           linarith [hnt_bound]
   exact hre_ge
-
-/-- **TCA + PathSurvival → RandomTwoPointMC: PROVED.** -/
-theorem tca_path_survival_implies_random_mc_proved :
-    TCAPathSurvivalImpliesRandomMC q := by
-  intro htca hps hq3 a
-  -- Step 1: Extract uniform bound on pathCharSum from TCA
-  have hε_pos : (0 : ℝ) < 1 / (2 * ↑q) := by positivity
-  have htends : ∀ chi : (ZMod q)ˣ →* ℂˣ, chi ≠ 1 →
-      Filter.Tendsto (fun N => ‖pathCharSum q chi N 2‖) Filter.atTop (nhds 0) :=
-    fun chi hne => pathCharSum_vanishing_of_tree_contraction htca chi hne
-  obtain ⟨N₀, hN₀⟩ := uniform_bound_of_tendsto_local
-    ((Finset.univ : Finset ((ZMod q)ˣ →* ℂˣ)).erase 1)
-    (fun chi N => ‖pathCharSum q chi N 2‖)
-    (fun chi hmem => htends chi (Finset.ne_of_mem_erase hmem))
-    (1 / (2 * ↑q)) hε_pos
-  -- Step 2: Extract N₁ from PathSurvival
-  obtain ⟨N₁, hN₁⟩ := hps (2 * (↑q : ℝ) ^ 2) (by positivity)
-  -- Step 3: Take N = max(N₀, N₁)
-  set N := max N₀ N₁
-  -- Step 4: Bound nontrivial characters
-  have hε_bound : ∀ chi : (ZMod q)ˣ →* ℂˣ, chi ≠ 1 →
-      ‖pathCharSum q chi N 2‖ < 1 / (2 * ↑q) :=
-    fun chi hne => hN₀ chi (Finset.mem_erase.mpr ⟨hne, Finset.mem_univ _⟩) N (le_max_left _ _)
-  set B := (2 : ℝ) ^ N / (2 * ↑q) + ↑(deathCount q N)
-  have hB_nonneg : 0 ≤ B := by positivity
-  have hB_bound : ∀ chi : (ZMod q)ˣ →* ℂˣ, chi ≠ 1 →
-      ‖unitEndpointCharSumInd chi N‖ ≤ B := by
-    intro chi hne
-    calc ‖unitEndpointCharSumInd chi N‖
-        ≤ (2 : ℝ) ^ N * ‖pathCharSum q chi N 2‖ + ↑(deathCount q N) :=
-          uecsi_norm_le chi N hq3
-      _ ≤ (2 : ℝ) ^ N * (1 / (2 * ↑q)) + ↑(deathCount q N) := by
-          gcongr; exact (hε_bound chi hne).le
-      _ = B := by ring
-  -- Step 5: Apply fourier_lower_bound
-  have hfl := fourier_lower_bound N a B hB_nonneg hB_bound
-  -- Step 6: Show S - (q-2)*B > 0
-  have hSD := survival_plus_death (q := q) N
-  have hPS := hN₁ N (le_max_right _ _)
-  set Sv := survivalCount q N
-  set D := deathCount q N
-  have hqR : (0 : ℝ) < ↑q := by positivity
-  have h2qR : (0 : ℝ) < 2 * ↑q := by positivity
-  have hcard : Fintype.card (ZMod q)ˣ = q - 1 := by
-    rw [ZMod.card_units_eq_totient, Nat.totient_prime hq.out]
-  have hkey : (↑Sv : ℝ) - (↑(Fintype.card (ZMod q)ˣ) - 1) * B > 0 := by
-    rw [hcard]
-    have h2N_eq : (2 : ℝ) ^ N = ↑Sv + ↑D := by
-      have := hSD
-      exact_mod_cast this.symm
-    have hq1 : (↑(q - 1) : ℝ) = ↑q - 1 := by
-      push_cast [Nat.cast_sub (by omega : 1 ≤ q)]; ring
-    rw [hq1]
-    -- B = 2^N / (2*q) + D, and 2^N = Sv + D
-    have hB_eq : B = (↑Sv + ↑D) / (2 * ↑q) + ↑D := by
-      simp only [B, D, h2N_eq]
-    rw [hB_eq]
-    show (↑Sv : ℝ) - (↑q - 1 - 1) * ((↑Sv + ↑D) / (2 * ↑q) + ↑D) > 0
-    rw [show (↑q : ℝ) - 1 - 1 = ↑q - 2 from by ring]
-    by_cases hD : D = 0
-    · -- D = 0: S = 2^N, goal simplifies
-      have hS_pos : (0 : ℝ) < ↑Sv := by
-        have h := hSD; rw [show D = 0 from hD, add_zero] at h
-        have : 0 < Sv := h ▸ pow_pos (by norm_num : 0 < 2) N
-        exact_mod_cast this
-      simp only [show (D : ℝ) = 0 from by simp [show D = 0 from hD]]
-      rw [add_zero, add_zero]
-      have : (↑Sv : ℝ) - (↑q - 2) * (↑Sv / (2 * ↑q)) =
-        ↑Sv * ((↑q + 2) / (2 * ↑q)) := by field_simp; ring
-      rw [this]; positivity
-    · -- D > 0: use PathSurvival
-      have hD_pos : 0 < D := Nat.pos_of_ne_zero hD
-      have hDR : (0 : ℝ) < ↑D := by exact_mod_cast hD_pos
-      have hPS_R : 2 * (↑q : ℝ) ^ 2 * ↑D < ↑Sv := by exact_mod_cast hPS
-      have hq_ge3 : (3 : ℝ) ≤ ↑q := by exact_mod_cast hq3
-      -- S - (q-2) * ((S+D)/(2q) + D) = (S*(q+2) - D*((q-2)*(2q+1))) / (2q)
-      have hcalc : (↑Sv : ℝ) - (↑q - 2) * ((↑Sv + ↑D) / (2 * ↑q) + ↑D) =
-        (↑Sv * (↑q + 2) - ↑D * ((↑q - 2) * (2 * ↑q + 1))) / (2 * ↑q) := by
-          field_simp; ring
-      rw [hcalc, gt_iff_lt, div_pos_iff_of_pos_right h2qR]
-      -- Need: S*(q+2) > D*((q-2)*(2q+1))
-      -- From PathSurvival: S > 2q²*D
-      -- (q-2)*(2q+1) = 2q²-3q-2 < 2q² for q ≥ 3
-      -- So D*((q-2)*(2q+1)) < 2q²*D < S*(something)
-      -- More precisely: S*(q+2) > 2q²D*(q+2). Need 2q²(q+2) > (q-2)(2q+1).
-      -- Actually: S*(q+2) - D*((q-2)*(2q+1)) > 0
-      -- Use S > 2q²D:
-      -- S*(q+2) > 2q²D*(q+2) = D*(2q³+4q²)
-      -- D*((q-2)*(2q+1)) = D*(2q²-3q-2)
-      -- Diff: D*(2q³+4q² - 2q²+3q+2) = D*(2q³+2q²+3q+2) > 0
-      nlinarith
-  -- Step 7: Conclude pathCount > 0
-  rw [hcard] at hfl
-  have hfl' := hfl
-  by_contra h_zero
-  push Not at h_zero
-  -- h_zero : ¬∃ N σ, ... i.e. ∀ N σ, endpoint ≠ a
-  -- This means pathCount q N a = 0 for our specific N
-  have hpc0 : pathCount q N a = 0 := by
-    simp only [pathCount, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-    intro σ _ heq
-    exact h_zero N σ (by rw [epsWalkProdFrom_two_eq]; exact heq)
-  rw [hcard] at hkey; rw [hpc0] at hfl; simp at hfl; linarith
 
 end TCAPathSurvivalProof

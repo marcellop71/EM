@@ -4,9 +4,12 @@ import Mathlib.Data.Nat.GCD.Basic
 /-!
 # Gaussian EM Walk Structure
 
-This file defines the walk of the Gaussian EM sequence through residue rings Z[i]/(pi)
-and proves structural theorems about the residue field structure for different
-classes of rational primes in Z[i].
+This file records elementary arithmetic facts (about the integers `p ± 1`, `p² − 1`) that
+describe the unit groups of the residue fields of Z[i], and defines the hitting condition
+of the Gaussian EM sequence.  It does NOT construct the residue rings Z[i]/(pi) or a walk
+in them: the former stubs `GaussWalkSplit`, `GaussWalkInert`, `SplitResidueFieldOrder`,
+`InertResidueFieldOrder`, `NormOneSubgroupOrder` were trivially true existentials and were
+archived on 2026-11-11 (review H25, RED #32).
 
 ## Main results
 
@@ -86,38 +89,12 @@ theorem prime_gt_two_odd (p : ℕ) (hp : Nat.Prime p) (h2 : 2 < p) : ¬ 2 ∣ p 
   intro h
   rcases hp.eq_one_or_self_of_dvd 2 h with h1 | h1 <;> omega
 
-/-! ## Section 2: Residue Field Structure -/
+/-! ## Section 2–3: Residue field and norm-one subgroup (stubs archived) -/
 
-/-- For a split prime p = 1 mod 4, Z[i]/(pi) has p elements (isomorphic to F_p). -/
-def SplitResidueFieldOrder (p : ℕ) (_hp : Nat.Prime p) (_h1 : p % 4 = 1) : Prop :=
-  ∃ (n : ℕ), n = p
-
-/-- For an inert prime p = 3 mod 4, Z[i]/(p) has p^2 elements (isomorphic to F_{p^2}). -/
-def InertResidueFieldOrder (p : ℕ) (_hp : Nat.Prime p) (_h3 : p % 4 = 3) : Prop :=
-  ∃ (n : ℕ), n = p ^ 2
-
-/-- The split residue field order holds trivially. -/
-theorem split_residue_field_order (p : ℕ) (hp : Nat.Prime p) (h1 : p % 4 = 1) :
-    SplitResidueFieldOrder p hp h1 :=
-  ⟨p, rfl⟩
-
-/-- The inert residue field order holds trivially. -/
-theorem inert_residue_field_order (p : ℕ) (hp : Nat.Prime p) (h3 : p % 4 = 3) :
-    InertResidueFieldOrder p hp h3 :=
-  ⟨p ^ 2, rfl⟩
-
-/-! ## Section 3: Norm-1 Subgroup -/
-
-/-- For inert prime p, the unit group F_{p^2}* is cyclic of order p^2 - 1.
-    The norm map N : F_{p^2}* -> F_p* (given by x -> x^{p+1}) has kernel
-    of order p + 1. -/
-def NormOneSubgroupOrder (p : ℕ) (_hp : Nat.Prime p) (_h3 : p % 4 = 3) : Prop :=
-  ∃ (H : ℕ), H = p + 1
-
-/-- The norm-1 subgroup order holds trivially. -/
-theorem norm_one_subgroup_order (p : ℕ) (hp : Nat.Prime p) (h3 : p % 4 = 3) :
-    NormOneSubgroupOrder p hp h3 :=
-  ⟨p + 1, rfl⟩
+-- SplitResidueFieldOrder, InertResidueFieldOrder, NormOneSubgroupOrder and their "proofs"
+-- split_residue_field_order, inert_residue_field_order, norm_one_subgroup_order archived to
+-- EM/Archive/GaussEM/GaussWalkStructureArchive.lean (RED #32): each was `∃ n, n = <term>`,
+-- trivially true, and said nothing about a residue field or a subgroup.
 
 /-- The unit group order for F_{p^2} is p^2 - 1 = (p-1)(p+1). -/
 theorem unit_group_order_factored (p : ℕ) (_hp : Nat.Prime p) (h2 : 2 < p) :
@@ -225,26 +202,11 @@ theorem no_direct_product_decomposition (p : ℕ) (hp : Nat.Prime p) (h2 : 2 < p
   rw [unit_group_gcd_structure p hp h2]
   omega
 
-/-! ## Section 7: Walk Structure (Axiomatic) -/
+/-! ## Section 7: Hitting condition -/
 
-/-- The Gaussian walk in F_p (for split primes): gaussProd(n) mod pi.
-    Stated as an open hypothesis since the quotient ring construction is complex.
-    Parameters _hp and _h1 are for type-level documentation. -/
-def GaussWalkSplit (_d : GaussEMData) (p : ℕ) (_hp : Nat.Prime p)
-    (_h1 : p % 4 = 1) : Prop :=
-  ∃ (walk : ℕ → ZMod p) (mult : ℕ → ZMod p),
-    walk 0 = (1 : ZMod p) + (1 : ZMod p) ∧  -- image of 1+i in F_p
-    (∀ n, walk (n + 1) = walk n * mult n) ∧  -- walk recurrence
-    (∀ n, mult n ≠ 0)                         -- multipliers are units
-
-/-- The Gaussian walk in F_{p^2} (for inert primes): gaussProd(n) mod p.
-    For inert p, the residue field has p^2 elements but we don't construct it.
-    Instead we state the key hitting condition.
-    Parameters _hp and _h3 are for type-level documentation. -/
-def GaussWalkInert (d : GaussEMData) (p : ℕ) (_hp : Nat.Prime p)
-    (_h3 : p % 4 = 3) : Prop :=
-  ∃ (hitCondition : ℕ → Prop),
-    (∀ n, hitCondition n ↔ (p : ℤ) ∣ Zsqrtd.norm (d.gaussProd n + 1))
+-- GaussWalkSplit, GaussWalkInert archived to EM/Archive/GaussEM/GaussWalkStructureArchive.lean
+-- (RED #32): existential stubs, trivially true (constant walk `2`, multiplier `1`; any
+-- predicate defined by the right-hand side).
 
 /-- The hitting condition for the Gaussian walk: pi divides gaussProd(n) + 1.
     This is the Gaussian analog of walkZ(q,n) = -1 in the integer EM sequence. -/
@@ -298,13 +260,8 @@ def GaussOrbitSpecificityBarrier : Prop := True
 /-- The barrier is a structural observation, hence trivially stated. PLACEHOLDER WITNESS: the conclusion is a `True`-bodied stub, so this theorem proves nothing. -/
 theorem gauss_orbit_specificity_barrier : GaussOrbitSpecificityBarrier := trivial
 
-/-! ## Section 10: Structural Comparison -/
-
-/-- For split primes: the residue field has order p, same as integer EM.
-    The walk structure is essentially identical to integer EM mod p. -/
-theorem split_walk_matches_integer (p : ℕ) (hp : Nat.Prime p) (h1 : p % 4 = 1) :
-    SplitResidueFieldOrder p hp h1 :=
-  split_residue_field_order p hp h1
+-- Section 10 (split_walk_matches_integer) archived to
+-- EM/Archive/GaussEM/GaussWalkStructureArchive.lean (RED #32).
 
 /-! ## Section 11: Landscape -/
 

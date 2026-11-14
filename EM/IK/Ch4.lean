@@ -34,6 +34,10 @@ Only the root `EM.lean` imports it.
 - §4.6: Functional equations of Dirichlet L-functions
 - §4.A: Appendix — Fourier integrals and series (Mellin transform, Fourier pairs)
 
+`CosineMellin` and `SineMellin` (IK (4.108), (4.109)) were removed on 2026-11-11 (review H24,
+RED #31): as statements about Mathlib's `mellinTransform` (a Bochner integral) they are false,
+the integrals being only conditionally convergent.
+
 ## References
 - [IK] H. Iwaniec, E. Kowalski, *Analytic Number Theory*, 2004
 -/
@@ -564,19 +568,9 @@ def GammaMellin : Prop :=
   ∀ (s : ℂ), 0 < s.re →
     mellinTransform (fun y => Real.exp (-y)) s = Complex.Gamma s
 
-/-- Cosine Mellin transform — IK (4.108):
-    `∫₀^∞ cos(y) y^{s-1} dy = Γ(s) cos(πs/2)` for `0 < Re(s) < 1`. -/
-def CosineMellin : Prop :=
-  ∀ (s : ℂ), 0 < s.re → s.re < 1 →
-    mellinTransform (fun y => Real.cos y) s =
-      Complex.Gamma s * Complex.cos (π * s / 2)
-
-/-- Sine Mellin transform — IK (4.109):
-    `∫₀^∞ sin(y) y^{s-1} dy = Γ(s) sin(πs/2)` for `-1 < Re(s) < 1`. -/
-def SineMellin : Prop :=
-  ∀ (s : ℂ), -1 < s.re → s.re < 1 →
-    mellinTransform (fun y => Real.sin y) s =
-      Complex.Gamma s * Complex.sin (π * s / 2)
+-- CosineMellin, SineMellin archived to EM/Archive/IK/Ch4Archive.lean (RED #31): false for the
+-- Bochner integral `mellinTransform` (the integrands are not integrable at infinity, so the
+-- left-hand side is `0` by convention).
 
 /-- Beta integral — IK (4.110):
     `∫₀^∞ (1+y)⁻¹ y^{s-1} dy = π/sin(πs)` for `0 < Re(s) < 1`. -/

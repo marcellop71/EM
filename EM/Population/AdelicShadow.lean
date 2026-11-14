@@ -135,7 +135,10 @@ theorem eventually_unit (q m : ℕ) (hq : q.Prime) (hm : 1 ≤ m) :
 
 /-- **The failure of MC at `q`, adelically.**  For `q ∤ m`: `q` is missed iff `q` is never
 selected iff `E_n ∈ ℤ_q^×` for all large `n` *and* `q ∤ P_n` for all `n` — i.e. the orbit is
-eventually a `q`-adic unit on both `P_n` and `E_n`. -/
+eventually a `q`-adic unit on both `P_n` and `E_n`.  Note (2026-11-10): the condition on
+`E_n` is `eventually_unit`, which holds for every prime and every seed, captured or not; it
+carries no information, and the content is "`q` never divides `P_n`"
+(`prime_dvd_genProd_iff`). -/
 theorem misses_iff_eventually_unit_both {q m : ℕ} (hq : q.Prime) (hm : 1 ≤ m) (hqm : ¬ q ∣ m) :
     GrowingRange.Misses q m ↔
       (∀ n, ¬ q ∣ genProd m n) ∧ ∃ n₀, ∀ n, n₀ ≤ n → ¬ q ∣ genProd m n + 1 := by

@@ -12,10 +12,12 @@ not eventually a tower of primes.  Nothing in that argument used the seed.  This
 it for every seed `m ≥ 2` — `genProd m n = Tⁿ(m)` — and adds the two facts that only make
 sense once the seed varies:
 
-* **the semiconjugacy** `sgrowth (T m) = 2 · sgrowth m` (`sgrowth_T`), so `C : X → [0, ∞)` is
-  a factor map from `(X, T)` onto doubling.  Doubling has no invariant probability measure
-  except `δ₀`; hence `(X, T)` has none, and "a generic orbit" is meaningless.  This is the
-  ergodic content of the four-way blocker as a theorem;
+* **the semiconjugacy** `sgrowth (T m) = 2 · sgrowth m` (`sgrowth_T`), so `C : X → [0, ∞)`
+  semiconjugates `(X, T)` to doubling.  (Corrected 2026-11-10: an earlier version concluded
+  from this that `(X, T)` has no invariant probability and called it a theorem.  The
+  semiconjugacy only shows that an invariant measure would live on `{C = 0}`; the reason there
+  is none is simply `m < T m`, and no such statement is formalised.  Nor is `C` known to be
+  onto, or even non-constant: `C ≡ 0` on all seeds is the open `MixedDiversity`.)
 * **the universal statement**: the registered open point `MixedDiversity` — every seed
   `acc ≥ 2` has infinitely many composite Euclid numbers — is exactly
   `∀ m ≥ 2, sgrowth m = 0`, i.e. `{m : C(m) > 0} = ∅` (`mixedDiversity_iff_sgrowth_zero`).

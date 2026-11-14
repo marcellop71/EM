@@ -152,9 +152,12 @@ This is map-making, not progress on MC.
 
 A file `Population/UltrafilterHull.lean` proving, for every seed `m ≥ 1`:
 
-* `omegaLimit_subset_singular`: every limit point of `genProd m` in `Ω` lies in
+* `omegaLimit_subset_singular` (not formalized under this name; no such file or declaration
+  exists as of 2026-11-11): every limit point of `genProd m` in `Ω` lies in
   `−1 + Ω^×` (from `hits_finite`);
-* `genMC_iff_omegaLimit_eq_zero`: GenMC′(m) ⟺ the ω-limit set is `{0}`;
+* `genMC_iff_omegaLimit_eq_zero` (proposed name; the formalized equivalent is
+  `ProfiniteAttractor.genMC_iff_tendsto_zero`, `EM/Population/ProfiniteAttractor.lean`:
+  `GenMullinConjecture m` ⟺ `ι(genProd m n) → 0` in `Ω`): GenMC′(m) ⟺ the ω-limit set is `{0}`;
 * the hull dynamics is multiplication by a unit, and the stationary joint law exists and
   can avoid the death curve with uniform position marginal (a finite witness in
   `(ℤ/5)^×`, matching #90/#117).
@@ -553,7 +556,9 @@ groups over finite fields are cyclic, so FFLM is structurally false) is unaffect
 
 ### 9.5 Ranked follow-ups
 
-1. Lean: `ff_no_four_consecutive_irreducible` (char 2, the `ring_nf` identity) and
+1. Lean: `ff_no_four_consecutive_irreducible` (proposed name; formalized as
+   `FunctionFieldAnalog.CompositeFloors.not_four_consecutive_irreducible`,
+   `EM/FunctionField/CompositeFloors.lean`) (char 2, the `ring_nf` identity) and
    `ffGrowthConstant_eq_zero_of_two` for every `FFEMData 2`; paper: FF section and the
    variants landscape (first ring with (C∞) proved).
 2. Lean, small: trace exclusion on autonomous runs; the two frozen classes; the `σ`-forced
@@ -634,7 +639,10 @@ exceptional set with explicit constants; open over `ℤ` and over exceptional `p
 
 ### 11.3 Formalisation order
 
-1. `ff_floor_one_mod_three` (one line) + `ffGrowthConstant = 0` there.
+1. `ff_floor_one_mod_three` (proposed name; formalized as
+   `FunctionFieldAnalog.CompositeFloors.euclid_succ_reducible_of_one_mod_three` and
+   `infinitelyManyReducible_of_one_mod_three`) (one line) + `ffGrowthConstant = 0` there
+   (`ffGrowthConstant_eq_zero_of_one_mod_three`).
 2. §9.1 (`ring_nf` in `Polynomial (ZMod 2)`).
 3. Level-2 norm criterion (13) for `p ≡ 2 (3)`; general level via a root in `𝔽_{p^{2^{k−1}}}`.
 4. Over `ℤ`: define PG, `ρ⁺`, Cev; implications to (C∞), non-implications to MC; primorial

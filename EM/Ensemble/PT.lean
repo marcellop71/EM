@@ -792,7 +792,7 @@ have been moved to `EM/Ensemble/WeylChain.lean`. Key exports there:
 * `per_chi_cancellation_bridge_proved` — PerChiCancellationBridge (PROVED)
 * `weyl_hitting_bridge_proved` — WeylHittingBridge (PROVED)
 * `cancel_weyl_implies_mc` — walk cancellation → MC for n=2 (PROVED)
-* `jse_transfer_implies_mc` — JSE + MultCancelToWalkCancel → MC (PROVED)
+* `jse_transfer_implies_mc` — MultCancelToWalkCancel → MC (PROVED; unused JSE argument dropped 2026-11-11)
 -/
 
 /-! ## Section 5: The Ensemble PT Master Theorem -/
@@ -909,7 +909,7 @@ JSE → MC (Section 4b):
   all previous multipliers. Dead Ends #58 and #117 show this fails for abstract
   and even EM-structured walks.
 
-  Composition: jse_transfer_implies_mc (JSE + MultCancelToWalkCancel => MC).
+  Composition: jse_transfer_implies_mc (MultCancelToWalkCancel => MC; JSE is not used).
   Note: JSE is logically redundant (MultCancelToWalkCancel alone suffices)
   but included to document the intended chain.
 ```
@@ -952,7 +952,7 @@ JSE → MC (Section 4b):
 * `weyl_hitting_bridge_proved` -- WeylHittingBridge (PROVED, test function contradiction)
 * `jse_implies_nontrivial_cancellation` -- JSE + PCB => nontrivial cancellation (PROVED)
 * `cancel_weyl_implies_mc` -- walk cancellation => MC for n=2 (PROVED)
-* `jse_transfer_implies_mc` -- JSE + MultCancelToWalkCancel => MC (PROVED, composition)
+* `jse_transfer_implies_mc` -- MultCancelToWalkCancel => MC (PROVED, composition; JSE not used)
 
 ### What Would Close the Ensemble Gap
 
@@ -968,7 +968,7 @@ PROVED (`weyl_hitting_bridge_proved`). PerChiCancellationBridge is PROVED
 `MultCancelToWalkCancel` — transferring from multiplier energy (genSeqCharEnergy)
 to walk energy (genWalkCharEnergy). This is equivalent to CCSB/CME and is the
 core open problem of the project (see Dead Ends #58, #117).
-Composition: `jse_transfer_implies_mc` (JSE + MultCancelToWalkCancel => MC).
+Composition: `jse_transfer_implies_mc` (MultCancelToWalkCancel => MC; JSE is not used).
 
 **Route C (DSL)** — RETIRED (Dead End #160): the DSL (`PE → CME`) is vacuous because
 `PopulationEquidist` is false (head domination, `EM/Population/HeadDomination.lean`);

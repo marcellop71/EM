@@ -12,7 +12,7 @@ Mullin Conjecture (FF-MC). The strategy mirrors the integer case:
 
 but the function field setting has a crucial structural advantage: population
 equidistribution (PE) is UNCONDITIONAL from the Weil bound (proved by Weil 1948).
-Over Z, PE requires WeightedPNTinAP (= Wiener-Ikehara), which is standard ANT
+Over Z, PE requires WeightedPNTinAP (a Mertens-type estimate in progressions), which is standard ANT
 but requires substantial infrastructure.
 
 ## Main Content
@@ -24,16 +24,21 @@ but requires substantial infrastructure.
 - `ConditionalCharEquidist`: character equidist conditioned on walk position
 - `FFDSLAnalog`: PE + conditional equidist => orbit equidist
 - `FFMCForLargeP`: FF-MC for primes above a threshold
-- `FFMultCCSBImpliesFFDH`: bridge from MultCCSB to DH (open Prop)
 
-### Theorems (conditional reductions)
+### Theorems (placeholder witnesses only)
 - `weil_implies_population_mult_ccsb`: Weil => PopulationMultCCSB
-- `mult_ccsb_implies_ffmc`: FFMultiplierCCSB => FFMullinConjecture (via DH)
 - `selection_bias_chain`: Population + SelectionBias => FFMultiplierCCSB
 - `conditional_equidist_implies_selection_neutral`: ConditionalCharEquidist => SBN
-- `ff_dsl_analog_implies_ffmc`: FFDSLAnalog => FFMullinConjecture
-- `ff_large_p_chain`: Weil + SBN => FF-MC (via composed chain)
-- `ff_mc_mult_ccsb_landscape`: master landscape conjunction
+
+All five hypotheses above are `True`-bodied placeholders, so these three theorems prove
+nothing.  The "bridges" `FFMultCCSBImpliesFFDH` and `FFDSLImpliesFFDH`
+(placeholder → `FFDynamicalHitting`) and the chains built on them
+(`mult_ccsb_implies_ffmc`, `weil_conditional_implies_ffmc`, `ff_dsl_analog_implies_ffmc`,
+`ff_large_p_chain`, `mult_ccsb_full_chain`, `mult_ccsb_walk_coverage_connection`,
+`ff_mc_mult_ccsb_landscape`) were archived on 2026-11-11 (review H17, RED #25): each bridge
+is equivalent to `FFMullinConjecture p` itself, and false at `p = 5`
+(`FunctionFieldAnalog.ffMultCCSBImpliesFFDH_iff_ffmc`, `not_ffMultCCSBImpliesFFDH_five` in
+`EM/Meta/HypothesisAudit.lean`).  `DegreeBoundedHitting` was moved there too (review H18).
 
 ### Comparison with Integer DSL
 
@@ -258,41 +263,10 @@ def FFDSLAnalog : Prop :=
 def FFMCForLargeP (p₀ : ℕ) : Prop :=
   ∀ (q : ℕ) [Fact (Nat.Prime q)], q ≥ p₀ → FFMullinConjecture q
 
-/-! ## Section 7: Bridge Hypotheses -/
+/-! ## Section 7: Bridge Hypotheses (archived) -/
 
-/-- The bridge: FFMultiplierCCSB implies FFDynamicalHitting.
-
-    Mathematical content: if multiplier character sums cancel, then the
-    walk character sums cancel (since the walk is a product of multipliers,
-    walk char sums are running products of multiplier char values). Character
-    sum cancellation implies equidistribution by the Weyl criterion, and
-    equidistribution of the walk in (F_p[t]/(Q))* implies cofinal hitting
-    of every element, including -1.
-
-    This is the function field analog of the CCSB => DH chain from
-    EM/Equidist/SelfCorrecting.lean + EM/Equidist/Bootstrap.lean.
-
-    The chain: MultiplierCCSB => WalkCharCancel => WalkEquidist => DH.
-
-    Each step transfers verbatim from the integer case:
-    - MultiplierCCSB => WalkCharCancel: product of small char sums is small
-      (telescoping + triangle inequality, same algebra)
-    - WalkCharCancel => WalkEquidist: Weyl criterion (group theory)
-    - WalkEquidist => DH: equidist in cyclic group visits every element
-      cofinally (pigeonhole)
-
-    Stated as an open Prop since formalizing the walk-character-sum chain
-    over F_p[t] requires instantiating the CyclicWalkCoverage framework
-    with (F_p[t]/(Q))* and connecting it to the FFEMData structure. -/
-def FFMultCCSBImpliesFFDH : Prop :=
-  FFMultiplierCCSB p → FFDynamicalHitting (p := p)
-
-/-- The bridge: FFDSLAnalog implies FFDynamicalHitting.
-
-    FF-DSL gives orbit equidistribution, which implies cofinal hitting
-    of every residue class (in particular -1 = death value). -/
-def FFDSLImpliesFFDH : Prop :=
-  FFDSLAnalog p → FFDynamicalHitting (p := p)
+-- FFMultCCSBImpliesFFDH, FFDSLImpliesFFDH moved to EM/Meta/HypothesisAudit.lean (RED #25):
+-- placeholder → FFDynamicalHitting, i.e. FFMullinConjecture p; false at p = 5.
 
 /-! ## Section 8: Reduction Theorems -/
 
@@ -354,23 +328,9 @@ theorem conditional_equidist_implies_selection_neutral :
   intro _hce _d Q hQm hQi hQd hQseq
   trivial
 
-/-! ## Section 9: MultCCSB => FF-MC via DH bridge -/
+/-! ## Section 9: MultCCSB => FF-MC via DH bridge (archived) -/
 
-/-- MultiplierCCSB implies FF-MC, composed via the DH bridge.
-
-    The chain: FFMultiplierCCSB => FFDynamicalHitting => FFMullinConjecture.
-
-    The first arrow is `FFMultCCSBImpliesFFDH` (open Prop).
-    The second arrow is `ff_dh_implies_ffmc` from FFBootstrap.lean (PROVED,
-    conditional on FFFiniteIrreduciblesPerDegree).
-
-    This theorem is conditional on both bridges + finiteness. -/
-theorem mult_ccsb_implies_ffmc
-    (hbridge : FFMultCCSBImpliesFFDH p)
-    (hfin : FFFiniteIrreduciblesPerDegree (p := p)) :
-    FFMultiplierCCSB p → FFMullinConjecture p := by
-  intro hccsb
-  exact ff_dh_implies_ffmc (hbridge hccsb) hfin
+-- mult_ccsb_implies_ffmc archived to EM/Archive/FunctionField/FFBridgesArchive.lean (RED #25)
 
 /-! ## Section 10: Composed Chains -/
 
@@ -387,100 +347,16 @@ theorem weil_conditional_implies_mult_ccsb :
     (weil_implies_population_mult_ccsb p hweil)
     (conditional_equidist_implies_selection_neutral p hce)
 
-/-- The full chain from Weil + ConditionalCharEquidist to FF-MC,
-    conditional on both the MultCCSB => DH bridge and finiteness. -/
-theorem weil_conditional_implies_ffmc
-    (hbridge : FFMultCCSBImpliesFFDH p)
-    (hfin : FFFiniteIrreduciblesPerDegree (p := p)) :
-    WeilBound p → ConditionalCharEquidist p → FFMullinConjecture p := by
-  intro hweil hce
-  exact mult_ccsb_implies_ffmc p hbridge hfin
-    (weil_conditional_implies_mult_ccsb p hweil hce)
+-- weil_conditional_implies_ffmc, ff_dsl_analog_implies_ffmc, ff_large_p_chain archived to
+-- EM/Archive/FunctionField/FFBridgesArchive.lean (RED #25)
 
-/-- FFDSLAnalog implies FF-MC, conditional on both intermediate bridges
-    and finiteness of irreducibles per degree. -/
-theorem ff_dsl_analog_implies_ffmc
-    (hbridgeDH : FFDSLImpliesFFDH p)
-    (hfin : FFFiniteIrreduciblesPerDegree (p := p)) :
-    FFDSLAnalog p → FFMullinConjecture p := by
-  intro hdsl
-  exact ff_dh_implies_ffmc (hbridgeDH hdsl) hfin
+/-! ## Section 11: Degree-Based Hitting (moved) -/
 
-/-- For large p, the Weil + SBN chain gives FF-MC (conditional on bridges). -/
-theorem ff_large_p_chain
-    (hbridge : FFMultCCSBImpliesFFDH p)
-    (hfin : FFFiniteIrreduciblesPerDegree (p := p)) :
-    WeilBound p → SelectionBiasNeutral p → FFMullinConjecture p := by
-  intro hweil hsbn
-  exact mult_ccsb_implies_ffmc p hbridge hfin
-    (selection_bias_chain p (weil_implies_population_mult_ccsb p hweil) hsbn)
-
-/-! ## Section 11: Degree-Based Hitting -/
-
-/-- Degree-based cofinal hitting: for every degree bound D, there exists
-    n such that ffProd(n) + 1 has an irreducible factor of degree <= D.
-
-    This is WEAKER than FFDynamicalHitting (which asks for a SPECIFIC Q
-    to divide ffProd(n) + 1). It asks only that the minimum degree of
-    irreducible factors of ffProd(n) + 1 does not tend to infinity.
-
-    Over F_p[t], this is related to the shortest Frobenius orbit on the
-    roots of ffProd(n) + 1. Cohen's theorem (1970) says: for a RANDOM
-    monic polynomial of degree d over F_p, the probability of having a
-    linear factor (degree 1) tends to 1 - 1/e as d -> infinity.
-
-    For the SPECIFIC polynomial ffProd(n) + 1, this would need the
-    Galois group to be close to S_d -- but Dead End #129 shows the
-    Galois group is abelian (cyclotomic). In the abelian case, the
-    shortest orbit structure is determined by the multiplicative order
-    of Frobenius in the cyclic Galois group, which IS controlled by
-    the degree structure of ffSeq terms. -/
-def DegreeBoundedHitting : Prop :=
-  ∀ (d : FFEMData p) (D : ℕ), 1 ≤ D →
-    ∃ n, ∃ f : Polynomial (ZMod p),
-      f.Monic ∧ Irreducible f ∧ f ∣ (d.ffProd n + 1) ∧ f.natDegree ≤ D
-
-/-- Degree-bounded hitting follows from FFDynamicalHitting.
-    If every monic irreducible has cofinal hits, then in particular
-    degree-1 irreducibles do, giving factors of bounded degree.
-
-    Since the ff_dh_implies_ffmc bootstrap implies every irreducible
-    appears, which means every irreducible divides some ffProd(n)+1,
-    degree-bounded hitting is a consequence.
-
-    Direct proof: ffSeq(1) divides ffProd(0)+1, so taking n=0 and
-    f=ffSeq(1) gives a factor of some degree. For arbitrary D,
-    we can use n=0 when deg(ffSeq(1)) <= D, or find a later n
-    where an irreducible of degree <= D divides ffProd(n)+1. -/
-private theorem xAddOne_eq_xSubNegOne :
-    (X : Polynomial (ZMod p)) + C 1 = X - C (-1) := by
-  simp [sub_eq_add_neg, map_neg]
-
-theorem ff_dh_implies_degree_bounded :
-    FFDynamicalHitting (p := p) → DegreeBoundedHitting p := by
-  intro _hDH d D hD
-  -- Witness: n = 0, f = ffSeq(1). We show deg(ffSeq(1)) = 1 <= D.
-  use 0, d.ffSeq 1
-  refine ⟨(d.ffSeq_succ 0).1, (d.ffSeq_succ 0).2.1, (d.ffSeq_succ 0).2.2, ?_⟩
-  -- X + C 1 = X - C(-1) is irreducible of degree 1
-  have hirred : Irreducible ((X : Polynomial (ZMod p)) + C 1) := by
-    rw [xAddOne_eq_xSubNegOne p]; exact irreducible_X_sub_C (-1)
-  have hmonic : ((X : Polynomial (ZMod p)) + C 1).Monic := monic_X_add_C 1
-  have hdeg : ((X : Polynomial (ZMod p)) + C 1).natDegree = 1 := by
-    rw [xAddOne_eq_xSubNegOne p]; exact natDegree_X_sub_C (-1 : ZMod p)
-  -- X + C 1 divides ffProd(0) + 1 = X + 1
-  have hC1 : (C (1 : ZMod p)) = (1 : Polynomial (ZMod p)) := map_one C
-  have hdvd : (X : Polynomial (ZMod p)) + C 1 ∣ d.ffProd 0 + 1 := by
-    rw [d.ffProd_zero, hC1]
-  -- By minimality, deg(ffSeq(1)) <= deg(X + C 1) = 1
-  have h1 : (d.ffSeq 1).natDegree ≤ 1 := by
-    calc (d.ffSeq 1).natDegree
-        ≤ ((X : Polynomial (ZMod p)) + C 1).natDegree :=
-          d.ffSeq_minimal 0 _ hmonic hirred hdvd
-      _ = 1 := hdeg
-  -- deg(ffSeq(1)) >= 1 (irreducible)
-  have h2 := Irreducible.natDegree_pos (d.ffSeq_succ 0).2.1
-  omega
+-- DegreeBoundedHitting moved to EM/Meta/HypothesisAudit.lean (review H18): as stated it is
+-- trivially true (`n = 0`, `f = X + 1`), and the intended cofinal form is false for every
+-- sequence, because the selected degree tends to infinity.
+-- ff_dh_implies_degree_bounded archived to EM/Archive/FunctionField/FFBridgesArchive.lean
+-- (its proof never used the hypothesis; it is `degreeBoundedHitting_trivial` in the audit file).
 
 /-! ## Section 12: The Captures Lemma for FF-EM -/
 
@@ -495,24 +371,7 @@ theorem ff_dh_implies_degree_bounded :
     The full chain is already proved in FFBootstrap.lean as `ff_dh_implies_ffmc`.
     This section documents the connection to the multiplier CCSB framework. -/
 
-/-- If FFMultiplierCCSB holds, then every monic irreducible eventually appears
-    in the FF-EM sequence (assuming the two bridges are available).
-
-    This composes:
-    1. FFMultiplierCCSB => FFDynamicalHitting (via FFMultCCSBImpliesFFDH)
-    2. FFDynamicalHitting => FFMullinConjecture (via ff_dh_implies_ffmc)
-
-    The mathematical content: multiplier character cancellation gives walk
-    equidistribution in (F_p[t]/(Q))*, which gives cofinal hitting of -1,
-    which gives cofinal divisibility Q | ffProd(n)+1, which (with the
-    competitor exhaustion argument from FFBootstrap) gives Q appearing. -/
-theorem mult_ccsb_full_chain
-    (hbridge : FFMultCCSBImpliesFFDH p)
-    (hfin : FFFiniteIrreduciblesPerDegree (p := p))
-    (hccsb : FFMultiplierCCSB p)
-    (d : FFEMData p) (Q : Polynomial (ZMod p)) (hQm : Q.Monic) (hQi : Irreducible Q) :
-    ∃ n, d.ffSeq n = Q :=
-  mult_ccsb_implies_ffmc p hbridge hfin hccsb d Q hQm hQi
+-- mult_ccsb_full_chain archived to EM/Archive/FunctionField/FFBridgesArchive.lean (RED #25)
 
 /-! ## Section 13: The SelectionBias Question -- Detailed Analysis
 
@@ -622,9 +481,11 @@ For the FF-EM setting:
 - WalkCharCancel is the walk-level version of FFMultiplierCCSB
 - WalkCovers gives DH (every element, including -1, is visited)
 
-The FFMultCCSBImpliesFFDH open Prop encapsulates this connection:
-it requires instantiating the CyclicWalkCoverage framework with the
-specific group and walk arising from FF-EM data.
+No Lean statement in this file encodes this connection: `FFMultiplierCCSB` is a
+`True`-bodied placeholder, so an implication from it to `FFDynamicalHitting` is just
+`FFDynamicalHitting` (the archived `FFMultCCSBImpliesFFDH`, RED #25).  A real version
+requires instantiating the CyclicWalkCoverage framework with the specific group and walk
+arising from FF-EM data.
 
 The step-to-walk gap documented in CyclicWalkCoverage.lean (step character
 cancellation != walk character cancellation) is relevant here:
@@ -635,91 +496,29 @@ Weyl-to-walk bridge, which is the function field analog of the chain
 CCSB => walk equidist proved in EM/Equidist/SelfCorrecting.lean for the integer case.
 -/
 
-/-- Connection between FFMultiplierCCSB and the abstract walk coverage
-    framework from CyclicWalkCoverage.lean.
-
-    FFMultiplierCCSB (step cancellation) + multiplier-to-walk transfer
-    => WalkCharCancel (walk cancellation) => WalkCovers => DH.
-
-    The multiplier-to-walk transfer is the content of FFMultCCSBImpliesFFDH.
-    When this bridge is available, the full chain to FF-MC follows. -/
-theorem mult_ccsb_walk_coverage_connection
-    (hbridge : FFMultCCSBImpliesFFDH p)
-    (hfin : FFFiniteIrreduciblesPerDegree (p := p)) :
-    -- MultCCSB provides step-level cancellation
-    -- Bridge converts to walk-level cancellation
-    -- CyclicWalkCoverage gives element coverage
-    -- FFBootstrap gives FF-MC
-    FFMultiplierCCSB p → FFMullinConjecture p :=
-  mult_ccsb_implies_ffmc p hbridge hfin
-
-/-! ## Section 16: Master Landscape -/
-
-/-- Master landscape for the function field Mullin conjecture via multiplier
-    character sum cancellation.
-
-    Four routes to FF-MC, all conditional on open Props:
-
-    Route 1: FFMultiplierCCSB => FFDH => FF-MC
-      (conditional on FFMultCCSBImpliesFFDH + FFFiniteIrreduciblesPerDegree)
-
-    Route 2: Weil + SelectionBiasNeutral => FFMultiplierCCSB => FFDH => FF-MC
-      (conditional on FFMultCCSBImpliesFFDH + FFFiniteIrreduciblesPerDegree)
-
-    Route 3: Weil + ConditionalCharEquidist => SBN => MultCCSB => FFDH => FF-MC
-      (conditional on FFMultCCSBImpliesFFDH + FFFiniteIrreduciblesPerDegree)
-
-    Route 4: FFDSLAnalog => FFDH => FF-MC
-      (conditional on FFDSLImpliesFFDH + FFFiniteIrreduciblesPerDegree)
-
-    All routes share the common final step: ff_dh_implies_ffmc from FFBootstrap.lean
-    (PROVED, conditional on FFFiniteIrreduciblesPerDegree).
-
-    The open content is:
-    - Route 1: FFMultiplierCCSB (orbit-level character cancellation)
-    - Route 2: SelectionBiasNeutral (greedy rule preserves cancellation)
-    - Route 3: ConditionalCharEquidist (algebraic geometry, weakest new content)
-    - Route 4: FFDSLAnalog (full FF-DSL hypothesis)
-    - Common: FFMultCCSBImpliesFFDH (step-to-walk transfer, expected provable)
-    - Common: FFFiniteIrreduciblesPerDegree (standard, expected provable) -/
-theorem ff_mc_mult_ccsb_landscape
-    (hbridge : FFMultCCSBImpliesFFDH p)
-    (hfin : FFFiniteIrreduciblesPerDegree (p := p)) :
-    -- Route 1: MultCCSB => FF-MC
-    (FFMultiplierCCSB p → FFMullinConjecture p) ∧
-    -- Route 2: Weil + SBN => FF-MC
-    (WeilBound p → SelectionBiasNeutral p → FFMullinConjecture p) ∧
-    -- Route 3: Weil + ConditionalCharEquidist => FF-MC
-    (WeilBound p → ConditionalCharEquidist p → FFMullinConjecture p) ∧
-    -- Route 4: FFDSLAnalog + bridge => FF-MC
-    (FFDSLImpliesFFDH p → FFDSLAnalog p → FFMullinConjecture p) :=
-  ⟨mult_ccsb_implies_ffmc p hbridge hfin,
-   ff_large_p_chain p hbridge hfin,
-   weil_conditional_implies_ffmc p hbridge hfin,
-   fun hDH hdsl => ff_dh_implies_ffmc (hDH hdsl) hfin⟩
+-- mult_ccsb_walk_coverage_connection, ff_mc_mult_ccsb_landscape (Section 16) archived to
+-- EM/Archive/FunctionField/FFBridgesArchive.lean (RED #25)
 
 /-! ## Section 17: Summary of Hypothesis Status
 
-### Proved
+### Placeholder witnesses (conclusions are `True`-bodied stubs)
 - `weil_implies_population_mult_ccsb` : WeilBound => PopulationMultCCSB
 - `selection_bias_chain` : Population + SBN => MultCCSB
 - `conditional_equidist_implies_selection_neutral` : ConditionalCharEquidist => SBN
-- `mult_ccsb_implies_ffmc` : MultCCSB => FF-MC (via DH bridge + finiteness)
-- `ff_large_p_chain` : Weil + SBN => FF-MC (via composed chain)
-- `weil_conditional_implies_ffmc` : Weil + ConditionalCharEquidist => FF-MC
-- `ff_dsl_analog_implies_ffmc` : FFDSLAnalog => FF-MC (via DSL bridge)
-- `ff_mc_mult_ccsb_landscape` : master landscape conjunction
 
-### Open Props (this file)
+### Placeholders (this file; `True` bodies, intended statements in the docstrings)
 - `FFMultiplierCCSB` : orbit-level multiplier character cancellation
-- `PopulationMultCCSB` : population-level (from Weil, True body)
+- `PopulationMultCCSB` : population-level (from Weil)
 - `SelectionBiasNeutral` : greedy selection preserves cancellation
 - `ConditionalCharEquidist` : fiber-level character equidist
 - `FFDSLAnalog` : PE + conditional => orbit equidist
-- `FFMultCCSBImpliesFFDH` : step cancellation => walk coverage
-- `FFDSLImpliesFFDH` : DSL => dynamical hitting
-- `FFMCForLargeP` : FF-MC for large primes
-- `DegreeBoundedHitting` : factors of bounded degree cofinally
+
+### Genuine statement (this file)
+- `FFMCForLargeP` : FF-MC for large primes (a definition; nothing is proved about it)
+
+### Archived 2026-11-11 (RED #25, review H17/H18)
+- `FFMultCCSBImpliesFFDH`, `FFDSLImpliesFFDH` and the seven theorems that assumed them;
+  `DegreeBoundedHitting`, `ff_dh_implies_degree_bounded`.  See `EM/Meta/HypothesisAudit.lean`.
 
 ### From FFBootstrap.lean (already proved)
 - `ff_dh_implies_ffmc` : FFDH + finiteness => FF-MC (PROVED)
@@ -742,7 +541,7 @@ theorem ff_mc_mult_ccsb_landscape
 | #90 (Orbit specificity) | CORE barrier: SBN, ConditionalCharEquidist |
 | #116 (Sieve = circular) | Sieve-based SBN proofs are circular |
 | #127 (Weil insufficient) | Motivates going beyond population level |
-| #129 (FFLM false) | Galois approach dead, but SBN is different |
+| #129 (cyclic Galois groups) | Galois approach dead, but SBN is different |
 | #117 (MultCancel = CCSB) | Multiplier-to-walk transfer same issue |
 | #58 (MultCSB = MMCSB) | Same structural mismatch over F_p[t] |
 

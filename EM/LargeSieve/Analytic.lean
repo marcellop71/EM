@@ -25,7 +25,8 @@ open Mullin Euclid MullinGroup RotorRouter
 
 These lemmas establish quantitative bounds on exponential sums `∑_{k=0}^{N-1} e(kβ)`,
 culminating in the estimate `‖∑ e(kβ)‖ ≤ 1/(2δ)` when `|β - round β| ≥ δ`.
-They are the key ingredients for proving `KernelRowSumBound`.
+(They were intended as ingredients for `KernelRowSumBound`, which is false as stated and
+was archived on 2026-11-11, RED #27; the geometric-sum bounds themselves are correct.)
 
 ### Main results
 

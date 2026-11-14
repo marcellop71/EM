@@ -178,6 +178,8 @@ attribute [open_point] SelfCorrectingDrift
 /-! ### Ensemble and variance hypotheses -/
 
 -- StepDecorrelation RETIRED 2026-08-17: FALSE at χ ≡ 1 (`not_stepDecorrelation`, #156)
+-- EnsembleConcentration REPAIRED 2026-11-11 (review H1): the fixed-K `Tendsto … (nhds 0)` form
+-- was false; it now has the (ε, δ) shape of RecipSumConcentration / EnsembleCharSumConcentration.
 attribute [open_point] EnsembleConcentration
 
 /-! ### Four-point hypotheses -/
@@ -416,7 +418,9 @@ attribute [publish] mc_implies_full_generation
 
 /-! ### Conductor equidistribution -/
 
-attribute [publish] uce_cme_implies_mc
+-- uce_cme_implies_mc unpublished 2026-11-11 (review H26): both hypotheses are recorded as
+-- false / vacuous (UCE false by `uce_implies_roughLPFEquidist` + `not_roughLPFEquidist_five`,
+-- hence `UCEImpliesCME` vacuous; see the RETIRED note above), so it is not a conditional result.
 attribute [publish] prod_coprime_of_not_in_seq
 -- unpublished 2026-08-18 (review): `uce_landscape` is a conjunction of already-published facts (documentation, not content)
 /-! ### Ensemble / DSL framework -/
@@ -444,7 +448,8 @@ attribute [publish] faithful_character_escape
 attribute [publish] variant_mc_three_unconditional
 attribute [publish] nonFaithfulCharSeparation_of_two_prime_factors
 attribute [publish] quotientChar_faithful
-attribute [publish] tca_path_survival_implies_random_mc_proved
+-- tca_path_survival_implies_random_mc_proved publish deleted (RED #22): `PathSurvival` means
+-- "no path ever captures q", false at q = 3 (`HypothesisAudit.not_pathSurvival_three`)
 attribute [publish] mixed_diversity_weak_implies_mixed_mc
 attribute [publish] mixed_capture_three
 attribute [publish] mixed_hitting_diversity_implies_mc
@@ -479,7 +484,7 @@ attribute [publish] perpetual_primality_multi_exclusion
 attribute [publish] FunctionFieldAnalog.ff_dh_implies_ffmc
 attribute [publish] FunctionFieldAnalog.weil_implies_ff_se
 attribute [publish] alternating_walk_misses_two
-attribute [publish] FunctionFieldAnalog.ff_cyclotomic_dead_end
+attribute [publish] FunctionFieldAnalog.ffGaloisGroup_isCyclic
 attribute [publish] FunctionFieldAnalog.ffMixedSel_injective
 attribute [publish] FunctionFieldAnalog.ffMixedWalkProd_coprime_succ
 attribute [publish] FunctionFieldAnalog.start_not_capturable

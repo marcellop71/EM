@@ -32,7 +32,7 @@ This section separates two distinct layers of analytic difficulty:
      `minFac = 2`, so the class of `2 mod q` alone carries mass ≥ 1/2, and every
      class avoiding the residues of 2 and 3 has density ≤ 1/3.  The attribution to
      Alladi (1977) was a misreading: Alladi's theorem is the *Möbius-weighted*
-     duality `−∑_{n≤x, P⁻(n)≡a} μ(n) ~ x/φ(q)`, not unweighted equidistribution
+     duality `∑_{n≥2, P⁻(n)≡a (q)} μ(n)/n = −1/φ(q)` (formula corrected 2026-11-10), not unweighted equidistribution
      of `P⁻` (which fails by small-prime domination for the same reason as PE).
      Refuted below by pure argument (`not_genericLPFEquidist`).
    - `PrimeDensityImpliesLPFEquidist` (PNT-AP ⇒ GLPFE): FALSE; archived.

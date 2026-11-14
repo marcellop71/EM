@@ -4,9 +4,16 @@ import EM.Ensemble.CRTFreedom
 /-!
 # JSE Base Case: Joint Equidistribution at Steps (0, 1)
 
-This file proves the JSE base case -- that `genSeq n 0` and `genSeq n 1` are
-jointly equidistributed mod q among nonzero residue classes -- under standard
-analytic number theory axioms.
+This file sets up the JSE base case -- the joint law of `genSeq n 0` and `genSeq n 1`
+mod q among squarefree seeds -- via the tower rule.
+
+**Status (2026-11-11).**  The assembly theorems `jse_base_case`,
+`jse_base_case_via_per_prime`, `jse_base_case_instance` took as hypothesis the uniform
+marginal `JSEMarginalEquidist` (P(genSeq 0 ≡ a mod q) → 1/(q-1)), which is FALSE: it is the
+step-`0` instance of `EnsembleMultiplierEquidist` (small-prime domination, Dead End #157;
+`HypothesisAudit.not_jseMarginalEquidist`).  They are archived (RED #23,
+`EM/Archive/Ensemble/BaseCaseArchive.lean`).  The counting lemmas and the tower-rule
+identity below are unconditional and stay live.
 
 ## Key Structural Observations
 
@@ -21,7 +28,7 @@ At step k = 1:
 The joint density P(genSeq 0 = a, genSeq 1 = b | sqfree) decomposes as
 P(genSeq 1 = b | genSeq 0 = a) * P(genSeq 0 = a) via the tower property.
 
-The marginal P(genSeq 0 = a) -> 1/(q-1) is standard (squarefree equidistribution).
+The marginal P(genSeq 0 = a) does NOT tend to 1/(q-1): genSeq n 0 = 2 for every odd seed.
 
 The conditional P(genSeq 1 = b | genSeq 0 = a mod q) -> 1/(q-1) is the key
 independence statement: knowing genSeq n 0 mod q does not bias genSeq n 1 mod q.
@@ -38,18 +45,19 @@ independence statement: knowing genSeq n 0 mod q does not bias genSeq n 1 mod q.
 * `conditionalSeqCount_le_sqfreeCount` -- conditional count <= sqfreeCount
 * `sqfreeJointSeqCount_le_seqCount_first` -- joint <= marginal at step 0
 * `joint_seq_density_eq_conditional_mul_marginal` -- P(A,B) = P(A|B) * P(B)
-* `jse_base_case`                      -- JSE(0,1) from conditional + marginal (PROVED)
-* `jse_base_case_via_per_prime`        -- JSE(0,1) via per-prime route (PROVED)
-* `jse_base_case_instance`             -- JSE(0,1) instance form (PROVED)
 * `conditionalSeqCount_sum_eq`         -- partition identity for conditional counts
 * `conditionalSeqDensity_nonneg`       -- conditional density >= 0
 * `conditionalSeqDensity_le_one`       -- conditional density <= 1
 
-### Open Hypotheses (4)
+### Open Hypotheses (3)
 * `JSEConditionalEquidist`      -- P(genSeq 1 = b | genSeq 0 = a mod q) -> 1/(q-1)
-* `JSEMarginalEquidist`         -- P(genSeq 0 = a mod q) -> 1/(q-1)
 * `PerPrimeConditionalEquidist` -- P(genSeq 1 = b | minFac(n+1) = p) -> 1/(q-1)
 * `PerPrimeImpliesMixture`      -- per-prime convergence => mixture convergence
+
+**Warning (2026-11-11).**  The first two are false as stated (argued in their docstrings, not
+machine-checked): asking the limit `1/(q-1)` for every `b ≠ 0` forces the class `b = 0`
+(`genSeq n 1 = q`) to have conditional density `0`, and it has positive density.  They are
+kept, flagged, because a short Lean refutation is not available.
 -/
 
 noncomputable section
@@ -167,7 +175,29 @@ section ANTAxioms
     This is the key independence statement: knowing genSeq n 0 mod q does
     not bias genSeq n 1 mod q.
 
-    **Status**: open hypothesis (standard ANT: CRT + population equidist). -/
+    **Status**: open hypothesis (standard ANT: CRT + population equidist).
+
+    **WARNING (2026-11-11, review close-out): false as stated; not machine-checked.**
+    The limit is asked for every `b ≠ 0`, and the `q - 1` limits `1/(q-1)` add up to `1`.
+    Since the joint counts over *all* `b : ZMod q` add up to the marginal count, the
+    hypothesis forces the class `b = 0` — the seeds with `genSeq n 1 = q` — to have conditional
+    density `0`.  It does not: `q ∣ n · genSeq n 0 + 1` on a positive proportion of seeds.
+    Concretely at `q = 3`, `a = 2`: every odd squarefree `n` has `genSeq n 0 = 2`, and those
+    with `n ≡ 1 (mod 3)` have `2n + 1` odd and divisible by `3`, so `genSeq n 1 = 3`.
+    Squarefree `n ≡ 1 (mod 6)` have natural density `3/(2π²) ≈ 0.152`, and the denominator is
+    at most the squarefree count, of density `6/π² ≈ 0.608`; so the class `b = 0` keeps
+    conditional mass at least `1/4`, and the classes `b = 1, 2` cannot both tend to `1/2`.
+    (This is the head-domination phenomenon at step `1`; independently of the `b = 0` mass,
+    there is no reason for the nonzero classes to be balanced, e.g. at `q = 5`, `a = 2` the
+    class `b = 3` contains all odd squarefree `n ≡ 1 (mod 3)`, and the even squarefree
+    `n ≡ 2 (mod 3)` have `genSeq n 0 = 3` and are outside the conditioning class, which gives
+    conditional density at least `(1/4)/(7/8) = 2/7 > 1/4`.)
+    A Lean refutation needs a positive lower density for squarefree numbers in a residue class
+    (`n ≡ 1 mod 6`), which is not in the repository (`odd_sf_card_ge_half` handles only the
+    class of odd numbers); it was judged not short and is left for a later pass, so the
+    hypothesis is *not* archived.  Its only live consumer is the bridge
+    `PerPrimeImpliesMixture`; `jse_base_case*` are already archived (RED #23).  Do not build
+    on it. -/
 def JSEConditionalEquidist : Prop :=
   ∀ (q : Nat), Nat.Prime q →
   ∀ (a b : ZMod q), a ≠ 0 → b ≠ 0 →
@@ -178,17 +208,10 @@ def JSEConditionalEquidist : Prop :=
       Filter.atTop
       (nhds (1 / ((q : ℝ) - 1)))
 
-/-- **Marginal equidistribution of genSeq n 0 mod q**: the density of
-    squarefree n with genSeq n 0 = a mod q (nonzero) tends to 1/(q-1).
-
-    **Status**: open hypothesis (follows from SquarefreeResidueEquidist + PE). -/
-def JSEMarginalEquidist : Prop :=
-  ∀ (q : Nat), Nat.Prime q →
-  ∀ (a : ZMod q), a ≠ 0 →
-    Filter.Tendsto
-      (fun X : Nat => sqfreeSeqDensity X 0 q a)
-      Filter.atTop
-      (nhds (1 / ((q : ℝ) - 1)))
+-- JSEMarginalEquidist: this is the step-`0` instance of `EnsembleMultiplierEquidist`, false by
+-- small-prime domination (odd squarefree seeds, at least half of all, have `genSeq n 0 = 2`):
+-- `HypothesisAudit.not_jseMarginalEquidist` (review 2026-11-10 row H12, RED #23).  Its
+-- definition now lives next to that refutation in EM/Meta/HypothesisAudit.lean.
 
 end ANTAxioms
 
@@ -196,38 +219,22 @@ end ANTAxioms
 
 section JSEBaseCase
 
-/-- **JSE at (j=0, k=1)** from conditional + marginal equidistribution.
-
-    The joint density decomposes as (conditional density) * (marginal density)
-    by the tower rule. Under JSEConditionalEquidist, the conditional density
-    -> 1/(q-1). Under JSEMarginalEquidist, the marginal density -> 1/(q-1).
-    Their product -> 1/(q-1)^2, which is the JSE target.
-
-    **Status**: PROVED (from JSEConditionalEquidist + JSEMarginalEquidist). -/
-theorem jse_base_case
-    (hcond : JSEConditionalEquidist)
-    (hmarg : JSEMarginalEquidist)
-    (q : Nat) (hq : Nat.Prime q)
-    (a b : ZMod q) (ha : a ≠ 0) (hb : b ≠ 0) :
-    Filter.Tendsto
-      (fun X : Nat => sqfreeJointSeqDensity X 0 1 q a b)
-      Filter.atTop
-      (nhds (1 / (((q : ℝ) - 1) ^ 2))) := by
-  have : NeZero q := ⟨hq.ne_zero⟩
-  -- Step 1: Rewrite the target as a product 1/(q-1) * 1/(q-1)
-  rw [show (1 : ℝ) / ((q : ℝ) - 1) ^ 2 = 1 / ((q : ℝ) - 1) * (1 / ((q : ℝ) - 1))
-    from by rw [sq, one_div_mul_one_div_rev]]
-  -- Step 2: Rewrite joint density as conditional * marginal, then apply Tendsto.mul
-  exact (Filter.Tendsto.congr
-    (fun X => (joint_seq_density_eq_conditional_mul_marginal X q a b).symm)
-    (Filter.Tendsto.mul (hcond q hq a b ha hb) (hmarg q hq a ha)))
+-- jse_base_case archived to EM/Archive/Ensemble/BaseCaseArchive.lean (RED #23)
 
 /-- **Per-prime conditional equidistribution.**
 
     For each fixed prime p (distinct from q), the conditional density of
     genSeq n 1 = b mod q given minFac(n+1) = p tends to 1/(q-1).
 
-    **Status**: open hypothesis (standard ANT). -/
+    **Status**: open hypothesis (standard ANT).
+
+    **WARNING (2026-11-11): false as stated, for the same reason as
+    `JSEConditionalEquidist`; not machine-checked.**  By `conditionalSeqCount_sum_eq` the
+    conditional densities over all `b : ZMod q` add up to `1`, so asking for `1/(q-1)` at every
+    `b ≠ 0` forces the class `b = 0` (`genSeq n 1 = q`) to have conditional density `0`; at
+    `p = 2`, `q = 3` that class contains every odd squarefree `n ≡ 1 (mod 3)`, conditional
+    density `3/8`.  A correct statement would exclude the seeds with `q ∣ n p + 1` and would
+    still have to account for head domination among the remaining classes. -/
 def PerPrimeConditionalEquidist : Prop :=
   ∀ (p q : Nat), Nat.Prime p → Nat.Prime q → p ≠ q →
   ∀ (b : ZMod q), b ≠ 0 →
@@ -244,39 +251,16 @@ def PerPrimeConditionalEquidist : Prop :=
     separately, then the mixture (conditioning on genSeq 0 = a mod q)
     also converges.
 
-    **Status**: open hypothesis (requires mixture convergence / tail bounds). -/
+    **Status**: open hypothesis (requires mixture convergence / tail bounds).
+
+    Note (2026-11-11): both sides are false as stated (see the warnings on
+    `PerPrimeConditionalEquidist` and `JSEConditionalEquidist`), so this bridge is expected to
+    be vacuously true; neither falsity is machine-checked. -/
 def PerPrimeImpliesMixture : Prop :=
   PerPrimeConditionalEquidist → JSEConditionalEquidist
 
-/-- **JSE(0,1) via the per-prime route**: composes per-prime convergence with
-    mixture bridge and marginal equidistribution.
-
-    **Status**: PROVED (from the three open hypotheses). -/
-theorem jse_base_case_via_per_prime
-    (hpp : PerPrimeConditionalEquidist)
-    (hmix : PerPrimeImpliesMixture)
-    (hmarg : JSEMarginalEquidist)
-    (q : Nat) (hq : Nat.Prime q)
-    (a b : ZMod q) (ha : a ≠ 0) (hb : b ≠ 0) :
-    Filter.Tendsto
-      (fun X : Nat => sqfreeJointSeqDensity X 0 1 q a b)
-      Filter.atTop
-      (nhds (1 / (((q : ℝ) - 1) ^ 2))) :=
-  jse_base_case (hmix hpp) hmarg q hq a b ha hb
-
-/-- **Partial JSE**: the JSE base case gives JSE at (0, 1) specifically.
-
-    **Status**: PROVED. -/
-theorem jse_base_case_instance
-    (hcond : JSEConditionalEquidist)
-    (hmarg : JSEMarginalEquidist) :
-    ∀ (q : Nat), Nat.Prime q →
-    ∀ (a b : ZMod q), a ≠ 0 → b ≠ 0 →
-      Filter.Tendsto
-        (fun X : Nat => sqfreeJointSeqDensity X 0 1 q a b)
-        Filter.atTop
-        (nhds (1 / (((q : ℝ) - 1) ^ 2))) :=
-  jse_base_case hcond hmarg
+-- jse_base_case_via_per_prime archived to EM/Archive/Ensemble/BaseCaseArchive.lean (RED #23)
+-- jse_base_case_instance archived to EM/Archive/Ensemble/BaseCaseArchive.lean (RED #23)
 
 end JSEBaseCase
 
@@ -328,15 +312,14 @@ end StructuralResults
 
 /-! ## Summary
 
-### Definitions (6)
+### Definitions (5)
 * `MinFacConditionCount`         -- count of sqfree n with minFac(n+1) = p
 * `ConditionalSeqCount`         -- count with minFac(n+1) = p AND genSeq n 1 = b mod q
 * `JSEConditionalEquidist`      -- conditional equidist of genSeq 1 given genSeq 0 (open)
-* `JSEMarginalEquidist`         -- marginal equidist of genSeq 0 mod q (open)
 * `PerPrimeConditionalEquidist` -- per-prime conditional equidist (open)
 * `PerPrimeImpliesMixture`      -- mixture convergence bridge (open)
 
-### Proved Theorems (17)
+### Proved Theorems (14)
 * `genProd_zero_eq`                                  -- genProd n 0 = n
 * `genSeq_zero_eq_minFac`                            -- genSeq n 0 = minFac(n+1)
 * `genProd_one_eq`                                   -- genProd n 1 = n * minFac(n+1)
@@ -346,32 +329,24 @@ end StructuralResults
 * `conditionalSeqCount_le_sqfreeCount`               -- conditional count <= sqfreeCount
 * `sqfreeJointSeqCount_le_seqCount_first`            -- joint <= marginal at step 0
 * `joint_seq_density_eq_conditional_mul_marginal`    -- P(A,B) = P(A|B) * P(B)
-* `jse_base_case`                                    -- JSE(0,1) from conditional + marginal (PROVED)
-* `jse_base_case_via_per_prime`                      -- JSE(0,1) via per-prime route (PROVED)
-* `jse_base_case_instance`                           -- JSE(0,1) instance form (PROVED)
 * `conditionalSeqCount_sum_eq`                       -- partition identity for conditional counts
 * `conditionalSeqDensity_nonneg`                     -- conditional density >= 0
 * `conditionalSeqDensity_le_one`                     -- conditional density <= 1
 * `jse_base_density_nonneg`                          -- joint density >= 0
 * `jse_base_density_le_one`                          -- joint density <= 1
 
-### Open Hypotheses (4)
-* `JSEConditionalEquidist`      -- P(genSeq 1 = b | genSeq 0 = a mod q) -> 1/(q-1)
-* `JSEMarginalEquidist`         -- P(genSeq 0 = a mod q) -> 1/(q-1)
-* `PerPrimeConditionalEquidist` -- P(genSeq 1 = b | minFac(n+1) = p) -> 1/(q-1) for p != q
-* `PerPrimeImpliesMixture`      -- per-prime convergence => mixture convergence
+### Open Hypotheses (3) — all flagged 2026-11-11, see the warnings in their docstrings
+* `JSEConditionalEquidist`      -- P(genSeq 1 = b | genSeq 0 = a mod q) -> 1/(q-1); FALSE as
+                                   stated (the class `b = 0` has positive conditional density);
+                                   argued, not machine-checked
+* `PerPrimeConditionalEquidist` -- P(genSeq 1 = b | minFac(n+1) = p) -> 1/(q-1) for p != q;
+                                   FALSE as stated, same reason
+* `PerPrimeImpliesMixture`      -- per-prime convergence => mixture convergence (then vacuous)
 
-### Proof Architecture
-```
-Route 1 (direct):
-  JSEConditionalEquidist + JSEMarginalEquidist -> JSE(0,1)
-  [jse_base_case, PROVED: tower rule P(A,B) = P(A|B)*P(B) + Tendsto.mul]
-
-Route 2 (via per-prime):
-  PerPrimeConditionalEquidist + PerPrimeImpliesMixture -> JSEConditionalEquidist
-  JSEConditionalEquidist + JSEMarginalEquidist -> JSE(0,1)
-  [jse_base_case_via_per_prime, PROVED: composition of Route 1 with mixture bridge]
-```
+### Archived (RED #23, 2026-11-11)
+`JSEMarginalEquidist` (false; definition and refutation in `EM/Meta/HypothesisAudit.lean`) and
+its consumers `jse_base_case`, `jse_base_case_via_per_prime`, `jse_base_case_instance`
+(`EM/Archive/Ensemble/BaseCaseArchive.lean`).
 -/
 
 end

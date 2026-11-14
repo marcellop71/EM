@@ -400,7 +400,13 @@ def PrimeArithLSImpliesMMCSB : Prop :=
   PrimeArithmeticLargeSieve → MultiModularCSB
 
 /-- **PrimeArithLS chain to MC**: composing PrimeArithLS with the transfer to MMCSB
-    and the proved MMCSB→MC reduction. -/
+    and the proved MMCSB→MC reduction.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem prime_arith_ls_chain_mc
     (hpals : PrimeArithmeticLargeSieve)
     (htransfer : PrimeArithLSImpliesMMCSB)
@@ -409,7 +415,13 @@ theorem prime_arith_ls_chain_mc
   mmcsb_implies_mc (htransfer hpals) hfin
 
 /-- **ALS → PrimeArithLS → MC chain**: the full chain from analytic large sieve
-    through the prime arithmetic large sieve to Mullin's Conjecture. -/
+    through the prime arithmetic large sieve to Mullin's Conjecture.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem als_prime_arith_ls_chain_mc
     (hals : AnalyticLargeSieve)
     (htransfer : PrimeArithLSImpliesMMCSB)
@@ -417,7 +429,13 @@ theorem als_prime_arith_ls_chain_mc
     MullinConjecture :=
   prime_arith_ls_chain_mc (als_implies_prime_arith_ls hals) htransfer hfin
 
-/-- **ALS + PrimeArithLS transfer with small threshold → MC unconditionally**. -/
+/-- **ALS + PrimeArithLS transfer with small threshold → MC unconditionally**.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem als_prime_arith_ls_small_threshold_mc
     (hals : AnalyticLargeSieve)
     (htransfer : PrimeArithLSImpliesMMCSB)
@@ -491,9 +509,11 @@ of order `(prod N)^θ / (log prod N)^A`.
 - MMCSB requires walk character sums bounded by `ε * N` (linear in N).
 - For any fixed `θ > 0`, eventually `(prod N)^θ > ε * N` for any `ε > 0`.
 
-Therefore the LoD bound is WEAKER than the trivial bound `N` for large `N`.
-The open Prop `LoDImpliesMMCSB` is vacuously unprovable: the LoD hypothesis
-gives a character sum bound that grows exponentially, while MMCSB needs `o(N)`.
+Therefore the LoD bound is WEAKER than the trivial bound `N` for large `N`: the hypothesis
+`EMHasLevelOfDistribution θ` is trivially TRUE for every `θ ∈ (0, 1]`
+(`emHasLevelOfDistribution_iff` in `EM/Meta/HypothesisAudit.lean`), so the transfer
+`LoDImpliesMMCSB θ` was `MultiModularCSB` itself (neither false nor vacuous: simply no
+reduction).  Both were archived on 2026-11-11 (RED #29).
 
 The correct analogue of "level of distribution" for the EM sequence would need
 error terms measured relative to N (not relative to prod N), but this is NOT
@@ -547,7 +567,8 @@ theorem exp_dominates_linear (C : ℝ) (hC : 0 < C) :
     **Dead End #96**: Since `prod N` grows exponentially, `(prod N)^θ`
     for any `θ > 0` also grows exponentially. The LoD error term
     `(prod N)^θ / (log prod N)^A` therefore grows exponentially in N,
-    making it useless as an `o(N)` bound. `LoDImpliesMMCSB` is vacuous. -/
+    making it useless as an `o(N)` bound: `EMHasLevelOfDistribution θ` is trivially true
+    (`emHasLevelOfDistribution_iff`, `EM/Meta/HypothesisAudit.lean`; archived, RED #29). -/
 theorem prod_superlinear (C : ℝ) (hC : 0 < C) :
     ∃ N₀ : ℕ, ∀ N : ℕ, N₀ ≤ N → C * ↑N < (prod N : ℝ) := by
   obtain ⟨N₀, hN₀⟩ := exp_dominates_linear C hC

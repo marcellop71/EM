@@ -2,16 +2,21 @@ import EM.FunctionField.NecklaceFormula
 import EM.FunctionField.WeakMC
 
 /-!
-# Character Sum Cancellation and FF PNT-in-APs
+# Irreducible counts over `𝔽_p` (named after the character-sum chain)
 
-Over F_p[t], character sums enjoy EXACT cancellation (not just bounds).
-For a nontrivial multiplicative character chi mod Q (monic irreducible of degree delta),
-the sum of chi(f) over monic polynomials of degree d vanishes for all d >= delta.
+**What this file proves** (review 2026-11-10, P11): three elementary facts about the number
+`π_p(d) = ffIrredCount p d` of monic irreducibles of degree `d`.  The definitions are named
+after the steps of the analytic chain they were meant to stand for, but they are COUNTING
+PROXIES: no character, no residue class and no modulus `Q` occurs in any of them.
 
-This is unconditional over F_p[t]: each residue class mod Q contains exactly
-p^{d-delta} monic polynomials of degree d, and character orthogonality gives
-the cancellation. This is strictly stronger than the Weil bound, which only
-gives |sum| <= (delta-1) * p^{d/2}.
+* `FFCharSumCancellation` is the necklace identity `∑_{d ∣ n} d·π_p(d) = p^n`.
+* `FFPNTInAPs` is `π_p(d) ≥ 1` for every `d ≥ 1`.
+* `FFFCD` is `∑_{d ≤ D} π_p(d) ≥ D`.
+
+The mathematics the names refer to (exact vanishing of `∑ χ(f)` over monic `f` of degree
+`≥ deg Q`, equidistribution of irreducibles in residue classes, divergence of reciprocal sums
+in a class) is true over `𝔽_p[t]` but is NOT formalized here; the divergence in a class
+enters `DensityMC.lean` as the hypothesis `FFDirichletDensity`.
 
 ## Main definitions
 
@@ -21,11 +26,11 @@ gives |sum| <= (delta-1) * p^{d/2}.
 
 ## Main results
 
-- `ff_char_cancel_implies_pnt` : character cancellation implies PNT-in-APs
-- `ff_pnt_implies_fcd` : PNT-in-APs implies forbidden class divergence
-- `ff_pnt_implies_dirichlet_equidist` : PNT-in-APs implies Dirichlet equidist
-- `necklace_char_cancel_chain` : NecklaceIdentity + char cancel => FCD
-- `weil_implies_char_cancel` : Weil bound implies character cancellation
+- `ff_char_cancel_implies_pnt` : (ignores its hypothesis) `π_p(d) ≥ 1`
+- `ff_pnt_implies_fcd` : `π_p(d) ≥ 1` for all `d` gives `∑_{d ≤ D} π_p(d) ≥ D`
+- `ff_pnt_implies_dirichlet_equidist` : placeholder witness (`FFDirichletEquidist` is a stub)
+- `necklace_char_cancel_chain` : composition of the above
+- `weil_implies_char_cancel` : (ignores its hypothesis) the necklace identity
 - `ff_char_sum_landscape` : summary conjunction
 -/
 
@@ -37,68 +42,49 @@ variable (p : ℕ) [hp : Fact (Nat.Prime p)]
 
 /-! ## Part 1: Character sum cancellation -/
 
-/-- Character sum exact cancellation over F_p[t], formalized as the necklace identity:
-    for every n >= 1, sum_{d|n} d * pi_p(d) = p^n.
+/-- **COUNTING PROXY: the necklace identity** `∑_{d ∣ n} d·π_p(d) = p^n` for every `n ≥ 1`
+    (the degree count of `X^{p^n} - X = ∏` of the monic irreducibles of degree `d ∣ n`).
 
-    This is the exact factorization X^{p^n} - X = prod of all monic irreducibles
-    of degree d | n. The necklace identity IS the character cancellation content:
-    it says the total count of monic polynomials (p^n) is exactly accounted for
-    by the irreducible factorization.
-
-    This is UNCONDITIONAL over F_p[t]: proved in NecklaceFormula.lean via
-    Galois theory (every element of GF(p,n) is a root of its minimal polynomial,
-    which is a monic irreducible of degree dividing n).
-
-    Definitionally this IS `NecklaceIdentity` (the same ∀-statement), so it is
-    an abbreviation rather than a second copy of the Prop. -/
+    Despite the name, this is NOT a character-sum statement: no character occurs.  It is
+    definitionally `NecklaceIdentity p`, proved in NecklaceFormula.lean.  The name records
+    that the necklace identity was used as a stand-in for the exact cancellation
+    `∑_{f monic, deg f = d} χ(f) = 0` (`d ≥ deg Q`, `χ ≠ 1` mod `Q`), which is true but not
+    formalized. -/
 abbrev FFCharSumCancellation : Prop := NecklaceIdentity p
 
-/-- Character sum cancellation is unconditional over F_p[t]. -/
+/-- The necklace identity holds. -/
 theorem ff_char_sum_cancellation_proved : FFCharSumCancellation p :=
   necklace_identity_proved p
 
 /-! ## Part 2: PNT in arithmetic progressions for F_p[t] -/
 
-/-- PNT in arithmetic progressions for F_p[t]: for every degree d >= 1,
-    there exists at least one monic irreducible polynomial of degree d over F_p.
+/-- **COUNTING PROXY: `π_p(d) ≥ 1`** — for every degree `d ≥ 1` there is at least one monic
+    irreducible polynomial of degree `d` over `𝔽_p`.
 
-    This is the function field analog of Dirichlet's theorem: every
-    "arithmetic progression" (= residue class) contains primes (= irreducibles).
-    Over F_p[t], the stronger statement that EVERY degree has irreducibles
-    is unconditional, proved via `ffExistsIrreducibleOfDegree` in
-    IrreducibilityDensity.lean.
-
-    Over Z, the analogous result (Dirichlet's theorem + PNT in APs)
-    requires the Generalized Riemann Hypothesis for quantitative versions.
-    Over F_p[t], we get it for free from the polynomial structure. -/
+    Despite the name, this is NOT a prime number theorem in arithmetic progressions: there is
+    no residue class, no modulus and no asymptotic count in the statement.  (The genuine
+    statement — irreducibles of degree `d` are equidistributed among the invertible classes
+    mod `Q` with error `O(p^{d/2})` — is not formalized.) -/
 def FFPNTInAPs : Prop :=
   ∀ d : ℕ, 0 < d → 0 < ffIrredCount p d
 
-/-- FF PNT-in-APs is unconditional over F_p[t]. -/
+/-- `π_p(d) ≥ 1` for every `d ≥ 1`. -/
 theorem ff_pnt_in_aps_proved : FFPNTInAPs p :=
   ffIrredCount_pos p
 
 /-! ## Part 3: Forbidden Class Divergent for F_p[t] -/
 
-/-- FF Forbidden Class Divergent: the total supply of monic irreducible
-    polynomials grows at least linearly with the degree bound.
+/-- **COUNTING PROXY: `∑_{d ≤ D} π_p(d) ≥ D`** — the number of monic irreducibles of degree
+    at most `D` is at least `D` (immediate from `π_p(d) ≥ 1`).
 
-    For every D >= 1, the sum of ffIrredCount(p,d) for d in {1,...,D}
-    is at least D. This follows immediately from FFPNTInAPs: each
-    term ffIrredCount(p,d) >= 1, and summing D such terms gives >= D.
-
-    This implies the divergence of the reciprocal sum
-    sum_{d >= 1} ffIrredCount(p,d) / p^d, since the partial sums
-    are bounded below by sum_{d=1}^{D} 1/p^d which grows (each class
-    contributes ~ 1/(d * Phi(Q)) irreducibles, giving harmonic divergence).
-
-    This is the function field analog of `ForbiddenClassDivergent` from
-    MixedEnsemble.lean. Over Z, FCD requires PNT-in-APs (Siegel-Walfisz).
-    Over F_p[t], it is unconditional. -/
+    Despite the name, this is NOT the function-field analogue of `ForbiddenClassDivergent`
+    from MixedEnsemble.lean: there is no forbidden class and no reciprocal sum in the
+    statement, and it does not imply the divergence of `∑_{P ≡ a (Q)} p^{-deg P}`.  That
+    divergence (Kornblum) is the hypothesis `FFDirichletDensity` of `DensityMC.lean`. -/
 def FFFCD : Prop :=
   ∀ D : ℕ, 0 < D → D ≤ ∑ d ∈ Finset.Icc 1 D, ffIrredCount p d
 
-/-- FF-FCD is unconditional over F_p[t]. -/
+/-- `∑_{d ≤ D} π_p(d) ≥ D`. -/
 theorem ff_fcd_proved : FFFCD p := by
   intro D hD
   calc D = Finset.card (Finset.Icc 1 D) := by
@@ -112,12 +98,8 @@ theorem ff_fcd_proved : FFFCD p := by
 
 /-! ## Part 4: Implication chain -/
 
-/-- Character cancellation implies PNT-in-APs over F_p[t].
-
-    From the necklace identity sum_{d|n} d * pi_p(d) = p^n,
-    the d=n term gives n * pi_p(n) <= p^n, so pi_p(n) >= 1
-    (since p^n >= n for all n >= 1 and p >= 2).
-    Actually, we use the unconditional `ffIrredCount_pos`. -/
+/-- `π_p(d) ≥ 1`, stated as an implication from the necklace identity.  The hypothesis is
+    not used (the proof is `ffIrredCount_pos`). -/
 theorem ff_char_cancel_implies_pnt :
     FFCharSumCancellation p → FFPNTInAPs p := by
   intro _
@@ -147,13 +129,8 @@ theorem necklace_char_cancel_chain :
 
 /-! ## Part 5: Compatibility with existing infrastructure -/
 
-/-- The Weil bound implies character sum cancellation.
-
-    Actually, FFCharSumCancellation is STRONGER than what the Weil bound gives.
-    The Weil bound gives |sum chi(f)| <= (delta-1) * sqrt(p^d), while
-    character cancellation gives exact necklace identity.
-    But character cancellation holds unconditionally over F_p[t],
-    so this implication is proved by ignoring the Weil hypothesis. -/
+/-- The necklace identity, stated as an implication from the placeholder `WeilBound`.  The
+    hypothesis is not used. -/
 theorem weil_implies_char_cancel :
     WeilBound p → FFCharSumCancellation p := by
   intro _
@@ -179,24 +156,15 @@ theorem weil_char_cancel_to_dirichlet :
 
 /-! ## Part 6: Comparison with integer case -/
 
-/-- Over Z, the analogous chain requires:
-    1. GRH for quantitative character sum cancellation
-    2. Siegel-Walfisz for PNT-in-APs
-    3. Mertens' theorem for reciprocal sum divergence
-
-    Over F_p[t], ALL THREE are unconditional. This is the fundamental
-    advantage of the function field setting: the analytic number theory
-    is free, and the orbit-specificity barrier (Dead End #127) is the
-    ONLY remaining obstruction to FF-MC.
-
-    This theorem witnesses that the FF advantage is precisely the
-    unconditional ANT chain. -/
+/-- The three counting proxies of this file hold, and the third follows from the second.
+    (This is a statement about irreducible counts; it does not formalize any comparison with
+    the analytic chain over `ℤ`.) -/
 theorem ff_ant_advantage :
-    -- (1) Character cancellation is unconditional
+    -- (1) necklace identity
     FFCharSumCancellation p ∧
-    -- (2) PNT-in-APs is unconditional
+    -- (2) π_p(d) ≥ 1
     FFPNTInAPs p ∧
-    -- (3) Forbidden class divergence is unconditional
+    -- (3) ∑_{d ≤ D} π_p(d) ≥ D
     FFFCD p ∧
     -- (4) Chain composes
     (FFCharSumCancellation p → FFPNTInAPs p → FFFCD p) :=
@@ -207,7 +175,8 @@ theorem ff_ant_advantage :
 
 /-! ## Part 7: Landscape -/
 
-/-- Summary of character sum and PNT-in-APs infrastructure for F_p[t]. -/
+/-- Summary of the counting proxies of this file; clauses (7), (8) are placeholder witnesses
+    (`FFDirichletEquidist` is a `True`-bodied stub). -/
 theorem ff_char_sum_landscape :
     -- (1) Char cancellation (necklace identity, unconditional over F_p[t])
     FFCharSumCancellation p ∧

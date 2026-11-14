@@ -30,6 +30,23 @@ Only the root `EM.lean` imports it.
 - §5.9–5.14: Concrete L-functions (Dirichlet, number fields, automorphic, Artin, varieties)
 - §5.A: Appendix — complex analysis (Phragmén–Lindelöf, Stirling)
 
+## Removed statements (2026-11-11, review H24, RED #31)
+
+Seventeen definitions of this catalogue were removed because they did not state what their
+names say: a value that should have been "the value of `L(f, s)`", "a zero of `L`", "the
+exceptional zero", "the rank" or "the discriminant of a field" was a free universally
+quantified variable (`GrandRiemannHypothesis`, `PolynomialBoundInStrips`, `ConvexityBound`,
+`LindelofHypothesis`, `DirichletConvexityBound`, `ZeroDensityNearT`, `SiegelBound`,
+`LandauRepulsionTheorem`, `DiscriminantLowerBoundGRH`, `RankBoundUnderBSD`, and the
+GRH-conditional `LindelofFromGRH`, `MultiplicityBoundGRH`, `DistinguishByFewPrimes`,
+`PNTUnderGRH`, `LogDerivBoundGRH`), or the counting function was an unconstrained `∃ N`
+(`RiemannVonMangoldt`, `DirichletZeroCounting`).  Three of them are kept, with their
+refutations, in `EM/Meta/HypothesisAudit.lean`; the rest are in
+`EM/Archive/IK/Ch5Archive.lean`.  None was used outside this file.  The root cause is that
+`LFunctionData` carries Dirichlet coefficients but no analytic continuation, so "the value
+`L(f, s)`" and "a zero of `L(f, s)`" cannot be expressed for `Re s ≤ 1`; the remaining
+definitions of this file are either `True`-bodied placeholders (marked) or do not need them.
+
 ## References
 - [IK] H. Iwaniec, E. Kowalski, *Analytic Number Theory*, 2004
 -/
@@ -230,15 +247,7 @@ section Approximations
 def poleKillingFactor (r : ℤ) (s : ℂ) : ℂ :=
   ((s - 1) / (s + 1)) ^ r
 
-/-- **Lemma 5.2**: Any L-function is polynomially bounded in vertical strips —
-    IK Lemma 5.2. Proof uses absolute convergence for σ > 1+ε,
-    functional equation + Stirling for σ < -ε, and Phragmén–Lindelöf. -/
-def PolynomialBoundInStrips : Prop :=
-  ∀ (_L : LFunctionData) (a b : ℝ), a ≤ b →
-    ∃ (C A : ℝ), 0 < C ∧ 0 ≤ A ∧
-      ∀ (s : ℂ), a ≤ s.re → s.re ≤ b → 1 ≤ |s.im| →
-        ∀ (Lfs : ℂ), -- the value L(f,s)
-          ‖Lfs‖ ≤ C * (|s.im|) ^ A
+-- PolynomialBoundInStrips archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 /-- **Theorem 5.3**: Approximate functional equation — IK (5.12).
     L(f,s) in the critical strip equals two partial sums of length ~√q(f,s)
@@ -249,23 +258,9 @@ def ApproximateFunctionalEquation : Prop :=
     ∃ (_V : ℂ → ℝ → ℝ), -- the smoothing function V_s(y)
       True -- the two-sum representation exists (full statement requires contour integrals)
 
-/-- The **convexity bound** — IK (5.21):
-    |L(f, 1/2 + it)| ≪ q(f, 1/2 + it)^{1/4 + ε}. -/
-def ConvexityBound : Prop :=
-  ∀ (ε : ℝ), 0 < ε →
-    ∀ (L : LFunctionData),
-      ∃ (C : ℝ), 0 < C ∧
-        ∀ (t : ℝ) (Lft : ℂ), -- the value L(f, 1/2 + it)
-          ‖Lft‖ ≤ C * (L.analyticConductor (1/2 + ↑t * Complex.I)) ^ (1/4 + ε)
+-- ConvexityBound archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
-/-- The **Lindelöf Hypothesis** — IK below (5.22):
-    |L(f, 1/2 + it)| ≪ q(f, 1/2 + it)^ε for any ε > 0. -/
-def LindelofHypothesis : Prop :=
-  ∀ (ε : ℝ), 0 < ε →
-    ∀ (L : LFunctionData),
-      ∃ (C : ℝ), 0 < C ∧
-        ∀ (t : ℝ) (Lft : ℂ),
-          ‖Lft‖ ≤ C * (L.analyticConductor (1/2 + ↑t * Complex.I)) ^ ε
+-- LindelofHypothesis archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 end Approximations
 
@@ -294,25 +289,9 @@ def ZeroCountingFunction : Prop :=
       -- Error: O(log q(f,iT))
       True
 
-/-- **Proposition 5.7(1)**: The number of zeros near height T is
-    m(T,f) ≪ log q(f,iT) — IK (5.27). -/
-def ZeroDensityNearT : Prop :=
-  ∀ (L : LFunctionData),
-    ∃ (C : ℝ), 0 < C ∧
-      ∀ (T : ℝ), 2 ≤ T →
-        ∀ (m : ℕ), -- number of zeros with |γ - T| ≤ 1
-          (m : ℝ) ≤ C * Real.log (L.analyticConductor (↑T * Complex.I))
+-- ZeroDensityNearT archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
-/-- **Theorem 5.8**: Riemann–von Mangoldt formula for general L-functions —
-    IK (5.33):
-    N(T,f) = (T/π) log(qT^d/(2πe)^d) + O(log q(f,iT)). -/
-def RiemannVonMangoldt : Prop :=
-  ∀ (L : LFunctionData) (T : ℝ), 1 ≤ T →
-    ∃ (N : ℕ),
-      |(↑N : ℝ) - T / Real.pi * Real.log (↑L.conductor * T ^ L.degree /
-        (2 * Real.pi * Real.exp 1) ^ L.degree)| ≤
-        Real.log (L.analyticConductor (↑T * Complex.I)) *
-          Real.log (L.analyticConductor (↑T * Complex.I))
+-- RiemannVonMangoldt archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 end CountingZeros
 
@@ -454,13 +433,7 @@ Theorems 5.17–5.19, Corollary 5.20: Bounds on L'/L and log L under GRH.
 
 section GRH
 
-/-- The **Grand Riemann Hypothesis** for a single L-function — IK §5.7:
-    All zeros of L(f,s) with 0 < Re(s) < 1 satisfy Re(s) = 1/2. -/
-def GrandRiemannHypothesis (_L : LFunctionData) : Prop :=
-  ∀ (ρ : ℂ), -- if ρ is a nontrivial zero of L(f,s) with 0 < Re(ρ) < 1
-    0 < ρ.re → ρ.re < 1 →
-    -- then Re(ρ) = 1/2
-    ρ.re = 1 / 2
+-- GrandRiemannHypothesis moved to EM/Meta/HypothesisAudit.lean (RED #31): false as stated (quantified over every ρ in the strip, not over zeros; `IK.not_grandRiemannHypothesis`)
 
 /-- **Proposition 5.14**: Equivalent characterizations of GRH — IK Prop 5.14.
     (1) No zeros/poles in σ > α  ↔
@@ -473,36 +446,11 @@ def GRHEquivalences : Prop :=
     -- (3) → (4) and (4) → (1) etc. hold
     True
 
-/-- **Theorem 5.15**: PNT under GRH + Ramanujan–Petersson — IK (5.56):
-    ψ(f,x) = rx + O(x^{1/2} (log x) log(x^d q(f))). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
--- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
-def PNTUnderGRH : Prop :=
-  ∀ (L : LFunctionData),
-    GrandRiemannHypothesis L →
-    SatisfiesRamanujanPetersson L →
-    ∀ (x : ℝ), 1 ≤ x →
-      ∃ (C : ℝ), 0 < C ∧ True -- error O(√x · log x · log(x^d q(f)))
+-- PNTUnderGRH archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
-/-- **Theorem 5.17**: Log derivative under GRH + RP — IK Theorem 5.17.
-    -L'/L(f,s) = r/(s-1) + O(d/(2σ-1) · (log q)^{2-2σ} + d log log q). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
--- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
-def LogDerivBoundGRH : Prop :=
-  ∀ (L : LFunctionData),
-    GrandRiemannHypothesis L →
-    SatisfiesRamanujanPetersson L →
-    ∀ (s : ℂ), 1/2 < s.re → s.re ≤ 5/4 →
-      True -- bound on -L'/L(f,s)
+-- LogDerivBoundGRH archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
-/-- **Corollary 5.20** (= Lindelöf Hypothesis under GRH) — IK (5.60):
-    On Re(s) = 1/2: |L(f,s)| ≪ q(f,s)^ε for any ε > 0. -/
-def LindelofFromGRH : Prop :=
-  ∀ (L : LFunctionData),
-    GrandRiemannHypothesis L →
-    SatisfiesRamanujanPetersson L →
-    ∀ (ε : ℝ), 0 < ε →
-      ∃ (C : ℝ), 0 < C ∧
-        ∀ (t : ℝ) (Lft : ℂ),
-          ‖Lft‖ ≤ C * (L.analyticConductor (1/2 + ↑t * Complex.I)) ^ ε
+-- LindelofFromGRH archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 end GRH
 
@@ -515,29 +463,9 @@ Proposition 5.22: Distinguishing L-functions by few primes under GRH.
 
 section ConsequencesGRH
 
-/-- **Proposition 5.21**: Multiplicity of zero at s=1/2 under GRH — IK (5.62):
-    ord_{s=1/2} L(f,s) ≪ log q(f) / log((3/d) log q(f)). -/
-def MultiplicityBoundGRH : Prop :=
-  ∀ (L : LFunctionData),
-    GrandRiemannHypothesis L →
-    ∃ (C : ℝ), 0 < C ∧
-      ∀ (m : ℕ), -- multiplicity of zero at s = 1/2
-        (m : ℝ) ≤ C * Real.log (L.analyticConductor₀) /
-          Real.log ((3 / (L.degree : ℝ)) * Real.log (L.analyticConductor₀))
+-- MultiplicityBoundGRH archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
-/-- **Proposition 5.22**: Distinguishing L-functions by few primes — IK Prop 5.22.
-    Under GRH + Rankin–Selberg, there exists a prime p ≤ C(d log q(f)q(g))²
-    where the local roots of f and g differ. -/
-def DistinguishByFewPrimes : Prop :=
-  ∀ (Lf Lg : LFunctionData),
-    Lf.degree = Lg.degree →
-    GrandRiemannHypothesis Lf →
-    GrandRiemannHypothesis Lg →
-    HasRankinSelberg Lf Lf →
-    ∃ (C : ℝ), 0 < C ∧
-      ∃ (p : ℕ), Nat.Prime p ∧
-        (p : ℝ) ≤ C * ((Lf.degree : ℝ) *
-          Real.log (↑Lf.conductor * ↑Lg.conductor)) ^ 2
+-- DistinguishByFewPrimes archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 end ConsequencesGRH
 
@@ -576,22 +504,9 @@ def zetaLFunctionData : LFunctionData where
   rootNumber_norm := by simp
   poleOrder := 1
 
-/-- **Theorem 5.23**: Convexity bound for Dirichlet L-functions — IK (5.63):
-    |L(s,χ)| ≪ (q|s|)^{1/4} on Re(s) = 1/2. -/
-def DirichletConvexityBound : Prop :=
-  ∃ (C : ℝ), 0 < C ∧
-    ∀ (q : ℕ), 1 ≤ q →
-      ∀ (s : ℂ), s.re = 1 / 2 →
-        ∀ (Lfs : ℂ), -- the value L(s,χ)
-          ‖Lfs‖ ≤ C * ((q : ℝ) * ‖s‖) ^ (1 / 4 : ℝ)
+-- DirichletConvexityBound moved to EM/Meta/HypothesisAudit.lean (RED #31): false as stated (quantified over every complex value; `IK.not_dirichletConvexityBound`)
 
-/-- **Theorem 5.24**: Zero-counting for Dirichlet L-functions — IK §5.9:
-    N(T,χ) = (T/π) log(qT/2πe) + O(log q(T+3)). -/
-def DirichletZeroCounting : Prop :=
-  ∀ (q : ℕ) (T : ℝ), 1 ≤ q → 1 ≤ T →
-    ∃ (N : ℕ),
-      |(↑N : ℝ) - T / Real.pi * Real.log (↑q * T / (2 * Real.pi * Real.exp 1))| ≤
-        Real.log (↑q * (T + 3)) * Real.log (↑q * (T + 3))
+-- DirichletZeroCounting archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 /-- **Theorem 5.26**: Zero-free region for Dirichlet L-functions — IK (5.67):
     L(s,χ) has no zeros with σ ≥ 1 − c/log(q(|t|+3)),
@@ -609,22 +524,9 @@ def DirichletPNT : Prop :=
     ∀ (q : ℕ), 1 ≤ q →
       ∀ (x : ℝ), 1 ≤ x → True
 
-/-- **Theorem 5.28(1)** (Landau): If χ₁, χ₂ are distinct real primitive characters
-    with real zeros β₁, β₂, then min(β₁,β₂) ≤ 1 − c/log(q₁q₂) — IK (5.72). -/
-def LandauRepulsionTheorem : Prop :=
-  ∃ (c : ℝ), 0 < c ∧
-    ∀ (q₁ q₂ : ℕ), 1 ≤ q₁ → 1 ≤ q₂ →
-      ∀ (β₁ β₂ : ℝ), 3/4 ≤ β₁ → β₁ < 1 → 3/4 ≤ β₂ → β₂ < 1 →
-        min β₁ β₂ ≤ 1 - c / Real.log (↑q₁ * ↑q₂)
+-- LandauRepulsionTheorem archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
-/-- **Theorem 5.28(2)** (Siegel): For any primitive real χ mod q,
-    β_χ ≤ 1 − c(ε)/q^ε — IK (5.73). The constant is ineffective for ε < 1/2. -/
-def SiegelBound : Prop :=
-  ∀ (ε : ℝ), 0 < ε →
-    ∃ (c : ℝ), 0 < c ∧
-      ∀ (q : ℕ), 1 ≤ q →
-        ∀ (β : ℝ), -- the exceptional zero
-          β ≤ 1 - c / (q : ℝ) ^ ε
+-- SiegelBound moved to EM/Meta/HypothesisAudit.lean (RED #31): false as stated (quantified over every real β; `IK.not_siegelBound`)
 
 /-- **Corollary 5.29** (Siegel–Walfisz): For any A > 0,
     π(x;q,a) = Li(x)/φ(q) + O(x/(log x)^A) — IK (5.77). PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
@@ -662,14 +564,7 @@ def DedekindConvexityBound : Prop :=
     ∀ (ε : ℝ), 0 < ε →
       ∃ (C : ℝ), 0 < C ∧ True
 
-/-- **Theorem 5.32**: Discriminant lower bound from GRH — IK (5.83):
-    lim inf (1/d) log D ≥ log π (as d → ∞). -/
-def DiscriminantLowerBoundGRH : Prop :=
-  ∀ (ε : ℝ), 0 < ε →
-    ∃ (d₀ : ℕ), ∀ (d : ℕ), d₀ ≤ d →
-      ∀ (discriminant : ℕ), 1 ≤ discriminant →
-        -- for number fields of degree d:
-        Real.log (↑discriminant) / ↑d ≥ Real.log Real.pi - ε
+-- DiscriminantLowerBoundGRH archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 /-- **Theorem 5.33**: Zero-free region and PNT for ζ_K(s) — IK Theorem 5.33. PLACEHOLDER: the body is literally `True` — a named stub, not a hypothesis. -/
 -- PLACEHOLDER: the body of this def is `True`; it carries no mathematical content.
@@ -839,15 +734,7 @@ def BirchSwinnertonDyer : Prop :=
     IsHasseWeilL L g →
     True -- rank = analytic rank
 
-/-- **Corollary 5.49**: Under BSD + GRH,
-    rank A(ℚ) ≪ log q / log((3/g) log q) — IK Cor 5.49. -/
-def RankBoundUnderBSD : Prop :=
-  ∀ (L : LFunctionData) (g : ℕ),
-    IsHasseWeilL L g →
-    ∃ (C : ℝ), 0 < C ∧
-      ∀ (r : ℕ), -- the rank
-        (r : ℝ) ≤ C * Real.log (↑L.conductor) /
-          Real.log ((3 / (g : ℝ)) * Real.log (↑L.conductor))
+-- RankBoundUnderBSD archived to EM/Archive/IK/Ch5Archive.lean (RED #31)
 
 /-- **Theorem 5.51**: Conductor lower bound for abelian varieties — IK Theorem 5.51:
     q(A) ≥ e^{1.2g}, and in particular q > 3. -/

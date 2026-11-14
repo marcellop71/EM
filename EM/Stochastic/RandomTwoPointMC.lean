@@ -45,9 +45,9 @@ to path-counting for this random walk.
 * `random_two_point_mc_landscape` -- 7-clause summary
 
 The continuation (Parts 7-9) is in `RandomTwoPointMCB.lean`: the Fourier
-counting infrastructure, the `PathSurvival` open hypothesis, and
-`tca_path_survival_implies_random_mc_proved` (TCA + PathSurvival =>
-RandomTwoPointMC, PROVED).
+counting infrastructure.  (The hypothesis `PathSurvival` and the theorem
+`tca_path_survival_implies_random_mc_proved` that consumed it were archived on
+2026-11-11, RED #22: `HypothesisAudit.not_pathSurvival_three`.)
 -/
 
 noncomputable section

@@ -185,8 +185,12 @@ def WeightedPNTinAP : Prop :=
       |∑ n ∈ (Icc 1 (Nat.floor x)).filter (fun n => n % q = a % q),
         Λ n / n - Real.log x / Nat.totient q| ≤ C
 
-/-- Primes equidistributed in residue classes — IK (2.25).
-    `∑_{p≤x, p≡a (q)} p⁻ˢ = (1/φ(q)) log(1/(s−1)) + O(1)` as `s → 1⁺`. -/
+/-- Mertens' second theorem in arithmetic progressions:
+    `∑_{p≤x, p≡a (q)} 1/p = (log log x)/φ(q) + O(1)` for `x ≥ 3`.
+
+    (This is the partial-sum form.  An earlier docstring quoted IK (2.25),
+    `∑_{p≡a (q)} p⁻ˢ = (1/φ(q)) log(1/(s−1)) + O(1)` as `s → 1⁺`, which is the Dirichlet-series
+    form of the same phenomenon but not the statement below.) -/
 def PrimesEquidistributedInAP : Prop :=
   ∀ (q : ℕ) (a : ℕ), 1 < q → Nat.Coprime a q →
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, 3 ≤ x →

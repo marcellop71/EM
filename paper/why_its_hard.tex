@@ -108,18 +108,23 @@ Their walks are $1,2,4,2,1,\dots$ and $1,2,1,2,\dots$ respectively, so
 $A$ reaches the death class $-1 = 4$ and $B$ provably never does.  But
 in \emph{every} window of four consecutive steps both sequences use the
 multiplier~$2$ exactly twice and~$3$ exactly twice: they have identical
-empirical multiplier distributions.
+one-point multiplier counts (the Lean statement is for the windows
+$[4N, 4N+4)$).  Their two-point statistics differ---the pair $(2,2)$
+occurs in~$A$ and never in~$B$---so this is an example about the
+one-point marginal, not about every statistic.
 
 \begin{keyresult}
-\textbf{Population statistics do not determine orbit hitting}
+\textbf{One-point population statistics do not determine orbit hitting}
 (\lean{EM/Meta/OrbitBarrier.lean}{population\_does\_not\_determine\_hitting}).
-Two prime-valued multiplier sequences with the same empirical
-distribution in every window, one of whose walks hits the death class
-and one of whose walks provably never does.  Since
+Two prime-valued multiplier sequences with the same one-point value
+counts in every aligned block of four steps, one of whose walks hits the
+death class and one of whose walks provably never does.  Since
 $\walkZ{2}{q}{n} = -1 \iff q \mid \Prod{2}(n)+1$ and cofinal hitting
-of~$-1$ is equivalent to MC at~$q$, this is Dead End~\#90 as a theorem:
-\emph{no statistic of the multiplier population carries information
-about whether the orbit hits}.  It is precisely the gap that every
+of~$-1$ is equivalent to MC at~$q$, this is Dead End~\#90 in its
+machine-checked form: \emph{the one-point marginal of the multipliers
+carries no information about whether the orbit hits}.  (It is one pair
+of abstract sequences; it is not a theorem that no statistic
+distinguishes them.)  It illustrates the gap that every
 population-to-orbit transfer hypothesis has to cross---and, since
 the population statements themselves turned out to be false (Dead
 End~\#160), the gap now stands undisguised as CME\@.
@@ -133,8 +138,11 @@ $i, -i$ and stay bounded by~$1$ for all~$K$, while the walk alternates
 $1,2$ and its character sums are $M(1+i)$ after $2M$ steps, hence
 $\Theta(K)$.  This is Dead End~\#117.  The character carries exactly the
 side conditions the formalization's own MultCancelToWalkCancel
-hypothesis imposes ($\|\chi\| \leq 1$, $\chi(0) = 0$, orthogonality), so
-the counterexample is not an artifact of a weak statement.
+hypothesis imposes ($\|\chi\| \leq 1$, $\chi(0) = 0$, orthogonality).
+The counterexample is for this one character and for an abstract
+periodic sequence, which repeats its primes: it refutes the abstract
+implication, and does not show that the implication fails for sequences
+with the Euclid--Mullin structural properties.
 \end{keyresult}
 
 \noindent

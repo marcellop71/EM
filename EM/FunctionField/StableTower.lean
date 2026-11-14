@@ -1,4 +1,5 @@
 import EM.FunctionField.Analog
+import EM.FunctionField.CompositeFloors
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import Mathlib.FieldTheory.Minpoly.Field
 import Mathlib.FieldTheory.Finite.Basic
@@ -411,18 +412,34 @@ theorem tower_ffSeq_natDegree (n : ℕ) : (tower.ffSeq (n + 1)).natDegree = 2 ^ 
 
 end StableTower
 
-/-! ## 10. The refutation -/
+/-! ## 10. Uniqueness and the refutation -/
 
 open StableTower in
-/-- **The function-field Mullin conjecture is false over `𝔽_5[X]`.**  The linear irreducible
-`X + 3` (i.e. `X - 2`) never appears: the sequence is `X, X + 1, g₁(X), g₂(X), …` with
-`deg g_n = 2^n`, so its only linear terms are `X` and `X + 1`. -/
-theorem not_ffMullinConjecture_five : ¬ FFMullinConjecture 5 := by
-  intro h
-  have hirr : Irreducible (X + C (3 : ZMod 5)) := by
-    rw [show (X + C (3 : ZMod 5)) = X - C (-3) by simp [sub_eq_add_neg]]
-    exact irreducible_X_sub_C _
-  obtain ⟨n, hn⟩ := h tower (X + C 3) (monic_X_add_C 3) hirr
+/-- **Over `𝔽_5` there is exactly one function-field Euclid–Mullin sequence**: every
+`d : FFEMData 5`, whatever its tie-breaking, coincides with the stable tower.  (There is never
+a tie to break: every Euclid polynomial is irreducible, so it is the selected factor.) -/
+theorem ffEMData_five_eq_tower (d : FFEMData 5) :
+    d.ffSeq = tower.ffSeq ∧ d.ffProd = tower.ffProd := by
+  have hprod : ∀ n, d.ffProd n = iter n := by
+    intro n
+    induction n with
+    | zero => rw [d.ffProd_zero, iter_zero]
+    | succ n ih =>
+      have hirr : Irreducible (d.ffProd n + 1) := by rw [ih]; exact g_irreducible n
+      rw [CompositeFloors.ffProd_succ_of_irreducible d n hirr, ih, iter_succ]
+  refine ⟨funext fun n => ?_, funext hprod⟩
+  cases n with
+  | zero => rw [d.ffSeq_zero, tower_ffSeq_zero]
+  | succ n =>
+    have hirr : Irreducible (d.ffProd n + 1) := by rw [hprod n]; exact g_irreducible n
+    rw [CompositeFloors.ffSeq_succ_eq_of_irreducible d n hirr, hprod n, tower_ffSeq_succ]; rfl
+
+open StableTower in
+/-- **Every sequence over `𝔽_5` misses `X + 3`** (and likewise `X + 2`, `X + 4`): the
+refutation of `FFMullinConjecture 5` does not depend on the choice function. -/
+theorem ffSeq_five_ne_X_add_three (d : FFEMData 5) (n : ℕ) : d.ffSeq n ≠ X + C (3 : ZMod 5) := by
+  rw [(ffEMData_five_eq_tower d).1]
+  intro hn
   rcases n with _ | _ | n
   · have h0 : (X : (ZMod 5)[X]) = X + C 3 := hn
     have := congrArg (fun p : (ZMod 5)[X] => p.coeff 0) h0
@@ -439,5 +456,17 @@ theorem not_ffMullinConjecture_five : ¬ FFMullinConjecture 5 := by
       calc 2 = 2 ^ 1 := by norm_num
         _ ≤ 2 ^ (n + 1) := Nat.pow_le_pow_right (by norm_num) (by omega)
     omega
+
+open StableTower in
+/-- **The function-field Mullin conjecture is false over `𝔽_5[X]`.**  The linear irreducible
+`X + 3` (i.e. `X - 2`) never appears: the sequence is `X, X + 1, g₁(X), g₂(X), …` with
+`deg g_n = 2^n`, so its only linear terms are `X` and `X + 1`.  By `ffEMData_five_eq_tower`
+this is the only sequence over `𝔽_5`, so the failure holds for every choice function
+(`ffSeq_five_ne_X_add_three`). -/
+theorem not_ffMullinConjecture_five : ¬ FFMullinConjecture 5 := fun h =>
+  let ⟨n, hn⟩ := h tower (X + C 3) (monic_X_add_C 3) (by
+    rw [show (X + C (3 : ZMod 5)) = X - C (-3) by simp [sub_eq_add_neg]]
+    exact irreducible_X_sub_C _)
+  ffSeq_five_ne_X_add_three tower n hn
 
 end FunctionFieldAnalog

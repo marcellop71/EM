@@ -105,9 +105,10 @@ surely; summing over `q` with countable additivity, MC holds with probability on
 in this paragraph is true of a random model and false as a method.
 
 **The orbit is one point.**  The decisive obstruction is a pair of periodic multiplier
-sequences in `(ℤ/5)^×`: periods `(2,2,3,3)` and `(2,3,2,3)` have identical statistics in every
-sense an averaging argument can use, and only the first ever reaches `−1`.  Population
-statistics do not determine hitting.  [`population_does_not_determine_hitting`, Dead End #90]
+sequences in `(ℤ/5)^×`: periods `(2,2,3,3)` and `(2,3,2,3)` have identical one-point
+multiplier counts in every block of four steps, and only the first ever reaches `−1`.  One-point
+population statistics do not determine hitting (the two-point statistics of this pair differ;
+the example is an illustration, not a theorem about every statistic).  [`population_does_not_determine_hitting`, Dead End #90]
 Its sharper form: multiplier character sums can cancel while walk character sums grow
 linearly, so cancellation of the multipliers does not transfer to the walk.
 [`mult_cancel_not_walk_cancel`, Dead End #117]  And generation is not coverage: multipliers

@@ -13,6 +13,10 @@ selection from the seed `X² + c` follows the tower and every Euclid polynomial 
 irreducible (`quad_seed_perpetual`); no linear irreducible is ever selected
 (`quad_seed_sel_natDegree`).
 
+The seed itself need not be irreducible: `X² + 2` is (`-2 = 3` is a non-square mod 5), but
+`X² + 1 = (X + 2)(X + 3)` is not.  The factor-tree framework allows any monic start of positive
+degree; the statements below are about the factors *selected* after the seed.
+
 ## The criterion, and why `c ∈ {1, 2}`
 
 Let `α_n` be a root of `g_n` and `β² = α_n − c`.  Then `β` is a root of `g_n(X² + c)`, and the
@@ -221,7 +225,10 @@ theorem quad_seed_perpetual {c : ZMod 5} (hc : c = 1 ∨ c = 2) (σ : FFMixedSel
     exact g_comp_irreducible hc (n + 1)
 
 /-- Every selected factor from the seed `X² + c` has degree `2^{n+1}`; in particular no linear
-irreducible is ever selected, so the seeded sequence misses `X, X+1, …, X+4`. -/
+irreducible is ever *selected*.  (For `c = 2` the seed is irreducible and all five linear
+irreducibles are missed.  For `c = 1` the seed `X² + 1 = (X + 2)(X + 3)` already contains
+`X + 2` and `X + 3` as factors — they divide every accumulator and can never be selected — and
+the three others, `X`, `X + 1`, `X + 4`, are missed.) -/
 theorem quad_seed_sel_natDegree {c : ZMod 5} (hc : c = 1 ∨ c = 2) (σ : FFMixedSelection 5)
     (hσ : FFMixedSelectionValid 5 (quadSeed c) σ) (n : ℕ) :
     (σ.sel n).natDegree = 2 ^ (n + 1) := by

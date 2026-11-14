@@ -27,7 +27,8 @@ giving visit equidistribution and hence MC via the proved SVE -> MC chain.
 * `lyapunov_telescope`            -- L(N) = 2*R(N) + linear term
 * `scd_implies_ve`                -- SCD -> VisitEquidistribution
 * `scd_implies_sve`               -- SCD -> SubquadraticVisitEnergy
-* `scd_implies_mc`                -- SCD -> MC (with FiniteMCBelow)
+* `scd_implies_mc'`               -- SCD -> MC (no side hypothesis; SCD has no threshold)
+* `scd_implies_mc`                -- the same with a superfluous `FiniteMCBelow (….choose)`
 * `group_walk_doubly_stochastic`  -- uniform mu gives doubly stochastic transitions
 * `uniform_multiplier_zero_drift` -- zero expected drift under uniform multiplier
 * `sve_implies_scd_above_threshold` -- SVE implies SCD for primes above the SVE threshold
@@ -37,8 +38,9 @@ giving visit equidistribution and hence MC via the proved SVE -> MC chain.
 SCD is algebraically equivalent to SVE (SubquadraticVisitEnergy) for each fixed
 prime q >= Q_0, via the Lyapunov telescope identity L(N) = 2*R(N) + O(N).
 The quantifier structure differs: SCD quantifies over ALL primes, while SVE
-only claims the bound for q >= Q_0. For the purpose of proving MC, both suffice
-equally well (the threshold is handled via FiniteMCBelow).
+only claims the bound for q >= Q_0. Consequently SCD implies MC outright
+(`scd_implies_mc'`, and SCD ⟺ MC by `scd_iff_mc`), while SVE is equivalent to
+cofinite MC (`sve_iff_missingFinite`) and needs `FiniteMCBelow Q_0` to reach MC.
 
 SCD provides no new proof leverage beyond SVE. See Dead End #120.
 -/
@@ -424,17 +426,14 @@ end HelperBijection
 
 section SCDImpliesMC
 
-/-- **SCD implies SubquadraticVisitEnergy.** -/
-theorem scd_implies_sve (hscd : SelfCorrectingDrift) : SubquadraticVisitEnergy := by
-  -- SVE: exists Q₀, for q ≥ Q₀, for all ε > 0, exists N₀, for N ≥ N₀,
-  --   excessEnergy w ≤ ε * N^2
-  -- where w(n) = emWalkUnit(n) on Fin N.
-  --
+/-- **SCD implies SubquadraticVisitEnergy at every threshold**, in particular at `0`:
+    `SelfCorrectingDrift` is quantified over *all* primes, so no threshold arises. -/
+theorem scd_implies_sveAt (hscd : SelfCorrectingDrift) (Q₀ : ℕ) :
+    SubquadraticVisitEnergyAt Q₀ := by
   -- excessEnergy w = (q-1) * ∑_a (V(a) - N/(q-1))^2 = (q-1) * lyapunov
   -- So if L(N) ≤ (ε/(q-1)) * N^2, then excessEnergy ≤ ε * N^2.
   -- SCD gives L(N) = o(N^2), so this works for any fixed q.
-  use 3
-  intro q inst hq_ge hq hne ε hε
+  intro q inst _hq_ge hq hne ε hε
   have : Fact (Nat.Prime q) := inst
   have hq1_pos : (0 : ℝ) < (q : ℝ) - 1 := by
     have : (1 : ℝ) < (q : ℝ) := by exact_mod_cast (Fact.out : Nat.Prime q).one_lt
@@ -462,7 +461,23 @@ theorem scd_implies_sve (hscd : SelfCorrectingDrift) : SubquadraticVisitEnergy :
         apply mul_le_mul_of_nonneg_left (hN₀ N hN) (le_of_lt hq1_pos)
     _ = ε * (N : ℝ) ^ 2 := by field_simp
 
-/-- **SCD implies MC**, assuming finite verification below the SVE threshold. -/
+/-- **SCD implies SubquadraticVisitEnergy.** -/
+theorem scd_implies_sve (hscd : SelfCorrectingDrift) : SubquadraticVisitEnergy :=
+  ⟨3, scd_implies_sveAt hscd 3⟩
+
+/-- **SCD implies MC, with no finite verification** (added 2026-11-10).
+    `SelfCorrectingDrift` has no threshold (it is `∀ q`), so it gives
+    `SubquadraticVisitEnergyAt 0`, and `FiniteMCBelow 0` is empty.  Together with
+    `mc_implies_scd` (`EM/CME/Equivalences.lean`) this makes SCD one more reformulation of MC:
+    `scd_iff_mc`. -/
+theorem scd_implies_mc' (hscd : SelfCorrectingDrift) : MullinConjecture :=
+  sveAt_implies_mc (scd_implies_sveAt hscd 0) (fun _ _ hlt => absurd hlt (Nat.not_lt_zero _))
+
+/-- **SCD implies MC**, assuming finite verification below the SVE threshold.
+
+    Note (2026-11-10): the hypothesis `hfin` is superfluous and, being stated at an
+    `Exists.choose`, cannot be discharged anyway.  Use `scd_implies_mc'`, which has no second
+    hypothesis. -/
 theorem scd_implies_mc (hscd : SelfCorrectingDrift)
     (hfin : FiniteMCBelow (sve_implies_mmcsb (scd_implies_sve hscd)).choose) :
     MullinConjecture :=

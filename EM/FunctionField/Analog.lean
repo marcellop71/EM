@@ -3,6 +3,8 @@ import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.Data.ZMod.Basic
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.FieldTheory.PolynomialGaloisGroup
+import Mathlib.FieldTheory.Finite.Basic
+import Mathlib.RingTheory.Polynomial.UniqueFactorization
 import Mathlib.Algebra.Field.ZMod
 
 /-!
@@ -23,9 +25,16 @@ specific polynomial. See Section 4 for the detailed structural comparison.
 ## Dead End #127 and #129
 
 This file documents Dead End #127 (Weil bound insufficient) and
-Dead End #129 (FFLM structurally false — cyclotomic counterexample).
+Dead End #129 (large monodromy is impossible over a finite field).
 Category: TECHNIQUE MISMATCH (#127), STRUCTURAL OBSTRUCTION (#129).
 Maps to #90 (orbit specificity), #108 (scale mismatch), #58/#117.
+
+What is machine-checked here (review 2026-11-10, H15/H16): #127 is prose only — `WeilBound`
+and `FFDSL` are `True`-bodied placeholders, so no Lean statement separates them (the former
+`WeilDoesNotImplyFFDSL := ¬ (WeilBound p → FFDSL p)` was provably false and is archived, RED
+#26).  #129 has one genuine Lean statement: `ffGaloisGroup_isCyclic` (every Galois group of
+`ffProd n + 1` is cyclic).  The proxy `FFLargeMonodromy` (`|Gal| > 1` eventually) is a
+*theorem*, `ffLargeMonodromy` in `EM/FunctionField/Finiteness.lean`.
 -/
 
 namespace FunctionFieldAnalog
@@ -45,11 +54,26 @@ def IsMonicIrredFactor (f g : Polynomial (ZMod p)) : Prop :=
     (every polynomial of positive degree has an irreducible factor, and irreducible
     polynomials over a field can be normalized to be monic).
 
-    Over F_p[t] this is standard, but the full Mathlib proof would require
-    threading through `UniqueFactorizationMonoid` + `Polynomial.Monic.irreducible_factor`. -/
+    Proved below (`existsMonicIrredFactor`) from
+    `Polynomial.exists_monic_irreducible_factor`. -/
 def ExistsMonicIrredFactor : Prop :=
   ∀ g : Polynomial (ZMod p), 0 < g.natDegree →
     ∃ f : Polynomial (ZMod p), IsMonicIrredFactor p f g
+
+/-- Every polynomial of positive degree over `𝔽_p` has a monic irreducible factor. -/
+theorem existsMonicIrredFactor : ExistsMonicIrredFactor p := fun g hg =>
+  exists_monic_irreducible_factor g (not_isUnit_of_natDegree_pos g hg)
+
+/-- A monic irreducible factor of least degree. -/
+theorem exists_min_monicIrredFactor (g : (ZMod p)[X]) (hg : 0 < g.natDegree) :
+    ∃ f : (ZMod p)[X], f.Monic ∧ Irreducible f ∧ f ∣ g ∧
+      ∀ h : (ZMod p)[X], h.Monic → Irreducible h → h ∣ g → f.natDegree ≤ h.natDegree := by
+  classical
+  have hex : ∃ n, ∃ f : (ZMod p)[X], (f.Monic ∧ Irreducible f ∧ f ∣ g) ∧ f.natDegree = n := by
+    obtain ⟨f, hf⟩ := existsMonicIrredFactor p g hg
+    exact ⟨_, f, hf, rfl⟩
+  obtain ⟨f, ⟨hm, hi, hd⟩, hdeg⟩ := Nat.find_spec hex
+  exact ⟨f, hm, hi, hd, fun h hhm hhi hhd => hdeg ▸ Nat.find_min' hex ⟨h, ⟨hhm, hhi, hhd⟩, rfl⟩⟩
 
 /-! ## Section 2: The Function Field EM Sequence -/
 
@@ -90,6 +114,63 @@ def FFMullinConjecture : Prop :=
   ∀ d : FFEMData p, ∀ Q : Polynomial (ZMod p),
     Q.Monic → Irreducible Q → ∃ n, d.ffSeq n = Q
 
+/-! ### Existence of the sequence
+
+`FFEMData p` is inhabited for every prime `p` (so that statements quantified over
+`d : FFEMData p`, such as `FFMullinConjecture p`, are never vacuous): the greedy sequence
+built with a fixed choice of least-degree factor. -/
+
+/-- The greedy step: a least-degree monic irreducible factor of `P + 1` (junk value `1` when
+`P + 1` is constant). -/
+noncomputable def ffGreedyFactor (P : (ZMod p)[X]) : (ZMod p)[X] :=
+  if h : 0 < (P + 1).natDegree then (exists_min_monicIrredFactor p (P + 1) h).choose else 1
+
+theorem ffGreedyFactor_spec (P : (ZMod p)[X]) (h : 0 < (P + 1).natDegree) :
+    (ffGreedyFactor p P).Monic ∧ Irreducible (ffGreedyFactor p P) ∧ ffGreedyFactor p P ∣ P + 1 ∧
+      ∀ f : (ZMod p)[X], f.Monic → Irreducible f → f ∣ P + 1 →
+        (ffGreedyFactor p P).natDegree ≤ f.natDegree := by
+  unfold ffGreedyFactor
+  split
+  · exact (exists_min_monicIrredFactor p (P + 1) ‹_›).choose_spec
+  · contradiction
+
+/-- The running product of the greedy sequence from the seed `X`. -/
+noncomputable def ffGreedyProd : ℕ → (ZMod p)[X]
+  | 0 => X
+  | n + 1 => ffGreedyProd n * ffGreedyFactor p (ffGreedyProd n)
+
+theorem ffGreedyProd_spec (n : ℕ) :
+    (ffGreedyProd p n).Monic ∧ 0 < (ffGreedyProd p n + 1).natDegree := by
+  have key : ∀ P : (ZMod p)[X], 0 < P.natDegree → 0 < (P + 1).natDegree := by
+    intro P hP
+    rwa [natDegree_add_eq_left_of_natDegree_lt (by simpa using hP)]
+  suffices h : (ffGreedyProd p n).Monic ∧ 0 < (ffGreedyProd p n).natDegree from
+    ⟨h.1, key _ h.2⟩
+  induction n with
+  | zero => exact ⟨monic_X, by simp [ffGreedyProd]⟩
+  | succ n ih =>
+    have hf := ffGreedyFactor_spec p _ (key _ ih.2)
+    refine ⟨ih.1.mul hf.1, ?_⟩
+    show 0 < (ffGreedyProd p n * ffGreedyFactor p (ffGreedyProd p n)).natDegree
+    rw [ih.1.natDegree_mul hf.1]; omega
+
+/-- **A function-field Euclid–Mullin sequence exists over every `𝔽_p`** (one for each choice
+of tie-break; this is the one given by `Classical.choose`). -/
+noncomputable def ffGreedyData : FFEMData p where
+  ffSeq := fun n => match n with
+    | 0 => X
+    | n + 1 => ffGreedyFactor p (ffGreedyProd p n)
+  ffProd := ffGreedyProd p
+  ffSeq_zero := rfl
+  ffProd_zero := rfl
+  ffSeq_succ := fun n =>
+    have hf := ffGreedyFactor_spec p _ (ffGreedyProd_spec p n).2
+    ⟨hf.1, hf.2.1, hf.2.2.1⟩
+  ffProd_succ := fun _ => rfl
+  ffSeq_minimal := fun n => (ffGreedyFactor_spec p _ (ffGreedyProd_spec p n).2).2.2.2
+
+instance : Nonempty (FFEMData p) := ⟨ffGreedyData p⟩
+
 /-! ## Section 3: The Weil Bound and Population Equidistribution -/
 
 /-- The Weil Bound for character sums over curves defined over F_p.
@@ -118,7 +199,8 @@ def WeilBound : Prop :=
 
     Over F_p[t], this follows UNCONDITIONALLY from the Weil bound.
     Over Z, the analog (Dirichlet's theorem + error terms) requires
-    WeightedPNTinAP (= Wiener-Ikehara), which is standard but substantial. -/
+    WeightedPNTinAP (a Mertens-type estimate in progressions), which is standard but
+    substantial. -/
 -- PLACEHOLDER (audit 2026-08-17): body is `True`; this records an intended statement, proves nothing.
 def FFPopulationEquidist : Prop :=
   ∀ (Q : Polynomial (ZMod p)), Q.Monic → Irreducible Q → Q.natDegree ≥ 1 →
@@ -157,7 +239,7 @@ theorem weil_implies_population_equidist :
 ### What is easier over F_p[t]
 
 1. **Population equidistribution (PE) is UNCONDITIONAL** from the Weil bound.
-   Over Z, obtaining PE requires WeightedPNTinAP (= Wiener-Ikehara theorem),
+   Over Z, obtaining PE requires WeightedPNTinAP (a Mertens-type estimate in progressions),
    which is standard ANT but requires substantial infrastructure. Over F_p[t],
    the analog follows from the Prime Polynomial Theorem + Weil RH (proved).
 
@@ -303,20 +385,9 @@ def FFDSL : Prop :=
   -- This requires orbit-specific control, not population statistics
   True
 
-/-- The Weil bound does NOT imply FF-DSL.
-    This is the precise formal statement of Dead End #127.
-
-    The structural reason: the Weil bound controls sums of the form
-      sum_{f monic, deg f = n} chi(f mod Q)
-    but FF-DSL requires control of
-      sum_{n < N} chi(ffProd(n) mod Q)
-    where ffProd(n) is a specific, deterministically-constructed polynomial.
-
-    The ffProd(n) are products of irreducibles, not a random sample.
-    The Weil bound's equidistribution applies to the POPULATION of
-    polynomials, not to specific orbits. -/
-def WeilDoesNotImplyFFDSL : Prop :=
-  ¬ (WeilBound p → FFDSL p)
+-- WeilDoesNotImplyFFDSL moved to EM/Meta/HypothesisAudit.lean (RED #26): `¬ (True → True)`,
+-- provably false (`FunctionFieldAnalog.not_weilDoesNotImplyFFDSL`).  Dead End #127 has no
+-- formal statement in this file: it is the prose of Sections 4 and 7.
 
 
 /-- Summary of the function field analog landscape:
@@ -433,6 +504,18 @@ noncomputable instance ffGaloisGroup_fintype (d : FFEMData p) (n : ℕ) :
     Fintype (ffGaloisGroup p d n) :=
   inferInstance
 
+/-- A splitting field over `𝔽_p` is a finite field. -/
+instance splittingField_finite (f : (ZMod p)[X]) : Finite f.SplittingField :=
+  Module.finite_of_finite (ZMod p)
+
+/-- **The Galois group of every Euclid polynomial is cyclic** (as is every Galois group over a
+    finite field: it is generated by Frobenius).  This is the content of Dead End #129: a
+    cyclic group cannot contain the alternating group `A_d` for `d ≥ 4`, so "large monodromy"
+    in the sense of Section 9 never holds for a single polynomial over `𝔽_p`. -/
+theorem ffGaloisGroup_isCyclic (d : FFEMData p) (n : ℕ) : IsCyclic (ffGaloisGroup p d n) :=
+  inferInstanceAs (IsCyclic
+    ((d.ffProd n + 1).SplittingField ≃ₐ[ZMod p] (d.ffProd n + 1).SplittingField))
+
 /-! ## Section 9: The Large Monodromy Hypothesis
 
 ### Context: monodromy and Galois groups
@@ -452,13 +535,13 @@ Frobenius conjugacy classes equidistribute by the Chebotarev density
 theorem (which IS the Weil bound in the function field setting, via
 Deligne's theorem).
 
-**Why FFLM is plausible**:
-1. Cohen's theorem (1970): a random monic polynomial of degree d over
-   F_p has Galois group S_d with probability -> 1 as d -> infinity.
-2. The +1 shift destroys the multiplicative structure of ffProd(n):
-   if ffProd(n) = Q_1 * ... * Q_n, then ffProd(n) + 1 has NO algebraic
-   relationship to the Q_i (by the coprimality cascade).
-3. There is no known structural reason for the Galois group to be small.
+**Correction (review 2026-11-10, H15).**  The paragraph that stood here ("why FFLM is
+plausible") was wrong.  The Galois group in question is that of a *single* polynomial over
+the *finite* field F_p, which is always cyclic, generated by Frobenius
+(`ffGaloisGroup_isCyclic`); it is S_d only for d ≤ 2.  Cohen's theorem concerns the *cycle
+type of Frobenius* for a random polynomial (equivalently the Galois group over F_p(u) of a
+generic family), not Gal over F_p.  So the intended FFLM ("Gal ⊇ A_d") is false for every
+polynomial of degree ≥ 4 — see Section 16.
 
 **What could block FFLM**:
 1. Characteristic p inseparability: if ffProd(n) + 1 has repeated roots,
@@ -479,23 +562,22 @@ This is a genuine structural advantage of F_p[t]: we CAN ask about
 Gal(SplittingField(ffProd(n)+1) / F_p).
 -/
 
-/-- FF-Large Monodromy: the Galois group of ffProd(n)+1 eventually
-    contains the alternating group on deg(ffProd(n)+1) letters.
+/-- FF-Large Monodromy, **proxy form**: eventually `|Gal(ffProd(n)+1)| > 1`.
 
-    When the Galois group contains A_d, the Frobenius conjugacy classes
-    are equidistributed by Chebotarev/Deligne, giving ORBIT-SPECIFIC
-    information about factorization -- precisely what the Weil bound alone
-    cannot provide.
+    This is NOT the statement "the Galois group contains the alternating group `A_d`"
+    (order `≥ d!/2`) that the name and Section 9 suggest.  The two have opposite truth values:
 
-    This is stated as a Prop (open hypothesis) since proving it would
-    require deep results about Galois groups of shifted products. -/
+    * the intended statement is FALSE for every sequence, because the group is cyclic
+      (`ffGaloisGroup_isCyclic`) and the degree tends to infinity — Dead End #129;
+    * the proxy stated here is TRUE for every sequence: `ffLargeMonodromy` in
+      `EM/FunctionField/Finiteness.lean`.  (Once the linear irreducibles that are ever
+      selected have been selected, `ffProd(n)+1` has no root in `𝔽_p`, so it does not split.)
+
+    It is therefore neither an open hypothesis nor "structurally false"; it is kept only as
+    the named proxy.  Review 2026-11-10, H15. -/
 def FFLargeMonodromy : Prop :=
   ∀ (d : FFEMData p),
   ∃ N₀ : ℕ, ∀ n ≥ N₀,
-  -- The Galois group is "large": its order is at least d!/2
-  -- where d = deg(ffProd(n) + 1). This is the order of A_d.
-  -- We use the weaker proxy: |Gal| > 1 (nontrivial Galois group)
-  -- since formalizing A_d ↪ Gal requires the Galois action on roots.
   Fintype.card (ffGaloisGroup p d n) > 1
 
 /-! ## Section 10: Deligne Equidistribution and FF-CME
@@ -668,7 +750,7 @@ information that the Weil bound cannot. However, the sequential gap
 prevents direct application of Deligne's theorem to the FF-EM sequence.
 
 The monodromy chain is currently:
-- FFLM: plausible but unproved (Cohen's theorem is only for random polys)
+- FFLM: false as intended (cyclic Galois group, Dead End #129); true as the proxy `|Gal| > 1`
 - Deligne: a theorem, but requires variety parametrization
 - Sequential gap: the critical new obstacle
 - FFCME => FF-MC: transfers verbatim from the integer case
@@ -679,26 +761,9 @@ gap. The function field setting reveals the barrier's GALOIS-THEORETIC
 nature more clearly than the integer setting, but does not resolve it.
 -/
 
-/-- The monodromy chain: FFLM + Deligne imply FF-CME, which implies FF-MC.
-
-    The first arrow (FFLM + Deligne => FFCME) is the hard content.
-    The second arrow (FFCME => FF-MC) transfers verbatim from the integer
-    case via the CME => CCSB => MC chain.
-
-    This is stated as a Prop because the first arrow requires bridging
-    the sequential gap (see Section 11 documentation). -/
-def FFLMChainImpliesFFMC : Prop :=
-  FFLargeMonodromy p → DeligneEquidistribution p → FFMullinConjecture p
-
-/-! The structural chain FFCME => FF-MC requires the full CME => CCSB => MC
-    reduction instantiated over F_p[t]. Since both FFCME and the chain
-    have True-bodied content, we record the chain direction as a structural
-    open hypothesis rather than attempting a vacuous proof. -/
-
-/-- Structural direction: FFCME implies FF-MC via the CME => CCSB => MC chain.
-    This requires instantiating the integer chain over F_p[t]. -/
-def FFCMEImpliesFFMC : Prop :=
-  FFCME p → FFMullinConjecture p
+-- FFLMChainImpliesFFMC, FFCMEImpliesFFMC moved to EM/Meta/HypothesisAudit.lean (RED #25):
+-- (true proxy / `True` placeholder) → FFMullinConjecture p, i.e. FFMullinConjecture p itself;
+-- false at p = 5.
 
 /-! ## Section 12: SubgroupEscape and Abelian Monodromy
 
@@ -890,13 +955,19 @@ theorem ff_monodromy_landscape {n : ℕ} :
    trivial,
    trivial⟩
 
-/-! ## Section 16: Cyclotomic Counterexample — FFLM Structurally False
+/-! ## Section 16: Dead End #129 — no large monodromy over a finite field
 
-### The counterexample
+### The obstruction
 
-Over F₂, the product of all monic irreducibles of degree ≤ 2 is:
-  t · (t+1) · (t²+t+1) = t⁴ + t  (= t^{2²} - t)
+`Gal(SplittingField(f)/F_p)` is cyclic for every `f ∈ F_p[t]`, generated by Frobenius
+(`ffGaloisGroup_isCyclic`).  A cyclic group contains `A_d` only for `d ≤ 3`.  Since
+`deg(ffProd(n)+1) → ∞`, the intended large-monodromy hypothesis ("Gal ⊇ A_d") fails for all
+large `n`, for every sequence and every `p`.
 
+### Example
+
+Over F₂, the product of all monic irreducibles of degree ≤ 2 is
+  t · (t+1) · (t²+t+1) = t⁴ + t  (= t^{2²} - t).
 Adding 1 gives t⁴ + t + 1 over F₂, irreducible (a factor of Φ₁₅; NOT Φ₅ — the fifth
 cyclotomic polynomial Φ₅ = t⁴+t³+t²+t+1 appears one stage later, as one of the two tied
 quartic factors of ffProd(3)+1 = t⁸+t⁴+t²+t+1 = (t⁴+t³+1)·Φ₅(t); corrected 2026-09-02).
@@ -907,55 +978,41 @@ polynomial is irreducible, and `FFMullinConjecture 5` is FALSE — see
 `EM/FunctionField/StableTower.lean`, `not_ffMullinConjecture_five`.  The conjecture as stated
 in Section 2 is therefore a statement about non-exceptional primes only.
 
-### Why this is structural, not accidental
+(An earlier version of this section argued via "partial products divide t^{p^d} − t"; that
+is not true of the sequence in general and is not needed: cyclicity holds for every
+polynomial.)
 
-Classical theorem: the product of all monic irreducibles of degree dividing d
-over F_p equals t^{p^d} - t. Therefore the greedy FF-EM sequence (which picks
-the least-degree irreducible factor at each step) builds partial products that
-divide t^{p^d} - t for some d. Adding 1 gives t^{p^d} - t + 1, whose
-splitting field is contained in F_{p^N} for some N — hence ABELIAN Galois group
-by construction (Gal(F_{p^N}/F_p) ≅ Z/NZ, generated by Frobenius).
+### Consequence
 
-### Consequence: FFLM is false
+The Frobenius cycle type of `ffProd(n)+1` (the degrees of its irreducible factors) is all
+the Galois information there is.  Equidistribution of cycle types is a statement about
+*families* of polynomials (Chebotarev/Deligne over F_p(u)), i.e. population information; it
+says nothing about the one polynomial the orbit produces.  The monodromy route therefore
+returns to PE and to the orbit-specificity barrier (#90, #127).
 
-FFLargeMonodromy (Section 9) requires |Gal| > d!/2, i.e. Gal ≅ S_d or A_d.
-But the cyclotomic structure forces Gal to be CYCLIC (hence abelian), so
-|Gal| ≤ deg(ffProd(n)+1), which is polynomial in d, not factorial.
+### What the Lean proxy says
 
-### Abelian monodromy circles back to PE
-
-If Gal is abelian, the Frobenius information is captured entirely by
-Dirichlet characters (= homomorphisms Gal → C×). Character sum bounds
-(Weil) then give POPULATION equidistribution — which is exactly PE.
-But PE → CME is DSL, the open hypothesis. So the abelian monodromy route
-gives: Weil → PE → (need DSL) → CME → MC. This is circular: it recovers
-the same PE we already have, without closing the PE → CME gap.
-
-### Dead End #129: FFLM structurally false
-
-Category: STRUCTURAL OBSTRUCTION (not technique mismatch).
-The hypothesis FFLargeMonodromy is FALSE by construction over F_p[t].
-The greedy rule forces cyclotomic/abelian Galois groups.
-The abelian monodromy → Dirichlet → PE path is already known.
-Maps to: #127 (refined), #90 (orbit specificity persists).
+`FFLargeMonodromy` (Section 9) is only `|Gal| > 1` eventually, which is TRUE
+(`ffLargeMonodromy`, `EM/FunctionField/Finiteness.lean`).  It is not the intended hypothesis
+and is not refuted by anything here.
 -/
 
-/-- Dead End #129: FFLM is structurally false. The cyclotomic structure of
-    t^{p^d} - t + 1 forces abelian Galois groups, and abelian monodromy
-    recovers only PE (population equidistribution), not orbit-specific CME.
+/-- A bundle of two facts that hold in the function-field setting: the placeholder
+    implication `WeilBound → FFPopulationEquidist` (both `True`-bodied) and the coprimality
+    cascade.  PLACEHOLDER WITNESS for clauses (1), (3), (4), which are `True` stubs.
 
-    The two genuinely unexplored frontiers for DSL are:
-    (1) Non-homogeneous Markov chains (Doeblin/Dobrushin convergence)
-    (2) Linnik-type multiplicative large sieve -/
+    Despite its name this theorem contains NO statement about Galois groups and is not a
+    witness for Dead End #129; the witness is `ffGaloisGroup_isCyclic`.  (Docstring corrected
+    2026-11-11, review H15; it used to read "FFLM is structurally false".) -/
 theorem ff_cyclotomic_dead_end {n : ℕ} :
     -- (1) Weil => PE still holds (abelian monodromy = same thing)
     (WeilBound p → FFPopulationEquidist p) ∧
     -- (2) Coprimality cascade still holds
     (∀ (d : FFEMData p) (Q : Polynomial (ZMod p)),
       Irreducible Q → Q ∣ d.ffProd n → Q ∣ (d.ffProd n + 1) → False) ∧
-    -- (3) FFLM is a well-formed Prop (but structurally false)
+    -- (3) placeholder
     True ∧
-    -- (4) Abelian monodromy reduces to PE, which doesn't close DSL
+    -- (4) placeholder
     True :=
   ⟨weil_implies_population_equidist p,
    fun d Q hQ h1 h2 => coprimality_cascade p d Q hQ h1 h2,

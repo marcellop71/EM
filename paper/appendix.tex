@@ -183,8 +183,9 @@ Hildebrand~\cite{Hildebrand1986}, and others.  Its distribution is
 dominated by small primes: the density of $\{n : P^-(n) = p\}$ is
 $p^{-1}\prod_{r<p}(1-1/r)$, so $P^-(n) \bmod q$ is \emph{not}
 equidistributed for any fixed~$q$ (Dead End~\#160); Alladi's theorem
-is the M\"obius-weighted duality
-$-\sum_{n \le x,\, P^-(n) \equiv a} \mu(n) \sim x/\varphi(q)$, not an
+is the M\"obius-weighted identity
+$\sum_{n \ge 2,\, P^-(n) \equiv a \,(q)} \mu(n)/n = -1/\varphi(q)$
+for $(a,q)=1$, not an
 unweighted equidistribution.  An earlier draft's SieveTransfer
 hypothesis rested on the unweighted reading and is retired.
 MC asks about the residue of $P^-$ at the specific values
@@ -320,6 +321,21 @@ and both Mathlib cot-series specializations) is proved; the final
 Two bridges (\code{HilbertCscBilinearBridge},
 \code{CscBilinearImpliesGramOffDiag}) and the terminal arrow
 (\code{gram\_offdiag\_bilinear\_implies\_als}) complete the chain.
+All hypotheses of this chain are stated for points that are
+$\delta$-spaced \emph{on the circle} (distance to the nearest integer);
+until 2026-11-11 \code{CscBilinearBound} and
+\code{GramOffDiagBilinearBound} used spacing of fractional parts, for
+which they are false (the points $0, \tfrac25, \tfrac45$ violate the
+resulting large sieve inequality;
+\lean{EM/Meta/HypothesisAudit.lean}{not\_additiveLargeSieve\_fractSpaced}).
+The constant $\delta^{-1}-1$ asked of the two intermediate hypotheses is
+sharper than the Montgomery--Vaughan constant $\delta^{-1}$ for the
+cosecant form and is a hypothesis, not a quoted theorem; the chain with
+$\delta^{-1}$, giving the large sieve with constant $N+\delta^{-1}$, is
+proved from the Hilbert inequality
+(\lean{EM/IK/Ch7CesaroChain.lean}{hilbert\_chain\_als\_circular}, whose
+second input, the Ces\`aro convergence of the cosecant series, is
+\code{cross\_r\_cesaro\_convergence\_proved}).
 
 The remaining open content is PrimeArithLSImpliesMMCSB: transferring
 prime-modulus arithmetic large sieve bounds to multi-modular character
@@ -765,7 +781,9 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
       (head domination, Dead End~\#160); archived with PopulationTransfer
     & \S\ref{sec:ant-def} \\
 --- & ExcursionIndependence
-    & Excursion char sums approximately independent; EIP + BME $\Rightarrow$ MC
+    & Archived: as stated (any return pair, lists with repetition) it forces every
+      excursion sum to vanish, and BoundedMaxExcursion is contradictory at a missing prime
+      (\lean{EM/Meta/HypothesisAudit.lean}{universalBoundedMax\_iff\_mc})
     & App.~\ref{app:routes} \\
 \midrule
 
@@ -778,7 +796,8 @@ $\abbr{PRE}_\ell$ & PowerResidueEscape
     & Generalized EM from arbitrary starting point $n$; genProd$(2,k) = \Prod{2}(k)$
     & \S\ref{sec:ensemble} \\
 --- & EnsembleConcentration
-    & Char energy density for bad starting points $\to 0$ as $X \to \infty$
+    & For windows $K \geq K_0(\varepsilon,\delta)$, the proportion of seeds whose residue
+      frequency deviates by more than $\varepsilon$ is $\leq \delta$ for large $X$
     & \S\ref{sec:ensemble} \\
 --- & CharSumVarianceBound
     & Ensemble average of char energy $\leq C \cdot K$ for all $X \geq X_0$

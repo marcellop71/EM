@@ -42,7 +42,7 @@ the FF-EM sequence, proves the refutation over~$\FF_5$, an unconditional
 six-step sieve chain and the $\Phi_3$ exclusion criterion, and presents
 three formally verified dead ends that delineate the boundary of current
 techniques.  The function-field module of the formalization comprises
-29~files and ${\sim}11{,}100$~lines with zero \texttt{sorry}.
+29~files and ${\sim}10{,}900$~lines with zero \texttt{sorry}.
 
 \medskip\noindent\textbf{What is and is not machine-checked here (audit
 2026-08-17).}\enspace The Weil bound is not formalized: \code{WeilBound},
@@ -60,8 +60,9 @@ section is: the FF-EM sequence and its structural theory (coprimality
 cascade, injectivity, degree growth), the refutation of FF-MC over
 $\FF_5[t]$ (\code{EM/FunctionField/StableTower.lean}),
 FFDH~$\Rightarrow$~FF-MC, the $\Phi_3$ exclusion, the exact degree telescope
-(\S\ref{sec:ff-telescope}), the stochastic FF-MC and its phase
-transition, and the density chain whose one
+(\S\ref{sec:ff-telescope}), degree growth along every mixed walk (the
+Lean names \code{FFStochasticMC}, \code{FFPhaseTransition} say no more
+than this), and the density chain whose one
 hypothesis \code{FFDirichletDensity} is honestly stated (\code{EM/FunctionField/DensityMC.lean}).
 \end{roadmap}
 
@@ -98,7 +99,8 @@ first shown by Kurokawa and Satoh~\cite{KuSa2008}, and the following
 theorem is the $p = 5$ instance, verified in Lean.
 
 \begin{theorem}[{FF-MC fails over $\FF_5[t]$ ---
-\lean{EM/FunctionField/StableTower.lean}{not\_ffMullinConjecture\_five}}]
+\lean{EM/FunctionField/StableTower.lean}{not\_ffMullinConjecture\_five},
+\lean{EM/FunctionField/StableTower.lean}{ffEMData\_five\_eq\_tower}}]
 \label{thm:ffmc-false-five}
 Over $\FF_5[t]$ every Euclid polynomial $\ffprod(n)+1$ of the sequence
 seeded at~$t$ is irreducible
@@ -355,9 +357,18 @@ $\deg(\ffprod(n+1)) > \deg(\ffprod(n))$ for all~$n$.
 \end{lemma}
 
 \begin{lemma}[Pool degree to infinity ---
-\lean{EM/FunctionField/Finiteness.lean}{ffSeq\_degree\_tendsto\_atTop\_unconditional}]
+\lean{EM/FunctionField/PopulationEquidist.lean}{ff\_standard\_degree\_grows}]
 \label{lem:ff-pool}
 $\deg(\ffprod(n)+1) \to \infty$ as $n \to \infty$.
+\end{lemma}
+
+\begin{lemma}[Selected degree to infinity ---
+\lean{EM/FunctionField/Finiteness.lean}{ffSeq\_degree\_tendsto\_atTop\_unconditional}]
+\label{lem:ff-seq-degree}
+$\deg(\ffseq(n)) \to \infty$ as $n \to \infty$: the sequence is injective
+and there are finitely many monic irreducibles of each degree.  By
+minimality of the selected factor, the least degree of an irreducible
+factor of $\ffprod(n)+1$ therefore tends to infinity as well.
 \end{lemma}
 
 \paragraph{The necklace identity.}
@@ -413,7 +424,13 @@ The integer sieve approach to Mullin's Conjecture proceeds via
   \Rightarrow \SPV \Rightarrow \PSCDff
   \Rightarrow \text{Almost-All MC}.
 \]
-Over $\Fpt$, \emph{every arrow is unconditional}.
+Over $\Fpt$ the Lean development proves a \emph{counting proxy} for each
+step: six statements about the number $\irredcount(d)$ of monic
+irreducibles of degree~$d$, carrying the names of the steps.  These are
+unconditional, but none of them mentions a residue class, a character
+or a starting point; the statement that the chain is about---almost
+every start reaches every target---is Theorem~\ref{thm:ff-density},
+conditional on Kornblum's theorem.
 
 \smallskip
 \begin{center}
@@ -446,18 +463,22 @@ $L$-functions; that analogue is the Weil bound for $\Fpt$-Dirichlet
 characters, which in this development is a \placeholder\ (see the audit note at the start of this section).
 What is exact here is counting, not character cancellation.
 
-\paragraph{Step 2 --- PNT in arithmetic progressions.}
-\begin{theorem}[FF PNT-in-APs ---
+\paragraph{Step 2 --- ``PNT in arithmetic progressions'' (counting proxy:
+existence in every degree).}
+\begin{theorem}[\code{FFPNTInAPs}: an irreducible of every degree ---
 \lean{EM/FunctionField/NecklaceFormula.lean}{ffIrredCount\_pos}]
 For every $d \geq 1$, $\irredcount(d) \geq 1$.
 \end{theorem}
 
 The proof uses the Galois-field construction: the minimal polynomial of
 a primitive element of $\GF{p}{d}$ is monic irreducible of degree~$d$.
-The reduction to character cancellation is automatic
-(\lean{EM/FunctionField/FFCharacterSums.lean}{ff\_char\_cancel\_implies\_pnt}).
+No arithmetic progression occurs in this statement; the Lean
+implication from ``character cancellation''
+(\lean{EM/FunctionField/FFCharacterSums.lean}{ff\_char\_cancel\_implies\_pnt})
+does not use its hypothesis.
 
-\paragraph{Step 3 --- Forbidden class divergence.}
+\paragraph{Step 3 --- ``Forbidden class divergence'' (counting proxy:
+linear supply).}
 \begin{property}[FF-FCD ---
 \lean{EM/FunctionField/FFCharacterSums.lean}{FFFCD}]
 $\sum_{d=1}^{D}\irredcount(d) \geq D$ for all $D \geq 1$.
@@ -759,13 +780,15 @@ $\Phi_5 = t^4+t^3+t^2+t+1$ appears one stage later, as one of the two
 tied quartic factors of $\ffprod(3)+1 = t^8+t^4+t^2+t+1$).  Its Galois
 group is $\mathrm{Gal}(\FF_{2^4}/\FF_2) \cong \ZZ/4\ZZ$---abelian,
 not~$S_4$.
-More generally, the classical identity
-$\prod_{\deg Q \mid d}Q = t^{p^d}-t$ forces the greedy FF-EM to build
-products dividing $t^{p^d}-t$ for some~$d$, so $\ffprod(n)+1$ has
-splitting field inside $\GF{p}{N}$ for some~$N$ and the Galois group is
-\emph{cyclic}, generated by Frobenius.  Thus the ``large monodromy''
-hypothesis is structurally false for the greedy FF-EM, witnessed by
-\lean{EM/FunctionField/Analog.lean}{ff\_cyclotomic\_dead\_end}.
+More generally, \emph{every} Galois group over a finite field is cyclic,
+generated by Frobenius; for the Euclid polynomials this is
+\lean{EM/FunctionField/Analog.lean}{ffGaloisGroup\_isCyclic}.  A cyclic
+group does not contain $A_d$ for $d \geq 4$, so ``large monodromy'' in
+the sense of a Galois group containing the alternating group never
+holds for a single polynomial over~$\Fp$, whatever the sequence.  (An
+earlier draft derived this from ``the greedy products divide
+$t^{p^d}-t$'', which is not true of the sequence in general and is not
+needed.)
 
 \paragraph{The orbit-specificity boundary.}
 
@@ -812,31 +835,52 @@ a \emph{specific deterministic orbit};
 a random draw.
 \end{theorem}
 
-\paragraph{Dead End \#129 --- Large monodromy structurally false.}
+\paragraph{Dead End \#129 --- No large monodromy over a finite field.}
 
-\begin{property}[FF Large Monodromy (FFLM) ---
-\lean{EM/FunctionField/Analog.lean}{FFLargeMonodromy}]
-The Galois group of $\ffprod(n)+1$ eventually contains the alternating
-group: $|\mathrm{Gal}| \geq (\deg \ffprod(n))!/2$ for all sufficiently
-large~$n$.
+\begin{property}[FF Large Monodromy (FFLM), intended form]
+The Galois group of $\ffprod(n)+1$ over $\Fp$ eventually contains the
+alternating group: $|\mathrm{Gal}| \geq (\deg \ffprod(n))!/2$ for all
+sufficiently large~$n$.
 \end{property}
 
-\begin{theorem}[FFLM is structurally false ---
-\lean{EM/FunctionField/OrbitBarrier.lean}{dead\_end\_129\_monodromy\_dead}]
+\begin{theorem}[FFLM, as intended, is false ---
+\lean{EM/FunctionField/Analog.lean}{ffGaloisGroup\_isCyclic}]
 \label{thm:de129}
-The greedy FF-EM produces products dividing $t^{p^d}-t$.  Adding $1$
-gives a polynomial whose splitting field lies in $\GF{p}{N}$ for some
-$N$, hence Galois group $\cong \ZZ/N\ZZ$, generated by Frobenius---
-\emph{abelian}, not $A_d$.  The monodromy approach reduces to abelian
-Galois theory $=$ Dirichlet characters $=$ Weil $=$ population
-equidistribution; the route is circular.
+For every prime~$p$, every sequence and every~$n$, the Galois group of
+$\ffprod(n)+1$ over $\Fp$ is cyclic.  Since
+$\deg(\ffprod(n)+1) \to \infty$, it contains the alternating group for
+at most finitely many~$n$.
 \end{theorem}
+
+\noindent The only Galois datum of $\ffprod(n)+1$ is thus its Frobenius
+cycle type, i.e.\ the degrees of its irreducible factors.
+Equidistribution of cycle types (Chebotarev, Deligne) is a statement
+about \emph{families} of polynomials, hence population information; it
+does not constrain the one polynomial the orbit produces, and the route
+returns to the orbit-specificity barrier.
+
+\begin{remark}[What the Lean name \code{FFLargeMonodromy} says]
+The definition
+\lean{EM/FunctionField/Analog.lean}{FFLargeMonodromy} is not the
+property above but the proxy ``$|\mathrm{Gal}(\ffprod(n)+1)| > 1$ for
+all large~$n$'', and that proxy is \emph{true} for every~$p$
+(\lean{EM/FunctionField/Finiteness.lean}{ffLargeMonodromy}): by
+Lemma~\ref{lem:ff-seq-degree} the Euclid polynomial eventually has no
+linear factor, hence does not split.  The declarations
+\code{ff\_cyclotomic\_dead\_end} and
+\code{dead\_end\_129\_monodromy\_dead}, cited for this dead end in
+earlier drafts, contain no statement about Galois groups (they bundle the
+coprimality cascade with placeholder clauses, \placeholder).
+\end{remark}
 
 \paragraph{Dead End \#130 --- Generation $\neq$ coverage.}
 A natural hope is that subgroup escape (multipliers generate the full
 group) might imply dynamical hitting (the walk visits every element).
-Both PRE (over~$\ZZ$) and Weil (over~$\Fpt$) prove subgroup escape.
-The following counterexample shows this is insufficient.
+Over~$\ZZ$ subgroup escape is proved (PRE); over~$\Fpt$ it is expected
+from the Weil bound for $p$ large relative to $\deg Q$, but is not
+formalized (\code{FFSubgroupEscape} is a placeholder, \placeholder).
+The following counterexample shows that generation is insufficient in
+any case.
 
 \begin{theorem}[Generation $\neq$ coverage ---
 \lean{EM/FunctionField/OrbitBarrier.lean}{dead\_end\_130\_generation\_ne\_coverage}]
@@ -870,15 +914,18 @@ properties:
   implication \code{WeilBound}~$\to$~\code{FFPopulationEquidist}
   \placeholder).
 \item The barrier is not closed by Galois theory
-  (Theorem~\ref{thm:de129}; the surviving formal content is the
-  coprimality cascade).
+  (Theorem~\ref{thm:de129}; the corresponding clause of this Lean
+  conjunction is only the coprimality cascade, the Galois statement
+  being \code{ffGaloisGroup\_isCyclic}).
 \item The barrier is not closed by algebraic generation
   (Theorem~\ref{thm:de130}).
 \item Along every mixed walk the degree grows past any target
   (Theorem~\ref{thm:ff-stoch}); the probabilistic ``capture for
   $\varepsilon > 0$'' is a heuristic, not a theorem.
-\item The barrier is sharp at $\varepsilon = 0$
-  (Theorem~\ref{thm:ff-phase}).
+\item The degree also grows along the greedy walk
+  (the second half of \code{FFPhaseTransition}; no $\varepsilon$ occurs
+  in the Lean statement, see the discussion after
+  Theorem~\ref{thm:ff-stoch}).
 \end{enumerate}
 The final Lean clause, \code{PopulationMultCCSB}~$\to$
 \code{SelectionBiasNeutral}~$\to$~\code{FFMultiplierCCSB}, is a
@@ -894,8 +941,11 @@ placeholder implication \placeholder.
   clause is a placeholder implication \placeholder\ and proves nothing).
 \item Over $\Fpt$: orbit specificity remains ($\FFDH$ open for
   non-exceptional~$p$, false for $p = 5$; $\FFDH \Rightarrow \FFMC$).
-\item Over $\Fpt$: stochastic perturbation dissolves the barrier;
-  the deterministic limit does not.
+\item Over $\Fpt$: along every mixed walk, and along the greedy walk,
+  the degree of the Euclid polynomial grows past every target
+  (Theorem~\ref{thm:ff-stoch}).  That a stochastic perturbation of the
+  rule captures every target is a heuristic; it is not formalized, and
+  this clause does not assert it.
 \end{enumerate}
 \end{theorem}
 
@@ -930,13 +980,15 @@ as stuck, is recorded in the table below.
 \toprule
 \textbf{Aspect} & \textbf{Over $\ZZ$} & \textbf{Over $\Fpt$} \\
 \midrule
-Prime equidist.\ mod $q$ (ANT) & Mertens form proved & \textbf{Free} (Weil) \\
-Subgroup escape (SE) & Proved (PRE) & Proved (Weil) \\
+Prime equidist.\ mod $q$ (ANT) & Mertens form proved (asymptotic) & Weil: not formalized \placeholder \\
+Subgroup escape (SE) & Proved (PRE) & Not formalized \placeholder \\
 Coprimality cascade & Proved & Proved \\
-$\CME \Rightarrow \MC$ chain & Proved & Proved \\
+Hitting $\Rightarrow$ conjecture & Proved ($\mathrm{DH} \Rightarrow \MC$) & Proved ($\FFDH \Rightarrow \FFMC$) \\
+$\CME \Rightarrow \MC$ chain & Proved & Not formalized \placeholder \\
 Orbit specificity (CME / FF analogue) & \textbf{Open} & \textbf{Open} \\
 Walk character sums & Not standard & Not standard \\
-Stochastic MC ($\varepsilon > 0$) & Proved & Proved \\
+Degree growth along mixed walks & --- & Proved \\
+Capture under $\varepsilon$-perturbation & Not a theorem & Not formalized \\
 $\Phi_3$ exclusion & --- & \textbf{Proved} \\
 Defect telescope & Approximate & \textbf{Exact} \\
 Growth constant $C = 0 \Leftrightarrow (\mathrm{C}\infty)$ & Proved & Proved \\
@@ -956,10 +1008,12 @@ analog (the integer counterparts are catalogued in~\S\ref{sec:hard}).
 For $p = 5$ the answer is \emph{no} (Theorem~\ref{thm:ffmc-false-five}),
 and the same holds for every exceptional prime.  For non-exceptional~$p$:
 does every monic irreducible over $\Fpt$ eventually appear in the greedy
-FF-EM sequence?  Equivalently, does $\FFDH$ hold?  There $\FFDH$ is the
-sole remaining hypothesis: the stochastic version ($\varepsilon > 0$) is
-proved (Theorem~\ref{thm:ff-stoch}), and the open content is exactly the
-$\varepsilon = 0$ boundary.  Two further questions: is the set of
+FF-EM sequence?  Equivalently, does $\FFDH$ hold?  ($\FFDH$ and $\FFMC$ are equivalent:
+one direction is the bootstrap, the other is immediate, since $\FFDH$
+only concerns irreducibles that never appear;
+\lean{EM/Meta/HypothesisAudit.lean}{ffDynamicalHitting\_iff\_ffmc}.)  No
+stochastic version is proved: Theorem~\ref{thm:ff-stoch} is degree growth
+along mixed walks, not capture.  Two further questions: is the set of
 exceptional primes finite (heuristically yes; is $5$ the only one?), and
 does the seed-$t$ sequence over a non-exceptional prime, once it leaves
 the autonomous branch, ever return to it for a long stretch?
@@ -976,13 +1030,16 @@ holds over $\FF_p[t]$.
 \end{frontierbox}
 
 \begin{frontierbox}
-\textbf{Large monodromy beyond cyclotomic starts.}
-Dead End~\#129 shows the \emph{greedy} FF-EM produces cyclotomic (hence
-abelian) products.  Does the obstruction persist for non-greedy starting
-points?  Cohen's theorem~\cite{Cohen1981} shows a random monic
-polynomial of degree~$d$ has Galois group $S_d$ with probability
-tending to~$1$.  Is the recursive FF-EM structure forcing cyclotomic
-products an artifact of the greedy minimal-degree selection?
+\textbf{Monodromy of the family, not of the member.}
+Dead End~\#129 is unconditional and independent of the starting point:
+the Galois group over $\Fp$ of any single polynomial is cyclic.  What
+Cohen's theorem~\cite{Cohen1981} describes is the cycle type of
+Frobenius for a \emph{random} monic polynomial of degree~$d$ (it is
+distributed as the cycle type of a random element of $S_d$).  The
+meaningful question is therefore not about the Galois group of
+$\ffprod(n)+1$ but about its cycle type: is the factorization pattern of
+the Euclid polynomials along the orbit that of a random polynomial of
+the same degree?  This is again an orbit-level question.
 \end{frontierbox}
 
 \begin{frontierbox}
@@ -1038,10 +1095,13 @@ which assembles theorems~A, B, C, D
 into a single conjunction with zero open hypotheses.  Together they
 witness:
 \begin{itemize}[nosep,leftmargin=1em]
-\item the unconditional six-step sieve chain
-  (Theorem~\ref{thm:ff-almost-all});
-\item stochastic FF-MC and the $\varepsilon = 0$ phase transition
-  (Theorems~\ref{thm:ff-stoch}, \ref{thm:ff-phase});
+\item the counting inputs of the six-step sieve chain
+  (Theorem~\ref{thm:ff-almost-all}; counting proxies, the density
+  statement being Theorem~\ref{thm:ff-density}, conditional on
+  Kornblum's theorem);
+\item degree growth along every mixed walk and along the greedy walk
+  (Theorem~\ref{thm:ff-stoch}; the Lean names \code{theorem\_B\_stochastic\_mc}
+  and \code{theorem\_C\_phase\_transition} are historical);
 \item the necklace identity (Theorem~\ref{thm:necklace});
 \item the $\Phi_3$ exclusion criterion (Theorem~\ref{thm:ff-unreach});
 \item the orbit-barrier and setting-independence theses

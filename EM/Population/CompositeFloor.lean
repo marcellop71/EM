@@ -21,7 +21,8 @@ on a single elementary statement about the anatomy of the Euclid numbers,
 > **(C∞)** `prod n + 1` is composite for infinitely many `n`
 > (`AutonomousBranch.InfinitelyManyComposite`),
 
-which is open — and in fact on the strictly stronger *growth* statement (S) below.
+which is open — and in fact on the *growth* statement (S) below, which implies it
+(strictness is not claimed: no theorem here separates (S) from (C∞)).
 
 ## The mechanism
 
@@ -39,8 +40,8 @@ Note how little is used.  The autonomous-map obstruction of
 postulate (`eventually_prime_implies_not_mullin`), and the density-`1/2` failure through
 `Φ₃` having no root mod `q ≡ 2 (mod 3)`.  Neither is needed here: geometric growth of
 the accumulator alone kills the *reciprocal-sum* statements, which sit far below MC.
-So `mullin_implies_infinitelyManyComposite` is recovered as a corollary of a strictly
-weaker hypothesis, by a strictly more elementary route.
+So `mullin_implies_infinitelyManyComposite` is recovered from a hypothesis that MC implies
+(`RD`; that it is strictly weaker than MC is not claimed), by a more elementary route.
 
 ## The floor is really a growth statement
 
@@ -58,7 +59,8 @@ below *every* summable-reciprocal benchmark, infinitely often.  In arithmetic te
 
     minFac (prod n + 1) < 2 ^ (n - c)   for infinitely many `n`.
 
-This is strictly stronger than (C∞), which merely asks the least factor to be *proper*;
+This implies (C∞), which merely asks the least factor to be *proper* (the converse is not
+known and strictness is not claimed);
 indeed (S) with `c = 0` gives (C∞) at once, since `2 ^ n < prod n + 1`
 (`infinitelyManyComposite_of_reciprocalDivergence_via_growth`).  Perpetual primality is
 recovered as the extreme case `f n = 2 ^ n`.
@@ -83,8 +85,9 @@ it.
 * `summable_one_div_seq_of_perpetual` — perpetual primality makes `∑ 1/seq k` converge;
   now a corollary of (S).
 * `infinitelyManyComposite_of_reciprocalDivergence` and its corollaries — the floor.
-* `infinitelyManyComposite_of_small_minFac`,
-  `infinitelyManyComposite_of_reciprocalDivergence_via_growth` — (S) ⟹ (C∞).
+* `infinitelyManyComposite_of_reciprocalDivergence_via_growth` — (S) ⟹ (C∞), through
+  `infinitelyManyComposite_of_small_minFac` (proper least factor i.o. ⟹ (C∞): a rewording
+  of (C∞), not (S)).
 * `sum_inv_primes_below_le_tsum` — the reciprocal sum pays for every prime below the
   least missing prime; the one unconditional quantitative handle on that prime.
 * `sq_lt_prod_succ_of_prime`, `two_pow_two_pow_primeEuclidCount_le_prod`,
@@ -118,8 +121,9 @@ geometric growth.  But primality is not what the proof consumes.  All it uses is
 reciprocals converge.
 
 So the real floor under the smallness family is not (C∞) — the statement that the least
-prime factor of `prod n + 1` is sometimes a *proper* factor — but the strictly stronger
-growth statement (S): that the least prime factor is sometimes *small*.  Perpetual
+prime factor of `prod n + 1` is sometimes a *proper* factor — but the growth statement
+(S), which implies it (strictness not claimed): that the least prime factor is sometimes
+*small*.  Perpetual
 primality is recovered as the extreme special case, where the benchmark is `2 ^ n`.
 
 `exists_lt_of_reciprocalDivergence` is the contrapositive and the sharp form: divergence
@@ -148,7 +152,7 @@ theorem summable_one_div_seq_of_lower_bound {f : ℕ → ℝ} (hf0 : ∀ n, 0 < 
 /-- **The floor, read as a growth statement.**  If `∑ 1/seq k` diverges then the selected
 primes drop below *every* benchmark with summable reciprocals, infinitely often.
 
-This is strictly stronger than (C∞): (C∞) only says the least prime factor of
+This implies (C∞) (strictness is not claimed): (C∞) only says the least prime factor of
 `prod n + 1` is a proper factor infinitely often, whereas this says it is *small*
 infinitely often, against an arbitrarily generous notion of small. -/
 theorem exists_lt_of_reciprocalDivergence (h : ReciprocalDivergence) {f : ℕ → ℝ}
@@ -233,18 +237,24 @@ theorem infinitelyManyComposite_of_missingFinite (h : MissingFinite) :
   infinitelyManyComposite_of_weakMullin (missing_finite_implies_wm h)
 
 /-- **Mullin's conjecture forces (C∞)** — re-proved through the reciprocal sum rather
-than through Bertrand's postulate, and hence from a strictly weaker hypothesis.  Compare
+than through Bertrand's postulate, and hence from `RD`, which MC implies (strict weakness
+is not claimed).  Compare
 `AutonomousBranch.mullin_implies_infinitelyManyComposite`. -/
 theorem infinitelyManyComposite_of_mullin (hmc : MullinConjecture) :
     InfinitelyManyComposite :=
   infinitelyManyComposite_of_reciprocalDivergence (mc_implies_rd hmc)
 
-/-! ### The floor, sharpened: (S) sits strictly below (C∞)
+/-! ### The floor, sharpened: (S) implies (C∞)
 
 Each smallness statement forces not merely a *proper* factor infinitely often, but a
 *small* one — below `2 ^ (n - c)` for every fixed `c`.  And (S) implies (C∞) for a
 trivial reason: `prod n + 1 > 2 ^ n`, so a factor below `2 ^ n` cannot be the Euclid
-number itself.  So the floor genuinely descends. -/
+number itself.
+
+Note (2026-11-10): the header used to read "(S) sits strictly below (C∞)".  No strictness
+is proved: the theorems give (S) ⟹ (C∞) only
+(`infinitelyManyComposite_of_reciprocalDivergence_via_growth`), and whether (C∞) ⟹ (S) is
+not addressed. -/
 
 /-- **Weak Mullin forces a small factor.** -/
 theorem exists_small_minFac_of_weakMullin (h : WeakMullin) (c N : ℕ) :
@@ -261,8 +271,15 @@ theorem exists_small_minFac_of_mullin (hmc : MullinConjecture) (c N : ℕ) :
     ∃ n, N ≤ n ∧ 2 ^ c * minFac (prod n + 1) < 2 ^ n :=
   exists_small_minFac_of_reciprocalDivergence (mc_implies_rd hmc) c N
 
-/-- **(S) ⟹ (C∞).**  A factor strictly below the Euclid number is a proper factor, so the
-candidate is composite. -/
+/-- **A proper least factor infinitely often is (C∞).**  A least factor strictly below the
+Euclid number is a proper factor, so the candidate is composite.
+
+Note (2026-11-10): the hypothesis here is *not* (S).  It is "the least prime factor of
+`prod n + 1` is a proper factor for infinitely many `n`", which is (C∞) reworded (the two are
+equivalent, since `minFac m = m` exactly when `m ≥ 2` is prime); this lemma is the trivial
+direction of that rewording.  The implication (S) ⟹ (C∞) is
+`infinitelyManyComposite_of_reciprocalDivergence_via_growth`, which feeds the *small*-factor
+statement (`minFac (prod n + 1) < 2 ^ n`) into this lemma through `2 ^ n < prod n + 1`. -/
 theorem infinitelyManyComposite_of_small_minFac
     (h : ∀ N : ℕ, ∃ n, N ≤ n ∧ minFac (prod n + 1) < prod n + 1) :
     InfinitelyManyComposite := by

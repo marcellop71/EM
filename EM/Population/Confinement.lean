@@ -227,7 +227,13 @@ theorem not_mc_of_confinedRun (h : ConfinedRun) : ¬ MullinConjecture := by
   omega
 
 /-- **Under the dichotomy conjecture a confined run is eventually a Sylvester tower**: question
-(3) of the memo is a consequence of the conjecture. -/
+(3) of the memo is a consequence of the conjecture.
+
+Note (2026-11-10): confinement enters this proof only through `not_mc_of_confinedRun`, i.e.
+through `¬ MullinConjecture`.  The theorem is the instance at `ConfinedRun` of the general
+fact "`DichotomyConjecture` and `¬ MC` give perpetual primality" (the dichotomy says the growth
+constant is positive or MC holds), and says nothing specific about the structure of a confined
+run: no step of the argument relates the confined stages to the tower. -/
 theorem perpetual_of_confinedRun_of_dichotomy (hd : Dichotomy.DichotomyConjecture)
     (h : ConfinedRun) : ∃ N, AutonomousBranch.PerpetualPrimality N := by
   rw [← DefectTelescope.growthConstant_pos_iff_perpetualPrimality]

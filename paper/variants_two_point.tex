@@ -492,18 +492,27 @@ The chain is:
   \;\xRightarrow{?}\;
   \text{RandomTwoPointMC}.
 \]
-The remaining gap is \defname{PathSurvival}
-(\lean{EM/Stochastic/RandomTwoPointMCB.lean}{PathSurvival}):
-the ratio $\mathrm{survivalCount}(N) / \mathrm{deathCount}(N)$
-grows without bound.  Without positive survival at the same~$N$
-where pathCharSum is small, the Fourier inversion gives no
-information about unit classes.
+The remaining gap is a bound on the death count at the level~$N$ where
+pathCharSum is small: without enough surviving paths there, the Fourier
+inversion gives no information about unit classes.  The formalization
+originally stated this gap as \defname{PathSurvival}: the ratio
+$\mathrm{survivalCount}(N) / \mathrm{deathCount}(N)$ grows without
+bound.  That hypothesis does not say what was intended.  A dead path
+stays dead and has two dead extensions, so
+$\mathrm{deathCount}(N{+}1) \geq 2\,\mathrm{deathCount}(N)$ while the
+total is~$2^N$: after the first death the ratio is bounded, and
+PathSurvival$(q)$ holds only if \emph{no} path ever captures~$q$.  It
+is refuted at $q = 3$
+(\lean{EM/Meta/HypothesisAudit.lean}{not\_pathSurvival\_three}
+{\color{leanink}$\checkmark$}) and has been archived together with
+the theorem that consumed it.
 
 For $q = 3$, the analysis reveals a structural obstruction.
 Since $\mathrm{acc} = 2$ and $\minFac(3) = \operatorname{secondMinFac}(3) = 3$,
 the walk immediately dies: $3 \mid P_1 = 6$ on \emph{all} paths,
 and absorption is permanent.
-Thus PathSurvival(3) is false---but
+Thus PathSurvival(3) is false (this is the machine-checked
+refutation above)---and
 $\mathrm{TreeContractionAtHalf}(3)$ is \emph{also} false (the tree
 character sum is identically~$1$ at every depth, because all
 post-death factors are $\equiv 1 \pmod{3}$), making
@@ -519,12 +528,14 @@ $\chi$ maps to $\{1, -1\}$).  Although this property is proved,
 the immediate death at $q = 3$ means the zero-mean steps are
 never reached from the standard starting point.
 
-\paragraph{TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC.}
-The conditional implication is now \textbf{proved}
-(\lean{EM/Stochastic/RandomTwoPointMCB.lean}{tca\_path\_survival\_implies\_random\_mc\_proved}
-{\color{leanink}$\checkmark$}).
-The proof~(${\sim}400$~lines) builds the full Fourier counting
-infrastructure on $(\ZZ/q\ZZ)^\times$:
+\paragraph{Fourier counting for surviving paths.}
+The conditional implication
+TCA $+$ PathSurvival $\Rightarrow$ RandomTwoPointMC was proved
+(\archived{EM/Archive/Stochastic/PathSurvivalArchive.lean}{tca\_path\_survival\_implies\_random\_mc\_proved}),
+but since PathSurvival can hold only when no path dies it is archived
+as vacuous.  The Fourier counting infrastructure on
+$(\ZZ/q\ZZ)^\times$ from which it was assembled is unconditional and
+remains:
 \begin{enumerate}[nosep]
 \item \textbf{Path sum decomposition}
   (\lean{EM/Stochastic/RandomTwoPointMCB.lean}{path\_sum\_decomp}
@@ -560,14 +571,17 @@ infrastructure on $(\ZZ/q\ZZ)^\times$:
   where $B$ is the uniform bound on nontrivial $\|U(\chi)\|$.
 \end{enumerate}
 Combining: TCA gives $\|\mathrm{pathCharSum}\| < 1/(2q)$ for
-$N \geq N_0$; PathSurvival gives
-$\mathrm{survivalCount} > 2q^2 \cdot \mathrm{deathCount}$ for
-$N \geq N_1$.  At $N = \max(N_0,N_1)$, the Fourier lower bound yields
-$\mathrm{pathCount}(a) > 0$ for every unit~$a$, via the algebraic
-identity $2q^3 + 2q^2 + 3q + 2 > 0$ (true for all $q \geq 5$).
-For $q = 3$, TCA is vacuously false, so the implication holds trivially.
-The self-consistent RandomTwoPointMC thus reduces to exactly two open
-hypotheses: TreeContractionAtHalf and PathSurvival.
+$N \geq N_0$; if in addition
+$\mathrm{survivalCount}(N) > 2q^2 \cdot \mathrm{deathCount}(N)$ at one
+such level~$N$, the Fourier lower bound yields
+$\mathrm{pathCount}(a) > 0$ for every unit~$a$.  The second condition
+is what a correct replacement for PathSurvival must supply; because the
+death count can only grow relative to~$2^N$, it has to be a statement
+about a specific range of levels (or about paths counted up to their
+first capture), not an asymptotic ratio.  No such replacement is
+formalized: the self-consistent RandomTwoPointMC is at present reduced
+to TreeContractionAtHalf together with an \emph{unformulated} death-count
+bound, not to two stated open hypotheses.
 
 \paragraph{Ensemble $\varepsilon$-walk.}
 The formalization
@@ -585,7 +599,7 @@ converges to~$1/(q{-}1)$ for every fixed~$k$ and~$\sigma$
 
 \paragraph{Deterministic coverage via Cauchy--Davenport.}
 An independent, purely group-theoretic route to coverage is formalized in
-\code{EM/Stochastic/IteratedProductCoverage.lean} (293~lines, zero \code{sorry}).
+\code{EM/Stochastic/IteratedProductCoverage.lean} (414~lines, zero \code{sorry}).
 Given a sequence $S_0, S_1, \ldots$ of subsets of a finite commutative
 group~$G$ with $\mathrm{minOrder}(G) = |G|$ (true when $|G|$ is prime),
 the \defname{iterated product} $P_n = P_{n-1} \cdot S_{n-1}$ starting
@@ -605,6 +619,12 @@ $\mathrm{minOrder} = p{-}1 = |G|$, and the coverage bound gives diameter
 $p - 2$
 (\lean{EM/Stochastic/IteratedProductCoverage.lean}{safe\_prime\_coverage}
 {\color{leanink}$\checkmark$}).
+The hypothesis $\mathrm{minOrder}(G) = |G|$ cannot be dropped: in
+$(\ZZ/q\ZZ)^\times$ with $q \geq 5$ the constant sequence
+$S_k = \{1, -1\}$ never leaves the subgroup $\{\pm 1\}$
+(\lean{EM/Meta/HypothesisAudit.lean}{not\_factorBagCoverage}
+{\color{leanink}$\checkmark$}; this refutes a hypothesis
+\code{FactorBagCoverage} that asserted coverage for every prime~$q$).
 This complements the probabilistic Fourier approach: if the
 $\varepsilon$-walk factor sets have $|S_k| \geq 2$ at every step (the
 diversity condition), then Cauchy--Davenport gives deterministic coverage
@@ -615,7 +635,7 @@ step gives no progress.
 
 \paragraph{Dense capture and Baire category.}
 A topological perspective on the two-point variant is developed in
-\code{EM/Stochastic/DenseCapture.lean} (301~lines, zero \code{sorry}).
+\code{EM/Stochastic/DenseCapture.lean} (366~lines, zero \code{sorry}).
 The space of binary selection sequences $\sigma : \NN \to \mathrm{Bool}$
 carries the product topology (Cantor space), which is compact Hausdorff
 and hence a Baire space.  The \defname{captureSet}$(q, \mathrm{acc})$---the
@@ -629,12 +649,23 @@ depends only on $\sigma(0), \ldots, \sigma(k)$ (finitary dependence,
 \lean{EM/Stochastic/DenseCapture.lean}{epsWalkFactorFrom\_depends\_on\_prefix}
 {\color{leanink}$\checkmark$}).
 
-The sole open hypothesis is \defname{DenseCaptureHypothesis}: for
-$\mathrm{acc} \geq 2$, captureSet$(q, \mathrm{acc})$ is \emph{dense}.
-Under this hypothesis, the Baire category theorem gives that the
-intersection $\bigcap_{q\;\text{prime}} \mathrm{captureSet}(q, \mathrm{acc})$
+A prime dividing the seed is never captured: if $q \mid \mathrm{acc}$
+then captureSet$(q, \mathrm{acc}) = \emptyset$
+(\lean{EM/Stochastic/DenseCapture.lean}{captureSet\_eq\_empty\_of\_dvd}
+{\color{leanink}$\checkmark$}), since every chosen factor divides
+$P + 1$ for a multiple~$P$ of~$\mathrm{acc}$.  The sole open
+hypothesis is therefore \defname{DenseCaptureHypothesis} with this
+case excluded: for $\mathrm{acc} \geq 2$ and $q \nmid \mathrm{acc}$,
+captureSet$(q, \mathrm{acc})$ is \emph{dense}.  (As first stated, without
+the guard $q \nmid \mathrm{acc}$, the hypothesis was false for every
+prime and the density assumption of the Baire theorems was unsatisfiable:
+\lean{EM/Meta/HypothesisAudit.lean}{not\_denseCapture\_unguarded},
+\lean{EM/Meta/HypothesisAudit.lean}{not\_forall\_prime\_dense\_captureSet}.)
+Under the guarded hypothesis, the Baire category theorem gives that the
+intersection
+$\bigcap_{q\;\text{prime},\ q \nmid \mathrm{acc}} \mathrm{captureSet}(q, \mathrm{acc})$
 is \emph{comeager} (residual): a generic selection sequence captures
-every prime
+every prime not dividing the seed
 (\lean{EM/Stochastic/DenseCapture.lean}{fullCapture\_residual}
 {\color{leanink}$\checkmark$}).
 In particular, such a sequence exists

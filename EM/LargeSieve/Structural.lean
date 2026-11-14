@@ -359,9 +359,13 @@ def EMMultCharSumBound : Prop :=
         to character sum cancellation (sum chi(m(n)) = o(N)) via Fourier inversion
         on the group (ZMod q)^x.
 
-    **Open Prop**: this is the sieve-theoretic heart of the BV approach.
-    It requires tools from analytic number theory (Selberg sieve, Alladi's
-    theorem on least prime factors) that are not in Mathlib. -/
+    **Open Prop**: this is the sieve-theoretic heart of the BV approach.  No known
+    technique proves it: Bombieri–Vinogradov is a statement about all primes, and the
+    multipliers are least prime factors of the specific integers `prod(n) + 1`.
+    (An earlier version cited "Alladi's theorem on least prime factors" as a tool; Alladi's
+    theorem is the Möbius-weighted identity `∑_{n≥2, P⁻(n)≡a (q)} μ(n)/n = −1/φ(q)` and
+    gives no equidistribution of least prime factors, which is false for generic integers —
+    Dead End #160.) -/
 def BVImpliesEMMultCSB : Prop :=
   BombieriVinogradov → EMMultCharSumBound
 
@@ -414,7 +418,13 @@ theorem bv_decomposition_implies_mmcsb
 
     ```
     BV ->[h1]-> EMMultCSB ->[h2]-> MMCSB ->[mmcsb_implies_mc]-> MC
-    ``` -/
+    ```
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem bv_decomposed_chain_mc
     (hbv : BombieriVinogradov)
     (h1 : BVImpliesEMMultCSB)
@@ -424,7 +434,13 @@ theorem bv_decomposed_chain_mc
   mmcsb_implies_mc (h2 (h1 hbv)) hfin
 
 /-- **Decomposed BV chain for small threshold**: if the decomposed transfers
-    yield Q_0 <= 11, MC follows unconditionally. -/
+    yield Q_0 <= 11, MC follows unconditionally.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem bv_decomposed_small_threshold_mc
     (hbv : BombieriVinogradov)
     (h1 : BVImpliesEMMultCSB)
@@ -764,8 +780,10 @@ The sieve hierarchy (S36-S39) and the harmonic hierarchy (S30-S35) converge:
 both produce `DecorrelationHypothesis` as output.  The sieve route achieves
 this via counting-to-character-sum bridge (`sieve_equidist_implies_mult_csb`);
 the harmonic route states it directly.  This means ANY proof of
-`SieveEquidistribution` (e.g., from PNT in APs + Alladi's theorem) immediately
-gives `DecorrelationHypothesis` and `PositiveEscapeDensity` for free.
+`SieveEquidistribution` immediately gives `DecorrelationHypothesis` and
+`PositiveEscapeDensity` for free.  (`SieveEquidistribution` is an orbit-level
+hypothesis; it does not follow from PNT in APs or from Alladi's theorem, as an
+earlier version of this note suggested.)
 
 ### Chains:
 ```
@@ -921,8 +939,9 @@ The frontier `BVImpliesMMCSB` decomposes into two independent obstacles at a
 natural intermediate: **EMMultCharSumBound** (multiplier character sums cancel).
 
 1. **BV -> EMMultCSB** (sieve-theoretic): Transfer from the universal prime
-   counting function to the specific EM multipliers. This is where Alladi's
-   theorem, the Selberg sieve, and the BV averaged bound interact.
+   counting function to the specific EM multipliers. No known tool does this
+   (the population-to-orbit gap; Alladi's theorem, cited here earlier, is a
+   Möbius-weighted identity and does not apply).
 
 2. **EMMultCSB -> MMCSB** (harmonic-analytic): Transfer from multiplier character
    sums (linear) to walk character sums (product walk). The algebraic backbone
@@ -952,8 +971,8 @@ StrongSieveEquidist ->[proved]-> EMMultCSB ->[open]-> MMCSB ->[proved]-> MC
 The sieve hierarchy and harmonic hierarchy converge at DecorrelationHypothesis.
 SieveEquidistribution (a counting statement about minFac equidistribution) implies
 DecorrelationHypothesis (a character-sum cancellation statement) via the Weyl criterion.
-This means any proof of SieveEquidistribution (e.g., PNT in APs + Alladi) immediately
-gives Dec and PED for free.  The sole remaining gap to MC is PEDImpliesComplexCSB.
+This means any proof of SieveEquidistribution (an orbit-level hypothesis, not a
+consequence of PNT in APs) immediately gives Dec and PED for free.  The sole remaining gap to MC is PEDImpliesComplexCSB.
 
 ### New chains (S79):
 ```

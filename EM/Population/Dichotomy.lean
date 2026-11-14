@@ -30,8 +30,11 @@ there (`ffMC_two_of_ffDichotomy`, `ffMC_of_ffDichotomy_one_mod_three`); over `�
 consistent with the refutation, because the refuting sequence has positive growth constant
 (`stableTower_ffGrowthConstant_ne_zero`).
 
-**Scope.**  The conjecture is open in both directions for general seeds and its easy
-direction is only recorded for the seed `2`.  Nothing here constrains the orbit of `2`.
+**Scope.**  The easy direction holds for every seed (`QuadraticStep.sgrowth_eq_zero_of_genMC`),
+so the conjecture is exactly "infinitely many composite Euclid numbers along the orbit of `m`
+implies `GenMC m`", for every `m ≥ 2`.  Over `𝔽_p[X]` with `p = 2`, `p = 3` or `p ≡ 1 (mod 3)` the
+growth constant vanishes for every sequence, so there `FFDichotomy p` is propositionally
+`FFMullinConjecture p` and the implications below are unfoldings.  Nothing here constrains the orbit of `2`.
 -/
 
 noncomputable section

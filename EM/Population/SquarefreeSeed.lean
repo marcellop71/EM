@@ -10,6 +10,11 @@ answer, and the answer is a corollary of the seed-average law rather than a cons
 almost every seed selects `q`, and squarefree seeds have positive density, so some squarefree
 seed selects `q` (`exists_squarefree_seed_selects`).
 
+Note (2026-11-10): the existence and infinitude statements (`exists_squarefree_seed_selects`,
+`infinite_squarefree_seeds_select`) are satisfied by seeds that select `q` at step `0`
+(`genSeq_zero_eq_of_dvd`) and so say nothing about the dynamics; the result of this file with
+content is `almost_all_squarefree_select`.
+
 ## The argument
 
 * For `q = 2` any odd seed selects `2` at step `0` (`minFac (m+1) = 2`); take `m = 1`.
@@ -197,9 +202,28 @@ theorem card_not_squarefree_le (X : ℕ) :
 
 /-! ## 2. The existence theorem -/
 
+/-- **Step-`0` selection.**  If the prime `q` divides `m + 1` and no smaller prime does, then the
+seed `m` selects `q` at step `0`: `genSeq m 0 = minFac (m + 1) = q`.  No dynamics is involved.
+This is the elementary fact behind the note on `exists_squarefree_seed_selects`. -/
+theorem genSeq_zero_eq_of_dvd {q m : ℕ} (hq : q.Prime) (hd : q ∣ m + 1)
+    (hmin : ∀ p : ℕ, p.Prime → p < q → ¬ p ∣ m + 1) : genSeq m 0 = q := by
+  show Nat.minFac (m + 1) = q
+  have hne : m + 1 ≠ 1 := fun h => hq.one_lt.ne' (Nat.dvd_one.mp (h ▸ hd))
+  have hle : Nat.minFac (m + 1) ≤ q := Nat.minFac_le_of_dvd hq.two_le hd
+  by_contra hneq
+  exact hmin _ (Nat.minFac_prime hne) (lt_of_le_of_ne hle hneq) (Nat.minFac_dvd _)
+
 /-- **Every prime is selected by some squarefree seed coprime to it.**  For `q = 2` the seed
 `1` works; for `q ≥ 3` the seed is produced by counting: almost all seeds select `q`, while
-multiples of `q` and non-squarefree numbers together have density `≤ 1/3 + 1/2 < 1`. -/
+multiples of `q` and non-squarefree numbers together have density `≤ 1/3 + 1/2 < 1`.
+
+Note (2026-11-10): the *statement* carries no information about the dynamics.  `∃ k` allows
+`k = 0`, and any squarefree `m ≡ -1 (mod q)` such that `m + 1` has no prime factor below `q`
+selects `q` at step `0` (`genSeq_zero_eq_of_dvd`); for instance `m = q - 1` whenever that is
+squarefree (`q = 3, 7, 11, …`).  So the theorem is satisfied by step-`0` witnesses and is not,
+as a statement, a corollary of the seed-average law, even though it is proved from it here.
+The statement with content is `almost_all_squarefree_select`: a density-one set of squarefree
+seeds select `q`, and those with `q ∣ m + 1` have density at most `1/(q-1)` among them. -/
 theorem exists_squarefree_seed_selects (q : ℕ) (hq : q.Prime) :
     ∃ m : ℕ, Squarefree m ∧ ¬ q ∣ m ∧ ∃ k, genSeq m k = q := by
   by_cases hq2 : q = 2
@@ -328,7 +352,13 @@ theorem almost_all_squarefree_select (q : ℕ) (hq : q.Prime) {ε : ℝ} (hε : 
     _ = ε * ((X : ℝ) / 6) := by ring
     _ ≤ ε * _ := by gcongr
 
-/-- **Infinitely many squarefree seeds coprime to `q` select `q`.** -/
+/-- **Infinitely many squarefree seeds coprime to `q` select `q`.**
+
+Note (2026-11-10): as with `exists_squarefree_seed_selects`, the statement allows selection at
+step `0` and says nothing about the dynamics: the squarefree seeds `m ≡ -1 (mod q)` with
+`m + 1` free of primes below `q` all select `q` at step `0` (`genSeq_zero_eq_of_dvd`), and
+there are infinitely many of them by an elementary sieve (not formalized here).  The statement
+with content is `almost_all_squarefree_select`. -/
 theorem infinite_squarefree_seeds_select (q : ℕ) (hq : q.Prime) :
     Set.Infinite {m : ℕ | Squarefree m ∧ ¬ q ∣ m ∧ ∃ k, genSeq m k = q} := by
   by_cases hq2 : q = 2

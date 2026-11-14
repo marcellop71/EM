@@ -13,9 +13,12 @@ The main contribution is the **proved reduction**:
 `MultiModularCSB` (CCSB for q >= Q_0) implies `ThresholdHitting Q_0`,
 which combined with `FiniteMCBelow Q_0` gives `MullinConjecture`.
 
-This closes `MultiModularCSBImpliesMC` (previously open in S36) by showing that
-MMCSB implies MC unconditionally: the Fourier bridge is proved, and the finite
-verification below Q_0 is only needed for small Q_0.
+Note (2026-11-10).  This does **not** close `MultiModularCSBImpliesMC`
+(`MultiModularCSB → MullinConjecture`): MMCSB alone is equivalent to cofinite MC
+(`mmcsb_iff_missingFinite`), and reaching MC needs `FiniteMCBelow Q₀` at the same threshold.
+The usable statements are the ones with an explicit threshold, `MultiModularCSBAt Q₀`:
+`mmcsbAt_implies_mc`, `mmcsbAt_small_threshold_mc`.  The older `mmcsb_implies_mc` states its
+side condition at `hmmcsb.choose` and cannot be applied to a known threshold.
 
 ## Main Results
 
@@ -25,7 +28,9 @@ verification below Q_0 is only needed for small Q_0.
 * `mmcsb_hitcount_lb_at` : MMCSB gives per-prime hit count lower bounds (PROVED)
 * `mmcsb_we_at` : MMCSB gives per-prime walk equidistribution (PROVED)
 * `mmcsb_implies_threshold` : MMCSB implies ThresholdHitting Q_0 (PROVED)
-* `mmcsb_implies_mc` : MultiModularCSB implies MullinConjecture (PROVED)
+* `mmcsbAt_appears` : MMCSB at `Q₀` captures every prime `q ≥ Q₀` (PROVED)
+* `mmcsbAt_implies_mc` : `MultiModularCSBAt Q₀` + `FiniteMCBelow Q₀` ⟹ MC (PROVED)
+* `mmcsb_implies_mc` : the same at `hmmcsb.choose` (PROVED; not applicable to a known threshold)
 -/
 
 open Mullin Euclid MullinGroup RotorRouter
@@ -133,26 +138,25 @@ section MMCSBReduction
 
     Specializes `dirichlet_char_sum_le_of_unit_bound` (in EM/Equidist/FourierB.lean)
     with the per-prime bound extracted from `MultiModularCSB`. -/
-private theorem dirichlet_char_sum_le_of_mmcsb
-    (hmmcsb : MultiModularCSB)
+private theorem dirichlet_char_sum_le_of_mmcsbAt
+    {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
-    (hge : q ≥ hmmcsb.choose)
+    (hge : q ≥ Q₀)
     (ψ : DirichletCharacter ℂ q) (hψ : ψ ≠ 1)
     (ε : ℝ) (hε : 0 < ε) :
     ∃ N₀ : ℕ, ∀ N ≥ N₀,
       ‖∑ n ∈ Finset.range N, ψ ↑(emWalkUnit q hq hne n)‖ ≤ ε * N :=
-  dirichlet_char_sum_le_of_unit_bound hq hne (hmmcsb.choose_spec q hge hq hne) ψ hψ ε hε
+  dirichlet_char_sum_le_of_unit_bound hq hne (hmmcsb q hge hq hne) ψ hψ ε hε
 
-/-- Per-prime hit count lower bound from MMCSB: if MultiModularCSB holds with
-    threshold Q_0, then for any prime q >= Q_0 not in the sequence, the walk
+/-- Per-prime hit count lower bound from MMCSB: if `MultiModularCSBAt Q₀` holds, then for any prime q >= Q_0 not in the sequence, the walk
     hit count at every target t satisfies the linear lower bound.
 
     This replicates the argument from `fourier_step_implies_csb_lb` using
     per-prime MMCSB data instead of global CCSB. -/
-theorem mmcsb_hitcount_lb_at
-    (hmmcsb : MultiModularCSB)
+theorem mmcsbAt_hitcount_lb
+    {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
-    (hge : q ≥ hmmcsb.choose)
+    (hge : q ≥ Q₀)
     (t : (ZMod q)ˣ) :
     ∃ N₀ : ℕ, ∀ N ≥ N₀, WalkHitCount q hq hne t N * (2 * (q - 1)) ≥ N := by
   have : DecidableEq (DirichletCharacter ℂ q) := Classical.decEq _
@@ -165,7 +169,7 @@ theorem mmcsb_hitcount_lb_at
   -- For each non-trivial character, get threshold via per-prime MMCSB data
   let getN₀ : DirichletCharacter ℂ q → ℕ := fun ψ =>
     if hψ : ψ = 1 then 0
-    else (dirichlet_char_sum_le_of_mmcsb hmmcsb hq hne hge ψ hψ ε hε).choose
+    else (dirichlet_char_sum_le_of_mmcsbAt hmmcsb hq hne hge ψ hψ ε hε).choose
   let N₀ := Finset.univ.sup getN₀
   use N₀
   intro N hN
@@ -175,10 +179,10 @@ theorem mmcsb_hitcount_lb_at
     intro ψ hψ
     have hN₀_le : getN₀ ψ ≤ N₀ := Finset.le_sup (Finset.mem_univ ψ)
     have hN_ge : N ≥ getN₀ ψ := Nat.le_trans hN₀_le hN
-    have : N ≥ (dirichlet_char_sum_le_of_mmcsb hmmcsb hq hne hge ψ hψ ε hε).choose := by
+    have : N ≥ (dirichlet_char_sum_le_of_mmcsbAt hmmcsb hq hne hge ψ hψ ε hε).choose := by
       simp only [getN₀, dif_neg hψ] at hN_ge
       exact hN_ge
-    exact (dirichlet_char_sum_le_of_mmcsb hmmcsb hq hne hge ψ hψ ε hε).choose_spec N this
+    exact (dirichlet_char_sum_le_of_mmcsbAt hmmcsb hq hne hge ψ hψ ε hε).choose_spec N this
   -- Apply the proved Fourier step identity
   have hfourier : (WalkHitCount q hq hne t N : ℂ) * (q - 1 : ℕ) =
       ∑ χ : DirichletCharacter ℂ q,
@@ -256,71 +260,148 @@ theorem mmcsb_hitcount_lb_at
 
 /-- Per-prime walk equidistribution from MMCSB: if MultiModularCSB holds,
     then for q >= Q_0 not in the sequence, every target is hit cofinally. -/
-theorem mmcsb_we_at
-    (hmmcsb : MultiModularCSB)
+theorem mmcsbAt_we
+    {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
-    (hge : q ≥ hmmcsb.choose)
+    (hge : q ≥ Q₀)
     (t : (ZMod q)ˣ) :
     ∀ N₀, ∃ n, N₀ ≤ n ∧ emWalkUnit q hq hne n = t := by
   intro N₀
-  have hlb := mmcsb_hitcount_lb_at hmmcsb hq hne hge t
+  have hlb := mmcsbAt_hitcount_lb hmmcsb hq hne hge t
   have hunbd := unbounded_of_linear_lower_bound q hq hne t hlb
   exact cofinal_of_hitCount_unbounded q hq hne t hunbd N₀
 
 /-- Per-prime cofinal hitting of -1 from MMCSB: for q >= Q_0 not in seq,
     the walk hits -1 (equivalently, q divides prod(n)+1) cofinally. -/
-theorem mmcsb_cofinal_hit
-    (hmmcsb : MultiModularCSB)
+theorem mmcsbAt_cofinal_hit
+    {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀)
     {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
-    (hge : q ≥ hmmcsb.choose) :
+    (hge : q ≥ Q₀) :
     ∀ N, ∃ n, N ≤ n ∧ q ∣ (prod n + 1) := by
   intro N
-  obtain ⟨n, hn, heq⟩ := mmcsb_we_at hmmcsb hq hne hge (-1) N
+  obtain ⟨n, hn, heq⟩ := mmcsbAt_we hmmcsb hq hne hge (-1) N
   refine ⟨n, hn, (walkZ_eq_neg_one_iff n).mp ?_⟩
   have h := congr_arg Units.val heq
   simp only [emWalkUnit, Units.val_mk0, Units.val_neg, Units.val_one] at h
   exact h
 
-/-- **MMCSB implies ThresholdHitting**: MultiModularCSB with threshold Q_0
-    gives ThresholdHitting Q_0.
-
-    For each prime q >= Q_0 not in the sequence, the MMCSB character sum bound
-    feeds through the Fourier bridge to give walk equidistribution at q, hence
-    cofinal hitting of -1 (i.e., q | prod(n)+1 cofinally). The SE antecedent
-    in ThresholdHitting is simply ignored. -/
-theorem mmcsb_implies_threshold (hmmcsb : MultiModularCSB) :
-    ThresholdHitting hmmcsb.choose := by
+/-- **MMCSB at `Q₀` implies ThresholdHitting `Q₀`.**  For each prime `q ≥ Q₀` not in the
+    sequence, the character sum bound feeds through the Fourier bridge to give walk
+    equidistribution at `q`, hence cofinal hitting of `-1` (i.e. `q ∣ prod n + 1` cofinally).
+    The SE antecedent in `ThresholdHitting` is not used. -/
+theorem mmcsbAt_implies_threshold {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀) :
+    ThresholdHitting Q₀ := by
   intro q inst hq hne hge _hse N
   have : Fact (Nat.Prime q) := inst
-  exact mmcsb_cofinal_hit hmmcsb hq hne hge N
+  exact mmcsbAt_cofinal_hit hmmcsb hq hne hge N
 
-open Classical in
-/-- **MultiModularCSB + FiniteMCBelow implies MullinConjecture**.
+/-- **Cofinal hitting captures, with no hypothesis on smaller primes.**  If a prime `q` divides
+    `prod n + 1` for cofinally many `n`, then `q` appears in the sequence.  (Each such `n` has
+    `seq (n+1) = minFac (prod n + 1) ≤ q`; if `q` never appeared these would be infinitely many
+    distinct terms below `q`.)  Unlike `captures_target`, this does not need the primes below
+    `q` to have appeared. -/
+theorem exists_seq_eq_of_cofinal_dvd {q : ℕ} (hq : IsPrime q)
+    (h : ∀ N, ∃ n, N ≤ n ∧ q ∣ (prod n + 1)) : ∃ k, seq k = q := by
+  by_contra hne
+  have hinj : Function.Injective (fun n => seq (n + 1)) := fun a b hab => by
+    have := seq_injective _ _ hab; omega
+  have hfin : Set.Finite ((fun n => seq (n + 1)) ⁻¹' Set.Iio q) :=
+    (Set.finite_Iio q).preimage hinj.injOn
+  refine (Set.infinite_of_forall_exists_gt (s := (fun n => seq (n + 1)) ⁻¹' Set.Iio q) ?_) hfin
+  intro N
+  obtain ⟨n, hn, hd⟩ := h (N + 1)
+  have hpn : 2 ≤ prod n + 1 := by have := prod_ge_two n; omega
+  have hle : seq (n + 1) ≤ q := by rw [seq_succ]; exact minFac_min' _ _ hpn hq.1 hd
+  exact ⟨n, lt_of_le_of_ne hle (fun e => hne ⟨n + 1, e⟩), by omega⟩
 
-    The proof composes:
-    1. `mmcsb_implies_threshold`: MMCSB → ThresholdHitting(Q_0)
-    2. `threshold_finite_implies_mullin`: ThresholdHitting(B) + FiniteMCBelow(B) → MC
+/-- **MMCSB at `Q₀` captures every prime `q ≥ Q₀`** — unconditionally: neither
+    `FiniteMCBelow`, nor `PrimeResidueEscape`, nor induction on `q` is needed. -/
+theorem mmcsbAt_appears {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀)
+    {q : ℕ} (hq : IsPrime q) (hge : Q₀ ≤ q) : ∃ k, seq k = q := by
+  by_contra hne
+  have hne' : ∀ k, seq k ≠ q := fun k e => hne ⟨k, e⟩
+  have : Fact (Nat.Prime q) := ⟨(isPrime_iff_natPrime q).mp hq⟩
+  exact hne (exists_seq_eq_of_cofinal_dvd hq (mmcsbAt_cofinal_hit hmmcsb hq hne' hge))
 
-    For Q_0 <= 11, the finite verification is already done (`finite_mcBelow_11`).
-    For Q_0 > 11, `FiniteMCBelow(Q_0)` requires verifying that all primes below
-    Q_0 appear in the EM sequence (a finite computation in principle). -/
+/-- **MMCSB at an explicit threshold + finite verification below it ⟹ MC.**
+
+    This is the usable form of `mmcsb_implies_mc`: the threshold `Q₀` is a parameter, so
+    `FiniteMCBelow Q₀` is a concrete, finitely checkable statement about the sequence. -/
+theorem mmcsbAt_implies_mc {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀)
+    (hfin : FiniteMCBelow Q₀) : MullinConjecture := by
+  intro q hq
+  rcases Nat.lt_or_ge q Q₀ with hlt | hge
+  · exact hfin q hq hlt
+  · exact mmcsbAt_appears hmmcsb hq hge
+
+/-- **MMCSB at a threshold `Q₀ ≤ 11` ⟹ MC**, using the verified `finite_mcBelow_11`. -/
+theorem mmcsbAt_small_threshold_mc {Q₀ : ℕ} (hmmcsb : MultiModularCSBAt Q₀)
+    (hQ : Q₀ ≤ 11) : MullinConjecture :=
+  mmcsbAt_implies_mc hmmcsb (fun q hq hlt => finite_mcBelow_11 q hq (by omega))
+
+/-! ### The `Exists.choose`-stated forms (kept for the registry)
+
+Note (2026-11-10).  The theorems below are the original statements.  Their side hypotheses
+mention `hmmcsb.choose`, the witness that `Classical.choice` extracts from a proof of
+`∃ Q₀, …`.  Nothing can be proved about that number beyond the `∃` body itself, so a user who
+has established the bound for a *known* threshold (say `Q₀ = 11`) cannot discharge
+`FiniteMCBelow hmmcsb.choose` or `hmmcsb.choose ≤ 11`.  They are true, and they are corollaries
+of the `mmcsbAt_*` theorems above, which are the ones to use. -/
+
+/-- `Exists.choose` form of `mmcsbAt_hitcount_lb`; see the note above. -/
+theorem mmcsb_hitcount_lb_at
+    (hmmcsb : MultiModularCSB)
+    {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+    (hge : q ≥ hmmcsb.choose)
+    (t : (ZMod q)ˣ) :
+    ∃ N₀ : ℕ, ∀ N ≥ N₀, WalkHitCount q hq hne t N * (2 * (q - 1)) ≥ N :=
+  mmcsbAt_hitcount_lb (Q₀ := hmmcsb.choose) hmmcsb.choose_spec hq hne hge t
+
+/-- `Exists.choose` form of `mmcsbAt_we`; see the note above. -/
+theorem mmcsb_we_at
+    (hmmcsb : MultiModularCSB)
+    {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+    (hge : q ≥ hmmcsb.choose)
+    (t : (ZMod q)ˣ) :
+    ∀ N₀, ∃ n, N₀ ≤ n ∧ emWalkUnit q hq hne n = t :=
+  mmcsbAt_we (Q₀ := hmmcsb.choose) hmmcsb.choose_spec hq hne hge t
+
+/-- `Exists.choose` form of `mmcsbAt_cofinal_hit`; see the note above. -/
+theorem mmcsb_cofinal_hit
+    (hmmcsb : MultiModularCSB)
+    {q : Nat} [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q)
+    (hge : q ≥ hmmcsb.choose) :
+    ∀ N, ∃ n, N ≤ n ∧ q ∣ (prod n + 1) :=
+  mmcsbAt_cofinal_hit (Q₀ := hmmcsb.choose) hmmcsb.choose_spec hq hne hge
+
+/-- **MMCSB implies ThresholdHitting** at the `Exists.choose` threshold.
+    `Exists.choose` form of `mmcsbAt_implies_threshold`; see the note above. -/
+theorem mmcsb_implies_threshold (hmmcsb : MultiModularCSB) :
+    ThresholdHitting hmmcsb.choose :=
+  mmcsbAt_implies_threshold (Q₀ := hmmcsb.choose) hmmcsb.choose_spec
+
+/-- **MultiModularCSB + FiniteMCBelow implies MullinConjecture**, `Exists.choose` form.
+
+    Note (2026-11-10): the hypothesis `hfin` is stated at `hmmcsb.choose`, a number about
+    which nothing can be proved, so this theorem **cannot be applied to a known threshold**.
+    Use `mmcsbAt_implies_mc (h : MultiModularCSBAt Q₀) (hfin : FiniteMCBelow Q₀)`, of which
+    this is a one-line corollary.  Without any finite verification `MultiModularCSB` gives
+    exactly cofinite MC (`mmcsb_iff_missingFinite`). -/
 theorem mmcsb_implies_mc
     (hmmcsb : MultiModularCSB)
     (hfin : FiniteMCBelow hmmcsb.choose) :
     MullinConjecture :=
-  threshold_finite_implies_mullin hmmcsb.choose
-    (mmcsb_implies_threshold hmmcsb) hfin prime_residue_escape
+  mmcsbAt_implies_mc (Q₀ := hmmcsb.choose) hmmcsb.choose_spec hfin
 
-/-- **MMCSB with small threshold implies MC unconditionally**.
-    If the MMCSB threshold Q_0 satisfies Q_0 <= 11, then FiniteMCBelow Q_0
-    follows from the already-verified FiniteMCBelow 11, and MC follows. -/
+/-- **MMCSB with small threshold implies MC**, `Exists.choose` form.
+
+    Note (2026-11-10): `hsmall` is about `hmmcsb.choose` and cannot be discharged from a
+    known threshold; use `mmcsbAt_small_threshold_mc (h : MultiModularCSBAt Q₀) (hQ : Q₀ ≤ 11)`. -/
 theorem mmcsb_small_threshold_mc
     (hmmcsb : MultiModularCSB)
     (hsmall : hmmcsb.choose ≤ 11) :
-    MullinConjecture := by
-  apply mmcsb_implies_mc hmmcsb
-  intro q hq hlt
-  exact finite_mcBelow_11 q hq (by omega)
+    MullinConjecture :=
+  mmcsbAt_small_threshold_mc (Q₀ := hmmcsb.choose) hmmcsb.choose_spec hsmall
 
 end MMCSBReduction
 
@@ -362,7 +443,13 @@ def BVImpliesMMCSB : Prop := BombieriVinogradov → MultiModularCSB
 
     **Open Props**: BombieriVinogradov (known theorem, not in Mathlib),
     BVImpliesMMCSB (genuine frontier), and FiniteMCBelow(Q_0) for the
-    specific Q_0 produced by the transfer. -/
+    specific Q_0 produced by the transfer.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem bv_chain_mc
     (hbv : BombieriVinogradov)
     (htransfer : BVImpliesMMCSB)
@@ -371,13 +458,37 @@ theorem bv_chain_mc
   mmcsb_implies_mc (htransfer hbv) hfin
 
 /-- **BV chain for small threshold**: if BV + transfer yields Q_0 <= 11,
-    then MC follows unconditionally (no additional finite verification). -/
+    then MC follows unconditionally (no additional finite verification).
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem bv_small_threshold_mc
     (hbv : BombieriVinogradov)
     (htransfer : BVImpliesMMCSB)
     (hsmall : (htransfer hbv).choose ≤ 11) :
     MullinConjecture :=
   mmcsb_small_threshold_mc (htransfer hbv) hsmall
+
+/-- **BV chain to MC with an explicit threshold** (added 2026-11-10): the usable form of
+    `bv_chain_mc`.  The transfer is asked to produce the bound at a *named* threshold `Q₀`, so
+    that `FiniteMCBelow Q₀` is a concrete finite statement. -/
+theorem bv_chainAt_mc {Q₀ : ℕ}
+    (hbv : BombieriVinogradov)
+    (htransfer : BombieriVinogradov → MultiModularCSBAt Q₀)
+    (hfin : FiniteMCBelow Q₀) :
+    MullinConjecture :=
+  mmcsbAt_implies_mc (htransfer hbv) hfin
+
+/-- **BV chain with explicit threshold `Q₀ ≤ 11`.** -/
+theorem bv_chainAt_small_threshold_mc {Q₀ : ℕ}
+    (hbv : BombieriVinogradov)
+    (htransfer : BombieriVinogradov → MultiModularCSBAt Q₀)
+    (hQ : Q₀ ≤ 11) :
+    MullinConjecture :=
+  mmcsbAt_small_threshold_mc (htransfer hbv) hQ
 
 end BVTransfer
 
@@ -403,7 +514,13 @@ section ArithLargeSieveTransfer
     Euclid numbers (each is built from the previous). -/
 def ArithLSImpliesMMCSB : Prop := ArithmeticLargeSieve → MultiModularCSB
 
-/-- **Arithmetic large sieve chain to MC**. -/
+/-- **Arithmetic large sieve chain to MC**.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem arith_ls_chain_mc
     (hals : ArithmeticLargeSieve)
     (htransfer : ArithLSImpliesMMCSB)
@@ -478,44 +595,10 @@ theorem prod_growth_eventually_exceeds (B : ℕ) : ∃ N₀, ∀ N ≥ N₀, B �
     _ ≤ 2 ^ N := Nat.pow_le_pow_right (by omega) hN
     _ ≤ prod N := prod_exponential_lower N
 
-/-- **EM has level of distribution θ**: character sum bounds hold for the
-    EM walk at moduli `q ≤ (prod N)^θ / (log(prod N))^A`.
-
-    For every `A > 0`, there exists `N₀` such that for all `N ≥ N₀`, if
-    a prime `q` (not in the EM sequence) satisfies the size bound, then
-    the EM walk character sum at `q` is `o(N)`.
-
-    **Open Prop**: requires showing that the EM multipliers (least prime
-    factors of Euclid numbers) are "generic enough" to produce character
-    sum cancellation up to this range. Even `θ = ε > 0` suffices for
-    `MultiModularCSB` since `prod(N)` grows super-exponentially. -/
-def EMHasLevelOfDistribution (θ : ℝ) : Prop :=
-  0 < θ ∧ θ ≤ 1 ∧
-  ∀ (A : ℝ) (_ : 0 < A),
-  ∃ (N₀ : ℕ), ∀ (N : ℕ), N₀ ≤ N →
-    ∀ (q : ℕ) [Fact (Nat.Prime q)] (hq : IsPrime q) (hne : ∀ k, seq k ≠ q),
-    (q : ℝ) ≤ (prod N : ℝ) ^ θ / (Real.log (prod N : ℝ)) ^ A →
-    ∀ (χ : (ZMod q)ˣ →* ℂˣ) (_ : χ ≠ 1),
-    ‖∑ n ∈ Finset.range N, (χ (emWalkUnit q hq hne n) : ℂ)‖ ≤
-      (prod N : ℝ) ^ θ / (Real.log (prod N : ℝ)) ^ A
-
-/-- **Level of distribution implies MultiModularCSB**: any positive level
-    of distribution for the EM sequence implies character sum cancellation
-    for all sufficiently large prime moduli.
-
-    The key insight: since `prod N ≥ 2^N`, for any fixed prime `q`,
-    eventually `q ≤ (prod N)^θ / (log(prod N))^A`. So the LoD hypothesis
-    gives character sum bounds at `q` that are `o(N)` (since `(prod N)^θ`
-    grows polynomially in `prod N` while `N ≤ log₂(prod N)`).
-
-    **Open Prop**: the transfer from the LoD bound
-    `‖sum‖ ≤ (prod N)^θ / (log prod N)^A` to the `o(N)` bound needed by
-    MMCSB requires showing that `(prod N)^θ / (log prod N)^A = o(N)`.
-    This is subtle because `prod N` can grow faster than `2^N` (making the
-    bound weaker) and the relationship between `prod N` and `N` is not
-    monotone. The transfer is a genuine analytic step. -/
-def LoDImpliesMMCSB (θ : ℝ) : Prop :=
-  EMHasLevelOfDistribution θ → MultiModularCSB
+-- EMHasLevelOfDistribution moved to EM/Meta/HypothesisAudit.lean (RED #29): trivially true for
+-- every θ ∈ (0, 1] (`emHasLevelOfDistribution_iff`), because its bound
+-- (prod N)^θ / (log prod N)^A exceeds the trivial bound N.
+-- LoDImpliesMMCSB archived to EM/Archive/LargeSieve/BasicArchive.lean (RED #29).
 
 end ProductGrowth
 
@@ -657,7 +740,13 @@ def ALSFareyImpliesArithLS : Prop :=
     ```
     ALS + Farey →[ALSFareyImpliesArithLS]→ ArithLS
       →[ArithLSImpliesMMCSB]→ MMCSB →[proved]→ MC
-    ``` -/
+    ```
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem als_farey_chain_mc
     (hals : AnalyticLargeSieve) (hfarey : FareySpacing)
     (hreduce : ALSFareyImpliesArithLS)
@@ -667,7 +756,13 @@ theorem als_farey_chain_mc
   arith_ls_chain_mc (hreduce hals hfarey) htransfer hfin
 
 /-- **Simplified ALS chain to MC**: since `FareySpacing` is now proved,
-    the chain from ALS to MC no longer needs it as a hypothesis. -/
+    the chain from ALS to MC no longer needs it as a hypothesis.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem als_farey_chain_mc'
     (hals : AnalyticLargeSieve)
     (hreduce : ALSFareyImpliesArithLS)
@@ -676,26 +771,9 @@ theorem als_farey_chain_mc'
     MullinConjecture :=
   als_farey_chain_mc hals farey_spacing_proved hreduce htransfer hfin
 
-/-- **LoD chain to MC**: level of distribution implies MMCSB implies MC.
-
-    ```
-    EMHasLevelOfDistribution θ →[LoDImpliesMMCSB]→ MMCSB →[proved]→ MC
-    ``` -/
-theorem lod_chain_mc (θ : ℝ)
-    (hlod : EMHasLevelOfDistribution θ)
-    (htransfer : LoDImpliesMMCSB θ)
-    (hfin : FiniteMCBelow (htransfer hlod).choose) :
-    MullinConjecture :=
-  mmcsb_implies_mc (htransfer hlod) hfin
-
-/-- **LoD chain for small threshold**: if LoD + transfer yields Q₀ ≤ 11,
-    then MC follows unconditionally. -/
-theorem lod_small_threshold_mc (θ : ℝ)
-    (hlod : EMHasLevelOfDistribution θ)
-    (htransfer : LoDImpliesMMCSB θ)
-    (hsmall : (htransfer hlod).choose ≤ 11) :
-    MullinConjecture :=
-  mmcsb_small_threshold_mc (htransfer hlod) hsmall
+-- lod_chain_mc, lod_small_threshold_mc archived to EM/Archive/LargeSieve/BasicArchive.lean
+-- (RED #29): their hypothesis EMHasLevelOfDistribution θ is trivially true, so they were
+-- `mmcsb_implies_mc` / `mmcsb_small_threshold_mc` with a renamed premise.
 
 end FareyAndReduction
 
@@ -766,21 +844,18 @@ end ProductParity
 - `farey_spacing_proved` : |a/q - a'/q'| ≥ 1/Q² for distinct fractions (PROVED)
 - `als_farey_chain_mc` : ALS + Farey + ArithLSImpliesMMCSB → MC
 - `als_farey_chain_mc'` : ALS + ArithLSImpliesMMCSB → MC (Farey eliminated)
-- `lod_chain_mc` : LoD + LoDImpliesMMCSB → MC
-- `lod_small_threshold_mc` : LoD + transfer (small Q₀) → MC
 - `two_dvd_prod` : `2 ∣ prod n` (seq 0 = 2 divides every running product)
 - `prod_add_one_odd` : `¬ 2 ∣ (prod n + 1)` (Euclid numbers are odd)
 - `seq_pos_ne_two` : `seq n ≠ 2` for `n > 0` (all terms after the first are odd)
 - `fixed_q_eventually_in_sqrt_range` : `∀ B, ∃ N₀, ∀ N ≥ N₀, B ≤ √(prod N)`
 
 ### Open Props (S45-S48):
-- `EMHasLevelOfDistribution θ` : EM walk has level of distribution θ
-- `LoDImpliesMMCSB θ` : LoD → MultiModularCSB (analytic transfer)
+- (archived 2026-11-11, RED #29) `EMHasLevelOfDistribution θ`, `LoDImpliesMMCSB θ`: the former is
+  trivially true for θ ∈ (0, 1], so the latter is `MultiModularCSB` itself
 - `ALSFareyImpliesArithLS` : ALS + Farey → ArithLS (Gauss sum argument)
 
 ### Key new chains:
 ```
-LoD(θ) →[open]→ MMCSB →[proved]→ MC
 ALS + Farey(proved) →[open]→ ArithLS →[open]→ MMCSB →[proved]→ MC
 ```
 -/
@@ -835,7 +910,13 @@ theorem gct_implies_als_farey (hgct : GaussConductorTransfer) :
     ```
     ALS →[GaussConductorTransfer]→ ArithLS →[ArithLSImpliesMMCSB]→ MMCSB
       →[mmcsb_implies_mc]→ MC
-    ``` -/
+    ```
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem gauss_conductor_chain_mc
     (hgct : GaussConductorTransfer)
     (hals : AnalyticLargeSieve)
@@ -845,7 +926,13 @@ theorem gauss_conductor_chain_mc
   arith_ls_chain_mc (hgct hals) htransfer hfin
 
 /-- **Gauss-conductor chain for small threshold**: if the ArithLS→MMCSB
-    transfer yields Q₀ ≤ 11, MC follows unconditionally. -/
+    transfer yields Q₀ ≤ 11, MC follows unconditionally.
+
+    Note (2026-11-10): the last hypothesis is stated at the `Exists.choose` of the
+    transferred `MultiModularCSB`, a number about which nothing can be proved, so this theorem
+    cannot be applied to a known threshold.  A transfer that produces an explicit threshold
+    (`… → MultiModularCSBAt Q₀`) should be composed with `mmcsbAt_implies_mc` /
+    `mmcsbAt_small_threshold_mc` instead (for the BV chain: `bv_chainAt_mc`). -/
 theorem gauss_conductor_small_threshold_mc
     (hgct : GaussConductorTransfer)
     (hals : AnalyticLargeSieve)

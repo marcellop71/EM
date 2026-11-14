@@ -1,5 +1,6 @@
 import EM.Ensemble.PT
 import EM.Reduction.TailWindow
+import EM.Reduction.SMSB
 
 /-!
 # The uncentered ensemble character layer is false: Dead Ends #156 and #157, witnessed
@@ -16,7 +17,8 @@ witnessed".  This file supplies the witnesses; every proof is a two-line argumen
 
 Consequences: the open points `StepDecorrelation`, `FourPointPCV`, `TailWindowDecorrelation`
 are retired as FALSE, and the bridges `TWDImpliesCCSB`, `EnsembleEquidistImpliesDecorrelation`,
-`DecorrelationImpliesVariance`, `FourPointPCVImpliesSMSB` hold vacuously (proved below).  The
+`DecorrelationImpliesVariance`, `FourPointPCVImpliesSMSB`, `BSESMSBChainImpliesMC` (added
+2026-11-11) hold vacuously (proved below).  The
 proved chain theorems that consume these hypotheses (`decorrelation_implies_variance_proved`,
 `char_variance_implies_concentration_proved`, `sd_implies_cancellation`, `four_point_pcv_chain`,
 `second_moment_squared_implies_chebyshev`, the tail-window chain) remain valid conditionals with
@@ -160,12 +162,14 @@ theorem not_secondMomentSquaredBound (D : ℝ) : ¬ SecondMomentSquaredBound D :
 
 /-! ## Dead End #157 -/
 
-/-- **`EnsembleMultiplierEquidist` is false**: at step `0`, the odd squarefree seeds — at least
-half of all seeds — all have multiplier `2`, so the class `2 mod 5` has density `≥ 1/2 > 1/4`. -/
-theorem not_ensembleMultiplierEquidist : ¬ EnsembleMultiplierEquidist := by
-  intro h
-  have hprime : Nat.Prime 5 := by decide
-  have h5 := h 5 hprime 0 (2 : ZMod 5) (by decide)
+/-- **The step-`0` multiplier density is not uniform**: the odd squarefree seeds — at least
+half of all seeds — all have multiplier `2`, so the class `2 mod 5` has density `≥ 1/2 > 1/4`.
+This is the core of `not_ensembleMultiplierEquidist`, isolated because the step-`0` instance
+alone is what `JSEMarginalEquidist` asserted (`HypothesisAudit.not_jseMarginalEquidist`). -/
+theorem not_tendsto_sqfreeSeqDensity_zero_five :
+    ¬ Filter.Tendsto (fun X : ℕ => sqfreeSeqDensity X 0 5 (2 : ZMod 5)) Filter.atTop
+      (nhds (1 / (((5 : ℕ) : ℝ) - 1))) := by
+  intro h5
   have hlow : ∀ X : ℕ, 1 ≤ X → (1 / 2 : ℝ) ≤ sqfreeSeqDensity X 0 5 (2 : ZMod 5) := by
     intro X hX
     unfold sqfreeSeqDensity sqfreeSeqCount
@@ -188,10 +192,15 @@ theorem not_ensembleMultiplierEquidist : ¬ EnsembleMultiplierEquidist := by
         2 * (((Finset.Icc 1 X).filter (fun n => Squarefree n ∧ ¬ Even n)).card : ℝ) := by
       exact_mod_cast h2
     linarith
-  have hge : (1 / 2 : ℝ) ≤ 1 / ((5 : ℝ) - 1) := by
+  have hge : (1 / 2 : ℝ) ≤ 1 / (((5 : ℕ) : ℝ) - 1) := by
     refine ge_of_tendsto h5 ?_
     filter_upwards [Filter.eventually_ge_atTop 1] with X hX using hlow X hX
   norm_num at hge
+
+/-- **`EnsembleMultiplierEquidist` is false**: its instance at step `0`, `q = 5`, class `2`
+is refuted by `not_tendsto_sqfreeSeqDensity_zero_five`. -/
+theorem not_ensembleMultiplierEquidist : ¬ EnsembleMultiplierEquidist := fun h =>
+  not_tendsto_sqfreeSeqDensity_zero_five (h 5 (by decide) 0 (2 : ZMod 5) (by decide))
 
 /-! ## Vacuous bridges -/
 
@@ -206,6 +215,12 @@ theorem decorrelationImpliesVariance_vacuous : DecorrelationImpliesVariance :=
 
 theorem fourPointPCVImpliesSMSB_vacuous : FourPointPCVImpliesSMSB :=
   fun h => (not_fourPointPCV h).elim
+
+/-- `BSESMSBChainImpliesMC` holds vacuously: its second premise
+`∃ D > 0, SecondMomentSquaredBound D` is refuted for every `D` by
+`not_secondMomentSquaredBound`.  (Review `docs/analysis/review_2026-11-10.md`, row H26.) -/
+theorem bseSMSBChainImpliesMC_vacuous : BSESMSBChainImpliesMC :=
+  fun _ ⟨D, _, hD⟩ => (not_secondMomentSquaredBound D hD).elim
 
 end UncenteredRefutations
 
