@@ -194,6 +194,7 @@ import EM.Population.ClassThreeModFour
 import EM.Population.CMPoint
 import EM.Population.AdelicShadow
 import EM.Population.GreedyRigidity
+import EM.Population.EuclidClosed
 import EM.Population.FeedbackSelection
 import EM.Population.SquarefreeSeed
 import EM.Population.AlmostAllGenMC

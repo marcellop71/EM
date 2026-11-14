@@ -699,6 +699,122 @@ TSD implies TSDH
 (\lean{EM/Stochastic/TreeSieveDecay.lean}{tsd\_implies\_tsdh}
 {\color{leanink}$\checkmark$}).
 
+\paragraph{The threshold in TSDH is illusory.}
+Trapped starting points are closed under children, and a child is
+larger, squarefree and coprime to~$q$.  One trapped squarefree seed
+therefore yields arbitrarily large ones, and
+TreeSieveDecayHitting$(q)$ is \emph{equivalent} to the statement with
+no threshold: no squarefree $P \geq 2$ coprime to~$q$ is trapped
+(\lean{EM/Stochastic/MixedTree.lean}{treeSieveDecayHitting\_iff\_no\_trapped\_seed}
+{\color{leanink}$\checkmark$}).
+Deriving $\mathrm{MixedMC}(q)$ from it
+(\lean{EM/Stochastic/MixedTree.lean}{treeSieveDecayHitting\_implies\_mixedMC}
+{\color{leanink}$\checkmark$})
+is thus an instantiation at the seed~$2$: TSDH generalises the problem
+and does not reduce it.  (TSD itself, which asks for all units, fails
+at any squarefree $P = q^a - 1$, whose only child is absorbed; it is
+false if infinitely many such $P$ exist, which is expected and not
+proved.)
+
+\paragraph{The tree from~$2$: one statement, five forms.}
+For a prime $q \geq 3$ the following are equivalent to
+$\mathrm{MixedMC}(q)$, all machine-checked:
+\begin{itemize}
+\item $-1 \in R_\infty(q,2)$
+  (\lean{EM/Stochastic/MixedTree.lean}{mixedMC\_iff\_reachable} {\color{leanink}$\checkmark$});
+\item for any selection rule giving every prime factor of $P{+}1$
+  weight at least $\lambda/\omega(P{+}1)$, $\lambda > 0$, the rule
+  selects~$q$ within some finite horizon with positive probability
+  (\lean{EM/Stochastic/MixedTree.lean}{mixedMC\_iff\_failWeightK\_lt\_one} {\color{leanink}$\checkmark$});
+\item the same for the mixture
+  $\varepsilon\cdot\text{uniform} + (1{-}\varepsilon)\cdot\minFac$,
+  for one, equivalently every, $\varepsilon \in (0,1]$
+  (\lean{EM/Stochastic/MixedTree.lean}{mixedMC\_iff\_eps\_capture} {\color{leanink}$\checkmark$}, \lean{EM/Stochastic/MixedTree.lean}{eps\_capture\_indep} {\color{leanink}$\checkmark$});
+\item there is no \emph{trap}: no set of integers containing~$2$,
+  closed under $m \mapsto mp$ for primes $p \mid m{+}1$, and avoiding
+  $m \equiv -1 \pmod q$
+  (\lean{EM/Stochastic/MixedTree.lean}{mixedMC\_iff\_no\_trap} {\color{leanink}$\checkmark$});
+\item some node of the tree is itself not trapped
+  (\lean{EM/Stochastic/MixedTree.lean}{mixedMC\_iff\_exists\_untrapped\_node} {\color{leanink}$\checkmark$}).
+\end{itemize}
+So $\mathrm{MixedMC}$ is the \emph{positive-probability} reading of
+``$\varepsilon$~random, $1{-}\varepsilon$ Mullin'', and that reading
+does not depend on~$\varepsilon$.  Almost-sure capture is strictly
+stronger and is not addressed by these equivalences.
+
+\paragraph{Coset escape from the tree's own induction hypothesis.}
+The coset impossibility of \S\ref{sec:factor-confinement} assumes
+Mullin's conjecture below~$q$ for the greedy sequence.  It holds under
+the tree's own induction hypothesis instead: if $\mathrm{MixedMC}(r)$
+holds for all primes $r < q$ and fails at~$q$, the node residues
+$R_\infty(q,2)$ lie in no coset of a proper subgroup of
+$(\ZZ/q\ZZ)^\times$
+(\lean{EM/Stochastic/MixedTree.lean}{reachableEver\_not\_in\_coset\_of\_mixedMCBelow}
+{\color{leanink}$\checkmark$}).
+No unconditional version is proved, and none can come from residues
+alone: where the Euclid numbers met are prime, the residue follows the
+autonomous map $c \mapsto c(c{+}1)$, whose orbit of~$2$ avoids $-1$
+for many~$q$.
+
+\paragraph{Detours, and the order of vanishing in~$\varepsilon$.}
+Call a step a \emph{detour} if it does not take the least prime
+factor.  $\mathrm{MixedMC}(q)$ is the union over~$d$ of the statements
+``some branch with at most~$d$ detours reaches $-1 \bmod q$''
+(\lean{EM/Stochastic/MixedTree.lean}{mixedMC\_iff\_exists\_hitsWithin} {\color{leanink}$\checkmark$}); level~$0$
+says that $q$ divides some greedy Euclid number
+(\lean{EM/Stochastic/MixedTree.lean}{hitsWithin\_zero\_iff} {\color{leanink}$\checkmark$}).
+The number of detours is exactly the order of vanishing of the capture
+probability.  Fix a horizon~$N$ and let $p_N(\varepsilon)$ be the
+probability that the mixture from~$2$ selects~$q$ within $N$~steps.
+\begin{theorem}[\lean{EM/Stochastic/EpsilonOrder.lean}{capProb\_order}]
+If $q$ can be selected within $N$ steps with $d$ detours and with no
+fewer, there is $c > 0$ such that for all $\varepsilon \in (0,1]$
+\[
+  c\,\varepsilon^{d} \;\le\; p_N(\varepsilon) \;\le\; 3^{N}\varepsilon^{d}.
+\]
+\end{theorem}
+\noindent
+In particular $q \in \{a(1),\dots,a(N)\}$ if and only if
+$p_N(\varepsilon)$ stays bounded away from~$0$ as $\varepsilon \to 0$
+(\lean{EM/Stochastic/EpsilonOrder.lean}{mem\_seq\_iff\_capProb\_bounded\_below}
+{\color{leanink}$\checkmark$}):
+the Euclid--Mullin sequence is the $\varepsilon \to 0$ limit of the
+mixture in this exact sense.  The bound is per horizon and cannot be
+uniform in~$N$: for fixed $\varepsilon > 0$ the process has
+unboundedly many chances to detour.  Nothing here bounds the number of
+detours a given prime needs.
+
+\paragraph{A weaker form that is a theorem: free sub-products.}
+Every branch of the tree applies Euclid's step to the \emph{whole}
+product found so far.  Drop that constraint: call a set $S$ of primes
+\emph{Euclid-closed} if for every finite $I \subseteq S$ every prime
+factor of $1 + \prod_{p \in I} p$ lies in~$S$.
+\begin{theorem}[\lean{EM/Population/EuclidClosed.lean}{IsEuclidClosed.mem\_of\_prime}]
+A Euclid-closed set contains every prime.  Equivalently, the primes
+generated from nothing by Euclid's step with a freely chosen
+sub-product are all the primes
+(\lean{EM/Population/EuclidClosed.lean}{generated\_iff\_prime} {\color{leanink}$\checkmark$}).
+\end{theorem}
+\noindent
+This is a theorem of Booker~\cite{Booker2016}; Booker and
+Pomerance~\cite{BoPo2017} prove the sharper statement that for
+$q > 7$ the primes below~$q$ already suffice to produce~$q$.  The
+formalized proof is short.  Suppose $q \notin S$.  Call a class mod~$q$
+\emph{recurrent} if it contains infinitely many primes of~$S$, let $f$
+be the product of the finitely many primes of~$S$ in non-recurrent
+classes, and let $A \subseteq (\ZZ/q\ZZ)^\times$ be the set of residues
+of products of distinct recurrent primes.  Then $A$ is closed under
+multiplication, and under $a \mapsto fa + 1$: the number $1 + fN$ with
+$N \equiv a$ has all its prime factors in~$S$ and coprime to~$f$,
+hence recurrent.  Both maps permute the finite set~$A$.  If
+$A \neq \{1\}$ then $\sum_{a \in A} a = 0$, so
+$\sum_{a\in A}(fa+1) = \sum_{a \in A} a$ gives $|A| \equiv 0 \pmod q$
+with $1 \le |A| < q$; if $A = \{1\}$ then $f \equiv 0$.  Both are
+impossible.  The gap between this theorem and $\mathrm{MixedMC}$ is
+exactly the restriction of~$I$ to the prefixes of a single branch: the
+argument multiplies many primes of one residue class, which a prefix
+cannot select.
+
 \paragraph{Orbit melting: backward propagation.}
 Two squarefree positive integers with the same prime factor set are
 equal

@@ -153,7 +153,7 @@ the chosen factor at a deviation is the factorisation of one specific Euclid num
 | largest factor | full | infinitely many primes omitted (Cox–van der Poorten, Booker, Pollack–Treviño) | a quadratic-reciprocity invariant propagates because the small primes are kept out of the accumulator |
 | uniformly random factor | full, averaged | a.s. capture ⟸ block-reachability + anatomy (`RandomVariant.capturesAS_of_blocks`); open | the a.s. statement implies reachability, so it is at least as strong as `MixedMC` |
 | any factor (the Euclid tree) | full, with choice | `MixedMC` open; every prime below `10⁹` occurs (Booker–Irvine) | BFS in `(ℤ/q)^×` on reachable sets |
-| steered (Booker 2012) | full, with choice of *which product* to add 1 to | **complete**: every prime appears | choosing subsets steers residues by Dirichlet |
+| steered (Booker 2016) | full, with choice of *which product* to add 1 to | **complete**: every prime appears (Lean: `EuclidClosed.generated_iff_prime`, 2026-11-14) | products of many primes from one residue class; pigeonhole and a sum over the attainable residues |
 
 Reading the table top to bottom: the less feedback a rule has, the more is provable and the
 less it captures; the only complete rule is the one that is not a Euclid rule in the sense
