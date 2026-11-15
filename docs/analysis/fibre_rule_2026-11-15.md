@@ -1,0 +1,149 @@
+# The rule minFac(N + 1) over 𝔽_p[X]: the fibre frame and the twisted threshold
+
+2026-11-15. Lean: `EM/FunctionField/FibreRule.lean`, `EM/FunctionField/TwistedThreshold.lean`.
+
+Status of the claims below: the facts in §1 are standard and were recalled from memory, not
+looked up; their arrangement around this problem is ours. Everything in §2 and §3 marked
+with a Lean name is machine-checked. Nothing here proves a case of the function-field
+Mullin conjecture.
+
+## 1. The frame
+
+**1.1 A polynomial is a map.** `N ∈ 𝔽_p[X]` is a self-map `x ↦ N(x)` of the affine line.
+The roots of `N` are the fibre over `0`; the roots of `N + 1` are the fibre over `−1`. So
+"+1" keeps the map and moves the base point from `0` to `−1`. The integers have no
+analogue: an integer is not a self-map of Spec ℤ.
+
+**1.2 Prime factors are Frobenius orbits.** `N(α^p) = N(α)^p` and `−1` is Frobenius-fixed,
+so Frobenius permutes the fibre over `−1`. Its orbits are the irreducible factors of
+`N + 1`; the orbit length is the degree.
+
+**1.3 minFac is the most symmetric point of the fibre.** The factor of least degree is the
+shortest Frobenius orbit, i.e. the point defined over the smallest field:
+
+> deg minFac(N + 1) = the least d such that −1 is a value of N on 𝔽_{p^d}.
+
+Over ℤ "smallest" has no Galois meaning, because the residue fields 𝔽_2, 𝔽_3, 𝔽_5, … do not
+form a tower. Here the selection is canonical for the Galois action, up to ties between
+orbits of equal length.
+
+**1.4 The Galois object.** Take the family `N(x) − y` over the `y`-line and its monodromy
+group `G`. Each base point `c ∈ 𝔽_p` that is not a critical value gives a Frobenius class
+in `G` whose cycle type is the factorisation type of `N − c`.
+
+* Frobenius at `0`: cycle type = the degrees of the primes collected so far (the state).
+* Frobenius at `−1`: cycle type = the factorisation of `N + 1` (the menu).
+
+They are two elements of one group and nothing forces a relation between them. This is the
+exact meaning of "+1 destroys". Dead End #129 considered the Galois group of the single
+polynomial `N + 1` over `𝔽_p`, which is always cyclic; the group that matters is the one of
+the family. Equidistribution statements (Chebotarev over the base, Cohen-type theorems)
+average over the base point or over `N`; the sequence needs one base point and one `N`.
+
+**1.5 One kernel for both roles of a prime.** If `π` has roots `α₁, …, α_d`, then
+`π(β) = ∏ (β − αᵢ)`. So "`π` mod `Q`" and "`Q` mod `π`" are both built from the differences
+of their roots, and the process is a dynamical system on finite Frobenius-stable sets of
+points `Z ⊂ 𝔽̄_p`: adjoin a shortest Frobenius orbit among the `α` with
+`∏_{γ ∈ Z} (α − γ) = −1`. Over ℤ primes are points without coordinates and there is no
+such kernel; the two roles of a prime (as a modulus, as a residue) are linked only by
+Lagrange's theorem and quadratic reciprocity.
+
+**1.6 The two kinds of stage.** Write `P` for the running product, `π` for the chosen
+factor, `c` for the cofactor: `P + 1 = π·c`, next product `P′ = P·π`.
+
+* Prime stage (`c = 1`): `P′ = P² + P = g(P)`, `g(x) = x² + x`. The step is a composition
+  of maps. The next fibre over `−1` is the preimage under `P` of the fixed set `g⁻¹(−1)`,
+  the primitive cube roots of unity. This is the source of the Φ₃ criterion, the 𝔽_5 tower
+  and the 𝔽_2 threshold.
+* Composite stage: `c·P′ = g(P)`, and `c·(P′ + 1) = P² + P + c`. The next fibre is
+  `{α : P(α)² + P(α) + c(α) = 0}`. It is not the preimage of a fixed set: the cofactor
+  twists the tower, differently at each step.
+
+So the open part over function fields is the cofactor twist, the object called "deviation"
+in `EM/Population/FeedbackSelection.lean`.
+
+## 2. What is formalized of the frame (`FibreRule.lean`, any prime p)
+
+| Statement | Lean name |
+|---|---|
+| `N + 1` has an irreducible factor of degree dividing `d` iff `−1 ∈ N(𝔽_{p^d})` | `exists_irreducible_dvd_iff` |
+| along a sequence, `deg` of the next term is the least `m ≠ 0` with `−1 ∈ P_n(𝔽_{p^m})` | `ffSeq_natDegree_le_of_value`, `exists_value_ffSeq` |
+| `∏_{c ∈ 𝔽_p} (N + c) = N^p − N` | `prod_add_C` |
+| `f` divides some `N + c`, `c ∈ 𝔽_p`, iff `N` is Frobenius-fixed at a root of `f` | `exists_dvd_add_C_iff` |
+| composite stage: `c·(P_{n+1} + 1) = P_n² + P_n + c` | `cofactor_mul_euclid_succ` |
+| at a root `β` of `P_{n+1} + 1`: `y = P_n(β)` solves `y² + y + c(β) = 0`; iff when `c(β) ≠ 0` | `aeval_quadratic_of_root`, `dvd_euclid_succ_iff` |
+| splitting law: `1 − 4c(β)` is a square in `𝔽_p(β)` | `isSquare_disc_of_root` |
+
+The last three are the function-field twin of the integer identities in
+`EM/Population/QuadraticStep.lean` (`E_{n+1}` as a norm from the order of discriminant
+`1 − 4c_n`). Items 1.4 and 1.5 are not formalized.
+
+## 3. The first twisted case over 𝔽_2 (`TwistedThreshold.lean`)
+
+Over 𝔽_2 the prime stage is `P ↦ P² + P = (F + 1)P`, `F` = Frobenius. Let stages
+`n, …, n+k−1` be irreducible and stage `n+k` arbitrary with cofactor `c`. By §2, a root `β`
+of the next Euclid polynomial satisfies
+
+> (F + 1)^{k+1} (P_n(β)) = c(β).
+
+So `c(β)` lies in the image of `(F + 1)^{k+1}` on `𝔽_{2^d}`, `d = deg f`.
+
+**Theorem (image of (F+1)^k; `mem_image_sylv_iterate_iff`).** Let `d = 2^u·m` with `m` odd
+and `2^u ≤ k`. For `w ∈ 𝔽_{2^d}`:
+
+> w ∈ (F + 1)^k (𝔽_{2^d})  ⟺  Tr_{𝔽_{2^d} / 𝔽_{2^{2^u}}}(w) = 0.
+
+Necessity: `(F+1)^{2^u} = F^{2^u} + 1` in characteristic 2, and the relative trace of
+`(F^{2^u} + 1) z` telescopes to `F^d z + z = 0`. This direction holds for every `u` with
+`2^u ∣ d` and `2^u ≤ k`, without `m` odd (`relTr_eq_zero_of_sylv_iterate`). Sufficiency:
+on the trace-zero part `F + 1` is injective, because its kernel `{0, 1}` meets it only in
+`0` (the relative trace of `1` is `m`, odd); an injective self-map of a finite set is
+bijective.
+
+**Theorem (twisted threshold; `relTr_cofactor_eq_zero`).** With the notation above, if the
+irreducible `f` of degree `2^u·m` with root `β` divides the next Euclid polynomial and
+`2^u ≤ k + 1`, then `Tr_{𝔽_{2^d} / 𝔽_{2^{2^u}}}(c(β)) = 0`.
+
+**Corollary (splitting law over 𝔽_2; `trace_cofactor_eq_zero`).** At every stage, the
+absolute trace of `c_n(β)` vanishes at every root `β` of `P_{n+1} + 1`. Equivalently every
+prime factor of `P_{n+1} + 1` splits in the Artin–Schreier extension `y² + y = c_n` of
+`𝔽_2(X)`.
+
+**Recovering the autonomous threshold.** For `c = 1` the relative trace is the degree ratio
+`m` (`relTr_one`), so the condition reads "`m` is even": `2^{u+1} ∣ deg f` whenever
+`2^u ≤ k + 1`. This is `AutonomousThreshold.two_pow_succ_dvd_natDegree_of_run`.
+
+### What one cofactor does
+
+A run of irreducible stages *forbids degrees*. One cofactor removes the prohibition and
+replaces it by *trace conditions on the cofactor's value*: one bit for odd degrees, `2^u`
+bits for degrees divisible by `2^u ≤ k + 1`. The degree prohibition is the special case in
+which the cofactor is a constant, whose relative trace only sees the degree.
+
+In the language of §1.6: at a prime stage the extension that the new primes must split in
+is the constant extension `𝔽_4(X)` (hence a condition on degrees); at a composite stage it
+is the geometric extension `y² + y = c_n(X)`, a curve that changes with `n` (hence a
+character condition, satisfied by about half of the primes of each large degree).
+
+### Limits
+
+* The field-level theorem is sharp; the sequence-level theorem is only necessary. `c(β)` in
+  the image says that some `x` works, not that `P_n(β)` does.
+* The condition is the function-field form of the one-bit constraint of the integer case.
+  It does not decide a capture.
+* Runs have length at most 3 over 𝔽_2 (`CompositeFloors.not_four_consecutive_irreducible`),
+  so `k + 1 ≤ 4` and the conditions concern the subfields `𝔽_2, 𝔽_4, 𝔽_16`.
+
+## 4. Open after this
+
+1. **Two cofactors.** After two composite stages the relation is
+   `g(g(y)/w₁) = w₂` in the residue field: an additive (Artin–Schreier) condition applied
+   to a multiplicative twist. No trace form is expected; the question is whether any
+   closed condition survives.
+2. **Odd `p`.** The same analysis with `y² + y + c = 0` and the quadratic character of
+   `1 − 4c(β)`; the role of the relative trace is played by norms to subfields only for
+   prime stages (Φ₃), and the general twisted statement is `isSquare_disc_of_root`.
+3. **The monodromy group of `N(x) − y`** for the actual running products: is it the full
+   symmetric group at every stage? This would make "+1 destroys" a theorem about the
+   sequence in the averaged sense (over base points), and is the correct replacement for
+   the statement discarded in Dead End #129.
