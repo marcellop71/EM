@@ -1,6 +1,7 @@
 # The rule minFac(N + 1) over 𝔽_p[X]: the fibre frame and the twisted threshold
 
-2026-11-15. Lean: `EM/FunctionField/FibreRule.lean`, `EM/FunctionField/TwistedThreshold.lean`.
+2026-11-15. Lean: `EM/FunctionField/FibreRule.lean`, `EM/FunctionField/TwistedThreshold.lean`,
+`EM/FunctionField/RunMonodromy.lean`.
 
 Status of the claims below: the facts in §1 are standard and were recalled from memory, not
 looked up; their arrangement around this problem is ours. Everything in §2 and §3 marked
@@ -143,7 +144,34 @@ character condition, satisfied by about half of the primes of each large degree)
 2. **Odd `p`.** The same analysis with `y² + y + c = 0` and the quadratic character of
    `1 − 4c(β)`; the role of the relative trace is played by norms to subfields only for
    prime stages (Φ₃), and the general twisted statement is `isSquare_disc_of_root`.
-3. **The monodromy group of `N(x) − y`** for the actual running products: is it the full
-   symmetric group at every stage? This would make "+1 destroys" a theorem about the
-   sequence in the averaged sense (over base points), and is the correct replacement for
-   the statement discarded in Dead End #129.
+3. **The monodromy group of `N(x) − y`** for the actual running products: answered in
+   part in §5. It is not the symmetric group after a prime stage.
+
+## 5. The monodromy question (`RunMonodromy.lean`)
+
+**The tower breaks exactly at composite stages (`exists_comp_iff_irreducible`, any p).**
+`P_{n+1}` is a polynomial in `P_n` iff `P_n + 1` is irreducible. If it is, `P_{n+1} = g∘P_n`
+and the monodromy group of `P_{n+1}(x) − y` is imprimitive: it preserves the fibres of
+`P_n` and sits inside a wreath product with `ℤ/2`. If it is not, the degree of `P_{n+1}`
+lies strictly between `deg P_n` and `2·deg P_n`, so no such factorisation exists.
+
+**Imprimitivity at every base point (`two_dvd_natDegree_of_inert`, any p).** At a prime
+stage, if `y² + y = c` has no solution in `𝔽_p`, every irreducible factor of `P_{n+1} − c`
+has even degree. The `Φ₃` criterion is the base point `c = −1`.
+
+**A prime run has 2-group monodromy over 𝔽_2 (`aeval_ffProd_pow_eq_of_run`).** If stages
+`n, …, n+k−1` are prime and `k < 2^u`, then for every base point `c ∈ 𝔽_{2^e}` and every `β`
+with `P_{n+k}(β) = c`, the value `P_n(β)` lies in `𝔽_{2^{e·2^u}}`. Proof: `F^e + 1` is
+divisible by `F + 1`, so `(F^e + 1)^{k+1}` kills `P_n(β)`, and
+`(F^e + 1)^{2^u} = F^{e·2^u} + 1`.
+
+Reading: over `𝔽_2` the step `g` is additive, so `P_n ↦ P_{n+k}` is a torsor under
+`ker (F+1)^k`, on which Frobenius acts unipotently. The arithmetic monodromy of a run is a
+2-group. The degree prohibitions of the threshold theorem and the trace conditions of §3 are
+what a 2-group allows. So "+1 destroys" is false inside a run (the menu is rigidly tied to
+the state) and the freedom enters only at composite stages, where the tower restarts.
+
+**Still open.** After a composite stage: is `P_{n+1}` indecomposable, and what is the
+monodromy group of `P_{n+1}(x) − y`? Nothing here bounds it from below. The statements above
+are about the group of the family; the sequence still needs one base point (`−1`) and one
+map.
