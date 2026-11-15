@@ -176,6 +176,7 @@ import EM.Population.SelectionLaw
 import EM.Population.SylvesterTower
 import EM.Population.SpectralConspiracy
 import EM.Population.SquareTree
+import EM.Population.SquareBudget
 import EM.Population.TailEstimate
 import EM.Population.TailAssembly
 import EM.Population.TheoremC
