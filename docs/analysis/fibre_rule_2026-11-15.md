@@ -1,7 +1,7 @@
 # The rule minFac(N + 1) over 𝔽_p[X]: the fibre frame and the twisted threshold
 
 2026-11-15. Lean: `EM/FunctionField/FibreRule.lean`, `EM/FunctionField/TwistedThreshold.lean`,
-`EM/FunctionField/RunMonodromy.lean`.
+`EM/FunctionField/RunMonodromy.lean`, `EM/FunctionField/FirstComposite.lean`.
 
 Status of the claims below: the facts in §1 are standard and were recalled from memory, not
 looked up; their arrangement around this problem is ours. Everything in §2 and §3 marked
@@ -175,3 +175,40 @@ the state) and the freedom enters only at composite stages, where the tower rest
 monodromy group of `P_{n+1}(x) − y`? Nothing here bounds it from below. The statements above
 are about the group of the family; the sequence still needs one base point (`−1`) and one
 map.
+
+## 6. Across the first composite stage over 𝔽_2 (`FirstComposite.lean`)
+
+Over `𝔽_2` the start is forced: `P_3 = X⁸ + X⁴ + X² + X = g∘g∘g`, and
+`P_3 + 1 = (X⁴+X³+1)(X⁴+X³+X²+X+1)`. The next term is one of the two quartics
+(`ffSeq_four`); the two choices differ by `X ↦ X + 1`. In the first branch
+`P_4 = (X¹⁶ + X)/Φ₅ = X¹² + X¹¹ + X⁷ + X⁶ + X² + X`.
+
+**Theorem (`ffProd_four_indecomposable`).** If `P_4 = h∘q` over `𝔽_2` then `q` or `h` is
+linear.
+
+Proof. `P_4' = s²` with `s` a quintic without roots in `𝔽_2` (`derivative_ffProd_four`).
+Over `𝔽_2` every derivative is a square (`exists_sq_eq_derivative`): `q' = a²`, `h' = b²`.
+The chain rule gives `s = b(q)·a`, so `deg b·deg q + deg a = 5` with `2·deg a < deg q`,
+`2·deg b < deg h`, `deg q·deg h = 12`. The only non-trivial solution is `deg q = 4`,
+`deg a = 1`, which gives `s` a root in `𝔽_2`.
+
+**Consequence (not formalized).** Intermediate fields of `𝔽_2(x)/𝔽_2(P_4)` correspond to
+decompositions, so the monodromy group `G` of `P_4(x) − y` over `𝔽_2(y)` is primitive of
+degree 12. The base point `0` is not a critical value, and `P_4` factors there with degrees
+`1, 1, 2, 4, 4`, so `G` contains a permutation of that cycle type: it is odd, and its square
+fixes four points. The primitive groups of degree 12 are `PSL₂(11)`, `PGL₂(11)`, `M₁₁`,
+`M₁₂`, `A₁₂`, `S₁₂` (list recalled from memory, not looked up). The first, third, fourth and
+fifth contain no odd permutation; in `PGL₂(11)` a non-identity element fixes at most two
+points. Hence `G = S₁₂`. The geometric group (over `𝔽̄_2(y)`) is `A₁₂` or `S₁₂`; which one
+is not decided. Indecomposability over `𝔽̄_2` follows from the same derivative argument but
+is not in Lean.
+
+**Reading.** For `P_3` the group is a 2-group of order at most 32 acting on 8 points; one
+composite stage later it is the symmetric group on 12 points. So the answer to question 3
+of §4 is: no inside a run, yes (in this first case) right after a composite stage. The
+averaged form of "+1 destroys" holds for `P_4`: over base points `c ∈ 𝔽_{2^k}`, the
+factorisation types of `P_4 − c` are distributed like cycle types in `S₁₂` (or in a coset
+of `A₁₂`), by Chebotarev. This says nothing about the single base point `1`.
+
+**Open.** Whether the group stays symmetric at later composite stages, and what a prime
+stage after a composite one does (the group is then inside `S₂ ≀ G_n`; is it all of it?).
