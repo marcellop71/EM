@@ -393,3 +393,46 @@ conjecture itself. A failure would be a sequence with infinitely many composite 
 still misses a prime; for odd `p` the candidate mechanism is a character of the residue group
 trivial on every term and non-trivial on `−1`, which over `𝔽_2` cannot exist (§9).
 
+## 11. The classification by the tower (`TowerClassification.lean`, `StabilityCriterion.lean`)
+
+Let `T k = g^k(Y) + 1`, `g = Y² + Y`. Call `p` *stable* if every `T k` is irreducible over
+`𝔽_p`.
+
+**The tower bounds every run.** If stages `n, …, n+k−1` are prime then `P_{n+k} = g^k ∘ P_n`,
+so the Euclid polynomial at stage `n+k` is `T k ∘ P_n`, and a composition `T ∘ B` is
+irreducible only if `T` is. So the level polynomials of the one tower control the prime runs
+of every sequence from every stage (`level_irreducible_of_run`). Conversely, if `p` is
+stable every sequence is the tower (`perpetual_of_stable`).
+
+**Classification (any `p`), `ffMullinConjecture_iff_not_stable_and_dichotomy`:**
+
+    FF-MC(p)  ⟺  p is not stable  ∧  Dichotomy(p).
+
+* stable `p`: the conjecture is false and the dichotomy is true;
+* unstable `p`: composite stages are forced for every sequence, and the conjecture *is* the
+  dichotomy.
+
+The earlier case results are instances: `𝔽_2` (`T 3` reducible), `𝔽_3` and `p ≡ 1 (mod 3)`
+(`T 1` reducible), `𝔽_5` (stable).
+
+**Stability criterion (odd `p`), `stable_iff`.** A root `α` of `T (k+1)` lies over the root
+`θ = g(α)` of `T k` by a quadratic equation with discriminant `1 + 4θ`. With `T k`
+irreducible, `T (k+1)` is irreducible iff `α ∉ 𝔽_p(θ)` iff `1 + 4θ` is not a square there
+iff its norm to `𝔽_p` is not a square, and the norm is `(−4)^{2^k} · T k(−1/4)`
+(`prod_sub_conj`). So
+
+    p stable  ⟺  for all k,  (−4)^{2^k} · (g^k(−1/4) + 1) is a non-square mod p,
+
+the first element being `−3` (`disc_zero`). `−1/4 = g(−1/2)` is the critical value of `g`,
+and its orbit in `𝔽_p` is eventually periodic, so stability is a finite condition for each
+`p`. This is the criterion stated without proof in the header of `StableTower.lean`; the
+`𝔽_5` case there was proved by a separate induction.
+
+**Answer to "is the conjecture true for large `p`".** By the classification, for each odd
+`p` exactly one of two things holds: the critical orbit avoids squares for ever, and the
+conjecture over `𝔽_p` is false; or it does not, and the conjecture over `𝔽_p` is the
+dichotomy. Which `p` are stable is a question about the orbit of `−1/4` under `g` modulo
+`p`. Heuristically stable `p` are rare (an orbit of length about `√p` must avoid the
+squares); nothing is proved about their number, not even that it is finite or that `5` is
+not the only one.
+

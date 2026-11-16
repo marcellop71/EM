@@ -94,6 +94,8 @@ import EM.FunctionField.CriticalValues
 import EM.FunctionField.CompositeEntry
 import EM.FunctionField.IdentityTarget
 import EM.FunctionField.Dichotomy
+import EM.FunctionField.TowerClassification
+import EM.FunctionField.StabilityCriterion
 import EM.FunctionField.LinearSeeds
 import EM.FunctionField.StochasticMC
 import EM.FunctionField.SubgroupEscape
