@@ -337,3 +337,29 @@ Recurrence gives `P_j ≡ P_i`, i.e. the walk closes a loop somewhere, not at th
 remains of the conjecture over `𝔽_2` after this section is therefore: *the loop passes
 through the identity*, and the least-degree rule.
 
+### 9.1 Joint recurrence and the anchoring wall
+
+The recurrence argument does not need the modulus to be prime. For any monic `M` coprime to
+every running product, windows `≡ 1 (mod M)` occur beyond every stage
+(`exists_window_sub_one_of_coprime`, any `p`). Two consequences over `𝔽_2`:
+
+* a finite set of missed primes is captured *jointly* by one window Euclid polynomial
+  (`exists_window_add_one_joint`);
+* taking `M = Q^k`: the window Euclid polynomials tend to `0` in the `Q`-adic topology, for
+  all missed `Q` at once. In the compact group `∏_{Q missed} A_Q^×` the identity is a limit
+  point of window products. This is compactness and nothing else.
+
+**Why this does not anchor.** The conjecture needs the window to start at the empty product
+(over `𝔽_2` the empty Euclid number is `1 + 1 = 0`, divisible by every prime: every prime is
+"captured at stage −1", and the conjecture asks the walk to return there). Recurrence says
+that *some* earlier value returns. It would say that the *initial* value returns if the step
+were a bijection of a finite set, and it is not a self-map of the residue group at all: the
+factor `a_{n+1}` depends on `P_n`, not on `P_n mod Q`. On a prime run it is a self-map, the
+linear map `F + 1` of `𝔽_Q`, and its only failure of injectivity is its kernel `𝔽_2 = {0, 1}`:
+the dead state and the target. By Fitting, `𝔽_Q = 𝔑 ⊕ 𝔘` with `F + 1` nilpotent on
+`𝔑 = 𝔽_{2^{2^u}}` and bijective on `𝔘` (the kernel of the relative trace,
+`TwistedThreshold.mem_image_sylv_iterate_iff`); the target lies in `𝔑`, so a prime run can
+never remove a non-zero `𝔘`-component. This is the autonomous threshold again. Anchoring is
+therefore entirely a matter of the cofactor at composite stages, which is where §8 already
+located the conjecture. Recurrence is as far as the identity target goes by itself.
+

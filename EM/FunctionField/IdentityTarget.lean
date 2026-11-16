@@ -35,6 +35,9 @@ over `𝔽_p`, `p` odd, and over `ℤ`, the same argument gives windows `≡ 1`,
 (`docs/analysis/mersenne_duality_2026-10-27.md` treats this sign over `ℤ`; in
 characteristic 2 the Euclid and Mersenne problems coincide.)
 
+* `exists_window_add_one_joint` — a finite set of missed primes is captured *jointly* by one
+  window (recurrence in the product of the residue groups).
+
 No capture by the sequence itself is proved here.
 -/
 
@@ -180,6 +183,54 @@ theorem exists_window_add_one (d : FFEMData 2) {Q : (ZMod 2)[X]} (hQm : Q.Monic)
   obtain ⟨i, k, hi, hk, hik, h⟩ :=
     exists_window_sub_one d hQ (not_dvd_ffProd_of_missed d hQm hQ hmiss) N
   refine ⟨i, k, hi, hk, hik, ?_⟩
+  have e : window d i k + 1 = window d i k - 1 := by linear_combination two_eq_zero_poly
+  rwa [e]
+
+/-! ## Joint recurrence: any modulus prime to the sequence -/
+
+/-- **Joint recurrence, Mersenne form (any `p`).** If `M` is monic and coprime to every
+    running product, then beyond every stage there is a window of consecutive terms whose
+    product is `≡ 1 (mod M)`. -/
+theorem exists_window_sub_one_of_coprime (d : FFEMData p) {M : (ZMod p)[X]} (hM : M.Monic)
+    (hcop : ∀ n, IsCoprime M (d.ffProd n)) (N : ℕ) :
+    ∃ i k, N ≤ i ∧ 0 < k ∧ M ∣ window d i k - 1 := by
+  have : Module.Finite (ZMod p) (AdjoinRoot M) := hM.finite_adjoinRoot
+  have : Finite (AdjoinRoot M) := Module.finite_of_finite (ZMod p)
+  obtain ⟨a, b, hab, hfab⟩ :=
+    Finite.exists_ne_map_eq_of_infinite (fun m : ℕ => AdjoinRoot.mk M (d.ffProd (N + m)))
+  have key : ∀ a b : ℕ, a < b →
+      AdjoinRoot.mk M (d.ffProd (N + a)) = AdjoinRoot.mk M (d.ffProd (N + b)) →
+      ∃ i k, N ≤ i ∧ 0 < k ∧ M ∣ window d i k - 1 := by
+    intro a b hab h
+    refine ⟨N + a, b - a, by omega, by omega, ?_⟩
+    obtain ⟨u, v, huv⟩ := hcop (N + a)
+    have hprod : d.ffProd (N + b) = d.ffProd (N + a) * window d (N + a) (b - a) := by
+      rw [← ffProd_add]; congr 1; omega
+    rw [← AdjoinRoot.mk_eq_zero]
+    have h1 : AdjoinRoot.mk M v * AdjoinRoot.mk M (d.ffProd (N + a)) = 1 := by
+      have := congrArg (AdjoinRoot.mk M) huv
+      rwa [map_add, map_mul, map_mul, AdjoinRoot.mk_self, mul_zero, zero_add, map_one] at this
+    rw [hprod, map_mul] at h
+    rw [map_sub, map_one]
+    linear_combination (AdjoinRoot.mk M v) * (-h) +
+      (1 - AdjoinRoot.mk M (window d (N + a) (b - a))) * h1
+  rcases lt_or_gt_of_ne hab with h | h
+  · exact key a b h hfab
+  · exact key b a h hfab.symm
+
+/-- **A finite set of missed primes is captured jointly (`𝔽_2`).** If no prime of the finite
+    set `S` appears in the sequence, then beyond every stage there is a window of consecutive
+    terms whose Euclid polynomial is divisible by every prime of `S` at once. -/
+theorem exists_window_add_one_joint (d : FFEMData 2) {S : Finset (ZMod 2)[X]}
+    (hS : ∀ Q ∈ S, Q.Monic ∧ Irreducible Q ∧ ∀ n, d.ffSeq n ≠ Q) (N : ℕ) :
+    ∃ i k, N ≤ i ∧ 0 < k ∧ (∏ Q ∈ S, Q) ∣ window d i k + 1 := by
+  have hcop : ∀ n, IsCoprime (∏ Q ∈ S, Q) (d.ffProd n) := fun n =>
+    IsCoprime.prod_left fun Q hQ =>
+      ((hS Q hQ).2.1.coprime_iff_not_dvd).mpr
+        (not_dvd_ffProd_of_missed d (hS Q hQ).1 (hS Q hQ).2.1 (hS Q hQ).2.2 n)
+  obtain ⟨i, k, hi, hk, h⟩ :=
+    exists_window_sub_one_of_coprime d (monic_prod_of_monic _ _ fun Q hQ => (hS Q hQ).1) hcop N
+  refine ⟨i, k, hi, hk, ?_⟩
   have e : window d i k + 1 = window d i k - 1 := by linear_combination two_eq_zero_poly
   rwa [e]
 
