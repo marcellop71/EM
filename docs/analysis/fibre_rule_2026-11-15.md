@@ -436,3 +436,48 @@ dichotomy. Which `p` are stable is a question about the orbit of `−1/4` under 
 squares); nothing is proved about their number, not even that it is finite or that `5` is
 not the only one.
 
+## 12. Which primes are stable (`StablePrimes.lean`)
+
+**Small cases.** `2`, `3` and every `p ≡ 1 (mod 3)` are not stable; `5` is
+(`not_stable_two`, `not_stable_three`, `not_stable_of_one_mod_three`, `stable_five`).
+
+**One integer sequence.** The elements of `𝔽_p` that decide stability are the reductions of
+integers that do not depend on `p`. With `n_0 = −1`, `n_{k+1} = n_k (n_k + 4^{2^k})`, so that
+`g^k(−1/4) = n_k / 4^{2^k}`, put `e_k = n_k + 4^{2^k}` and `Δ_k = (−1)^{2^k} e_k`
+(`Δ_0 = −3`, `Δ_1 = 13`). Then (`stable_iff_discZ`)
+
+    odd p is stable  ⟺  Δ_k is a non-square mod p for every k.
+
+* *Pairwise coprime* (`isCoprime_discZ`). `n_{k+1} = n_k e_k`, so `e_k ∣ n_j` for `j > k`
+  and `e_j ≡ 4^{2^j}` modulo `e_k`, which is odd. This is Euclid's argument, on the critical
+  orbit.
+* *No `Δ_k` is a square in `ℤ`* (`not_isSquare_discZ`). A stable prime certifies it: a
+  square in `ℤ` is a square mod `p`. The prime `5` is stable.
+* *Independence* (`not_isSquare_prod_discZ`). No non-empty product of distinct `Δ_k` is a
+  square: a coprime factor of a square is `±` a square, and `−1` is a square mod `5`.
+
+So the existence of one stable prime gives the independence of all the conditions.
+
+**Proposition (not in Lean): the stable primes have density zero.** For `K ≥ 0` let `S_K`
+be the set of odd primes `p` with `Δ_k` a non-square mod `p` for all `k ≤ K`. Its indicator
+is `∏_{k ≤ K} (1 − (Δ_k/p))/2`. Expanding, the term of a non-empty `A ⊆ {0..K}` is
+`±(Δ_A/p)` with `Δ_A = ∏_{k∈A} Δ_k`, which by independence is not a square, so
+`p ↦ (Δ_A/p)` is a non-trivial quadratic Dirichlet character (reciprocity) and averages to
+zero over primes (Dirichlet). Hence `S_K` has density `2^{−(K+1)}`. Stable primes lie in
+every `S_K`.
+
+**What this does and does not give.**
+
+* Density zero: yes, by the argument above (standard inputs only).
+* A rate: the moduli `Δ_k` grow doubly exponentially, so unconditionally one can take only
+  `K` of size about `log log log x`, and the bound is `π(x)` divided by a power of
+  `log log x`. Under GRH `K ≈ log log x` and the saving is a power of `log x`. Neither gives
+  a convergent count.
+* Finiteness: not provable this way. The heuristic (an orbit of length about `√p` avoiding
+  the squares) predicts finitely many, possibly only `5`; nothing of the kind is proved.
+
+**Remark.** `g(x) = x² + x` is conjugate by `y = x + 1/2` to `y² + 1/4`, the parabolic
+parameter at the cusp of the Mandelbrot set, and the level polynomials are `f^k(y) + 1/2`.
+Density-zero statements for stable primes of quadratic polynomials are part of arithmetic
+dynamics (R. Jones and others); I have not checked whether this case is in the literature.
+
