@@ -363,3 +363,33 @@ never remove a non-zero `𝔘`-component. This is the autonomous threshold again
 therefore entirely a matter of the cofactor at composite stages, which is where §8 already
 located the conjecture. Recurrence is as far as the identity target goes by itself.
 
+## 10. The dichotomy (`Dichotomy.lean`)
+
+**Statement (open, any `p`).** `FFDichotomy p`: a sequence over `𝔽_p` that misses a prime
+is eventually a tower (all Euclid polynomials irreducible from some stage on). The converse
+is `CompositeEntry.exists_missed_of_perpetual`.
+
+| statement | Lean |
+|---|---|
+| a tower misses a prime | `misses_of_eventuallyPrime` |
+| conjecture ⇒ dichotomy | `ffDichotomy_of_ffMullinConjecture` |
+| conjecture ⟺ dichotomy ∧ (every sequence has infinitely many composite stages) | `ffMullinConjecture_iff` |
+| the dichotomy holds over `𝔽_5` | `ffDichotomy_five` |
+| over `𝔽_2`, `𝔽_3`: dichotomy ⟺ conjecture | `ffDichotomy_two_iff`, `ffDichotomy_three_iff` |
+
+**Reading.** The conjecture over `𝔽_p` is the conjunction of two statements of different
+nature.
+
+* *Dynamics.* The tower `g^n(X) + 1`, `g = X² + X`, does not stay irreducible. This depends
+  on `p`: false over `𝔽_5`, true over `𝔽_2` and `𝔽_3`. For odd `p` it is a question about
+  the finite orbit of the critical point `−1/2`, hence a finite condition for each `p`.
+* *Selection.* The dichotomy. Its form does not depend on `p`, no instance is known to
+  fail, and the `𝔽_5` counterexample to the conjecture is an instance where it holds.
+
+So the dichotomy is the uniform-in-`p` statement that the `𝔽_5` screen cannot kill, and
+"is the conjecture true over `𝔽_p`" becomes "does `p` have a stable tower", provided the
+dichotomy holds. Nothing here is evidence for the dichotomy: over `𝔽_2` and `𝔽_3` it is the
+conjecture itself. A failure would be a sequence with infinitely many composite stages that
+still misses a prime; for odd `p` the candidate mechanism is a character of the residue group
+trivial on every term and non-trivial on `−1`, which over `𝔽_2` cannot exist (§9).
+

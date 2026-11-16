@@ -93,6 +93,7 @@ import EM.FunctionField.FirstComposite
 import EM.FunctionField.CriticalValues
 import EM.FunctionField.CompositeEntry
 import EM.FunctionField.IdentityTarget
+import EM.FunctionField.Dichotomy
 import EM.FunctionField.LinearSeeds
 import EM.FunctionField.StochasticMC
 import EM.FunctionField.SubgroupEscape
