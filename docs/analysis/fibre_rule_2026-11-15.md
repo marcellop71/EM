@@ -481,3 +481,51 @@ parameter at the cusp of the Mandelbrot set, and the level polynomials are `f^k(
 Density-zero statements for stable primes of quadratic polynomials are part of arithmetic
 dynamics (R. Jones and others); I have not checked whether this case is in the literature.
 
+## 13. The dichotomy: what an attack must look like (analysis, no new Lean)
+
+For unstable `p`, in particular `p = 2`, the dichotomy is the conjecture (§10–§11). I found
+no proof. What follows are the constraints on any proof.
+
+**13.1 Three equivalent forms** (all already in the repository in substance). For a sequence
+`d` and the missed prime `Q` of least degree:
+
+* *avoidance*: from some stage on `Q ∤ P_n + 1` (`Bootstrap.FFDynamicalHitting` is the
+  negation; a missed prime is offered only finitely often, because each late offer captures
+  one of the finitely many uncaptured primes of that degree);
+* *walk*: the residue walk `w_n = P_n mod Q` avoids `−1` for ever, with steps
+  `w_{n+1} = g(w_n) / c_n(β)`, `c_n` the cofactor (`FibreRule.cofactor_mul_euclid_succ`);
+* *dichotomy*: this can happen only if all cofactors are eventually `1`.
+
+So the dichotomy says: **a walk that receives infinitely many non-trivial cofactors cannot
+avoid `−1`.**
+
+**13.2 The cofactor screen.** The same statement is false for the *take-all* rule
+(`P_{n+1} = P_n (P_n + 1)` at every stage, composite or not). There the walk is the
+autonomous map `w ↦ g(w)` for ever, Euclid polynomials are composite, and over `𝔽_2` every
+prime of odd degree `> 1` is missed (`AutonomousThreshold.lean`). So a proof of the
+dichotomy must use that the cofactor is *discarded*. Together with the `𝔽_5` screen: a proof
+must use (a) a property of the cofactor at composite stages, (b) nothing that holds for the
+take-all rule, (c) nothing uniform in the rule "least" versus "any" unless it also proves the
+tree statement.
+
+**13.3 Soft arguments stop here.** After the exhaustion point every term has degree larger
+than `deg Q`, hence is a unit modulo every missed prime of that degree, and by the
+function-field Dirichlet theorem such terms realise every element of the residue group. So
+"avoids `−1` for ever" contradicts nothing that is expressed through residues, degrees, or
+recurrence (§9.1). The contradiction, if there is one, must come from the factorisation of
+the specific polynomials `P_n + 1`. This is the same wall as over `ℤ` (`MixedTree.lean` §2).
+
+**13.4 A caution on the statement.** "Eventually every Euclid polynomial is irreducible"
+could fail for a harmless reason: a stage where `P_n + 1` is a prime *power* involves no
+choice either. Over `𝔽_3` every prime stage is followed by such a stage
+(`P_{n+1} + 1 = (P_n − 1)²`). The robust form of the dichotomy is "eventually no choice":
+every Euclid polynomial is a prime power. For `p = 2, 3` the two forms agree with the
+conjecture, since choices are forced to occur; for general `p` the robust form is the safer
+conjecture. Not formalised.
+
+**13.5 Where a real idea would enter.** The one piece of exact information on a cofactor is
+the trace condition (`TwistedThreshold.lean`): modulo the next captured prime, the cofactor
+lies in the image of `F + 1`. An argument for the dichotomy over `𝔽_2` would be a statement
+of the same kind but in the other direction: a property of the discarded cofactor that
+*forces* the walk modulo `Q` to move. None is known.
+
