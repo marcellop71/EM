@@ -1,7 +1,8 @@
 # The rule minFac(N + 1) over 𝔽_p[X]: the fibre frame and the twisted threshold
 
 2026-11-15. Lean: `EM/FunctionField/FibreRule.lean`, `EM/FunctionField/TwistedThreshold.lean`,
-`EM/FunctionField/RunMonodromy.lean`, `EM/FunctionField/FirstComposite.lean`.
+`EM/FunctionField/RunMonodromy.lean`, `EM/FunctionField/FirstComposite.lean`,
+`EM/FunctionField/CriticalValues.lean`, `EM/FunctionField/CompositeEntry.lean`.
 
 Status of the claims below: the facts in §1 are standard and were recalled from memory, not
 looked up; their arrangement around this problem is ours. Everything in §2 and §3 marked
@@ -212,3 +213,127 @@ of `A₁₂`), by Chebotarev. This says nothing about the single base point `1`.
 
 **Open.** Whether the group stays symmetric at later composite stages, and what a prime
 stage after a composite one does (the group is then inside `S₂ ≀ G_n`; is it all of it?).
+
+## 7. What a prime stage adds back (`CriticalValues.lean`)
+
+Work over `K = 𝔽̄_2`. Let `P` have degree `m ≥ 5`, `P' ≠ 0`, geometric monodromy group
+`G ⊇ A_m`, and let `B` be its set of critical values. Let `V_k = ker (F+1)^k`, the `2^k`
+roots of `g^k`.
+
+**Proposition (proof below; not formalized).** If some `b ∈ B` has `B ∩ (b + V_k) = {b}`,
+then the geometric monodromy group of `g^k ∘ P` is `H ⋊ V_k` with
+`A_m^{2^k} ≤ H ≤ S_m^{2^k}`.
+
+So a run of `k` prime stages adds exactly the top group `V_k` (the 2-group of §5) and no
+relation at all between the `2^k` copies of the previous cover, up to the sign characters.
+
+Proof. The roots of `g^k(t) = y` are `t + κ`, `κ ∈ V_k`, so `K(t)/K(y)` is Galois with
+group `V_k`, unramified over finite `y`. Let `L_κ` be the splitting field of
+`P(x) − (t + κ)` over `K(t)`; its group is `G`, and its finite branch locus is
+`{t ∈ B − κ}`. For `κ ≠ κ'` the hypothesis gives `B − κ ≠ B − κ'`, so `L_κ ≠ L_κ'`. The
+group of `L_κ L_κ'` is a subgroup of `G × G` projecting onto both factors; its
+intersections with the factors are normal subgroups of `G`, hence trivial or `⊇ A_m`;
+trivial would give `L_κ = L_κ'`. So every pair of coordinates carries `A_m × A_m`. The
+commutator subgroup of the full group lies in `A_m^{2^k}` and projects onto every pair, so
+it is `A_m^{2^k}` (a subgroup of a product of non-abelian simple groups that projects onto
+every pair of factors is the whole product).
+
+**Lean support.**
+
+| Statement | Lean name |
+|---|---|
+| prime stage: `P_{n+1}' = (2P_n + 1)·P_n'` (any `p`) | `derivative_ffProd_succ_of_irreducible` |
+| over `𝔽_2` the derivative is constant along a run: critical points stay, critical values move by `g^k` | `derivative_ffProd_add_of_run` |
+| `v ∈ 𝔽_{2^m}`, `m` odd ⇒ `v + 1` is not a conjugate of `v` | `pow_ne_add_one_of_odd` |
+| `δ` a root of an irreducible of odd degree ⇒ `N(δ^{2^j}) ≠ N(δ) + 1` | `aeval_conj_ne_add_one` |
+
+**Application to `P_4`.** Its critical points are the roots of the quintic `s` of §6, which
+is irreducible (no root in `𝔽_2`, not divisible by `X² + X + 1`; checked by hand, not in
+Lean). By `aeval_conj_ne_add_one`, `B ∩ (B + 1) = ∅`. With §6 (group `⊇ A₁₂`, which rests
+on the recalled classification): *if* stage 4 is prime, the geometric group of `P_5` contains
+`A₁₂ × A₁₂`. Whether stage 4 is prime (`P_4 + 1` irreducible of degree 12) is not known
+here; its factors have degrees `12`, `6+6` or `5+7`.
+
+**Picture after §5–§7.** The monodromy along the sequence is built from two moves. A prime
+stage wraps the current group in a wreath product with `ℤ/2` and (under the critical-value
+condition) adds nothing else. A composite stage destroys the block structure (§5), and in
+the first case replaces the group by the full symmetric group (§6). Rigidity is therefore
+confined to the top 2-group of the current run. The selection rule reads one base point of
+this family, and none of the above constrains that point beyond the trace conditions of §3.
+
+**Open.** (i) The proposition for odd `p` (the top cover `g(t) = y` is then ramified at
+`−1/4`, and the condition becomes `B ≠ −1 − B`). (ii) A general statement at composite
+stages: indecomposability of `P_{n+1}`, and largeness of its group, beyond the first case.
+
+## 8. The 𝔽_5 screen (`CompositeEntry.lean`)
+
+The conjecture is false over `𝔽_5` and the Riemann hypothesis holds over every `𝔽_p`, so a
+proof over `𝔽_2` must use something that fails over `𝔽_5`. The only known failure over
+`𝔽_5` is perpetual irreducibility. Stated for every `p`:
+
+| Statement | Lean name |
+|---|---|
+| two terms entering at prime stages have different degrees | `eq_of_natDegree_eq_of_irreducible` |
+| of two different terms of equal degree, one entered at a composite stage | `not_irreducible_of_natDegree_eq` |
+| all stages prime from `N` on ⇒ some prime never appears | `exists_missed_of_perpetual` |
+| the conjecture ⇒ infinitely many composite stages | `infinitelyManyReducible_of_ffMullinConjecture` |
+
+So prime stages supply at most one prime per degree, out of about `p^D/D`. The conjecture is
+a statement about composite stages: which of several factors of `P_n + 1` has least degree.
+
+**What 𝔽_2 has and 𝔽_5 does not.**
+
+1. *Composite stages are forced.* For odd `p` the tower of prime stages is a tower of
+   quadratic extensions governed by the orbit of the critical point `−1/2` of `g`; over
+   `𝔽_5` that orbit is `2 → 1 → 2` and the relevant discriminants are never squares. Over
+   `𝔽_2`, `g` has no critical point, the tower is Artin–Schreier, and
+   `g³(P) + 1 = Φ₅(P)·Φ₅(P + 1)` for every `P`
+   (`CharTwo.euclid_three_factor`, with `X⁴+X³+1 = Φ₅(X+1)`).
+2. *The forced composite stage is cyclotomic.* After three prime stages from `n`, a prime
+   `Q` divides the Euclid polynomial iff `P_n` or `P_n + 1` has multiplicative order `5`
+   modulo `Q`. The two factors are exchanged by `P ↦ P + 1`, the involution that swaps the
+   base points `0` and `1`.
+3. *The target is the identity.* `−1 = 1`, so `Q ∣ P_n + 1` iff the product of the terms
+   so far is `1` in `(𝔽_2[X]/Q)^×`, a group of odd order. Over `ℤ` and over odd `p` the
+   target has order 2, and a subgroup of the residues can avoid it; here no subgroup can.
+
+None of these decides a capture. The first is a theorem, the second is a reformulation of
+it, the third is the one not yet used anywhere in the repository.
+
+## 9. The target is the identity (`IdentityTarget.lean`)
+
+Point 3 of §8, used. A finite group gives one thing for free: **recurrence**. Every walk in
+`G_Q = (𝔽_p[X]/Q)^×` repeats a value and every element has finite order. Recurrence produces
+the value `1`; it never produces a prescribed other value. So finiteness alone proves the
+*Mersenne form* `Q ∣ W − 1`, uniformly in `p`, and the Euclid rule asks for the *Euclid
+form* `Q ∣ W + 1`. The two differ by the element `−1` of the group of constants `𝔽_p^×`.
+For odd `p` (and over `ℤ`) it has order 2 and a subgroup can avoid it. Over `𝔽_2` the group
+of constants is trivial and the two forms are one statement.
+
+| statement | Lean |
+|---|---|
+| any `p`: `Q ∣ N^(p^deg Q − 1) − 1` (recurrence in the exponent) | `dvd_pow_sub_one` |
+| `𝔽_2`: `Q ∣ N^(2^deg Q − 1) + 1` | `dvd_pow_add_one` |
+| `𝔽_2`: every prime outside a finite set `D` divides `(∏D)^(2^deg Q − 1) + 1` | `dvd_prod_pow_add_one` |
+| any `p`: a prime never dividing the product divides `a_{i+1}⋯a_{i+k} − 1` for a window inside every stretch of `p^deg Q` stages (recurrence in time) | `exists_window_sub_one` |
+| `𝔽_2`: every missed prime divides a window Euclid polynomial `a_{i+1}⋯a_{i+k} + 1`, infinitely often, gaps `≤ 2^deg Q` | `exists_window_add_one` |
+
+**Reading.** Mullin's conjecture for `Q` is the anchored case `i = 0` of the last line plus
+minimality. The unanchored statement is a weakening of the conjecture which holds over
+`𝔽_2`, and its proof is exactly `−1 = 1`: the same argument over `𝔽_5` or `ℤ` gives windows
+`≡ 1`, the wrong sign (the sign studied in `mersenne_duality_2026-10-27.md`; in
+characteristic 2 the Euclid and Mersenne problems coincide). Whether the window statement in
+Euclid form is true or false over `𝔽_5` is not known to me; only the proof is specific.
+
+**The same fact in the exponent direction** is the norm: `N^(2^d − 1) = ∏_{j<d} N^{2^j}` is
+the norm of `N mod Q` to `𝔽_2`, and it is `1` because `𝔽_2^× = 1`. Over `𝔽_p` the norm is
+(up to sign) the resultant of `N` and `Q`, an element of `𝔽_p^×`, and the capture at this
+level is a reciprocity condition. Over `𝔽_2` there is no reciprocity symbol with values in
+the constants, hence no character obstruction of the kind that traps residues over `ℤ`.
+
+**What it does not give.** An anchored window. The walk `n ↦ P_n mod Q` returns to values
+it has visited; the conjecture needs it to visit the value `1`, starting from the seed.
+Recurrence gives `P_j ≡ P_i`, i.e. the walk closes a loop somewhere, not at the origin. What
+remains of the conjecture over `𝔽_2` after this section is therefore: *the loop passes
+through the identity*, and the least-degree rule.
+
