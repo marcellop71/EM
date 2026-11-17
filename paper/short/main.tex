@@ -409,6 +409,16 @@ and for $p\equiv1\pmod 3$, where $w^2+w+1$ splits and no two are
 over $\FF_3$, where $w^2+w+1=(w-1)^2$, an irreducible Euclid polynomial is
 followed by a perfect square
 (\lean{EM/FunctionField/CharThree.lean}{euclid\_succ\_eq\_sq}).
+In general, call $p$ \emph{stable} if every level polynomial $g_n$ is
+irreducible over~$\FF_p$.  Then the function-field conjecture over
+$\FF_p$ holds if and only if $p$ is not stable and every sequence that
+misses an irreducible has only finitely many composite stages
+(\lean{EM/FunctionField/TowerClassification.lean}{ffMullinConjecture\_iff\_not\_stable\_and\_dichotomy}).
+For stable $p$ (such as $5$) the conjecture is false; the stability
+conditions are independent quadratic conditions
+(\lean{EM/FunctionField/StablePrimes.lean}{not\_isSquare\_prod\_discZ}),
+so stable primes have density zero; for all other $p$, including $2$ and
+$3$, the conjecture is equivalent to the second clause, which is open.
 Over $\ZZ$ the statement that some Sylvester tower of Euclid numbers is
 all prime is what $\Cinf$ denies and what no known method can exclude.
 

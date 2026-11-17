@@ -42,7 +42,7 @@ the FF-EM sequence, proves the refutation over~$\FF_5$, an unconditional
 six-step sieve chain and the $\Phi_3$ exclusion criterion, and presents
 three formally verified dead ends that delineate the boundary of current
 techniques.  The function-field module of the formalization comprises
-29~files and ${\sim}10{,}900$~lines with zero \texttt{sorry}.
+40~files and ${\sim}13{,}100$~lines with zero \texttt{sorry}.
 
 \medskip\noindent\textbf{What is and is not machine-checked here (audit
 2026-08-17).}\enspace The Weil bound is not formalized: \code{WeilBound},
@@ -59,6 +59,8 @@ marked \placeholder\ below.  The machine-checked content of this
 section is: the FF-EM sequence and its structural theory (coprimality
 cascade, injectivity, degree growth), the refutation of FF-MC over
 $\FF_5[t]$ (\code{EM/FunctionField/StableTower.lean}),
+the classification of FF-MC by the tower and the dichotomy
+(Theorem~\ref{thm:ff-classification}; the dichotomy itself is open),
 FFDH~$\Rightarrow$~FF-MC, the $\Phi_3$ exclusion, the exact degree telescope
 (\S\ref{sec:ff-telescope}), degree growth along every mixed walk (the
 Lean names \code{FFStochasticMC}, \code{FFPhaseTransition} say no more
@@ -159,7 +161,8 @@ one has $-1/4 = 1$, the orbit is the two-cycle $1,2,1,2,\dots$, and the
 shifted values $3, 2$ are both non-squares: $5$ is exceptional.  The
 primes $11, 17, 23, 29, 41, 47$ are not (for $17, 23, 29$ already $13$
 is a square; $11$ and $41$ fail at level~$4$, $47$ at level~$8$), and
-heuristically the exceptional primes are finite in number.  Exactly for
+heuristically the exceptional primes are finite in number
+(they have density zero, Proposition~\ref{prop:stable-density-zero}).  Exactly for
 exceptional~$p$ is the seed-$t$ sequence a perpetually irreducible
 tower, and then FF-MC fails as in Theorem~\ref{thm:ffmc-false-five}.
 The honest function-field conjecture therefore excludes them:
@@ -271,6 +274,127 @@ FF-EM data, i.e.\ for every choice function:
   force $k < 2^{v_2(\deg f)}$
   (\lean{EM/FunctionField/AutonomousThreshold.lean}{lt\_two\_pow\_padicValNat\_natDegree\_of\_residue\_run}).
 \end{itemize}
+
+\paragraph{Classification by the tower, and the dichotomy.}
+\label{sec:ff-classification}
+The discussion above concerns the seed-$t$ tower; the following
+statements hold for every FF-EM data over every~$\Fp$ and are
+machine-checked.  Call a stage~$n$ \emph{prime} if $\ffprod(n)+1$ is
+irreducible and \emph{composite} otherwise.  At a prime stage the next
+term is $\ffprod(n)+1$ itself, of degree $\deg\ffprod(n)$, and these
+degrees are strictly increasing.  Hence prime stages supply \emph{at
+most one irreducible per degree}
+(\lean{EM/FunctionField/CompositeEntry.lean}{eq\_of\_natDegree\_eq\_of\_irreducible}),
+a sequence all of whose late stages are prime misses an irreducible
+(\lean{EM/FunctionField/CompositeEntry.lean}{exists\_missed\_of\_perpetual}),
+and FF-MC over~$\Fp$ implies that every sequence has infinitely many
+composite stages
+(\lean{EM/FunctionField/CompositeEntry.lean}{infinitelyManyReducible\_of\_ffMullinConjecture}).
+The conjecture is a statement about composite stages: about which of
+several factors of $\ffprod(n)+1$ has least degree.
+
+Call $p$ \emph{stable} if every level polynomial $g_k$ is irreducible
+over~$\Fp$ (\lean{EM/FunctionField/TowerClassification.lean}{Stable}).
+A run of $k$ prime stages starting at stage~$n$ forces $g_k$ to be
+irreducible, because $g_k(\ffprod(n))$ is then irreducible
+(\lean{EM/FunctionField/TowerClassification.lean}{level\_irreducible\_of\_run});
+so for unstable~$p$ every sequence has infinitely many composite stages
+(\lean{EM/FunctionField/TowerClassification.lean}{infinitelyManyReducible\_of\_not\_stable}),
+and for stable~$p$ every stage of every sequence is prime
+(\lean{EM/FunctionField/TowerClassification.lean}{perpetual\_of\_stable}).
+The Capelli criterion quoted above is machine-checked for odd~$p$, with
+the norm computed through Frobenius conjugates rather than through
+Capelli's lemma: if $g_k$ is irreducible, then $g_{k+1}$ is irreducible
+iff $\Delta_k = (-4)^{2^k} g_k(-1/4)$ is a non-square in~$\Fp$
+(\lean{EM/FunctionField/StabilityCriterion.lean}{level\_succ\_irreducible\_iff}),
+hence $p$ is stable iff no $\Delta_k$ is a square mod~$p$
+(\lean{EM/FunctionField/StabilityCriterion.lean}{stable\_iff}).  For odd
+$p$, stable is the same as exceptional.
+
+\begin{definition}[The dichotomy ---
+\lean{EM/FunctionField/Dichotomy.lean}{FFDichotomy}]
+\label{def:ff-dichotomy}
+The \defname{dichotomy} over~$\Fp$ is the statement: an FF-EM sequence
+that misses a monic irreducible has only finitely many composite stages.
+\end{definition}
+
+\begin{theorem}[Classification ---
+\lean{EM/FunctionField/TowerClassification.lean}{ffMullinConjecture\_iff\_not\_stable\_and\_dichotomy}]
+\label{thm:ff-classification}
+For every prime~$p$, FF-MC holds over~$\Fp$ if and only if $p$ is not
+stable and the dichotomy holds over~$\Fp$.  If $p$ is stable, FF-MC
+over~$\Fp$ is false
+(\lean{EM/FunctionField/TowerClassification.lean}{not\_ffMullinConjecture\_of\_stable})
+and the dichotomy holds trivially
+(\lean{EM/FunctionField/TowerClassification.lean}{ffDichotomy\_of\_stable}).
+If $p$ is not stable, FF-MC over~$\Fp$ is equivalent to the dichotomy
+(\lean{EM/FunctionField/TowerClassification.lean}{ffMullinConjecture\_iff\_of\_not\_stable}).
+\end{theorem}
+
+The theorem makes Conjecture~\ref{conj:ffmc-corrected} precise: its
+hypothesis ``non-exceptional'' is ``not stable'', and its content is the
+dichotomy.  The primes $2$, $3$ and all $p \equiv 1 \pmod 3$ are not
+stable
+(\lean{EM/FunctionField/StablePrimes.lean}{not\_stable\_two},
+\lean{EM/FunctionField/StablePrimes.lean}{not\_stable\_three},
+\lean{EM/FunctionField/StablePrimes.lean}{not\_stable\_of\_one\_mod\_three});
+$5$ is (\lean{EM/FunctionField/StablePrimes.lean}{stable\_five}).  The
+constants $\Delta_k$ are reductions of integers
+(\lean{EM/FunctionField/StablePrimes.lean}{disc\_eq\_cast}),
+$\Delta_0 = -3$, $\Delta_1 = 13$, \dots, which are pairwise coprime
+(\lean{EM/FunctionField/StablePrimes.lean}{isCoprime\_discZ}), and no
+non-empty product of distinct $\Delta_k$ is a square in~$\ZZ$
+(\lean{EM/FunctionField/StablePrimes.lean}{not\_isSquare\_prod\_discZ}):
+the stability conditions are independent quadratic conditions.
+
+\begin{proposition}[Stable primes have density zero; not machine-checked]
+\label{prop:stable-density-zero}
+The set of stable primes has natural density zero among the primes.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+For $K \ge 0$ the indicator of ``$\Delta_k$ is a non-square mod~$p$ for
+all $k \le K$'' is $\prod_{k\le K}\tfrac12\bigl(1 - (\Delta_k/p)\bigr)$.
+Expanding, the term of a non-empty $A \subseteq \{0,\dots,K\}$ is
+$\pm(\Delta_A/p)$ with $\Delta_A = \prod_{k \in A}\Delta_k$ not a
+square; by quadratic reciprocity $p \mapsto (\Delta_A/p)$ is a
+non-trivial Dirichlet character, and it averages to zero over primes.
+So the set has density $2^{-(K+1)}$, and the stable primes lie in it for
+every~$K$.
+\end{proof}
+
+The argument gives no rate better than a power of $\log\log x$
+unconditionally (a power of $\log x$ under GRH) and does not give
+finiteness, which remains open; this replaces the heuristic remark above.
+Density-zero statements for stable primes of quadratic polynomials are
+known in arithmetic dynamics under hypotheses on the arboreal Galois
+representation~\cite{Ferraguti2018}, and finiteness has been conjectured
+for quadratic polynomials~\cite{Jones2012}; we have not determined
+whether the present map, conjugate to $y^2 + 1/4$, is covered by those
+results, and Proposition~\ref{prop:stable-density-zero} is not claimed as
+new.
+
+\smallskip\noindent\textbf{Status of the dichotomy.}\enspace The
+dichotomy is open for every unstable~$p$, where by
+Theorem~\ref{thm:ff-classification} it \emph{is} the conjecture.  Two
+facts constrain any proof.  First, the analogous statement for the
+take-all rule (multiply by the whole Euclid polynomial) is false, so a
+proof must use that the cofactor is discarded.  Second, residues,
+degrees and recurrence do not suffice: if a monic irreducible $Q$ is
+missed, then every stretch of $p^{\deg Q}$ stages contains a window of
+consecutive terms with product $\equiv 1 \pmod Q$
+(\lean{EM/FunctionField/IdentityTarget.lean}{exists\_window\_sub\_one}),
+and over $\FF_2$, where $-1 = 1$, this says that $Q$ divides a
+\emph{window} Euclid polynomial $a_{i+1}\cdots a_{i+k}+1$
+(\lean{EM/FunctionField/IdentityTarget.lean}{exists\_window\_add\_one});
+the same holds jointly for any finite set of missed irreducibles
+(\lean{EM/FunctionField/IdentityTarget.lean}{exists\_window\_add\_one\_joint}).
+The window starts at stage~$i$, not at stage~$0$, and the rule tests
+only windows anchored at~$0$.  Over $\FF_2$ the sign obstruction of the
+integer case is therefore absent and the anchoring obstruction remains
+by itself.  We know of no identity that addresses it: the exact
+information available about the discarded cofactor is a rewriting of
+$E_n = \ffprod(n)+1$.
 
 \paragraph{The generic sequence, and a corollary over $\mathbb{Q}$.}
 A monic integer polynomial whose reduction mod a prime is irreducible is
