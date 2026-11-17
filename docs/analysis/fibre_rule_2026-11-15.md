@@ -529,3 +529,76 @@ lies in the image of `F + 1`. An argument for the dichotomy over `𝔽_2` would 
 of the same kind but in the other direction: a property of the discarded cofactor that
 *forces* the walk modulo `Q` to move. None is known.
 
+## 14. The dichotomy: search log (2026-11-16)
+
+No proof and no refutation. This section records what was searched, so that it is not
+searched again.
+
+**14.1 Literature** (search results and abstracts only; full texts not read).
+
+* Kurokawa–Satoh (Experiment. Math. 17, 2008): Shanks's heuristic fails over `𝔽_p[x]` in
+  explicitly characterised cases, via a resultant congruence; numerics elsewhere. Nothing in
+  the abstracts on sequences with composite stages.
+* A 2022 arXiv paper (2201.06663) on square-free smooth polynomials in residue classes: a
+  sequence of irreducibles in `𝔽_q[X]` built from products of earlier terms *can be chosen*
+  to contain every irreducible. This is the tree with free sub-products (the Booker–Pomerance
+  analogue), not the least-degree rule.
+* Stable primes: Ferraguti proves density zero of stable primes under a large-image
+  hypothesis on the arboreal representation; Jones conjectured finiteness for quadratic
+  polynomials under hypotheses on the post-critical orbit. §12 is in this circle of ideas.
+  In the coordinate `y = x + 1/2` our map is `y² + 1/4` and the base point `−1/2` is strictly
+  preperiodic (`−1/2 ↦ 1/2 ↦ 1/2`); DeMark–Hindes–Jones–Misplon–Stoneman note that for
+  `x² + 1/c` existing methods for eventual stability break down.
+
+Nothing found states or proves a dichotomy of the form of §10.
+
+**14.2 Reformulations tried.**
+
+* *Zero set and level set.* `P_n(β) = ∏_{α ∈ Z_n} (β − α)`, `Z_n` the roots of the terms so
+  far; the roots of the Euclid polynomial are the level set `{P_n = −1}`; the rule adjoins a
+  shortest Frobenius orbit of the level set. Over `𝔽_2`, along the initial prime run `Z_n` is
+  an `𝔽_2`-subspace, `P_n` its additive polynomial and the level set a coset. The first
+  composite stage is the first time the coset is not a single orbit, and adjoining part of a
+  coset destroys the linear structure. The take-all rule keeps it, and the union of its
+  subspaces is the 2-power-degree closure of `𝔽_2`: this is why take-all misses odd degrees.
+* *Additive reciprocity is blind to the step.* `P_n + 1` and `P_n` differ in the constant
+  term only, so for every `h` of degree `< deg P_n`,
+  `∑_{f ∣ P_n+1} Tr_f(h) = ∑_{i ≤ n} Tr_{a_i}(h)` (traces of `h` in the residue fields,
+  factors with multiplicity). All Artin–Schreier symbols of small conductor agree on the
+  Euclid polynomial and on the product; the step is one multiplicative datum. Consequently
+  the additive symbols of the discarded cofactor are determined by the sequence, but this is
+  the definition of the step rewritten, and gives no capture.
+* *Multiplicative reciprocity.* Over `𝔽_2` there is no power-residue symbol with values in
+  the constants; after extending constants the reciprocity law reduces to the symmetry of the
+  resultant, i.e. to `P_n(β) = ∏ a_i(β)`.
+* *Profinite limit.* Every missed prime is offered only finitely often, so along any
+  convergent subsequence the limits of `P_n + 1`, of the terms and of the cofactors are units
+  at the missed primes. No contradiction; the `𝔽_5` tower is an example.
+* *Symmetry.* `X ↦ X + 1` preserves the sequence up to the first tie over `𝔽_2` and
+  exchanges the two tie-breaks. The sequence over `𝔽_2[X]` is, up to that point, the sequence
+  over `𝔽_2[u]`, `u = X² + X`, shifted by one stage; the self-similarity ends where a prime of
+  `𝔽_2[u]` splits. No induction on the tower survives the split.
+* *Parity of the number of factors* (Stickelberger for odd `p`, Swan for `p = 2`). It is the
+  source of the stability criterion. At a composite stage it gives the parity of the number
+  of factors in terms of `disc(P_n + 1)`, which has no expression in the earlier data.
+* *Refutation by a character.* For odd `p` a quadratic character trivial on all terms and
+  non-trivial on `−1` would refute the dichotomy; nothing forces the terms into its kernel
+  once composite stages occur.
+
+**14.3 Weaker statements considered.**
+
+| statement | status |
+|---|---|
+| unanchored windows (§9) | proved, `𝔽_2` |
+| tree with free sub-products reaches everything | in the literature for `𝔽_q` |
+| tree with squares (`SquareTree` over `ℤ`) | argument is uniform in `p`; would hold over `𝔽_5` too, so it says nothing on the dichotomy |
+| almost all seeds capture a given prime (function-field `almost_all_genmc`) | expected provable by porting the `ℤ` proof; a population statement |
+| every degree occurs among the terms (unstable `p`) | open; fails over `𝔽_5`; as hard as it looks |
+| both cubics occur over `𝔽_2` | open; needs the factorisation of specific Euclid polynomials |
+| dichotomy from an equidistribution hypothesis on cofactors | the `ℤ` chain (`CME ⇒ MC`) has a function-field copy (`MultiplierCCSB.lean`); conditional |
+
+**14.4 Verdict.** Every exact identity available is a rewriting of `E = P + 1` or of
+`P_n(β) = ∏ a_i(β)`. The dichotomy needs information on *which* orbit of the level set is
+shortest, and no known tool addresses that for a single specified polynomial. The same
+sentence describes the problem over `ℤ`.
+
