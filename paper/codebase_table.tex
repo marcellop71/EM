@@ -299,6 +299,7 @@
 \code{FunctionField/TowerClassification.lean} & Any $p$: the level polynomials $g^k(Y)+1$ bound the prime runs of every sequence; the conjecture over $\mathbb{F}_p$ holds iff the tower is unstable and the dichotomy holds (\code{ffMullinConjecture\_iff\_not\_stable\_and\_dichotomy}) & 159 \\
 \code{FunctionField/StabilityCriterion.lean} & Odd $p$: the next level of the tower is irreducible iff $(-4)^{2^k}(g^k(-1/4)+1)$ is a non-square (\code{level\_succ\_irreducible\_iff}); stability criterion \code{stable\_iff}; Frobenius period and norm of a root of an irreducible polynomial & 393 \\
 \code{FunctionField/StablePrimes.lean} & $2$, $3$, $p\equiv 1 \pmod 3$ are not stable, $5$ is; the stability conditions are the reductions of one integer sequence, pairwise coprime, no non-empty product of which is a square (\code{not\_isSquare\_prod\_discZ}) & 207 \\
+\code{FunctionField/StableCount.lean} & Counting stable primes: the sieve identity $2^K\,\#\{\text{stable } p\le x\}\le\pi(x)+\sum_{A\ne\emptyset}|\sum_{p\le x}(\Delta_A/p)|$ (\code{two\_pow\_mul\_card\_stable\_le}), $|\Delta_A|\le 4^{2^K}$, and the count under the GRH prime-sum bound (\code{card\_stable\_le}); \code{GRHDirichlet} is a hypothesis, stated as in the community Riemann-hypothesis repository & 267 \\
 \code{FunctionField/LinearSeeds.lean} & $\FF_5$: every linear seed $t+a$ is a perpetual tower (period is invariant under subtracting a constant) & 121 \\
 \midrule
 \multicolumn{3}{l}{\emph{Min--max dichotomy and obstruction calculus (new)}} \\

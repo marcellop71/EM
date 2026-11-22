@@ -471,7 +471,7 @@ every `S_K`.
 * Density zero: yes, by the argument above (standard inputs only).
 * A rate: the moduli `Δ_k` grow doubly exponentially, so unconditionally one can take only
   `K` of size about `log log log x`, and the bound is `π(x)` divided by a power of
-  `log log x`. Under GRH `K ≈ log log x` and the saving is a power of `log x`. Neither gives
+  `log log x`. Under GRH the saving is a power of `x` (corrected 2026-11-22, see §15; the earlier text here said a power of `log x`, which was too weak). Neither gives
   a convergent count.
 * Finiteness: not provable this way. The heuristic (an orbit of length about `√p` avoiding
   the squares) predicts finitely many, possibly only `5`; nothing of the kind is proved.
@@ -602,3 +602,46 @@ Nothing found states or proves a dichotomy of the form of §10.
 shortest, and no known tool addresses that for a single specified polynomial. The same
 sentence describes the problem over `ℤ`.
 
+
+
+## 15. Stable primes under GRH (`StableCount.lean`, 2026-11-22)
+
+GRH for Dirichlet `L`-functions is reported proved in Lean
+(`leanprover-community/riemann-hypothesis`, theorem `LFunction_ne_zero_of_half_lt_re`; the
+user reports the verification as confirmed on 2026-11-22). Its statement uses Mathlib only,
+so it can be quoted verbatim: `StableCount.GRHDirichlet`. That repository is not a dependency
+(Lean 4.33.1, 175k files, no licence); the statement enters as a hypothesis.
+
+**What it gives here.** The sieve identity of §12 is now in Lean with an arbitrary bound for
+the character sums (`two_pow_mul_card_stable_le`):
+
+`2^K · #{stable p ≤ x} ≤ π(x) + (2^K − 1) · max_{A ≠ ∅} |∑_{p ≤ x} (Δ_A / p)|`.
+
+Under GRH, `∑_{p ≤ x} χ(p) ≪ √x log²(qx)` uniformly in the conductor `q`. The conductor of
+`(Δ_A / ·)` is at most `4|Δ_A| ≤ 4 · 4^{2^K}` (`abs_discProd_le`), so its logarithm is about
+`2^K`, not `K`. Hence (`card_stable_le`)
+
+`#{stable p ≤ x} ≤ x / 2^K + C √x (2^K log 4 + log x)²` for every `K`.
+
+Take `2^K ≈ x^{1/6}`: **the number of stable primes up to `x` is `O(x^{5/6})`**, and the sum
+of their reciprocals converges. This answers "is the set of stable primes very thin" with a
+power saving. It does not give finiteness: the bound is still an average over `p`.
+
+**Chain and what is machine-checked.**
+
+1. `GRHDirichlet` — proved in the external repository; here a `Prop`.
+2. `GRHDirichlet → ∃ C, QuadPrimeSumBound C` — classical (explicit formula; Davenport ch. 20).
+   Not formalised here. The external repository has an explicit formula
+   (`explicit_formula_dirichlet_zeros_right_half`); I have not checked that it yields this
+   exact bound.
+3. `QuadPrimeSumBound C → card_stable_le` — in Lean, this file.
+4. The choice `2^K ≈ x^{1/6}` and the convergence of `∑ 1/p` — not in Lean.
+
+**What GRH does not give.** Nothing on the dichotomy, and nothing on the conjecture over `ℤ`:
+GRH controls sums over all primes in a class, the conjecture asks for one specified sequence.
+Over `𝔽_p[X]` the Riemann hypothesis was always a theorem and the dichotomy is open there.
+
+**Other consumer in the repository (not started).** `GrowingRange.seed_range_never_density`
+has an ineffective range `Q`; the analogy map names "Mertens in progressions with explicit
+`O(1)`" as the input for an effective one. GRH gives that input uniformly for moduli up to
+`x^{1/2−ε}`, far beyond Siegel–Walfisz. This is the natural second use.

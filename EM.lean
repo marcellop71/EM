@@ -97,6 +97,7 @@ import EM.FunctionField.Dichotomy
 import EM.FunctionField.TowerClassification
 import EM.FunctionField.StabilityCriterion
 import EM.FunctionField.StablePrimes
+import EM.FunctionField.StableCount
 import EM.FunctionField.LinearSeeds
 import EM.FunctionField.StochasticMC
 import EM.FunctionField.SubgroupEscape

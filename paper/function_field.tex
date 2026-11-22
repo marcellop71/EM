@@ -363,9 +363,29 @@ So the set has density $2^{-(K+1)}$, and the stable primes lie in it for
 every~$K$.
 \end{proof}
 
-The argument gives no rate better than a power of $\log\log x$
-unconditionally (a power of $\log x$ under GRH) and does not give
-finiteness, which remains open; this replaces the heuristic remark above.
+Without further input the argument gives no rate better than a power of
+$\log\log x$.  With the Riemann hypothesis for Dirichlet $L$-functions
+the rate is a power of~$x$.  The sieve identity is machine-checked with
+an arbitrary bound for the character sums
+(\lean{EM/FunctionField/StableCount.lean}{two\_pow\_mul\_card\_stable\_le}),
+and $|\Delta_A| \le 4^{2^K}$ for $A \subseteq \{0,\dots,K-1\}$
+(\lean{EM/FunctionField/StableCount.lean}{abs\_discProd\_le}); so if
+$\bigl|\sum_{p \le x}(D/p)\bigr| \le C\sqrt{x}\,\log^2(|D|x)$ for
+every non-square~$D$, the bound that GRH gives, then
+\[
+  \#\{p \le x : p \text{ stable}\} \;\le\; \frac{x}{2^K}
+  + C\sqrt{x}\,\log^2\bigl(4^{2^K}x\bigr)\qquad\text{for every } K
+\]
+(\lean{EM/FunctionField/StableCount.lean}{card\_stable\_le}).  With
+$2^K \approx x^{1/6}$ the count is $O(x^{5/6})$ and the reciprocals of
+the stable primes have a convergent sum.  GRH for Dirichlet
+$L$-functions is stated in Lean, with Mathlib's definitions only, as
+\lean{EM/FunctionField/StableCount.lean}{GRHDirichlet}; it is the
+statement proved in the community repository
+\texttt{leanprover-community/riemann-hypothesis}, which is not a
+dependency of this formalization, and it enters here as a hypothesis.
+The step from GRH to the prime-sum bound is classical and is not
+formalized here.  Finiteness of the set of stable primes remains open.
 Density-zero statements for stable primes of quadratic polynomials are
 known in arithmetic dynamics under hypotheses on the arboreal Galois
 representation~\cite{Ferraguti2018}, and finiteness has been conjectured
