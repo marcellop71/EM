@@ -687,3 +687,18 @@ seed (so no analogue of "stable ⟹ dichotomy"); and ¬PrimeTower is open (Ferma
 whereas ¬Stable p is a theorem for p = 2, 3, p ≡ 1 mod 3. No prime is captured. The file is
 assembly: every ingredient (seeded growth constant, easy direction of the dichotomy, tower
 reduction mod ℓ) was already proved.
+
+## 18. Stable primes: analytic density zero, unconditional (`StableAnalyticDensity.lean`, 2026-11-22)
+
+`stable_analytic_density_zero`: `(s−1) ∑_{p stable} log p · p^{−s} → 0` as `s → 1⁺`; the same
+expression over all primes tends to 1 (`primes_analytic_density_one`). No hypothesis. Input:
+Mathlib's `L(s,χ) ≠ 0` on `Re s ≥ 1` (continuity of `−L'/L` there), the character
+`QuadCharBridge.chiC`, and the sieve detector of §15. Natural density still needs the prime
+number theorem for a quadratic character (`StableDensity.lean`, hypothesis); the analytic form
+does not. Consequence with §11: outside a set of primes of analytic density zero, every sequence
+over 𝔽_p[X] has infinitely many composite stages and FF-MC(p) is the dichotomy.
+
+Looked at again for the orbit of 2, with no gain: (i) Jacobi-symbol constraints on the factors
+of E_n from captured primes are consequences of E_n ≡ 1 mod P_n; (ii) E_{n+1} = N(pω − 1) in the
+order of discriminant 1 − 4c_n excludes primes, it does not force one; (iii) "almost all seeds
+are not eventually towers" is provable only for towers starting at a bounded stage.

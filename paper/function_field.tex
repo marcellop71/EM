@@ -363,6 +363,20 @@ So the set has density $2^{-(K+1)}$, and the stable primes lie in it for
 every~$K$.
 \end{proof}
 
+In analytic form the statement is machine-checked with no hypothesis:
+\[
+  (s-1)\sum_{p\ \mathrm{stable}}\frac{\log p}{p^{s}}\;\longrightarrow\;0
+  \qquad (s\to 1^+),
+\]
+while the same expression over all primes tends to~$1$
+(\lean{EM/FunctionField/StableAnalyticDensity.lean}{stable\_analytic\_density\_zero},
+\lean{EM/FunctionField/StableAnalyticDensity.lean}{primes\_analytic\_density\_one}).
+The only analytic input is the non-vanishing of $L(s,\chi)$ on
+$\Re s\ge 1$ for a non-principal character, which is in Mathlib.  Hence,
+outside a set of primes of analytic density zero, every sequence over
+$\FF_p[X]$ has infinitely many composite stages and the conjecture is
+the dichotomy (Theorem~\ref{thm:ff-classification}).
+
 Without further input the argument gives no rate better than a power of
 $\log\log x$.  With the Riemann hypothesis for Dirichlet $L$-functions
 the rate is a power of~$x$.  The sieve identity is machine-checked with

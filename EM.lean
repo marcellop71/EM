@@ -99,6 +99,7 @@ import EM.FunctionField.StabilityCriterion
 import EM.FunctionField.StablePrimes
 import EM.FunctionField.StableCount
 import EM.FunctionField.StableDensity
+import EM.FunctionField.StableAnalyticDensity
 import EM.FunctionField.QuadCharBridge
 import EM.FunctionField.StableGRH
 import EM.FunctionField.KornblumSeries
