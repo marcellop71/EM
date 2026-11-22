@@ -792,3 +792,43 @@ density statement: the three conditions at stages 2–3 are cubic residue condit
 `6(5+ω)`, `3(1−7ω)`, `3(10+11ω)` in `ℤ[ω]`, expected independent with density `(2/3)³` for
 "three prime-type stages"; that needs Hecke characters of `ℚ(ω)`.
 
+## 22. The prime as the seed (`DegreeLaw.lean`, 2026-11-22)
+
+Analogy. Over `ℤ` the family is the seeds `m`; a seed's residues modulo small primes are its
+"type", the box sieve gives the density of each type, and the seed-average theorems are
+densities of sets of seeds. Over `𝔽_p[X]` every sequence starts at `X`, and the Euclid
+polynomials of the first stages are reductions mod `p` of fixed polynomials over `ℤ` (then
+over `ℤ[ω]`, and so on along a tree of number fields, one branch per splitting type). So:
+
+| `ℤ` | `𝔽_p[X]` |
+|---|---|
+| seed `m` | prime `p` |
+| type of `m` mod small primes | Frobenius at `p` in the splitting fields of the early Euclid polynomials |
+| box sieve (CRT, density of a type) | Chebotarev (density of a Frobenius class) |
+| a.a. seeds capture `q` | a.a. primes `p` have a sequence of a given shape |
+
+This also relocates dead end #129: over one finite field the Galois group of a Euclid
+polynomial is cyclic and carries no information, but the same polynomial over the number field
+has a large group, and its Frobenius classes equidistribute as `p` varies.
+
+First complete instance (`exit_degree`, `exit_degree_law`): if `p` leaves the tower at level
+`K+1`, every sequence over `𝔽_p[X]` has terms `T_0, …, T_K` at stages `1, …, K+1` and a term
+of degree `2^K` at stage `K+2` (the reducible `T_{K+1}` is a product of two irreducibles of
+degree `2^K`). With `exit_analytic_density`: the degree sequence starts `1,1,1` with density
+`1/2`, `1,1,2,2` with density `1/4`, `1,1,2,4,4` with density `1/8`, …; the stable primes are
+the remaining set of density `0`.
+
+Next instances, not proved: on the `1,1,1` branch (`p ≡ 1 (3)`) the term at stage 3 has degree
+3 or 1 by the cubic condition (§20), expected densities `1/3` and `1/6` of all primes; this
+is Chebotarev for `ℚ(ω, ∛(6(5+ω)))`.
+
+External results found on 2026-11-22 that fit this frame (statements read, not compiled):
+Tau Ceti has Chebotarev with natural density (`hasNaturalDensity_frobeniusPrimeSet`), Kummer
+theory with degrees and Capelli's theorem, cubic and Eisenstein reciprocity, a Galois-groups
+directory with cycle types and factor degrees, and a framework for natural and Dirichlet
+density of sets of primes. Looked at and not a fit: its unit-equation files (bounds assume a
+Baker-type lower bound; fixed support, while the Euclid equation `E_n − P_n = 1` has growing
+support, dead end #177), the abc statement (gives nothing for `E_n − P_n = 1` with `P_n`
+squarefree), primitive prime divisors and Lucas sequences (the Euclid numbers are pairwise
+coprime by construction, so every prime divisor is already primitive).
+
