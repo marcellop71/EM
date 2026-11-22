@@ -42,7 +42,9 @@ statement is a `Prop`, used only as a hypothesis, never as an axiom.
 `QuadPrimeSumBound C` is the classical consequence for prime sums of quadratic characters,
 `|∑_{p ≤ x} (D / p)| ≤ C √x log²(|D| x)` for non-square `D` (Davenport, *Multiplicative Number
 Theory*, ch. 20, with the conductor of `(D / ·)` at most `4|D|`). The implication
-`GRHDirichlet → ∃ C, QuadPrimeSumBound C` is not formalised here.
+`IK.GRHPsiBound C → ∃ C', QuadPrimeSumBound C'` is proved in `QuadCharBridge.lean`, and
+`GRHPsiBound` from the explicit formula, the zero count and GRH in `EM/IK/GRHBridge.lean`;
+the chain is assembled in `StableGRH.lean`.
 
 Taking `2^K` of size `x^{1/6}` in `card_stable_le` gives `#{stable p ≤ x} = O(x^{5/6})`, so
 the reciprocals of the stable primes have a convergent sum. Without GRH the same identity

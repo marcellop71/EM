@@ -645,3 +645,28 @@ Over `𝔽_p[X]` the Riemann hypothesis was always a theorem and the dichotomy i
 has an ineffective range `Q`; the analogy map names "Mertens in progressions with explicit
 `O(1)`" as the input for an effective one. GRH gives that input uniformly for moduli up to
 `x^{1/2−ε}`, far beyond Siegel–Walfisz. This is the natural second use.
+
+
+## 16. What was connected on 2026-11-22 (Lean, all compiled)
+
+External theorems enter as hypotheses with Mathlib-only statements, never as dependencies
+or axioms.
+
+| Result | File | Inputs quoted from outside |
+|---|---|---|
+| `ψ(x,χ) ≪ √x log²(Nx)`, all non-principal `χ` | `EM/IK/GRHBridge.lean` | RH repo: truncated explicit formula, zero count, zeros on the line |
+| prime sums of `(D/p)` `≪ √x log²(|D|x)`, `D` non-square | `QuadCharBridge.lean` | none beyond the line above |
+| `#{stable p ≤ x} ≤ C x^{5/6}` | `StableGRH.lean` | the three RH-repo statements |
+| stable primes have natural density zero | `StableDensity.lean` | PNT for one quadratic character (Tau Ceti: Chebotarev + multiquadratic Frobenius) |
+| Mertens in progressions, error `C' log²(2q)` uniform in `q`; `WeightedPNTinAP` | `EM/IK/GRHMertensAP.lean` | the `ψ` bound |
+| **Kornblum's theorem**; the almost-all theorem over `𝔽_p[t]` unconditional | `Kornblum*.lean` | none |
+
+Kornblum's proof here has no Euler product: `n A_n(χ) = ∑ Ψ_k(χ) A_{n−k}(χ)`; `A_n(χ) = 0`
+for `n ≥ deg Q`; `∏_χ L(u,χ)` has a non-negative logarithmic derivative with infinitely many
+positive coefficients, hence is not a polynomial, hence no `L(u,χ)`, `χ ≠ 1`, vanishes at
+`1/p`.
+
+Not done: the effective growing range. The only ineffective step is the Karamata limit in
+`LemmaD.lean` (`window_ap_recip_lower`). With the uniform Mertens bound as stated the range
+would be triple-logarithmic; with a windowed form of the same estimate about
+`(log log X)^{1/10}` (estimate, not checked). About 1,000–1,300 lines of re-proved lemmas.

@@ -42,7 +42,7 @@ the FF-EM sequence, proves the refutation over~$\FF_5$, an unconditional
 six-step sieve chain and the $\Phi_3$ exclusion criterion, and presents
 three formally verified dead ends that delineate the boundary of current
 techniques.  The function-field module of the formalization comprises
-40~files and ${\sim}13{,}100$~lines with zero \texttt{sorry}.
+48~files and ${\sim}15{,}700$~lines with zero \texttt{sorry}.
 
 \medskip\noindent\textbf{What is and is not machine-checked here (audit
 2026-08-17).}\enspace The Weil bound is not formalized: \code{WeilBound},
@@ -64,8 +64,8 @@ the classification of FF-MC by the tower and the dichotomy
 FFDH~$\Rightarrow$~FF-MC, the $\Phi_3$ exclusion, the exact degree telescope
 (\S\ref{sec:ff-telescope}), degree growth along every mixed walk (the
 Lean names \code{FFStochasticMC}, \code{FFPhaseTransition} say no more
-than this), and the density chain whose one
-hypothesis \code{FFDirichletDensity} is honestly stated (\code{EM/FunctionField/DensityMC.lean}).
+than this), and the density chain, unconditional since Kornblum's theorem
+(\code{FFDirichletDensity}) is proved in \code{EM/FunctionField/Kornblum.lean}.
 \end{roadmap}
 
 \paragraph{Setting and definitions.}
@@ -384,8 +384,19 @@ $L$-functions is stated in Lean, with Mathlib's definitions only, as
 statement proved in the community repository
 \texttt{leanprover-community/riemann-hypothesis}, which is not a
 dependency of this formalization, and it enters here as a hypothesis.
-The step from GRH to the prime-sum bound is classical and is not
-formalized here.  Finiteness of the set of stable primes remains open.
+The step from GRH to the prime-sum bound is machine-checked from two
+further theorems of that repository, its truncated explicit formula and
+its zero count, quoted in the same way
+(\lean{EM/IK/GRHBridge.lean}{grhPsiBound\_of\_explicitFormula},
+\lean{EM/FunctionField/QuadCharBridge.lean}{quadPrimeSumBound\_of\_grhPsiBound});
+the assembled statement, $\#\{p\le x \text{ stable}\}\le Cx^{5/6}$, is
+\lean{EM/FunctionField/StableGRH.lean}{card\_stable\_le\_rpow\_of\_grh}.
+The unconditional density-zero statement of
+Proposition~\ref{prop:stable-density-zero} is machine-checked from the
+prime number theorem for one quadratic character
+(\lean{EM/FunctionField/StableDensity.lean}{stable\_density\_zero}),
+an input formalized in the Tau Ceti library and assumed here.
+Finiteness of the set of stable primes remains open.
 Density-zero statements for stable primes of quadratic polynomials are
 known in arithmetic dynamics under hypotheses on the arboreal Galois
 representation~\cite{Ferraguti2018}, and finiteness has been conjectured
@@ -574,7 +585,8 @@ irreducibles of degree~$d$, carrying the names of the steps.  These are
 unconditional, but none of them mentions a residue class, a character
 or a starting point; the statement that the chain is about---almost
 every start reaches every target---is Theorem~\ref{thm:ff-density},
-conditional on Kornblum's theorem.
+now unconditional (Kornblum's theorem is proved in
+\code{EM/FunctionField/Kornblum.lean}).
 
 \smallskip
 \begin{center}
@@ -666,7 +678,7 @@ confinement decay itself.  The genuine FF confinement decay---for
 every proper residue subset, the density of confined starting points
 tends to zero---is
 \lean{EM/FunctionField/DensityMC.lean}{ff\_density\_pscd}, proved
-conditionally on Kornblum's theorem (see the genuine density statement
+from Kornblum's theorem (see the genuine density statement
 below).
 
 \paragraph{Step 6 --- Almost-all generalized mixed MC.}
@@ -723,7 +735,8 @@ sole analytic input is the FF analogue of Dirichlet's theorem in the
 divergence form:
 
 \begin{property}[FF Dirichlet density (Kornblum~\cite{Kornblum1919}) ---
-\lean{EM/FunctionField/DensityMC.lean}{FFDirichletDensity}]
+\lean{EM/FunctionField/DensityMC.lean}{FFDirichletDensity}, proved as
+\lean{EM/FunctionField/Kornblum.lean}{ffDirichletDensity}]
 For every monic irreducible $Q$ and every $a$ with $Q \nmid a$,
 \[
   \sum_{\substack{P \text{ monic irreducible},\ P \equiv a \ (\mathrm{mod}\ Q) \\ \deg P \leq Y}}
@@ -735,8 +748,9 @@ For every monic irreducible $Q$ and every $a$ with $Q \nmid a$,
 \begin{theorem}[Almost-all FF-GenMixedMC, genuine density ---
 \lean{EM/FunctionField/DensityMC.lean}{ff\_almost\_all\_genmixed\_density}]
 \label{thm:ff-density}
-Assume \textup{FFDirichletDensity}.  Then for every monic irreducible
-target~$Q$: among monic squarefree $m$ with $1 \leq \deg m \leq n$, the
+For every monic irreducible
+target~$Q$ (unconditionally:
+\lean{EM/FunctionField/Kornblum.lean}{ff\_almost\_all\_genmixed\_density\_unconditional}): among monic squarefree $m$ with $1 \leq \deg m \leq n$, the
 proportion of starting points with $Q \nmid m$ from which $Q$ is not
 tree-reachable tends to~$0$ as $n \to \infty$.  (The restriction
 $Q \nmid m$ is necessary: if $Q \mid m$ then $Q$ divides every mixed
@@ -748,10 +762,15 @@ The contrast with the integer side is instructive: over~$\ZZ$ the
 corresponding divergence input ($\sum_{p \equiv a\,(q)} 1/p = \infty$)
 is proved unconditionally from the Mathlib $L$-function machinery
 (\S\ref{sec:almost-all-mixed}), while Mathlib has no polynomial
-Dirichlet $L$-functions, so Kornblum's 1919 theorem---strictly easier
-than its integer counterpart, as the relevant $L$-functions are
-polynomials in $p^{-s}$---remains an isolated named hypothesis.
-Formalizing it is a natural future campaign.
+Dirichlet $L$-functions.  Kornblum's 1919 theorem is proved here
+directly (\code{EM/FunctionField/Kornblum.lean} and its three companion files).  The proof uses no
+Euler product and no analysis beyond the divergence of the harmonic
+series: the identity $nA_n(\chi)=\sum_k\Psi_k(\chi)A_{n-k}(\chi)$ replaces
+the logarithmic derivative, $A_n(\chi)=0$ for $n\ge\deg Q$ makes
+$L(u,\chi)$ a polynomial, and $L(1/p,\chi)\ne0$ follows because
+$\prod_\chi L(u,\chi)$ has non-negative coefficients, infinitely many of
+them positive, so it is not a polynomial
+(\lean{EM/FunctionField/KornblumCharacter.lean}{lPoly\_eval\_ne\_zero}).
 
 \paragraph{The factor tree and structural prerequisites.}
 Independent of the sieve chain, the factor-tree structure (any valid
@@ -1241,8 +1260,7 @@ witness:
 \begin{itemize}[nosep,leftmargin=1em]
 \item the counting inputs of the six-step sieve chain
   (Theorem~\ref{thm:ff-almost-all}; counting proxies, the density
-  statement being Theorem~\ref{thm:ff-density}, conditional on
-  Kornblum's theorem);
+  statement being Theorem~\ref{thm:ff-density});
 \item degree growth along every mixed walk and along the greedy walk
   (Theorem~\ref{thm:ff-stoch}; the Lean names \code{theorem\_B\_stochastic\_mc}
   and \code{theorem\_C\_phase\_transition} are historical);

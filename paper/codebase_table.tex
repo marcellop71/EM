@@ -215,6 +215,9 @@
 \code{IK/Karamata.lean} & Karamata's Tauberian theorem for Dirichlet series; \texttt{WeightedPNTinAPAsymp} proved unconditionally & 670 \\
 \code{IK/Ch1.lean} & Iwaniec--Kowalski~\cite{IwaniecKowalski2004} Ch.\,1: arithmetic functions & 407 \\
 \code{IK/Ch2.lean} & Iwaniec--Kowalski Ch.\,2: elementary prime number theory & 274 \\
+\code{IK/GRHStatements.lean} & GRH for Dirichlet $L$-functions as hypotheses with Mathlib-only statements: \code{DirichletLZerosOnLine}, \code{GRHPsiBound} & 42 \\
+\code{IK/GRHBridge.lean} & Truncated explicit formula and zero count (quoted from the community Riemann-hypothesis repository) together with GRH give $|\psi(x,\chi)|\le C\sqrt{x}\log^2(Nx)$ for every non-principal $\chi$ (\code{grhPsiBound\_of\_explicitFormula}) & 504 \\
+\code{IK/GRHMertensAP.lean} & Under the GRH bound: Mertens' first theorem in arithmetic progressions with error $C'\log^2(2q)$ uniform in the modulus (\code{weightedPNTinAP\_uniform\_of\_grh}); discharges \code{WeightedPNTinAP} & 525 \\
 \code{IK/Ch3.lean} & Iwaniec--Kowalski Ch.\,3: characters (reference tier) & 575 \\
 \code{IK/Ch4.lean} & Iwaniec--Kowalski Ch.\,4: summation formulas & 643 \\
 \code{IK/Ch5.lean} & Iwaniec--Kowalski Ch.\,5: classical theory of $L$-functions (reference tier) & 803 \\
@@ -299,7 +302,14 @@
 \code{FunctionField/TowerClassification.lean} & Any $p$: the level polynomials $g^k(Y)+1$ bound the prime runs of every sequence; the conjecture over $\mathbb{F}_p$ holds iff the tower is unstable and the dichotomy holds (\code{ffMullinConjecture\_iff\_not\_stable\_and\_dichotomy}) & 159 \\
 \code{FunctionField/StabilityCriterion.lean} & Odd $p$: the next level of the tower is irreducible iff $(-4)^{2^k}(g^k(-1/4)+1)$ is a non-square (\code{level\_succ\_irreducible\_iff}); stability criterion \code{stable\_iff}; Frobenius period and norm of a root of an irreducible polynomial & 393 \\
 \code{FunctionField/StablePrimes.lean} & $2$, $3$, $p\equiv 1 \pmod 3$ are not stable, $5$ is; the stability conditions are the reductions of one integer sequence, pairwise coprime, no non-empty product of which is a square (\code{not\_isSquare\_prod\_discZ}) & 207 \\
-\code{FunctionField/StableCount.lean} & Counting stable primes: the sieve identity $2^K\,\#\{\text{stable } p\le x\}\le\pi(x)+\sum_{A\ne\emptyset}|\sum_{p\le x}(\Delta_A/p)|$ (\code{two\_pow\_mul\_card\_stable\_le}), $|\Delta_A|\le 4^{2^K}$, and the count under the GRH prime-sum bound (\code{card\_stable\_le}); \code{GRHDirichlet} is a hypothesis, stated as in the community Riemann-hypothesis repository & 267 \\
+\code{FunctionField/StableCount.lean} & Counting stable primes: the sieve identity $2^K\,\#\{\text{stable } p\le x\}\le\pi(x)+\sum_{A\ne\emptyset}|\sum_{p\le x}(\Delta_A/p)|$ (\code{two\_pow\_mul\_card\_stable\_le}), $|\Delta_A|\le 4^{2^K}$, and the count under the GRH prime-sum bound (\code{card\_stable\_le}); \code{GRHDirichlet} is a hypothesis, stated as in the community Riemann-hypothesis repository & 269 \\
+\code{FunctionField/StableDensity.lean} & Stable primes have natural density zero among the primes, given the prime number theorem for one non-trivial quadratic character (\code{stable\_density\_zero}); that input is formalized in the Tau Ceti library and is a hypothesis here & 80 \\
+\code{FunctionField/QuadCharBridge.lean} & The Jacobi symbol $(D/\cdot)$ as a non-principal Dirichlet character mod $4|D|$ for non-square $D$ (\code{exists\_odd\_jacobiSym\_eq\_neg\_one}, \code{chiC\_ne\_one}); the GRH bound for $\psi(x,\chi)$ implies the prime-sum bound for quadratic symbols (\code{quadPrimeSumBound\_of\_grhPsiBound}) & 529 \\
+\code{FunctionField/StableGRH.lean} & The chain assembled: explicit formula, zero count and GRH (three statements quoted from the community Riemann-hypothesis repository) give $\#\{\text{stable } p\le x\}\le C x^{5/6}$ (\code{card\_stable\_le\_rpow\_of\_grh}) & 140 \\
+\code{FunctionField/KornblumSeries.lean} & Two lemmas on complex sequences and formal power series: bounded partial sums from a linear recurrence with non-vanishing symbol; positivity of coefficients from a non-negative logarithmic derivative & 279 \\
+\code{FunctionField/KornblumVonMangoldt.lean} & The von Mangoldt identity over $\mathbb{F}_p[t]$: $n A_n(\varphi)=\sum_k \Psi_k(\varphi)A_{n-k}(\varphi)$ for a multiplicative $\varphi$, without Euler products & 307 \\
+\code{FunctionField/KornblumCharacter.lean} & Characters of $\mathbb{F}_p[t]/Q$: exact cancellation of $A_n(\chi)$ for $n\ge\deg Q$, orthogonality, and $L(1/p,\chi)\ne 0$ for $\chi\ne 1$ (\code{lPoly\_eval\_ne\_zero}) & 455 \\
+\code{FunctionField/Kornblum.lean} & \textbf{Kornblum's theorem}: \code{ffDirichletDensity} proves \code{FFDirichletDensity}; hence the almost-all theorem over $\mathbb{F}_p[t]$ is unconditional (\code{ff\_almost\_all\_genmixed\_density\_unconditional}) & 453 \\
 \code{FunctionField/LinearSeeds.lean} & $\FF_5$: every linear seed $t+a$ is a perpetual tower (period is invariant under subtracting a constant) & 121 \\
 \midrule
 \multicolumn{3}{l}{\emph{Min--max dichotomy and obstruction calculus (new)}} \\
