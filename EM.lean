@@ -209,6 +209,7 @@ import EM.Population.TheoremC
 import EM.Population.FiberTheoremC
 import EM.Population.AlmostAllDensity
 import EM.Population.GrowingRange
+import EM.Population.MeanMissedMass
 import EM.Population.ProfiniteAttractor
 import EM.Population.GrandOrbit
 import EM.Population.GapPrinciple
