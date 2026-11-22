@@ -405,6 +405,28 @@ whether the present map, conjugate to $y^2 + 1/4$, is covered by those
 results, and Proposition~\ref{prop:stable-density-zero} is not claimed as
 new.
 
+\smallskip\noindent\textbf{The integer counterpart.}\enspace Over
+$\mathbb Z$ the family is the set of seeds $m\ge 2$ of the greedy rule.
+Say that a \emph{prime tower} exists if some integer $s$ has all its
+iterates under $x\mapsto x^2-x+1$ prime.  A prime tower exists if and
+only if some seed has an orbit that is eventually a Sylvester tower
+(\lean{EM/Population/TowerClassificationZ.lean}{primeTower\_iff\_exists\_sgrowth\_pos}),
+and the conjecture for all seeds is equivalent to two clauses: no prime
+tower exists, and every orbit that misses a prime coprime to its seed is
+eventually a tower
+(\lean{EM/Population/TowerClassificationZ.lean}{allSeedsMC\_iff\_not\_primeTower\_and\_dichotomy}).
+The statement has the same shape as
+Theorem~\ref{thm:ff-classification} with two differences.  Stability is a
+property of~$p$ and holds for all sequences at once, whereas a prime
+tower is an existential statement about one integer, constrained at each
+smaller prime~$\ell$ by the backward orbit of~$0$ under $x^2-x+1$
+modulo~$\ell$
+(\lean{EM/Population/TowerClassificationZ.lean}{seed\_notMem\_preZero\_of\_primeTower}).
+And the first clause, a theorem over $\FF_p$ for $p=2$, $3$ and
+$p\equiv 1\pmod 3$, is over $\mathbb Z$ an open problem of the same type
+as the infinitude of composite Fermat numbers.  The equivalence captures
+no prime; it records which clauses are open.
+
 \smallskip\noindent\textbf{Status of the dichotomy.}\enspace The
 dichotomy is open for every unstable~$p$, where by
 Theorem~\ref{thm:ff-classification} it \emph{is} the conjecture.  Two

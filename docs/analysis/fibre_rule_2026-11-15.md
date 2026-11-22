@@ -670,3 +670,20 @@ Not done: the effective growing range. The only ineffective step is the Karamata
 `LemmaD.lean` (`window_ap_recip_lower`). With the uniform Mertens bound as stated the range
 would be triple-logarithmic; with a windowed form of the same estimate about
 `(log log X)^{1/10}` (estimate, not checked). About 1,000–1,300 lines of re-proved lemmas.
+
+## 17. The classification over ℤ (`Population/TowerClassificationZ.lean`, 2026-11-22)
+
+The integer counterpart of §11. Family: all seeds `m ≥ 2`. `PrimeTower`: some integer has all
+iterates of `x ↦ x² − x + 1` prime.
+
+- `primeTower_iff_exists_sgrowth_pos`: a prime tower exists iff some orbit is eventually a tower.
+- `allSeedsMC_iff_not_primeTower_and_dichotomy`: (every seed captures every prime coprime to
+  it) ⟺ ¬PrimeTower ∧ `DichotomyConjecture`.
+- `seed_notMem_preZero_of_primeTower`: a tower seed avoids the backward orbit of 0 under Φ₆
+  modulo every smaller prime.
+
+Differences from 𝔽_p: stability is uniform in the sequence, a prime tower is existential in the
+seed (so no analogue of "stable ⟹ dichotomy"); and ¬PrimeTower is open (Fermat-number type),
+whereas ¬Stable p is a theorem for p = 2, 3, p ≡ 1 mod 3. No prime is captured. The file is
+assembly: every ingredient (seeded growth constant, easy direction of the dichotomy, tower
+reduction mod ℓ) was already proved.
