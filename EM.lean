@@ -104,6 +104,7 @@ import EM.FunctionField.ExitLevel
 import EM.FunctionField.SecondGeneration
 import EM.FunctionField.CubicStep
 import EM.FunctionField.DegreeLaw
+import EM.FunctionField.CubicDensity
 import EM.FunctionField.QuadCharBridge
 import EM.FunctionField.StableGRH
 import EM.FunctionField.KornblumSeries

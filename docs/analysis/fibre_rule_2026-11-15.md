@@ -832,3 +832,27 @@ support, dead end #177), the abc statement (gives nothing for `E_n − P_n = 1` 
 squarefree), primitive prime divisors and Lucas sequences (the Euclid numbers are pairwise
 coprime by construction, so every prime divisor is already primitive).
 
+## 23. The cubic row of the degree law (`CubicDensity.lean`, 2026-11-22)
+
+The seed on the `1,1,1` branch is the pair `(p, ω)` — a degree-one prime of `ℤ[ω]` — not `p`:
+the conditions for `ω` and `ω²` differ (`5+ω`, `5+ω²` differ by the two primes above 7).
+
+The pairs `(ω, b)`, `b³ = −6(5+ω)`, are the roots mod `p` of the norm
+`S = (X³+30)² − 6(X³+30) + 36`, so for `p ∉ {2,3,7}`:
+`#roots(S mod p) = 3·#{ω : −6(5+ω) cube}` (`rootCount_sextic`, unconditional).
+
+Quoted: Kronecker's theorem for `S` (mean number of roots mod `p` is 1, analytic density) as
+the hypothesis `KroneckerDensity sextic`. Then the mean of `#{ω : cube}` is `1/3`
+(`cube_density`): one third of the branches `(p, ω)` capture a linear polynomial at stage 3,
+two thirds take the cubic (`ffSeq_three_natDegree_eq_one_iff`).
+
+Method note. "Mean number of roots mod `p` of an irreducible integer polynomial is 1" turns
+any factorization condition that can be written as "this auxiliary polynomial has a root"
+into a density, with one quoted statement per polynomial and no Galois group computation. The
+exit-level law did not need it (quadratic characters, Mathlib's `L(1,χ) ≠ 0`); every row
+below the tower does. Not done: irreducibility of `S` over `ℚ` is not proved in Lean (the
+hypothesis is false for a reducible polynomial, where the mean is the number of irreducible
+factors); the joint law of the conditions at `ω` and `ω²` (three more polynomials: for
+`a·ā = 756`, `a²ā`, and `a` itself); the Kronecker statement was not found in Tau Ceti in
+this form and is not derived from its Chebotarev theorem.
+
