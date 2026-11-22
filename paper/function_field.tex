@@ -403,6 +403,31 @@ This is the stability criterion one generation later, with a cubic
 residue condition at the centre of a rotation of order~$3$ in place of a
 quadratic one at the centre of the reflection $X\mapsto -1-X$.
 
+The parallel is exact.  Write $P=X(X+1)(X-\omega)$; then
+$P=(X+\tfrac{1-\omega}{3})^3+e$ with $e=(1+2\omega)/9$ the critical value
+of~$P$ (\lean{EM/FunctionField/CubicStep.lean}{acc\_eq}), and for every
+monic irreducible $F\in\FF_p[Y]$,
+\[
+  F(P)\ \text{is irreducible}\quad\Longleftrightarrow\quad
+  F(e)\ \text{is not a cube in } \FF_p
+\]
+(\lean{EM/FunctionField/CubicStep.lean}{comp\_acc\_irreducible\_iff}).
+In the tower the inner map is $Y^2+Y$, its critical value is $-1/4$, and
+the level polynomial $T_k(Y^2+Y)$ is irreducible if and only if
+$T_k(-1/4)$ is, up to a unit square, not a square; here the inner map is
+the accumulator at stage~$2$ and the character is cubic.  As long as the
+terms chosen after stage~$2$ are polynomials in~$P$, every factor of a
+Euclid polynomial has the form $F(P)$ and is decided by this criterion.
+Two instances: if stage~$2$ is prime then the Euclid polynomial at
+stage~$3$ is $(P-\omega)(P-\omega^2)$, and the term at stage~$4$ has
+degree~$3$ if neither $e-\omega=(1-7\omega)/9$ nor
+$e-\omega^2=(10+11\omega)/9$ is a cube, and degree~$1$ otherwise
+(\lean{EM/FunctionField/CubicStep.lean}{ffSeq\_four}); and if that term is
+$P-\omega'$, the Euclid polynomial at stage~$4$ is the stage-$2$ cubic
+$Y(Y+1)(Y-\omega')+1$ evaluated at~$P$, irreducible if and only if its
+value at~$e$ is not a cube
+(\lean{EM/FunctionField/CubicStep.lean}{euclid\_four\_irreducible\_iff}).
+
 Without further input the argument gives no rate better than a power of
 $\log\log x$.  With the Riemann hypothesis for Dirichlet $L$-functions
 the rate is a power of~$x$.  The sieve identity is machine-checked with

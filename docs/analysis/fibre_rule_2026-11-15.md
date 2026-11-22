@@ -738,3 +738,57 @@ first `m = 3` step. Density statements for the cubic condition need Hecke charac
 The identity holds for any base `B` (`cubic_identity`): at any stage `n` of any sequence with
 `E_n` irreducible and next term `P_n − ω`, `27 E_{n+2} = (3P_n + 1 − ω)³ + 6(5+ω)`; so if
 `−6(5+ω)` is a cube, stage `n+2` is composite with at least three factors.
+
+## 21. The cubic step: the critical value decides (`CubicStep.lean`, 2026-11-22)
+
+The pattern of §20 is a theorem for `m = 3`. Let `p ≡ 1 (mod 3)`, `P = X(X+1)(X−ω)`.
+
+  `P = (X + (1−ω)/3)³ + e`,  `e = (1+2ω)/9 = √−3 / 9`  (`acc_eq`),
+
+so `e` is the critical value of `P`. For every monic irreducible `F ∈ 𝔽_p[Y]`:
+
+  **`F(P)` is irreducible iff `F(e)` is not a cube in `𝔽_p`**  (`comp_acc_irreducible_iff`,
+  from `comp_cube_irreducible_iff`: the same for `F(X³ + e)`, any `e`).
+
+Proof, same shape as `level_succ_irreducible_iff`: a root `α` of `F(X³+e)` has `α³ = θ − e`
+with `θ` a root of `F`; with `m = deg F`, `α^{p^m} = N^{(p−1)/3} α`, `N = (−1)^m F(e)` the norm
+of `θ − e` (`frob_root`, using `prod_sub_conj`). The Frobenius period of `α` is `m` if
+`N^{(p−1)/3} = 1` and `3m` otherwise, and `N^{(p−1)/3} = 1` iff `N` is a cube
+(`exists_cube_of_pow_eq_one`, cyclicity of `𝔽_p^×`).
+
+Dictionary with the tower:
+
+| | tower | second generation, `p ≡ 1 (3)` |
+|---|---|---|
+| inner map | `Y² + Y` | `P = X(X+1)(X−ω)` |
+| symmetry | reflection `Y ↦ −1−Y` | rotation `X ↦ ω²X − 1` |
+| critical value | `−1/4` | `(1+2ω)/9` |
+| `F(inner)` irreducible iff | `F(−1/4)` non-square (up to `(−4)^{deg}`) | `F((1+2ω)/9)` non-cube |
+
+Differences. (1) The tower iterates one map, so the elements are an orbit `g^k(−1/4)`. Here
+the inner map `P` is applied once and the outer polynomials `F` are the factors, in the
+variable `Y = P`, of the later Euclid polynomials; the elements are values of a growing family
+of polynomials at the single point `e`. (2) For `p ≡ 1 (3)` the tower in `Y` dies at level 1
+(`Y²+Y+1` splits), so the outer factors are never tower levels beyond `Y+1`.
+
+Instances proved:
+
+* stage 2: `F = Y + 1`, `F(e) = 6(5+ω)/27` — recovers §20;
+* stage 3 (stage 2 prime): `E_3 = (P−ω)(P−ω²)` (`euclid_three_factor`); the term at stage 4
+  is `P−ω` or `P−ω²` if neither `e−ω = (1−7ω)/9` nor `e−ω² = (10+11ω)/9` is a cube, and is
+  linear otherwise (`ffSeq_four`). Norms: `N(1−7ω) = 57`, `N(10+11ω) = 111`;
+* stage 4 (term at stage 4 equal to `P−ω'`): `E_4 = c_{ω'}(P)` with
+  `c_{ω'} = Y(Y+1)(Y−ω') + 1` the stage-2 cubic — the second generation again with base `P`
+  — irreducible iff `c_{ω'}(e)` is not a cube (`euclid_four_irreducible_iff`; hypothesis:
+  `c_{ω'}` irreducible, which for `ω' = ω` is "stage 2 is prime").
+
+Scope. The criterion applies while every term chosen after stage 2 is a polynomial in `P`.
+The first linear capture ends that: the accumulator stops being a polynomial in `P` and the
+rotation is lost. So what is proved is the complete description of the *symmetric phase* of a
+sequence, not of the sequence. Whether a new symmetry appears after a linear capture is not
+examined. Not proved: that when `F(e)` is a cube, `F(P)` splits into exactly three factors of
+degree `deg F` (true by the same Frobenius computation; only "reducible" is in Lean). No
+density statement: the three conditions at stages 2–3 are cubic residue conditions on
+`6(5+ω)`, `3(1−7ω)`, `3(10+11ω)` in `ℤ[ω]`, expected independent with density `(2/3)³` for
+"three prime-type stages"; that needs Hecke characters of `ℚ(ω)`.
+
