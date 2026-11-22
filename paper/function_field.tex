@@ -377,6 +377,32 @@ outside a set of primes of analytic density zero, every sequence over
 $\FF_p[X]$ has infinitely many composite stages and the conjecture is
 the dichotomy (Theorem~\ref{thm:ff-classification}).
 
+The same argument gives an equality at each finite level: the primes
+modulo which the tower is irreducible through level~$K$ have analytic
+density exactly $2^{-K}$, so the level at which the tower first breaks
+is geometrically distributed
+(\lean{EM/FunctionField/ExitLevel.lean}{survive\_analytic\_density},
+\lean{EM/FunctionField/ExitLevel.lean}{exit\_analytic\_density}).
+
+\smallskip\noindent\textbf{The first stage off the tower.}\enspace For
+$p\equiv 1\pmod 3$ every sequence begins $X,\ X+1,\ X-\omega$ with
+$\omega$ a primitive cube root of unity, and the roots $0,-1,\omega$ of
+the accumulator are the vertices of an equilateral triangle.  The
+accumulator is therefore a pure cubic about the centre, and
+\[
+  27\bigl(X(X+1)(X-\omega)+1\bigr) \;=\; (3X+1-\omega)^3 + 6(5+\omega)
+\]
+(\lean{EM/FunctionField/SecondGeneration.lean}{cubic\_identity}).  The
+Euclid polynomial at stage~$2$ is irreducible if and only if
+$-6(5+\omega)$ is not a cube in $\FF_p$, and otherwise splits into
+linear factors
+(\lean{EM/FunctionField/SecondGeneration.lean}{euclid\_two\_irreducible\_iff});
+the term at stage~$3$ has degree $3$ or $1$, never~$2$
+(\lean{EM/FunctionField/SecondGeneration.lean}{ffSeq\_three\_natDegree}).
+This is the stability criterion one generation later, with a cubic
+residue condition at the centre of a rotation of order~$3$ in place of a
+quadratic one at the centre of the reflection $X\mapsto -1-X$.
+
 Without further input the argument gives no rate better than a power of
 $\log\log x$.  With the Riemann hypothesis for Dirichlet $L$-functions
 the rate is a power of~$x$.  The sieve identity is machine-checked with

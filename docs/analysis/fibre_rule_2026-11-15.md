@@ -702,3 +702,39 @@ Looked at again for the orbit of 2, with no gain: (i) Jacobi-symbol constraints 
 of E_n from captured primes are consequences of E_n ≡ 1 mod P_n; (ii) E_{n+1} = N(pω − 1) in the
 order of discriminant 1 − 4c_n excludes primes, it does not force one; (iii) "almost all seeds
 are not eventually towers" is provable only for towers starting at a bounded stage.
+
+## 19. The exit level is geometric (`ExitLevel.lean`, 2026-11-22)
+
+`survive_analytic_density K`: the primes modulo which levels `0..K` of the tower are irreducible
+have analytic density exactly `2^{-K}`; `exit_analytic_density`: first reducible level `K+1`
+has density `2^{-(K+1)}`. Unconditional. Same sieve as §18 with equality: the detector is
+`2^K` on the set, `0` off it, except at the finitely many primes dividing some `Δ_k`.
+
+## 20. The second generation (`SecondGeneration.lean`, 2026-11-22)
+
+For `p ≡ 1 (mod 3)` every sequence starts `X, X+1, X−ω`. The roots `0, −1, ω` of the accumulator
+form an equilateral triangle (`y ↦ ω²y − 1` permutes them), so the accumulator is a pure cubic
+about `(ω−1)/3`:
+
+  `27 (X(X+1)(X−ω) + 1) = (3X + 1 − ω)³ + 6(5 + ω)`.
+
+Stage 2 is prime iff `−6(5+ω)` is not a cube in `𝔽_p`; otherwise the Euclid polynomial splits
+into linear factors and a linear polynomial is captured at stage 3. Never linear × quadratic
+(the discriminant of the cubic is the square `(2+6ω)²` in `ℤ[ω]`). `N(5+ω) = 21`, and at `p = 7`
+with `ω = 2` the cubic is `(X+2)³`.
+
+**The pattern.** Tower: accumulator `X(X+1) = (X+½)² − ¼`, symmetric under the reflection
+`X ↦ −1−X`; irreducibility of what follows is decided by the *quadratic* character of values at
+the centre `−½`. Second generation at `p ≡ 1 (3)`: symmetric under a rotation of order 3;
+decided by the *cubic* character of a value at the centre. In general: while the accumulator is
+invariant under an affine map of order `m` and the chosen terms are invariant too, every Euclid
+polynomial is a polynomial in `(X − centre)^m` and (Capelli, norm criterion) the splitting of
+its factors is decided by `m`-th power residue characters of values at the centre. The symmetry
+breaks when the least-degree factor is in an orbit of size `m`; here the breaking of the
+reflection at level 1 created the rotation. Not yet in Lean beyond `m = 2` (tower) and this
+first `m = 3` step. Density statements for the cubic condition need Hecke characters of `ℚ(ω)`
+(cubic reciprocity), which Mathlib's L-function library does not cover.
+
+The identity holds for any base `B` (`cubic_identity`): at any stage `n` of any sequence with
+`E_n` irreducible and next term `P_n − ω`, `27 E_{n+2} = (3P_n + 1 − ω)³ + 6(5+ω)`; so if
+`−6(5+ω)` is a cube, stage `n+2` is composite with at least three factors.
