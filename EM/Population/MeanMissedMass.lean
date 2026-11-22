@@ -20,6 +20,9 @@ never selects.  For a nonnegative weight `w` on the primes put
 * `markov_missed_mass` — the seeds with `mass w m > δ` have natural density `0`.
 * `mean_missed_primeZeta` — the case `w q = q^{-s}`, `s > 1`: the mean over seeds of the
   prime zeta function of the missed set, `∑_{q ∈ missed m} q^{-s}`, tends to `0`.
+* `relMass_le_one`, `mean_relMass_diagonal` — the relative analytic mass
+  `(∑_{q ∈ missed m} q^{-s}) / (∑_{q prime} q^{-s}) ∈ [0, 1]`, and an `s(X) ↓ 1` along which
+  its mean over the seeds `m ≤ X` tends to `0` (diagonal, no rate).
 
 ## Scope — what this is not
 
@@ -171,6 +174,145 @@ theorem mean_missed_primeZeta {s : ℝ} (hs : 1 < s) {ε : ℝ} (hε : 0 < ε) :
     ∃ X₀ : ℕ, ∀ X, X₀ ≤ X →
       ∑ m ∈ Finset.Icc 1 X, mass (fun q => ((q : ℝ) ^ s)⁻¹) m ≤ ε * (X : ℝ) :=
   mean_missed_mass (fun q => by positivity) (Real.summable_nat_rpow_inv.mpr hs) hε
+
+/-! ## The limit `s → 1` along the seeds: relative analytic mass
+
+The relative mass `relMass s m = (∑_{q missed by m} q^{-s}) / (∑_{q prime} q^{-s})` lies in
+`[0, 1]`, and its limit as `s → 1⁺`, when it exists, is the analytic density of the missed set
+of `m`.  Below, `s` tends to `1` *along* `X`: there is `s(X) ↓ 1` such that the mean of
+`relMass (s X)` over the seeds `m ≤ X` tends to `0`.
+
+This is a diagonal consequence of `mean_missed_primeZeta` and carries no rate.  The weight
+`q^{-s}` lives, up to a bounded factor, on the primes `q ≤ exp(1/(s-1))`, so the statement
+has the strength of the growing-range theorem (`GrowingRange.growing_range_density`): control
+of the primes up to an ineffective `R(X) → ∞`.  It is not the statement that the missed set of
+almost every seed has analytic density zero; that needs `s → 1` at fixed seed. -/
+
+/-- A diagonal: if `f k X → 0` as `X → ∞` for every `k`, some `κ X → ∞` has
+`f (κ X) X → 0`. -/
+theorem exists_diagonal (f : ℕ → ℕ → ℝ)
+    (hf : ∀ k : ℕ, ∀ ε : ℝ, 0 < ε → ∃ X₀ : ℕ, ∀ X, X₀ ≤ X → f k X ≤ ε) :
+    ∃ κ : ℕ → ℕ, Filter.Tendsto κ Filter.atTop Filter.atTop ∧
+      ∀ ε : ℝ, 0 < ε → ∃ X₀ : ℕ, ∀ X, X₀ ≤ X → f (κ X) X ≤ ε := by
+  have hk : ∀ k : ℕ, ∃ X₀ : ℕ, ∀ X, X₀ ≤ X → f k X ≤ 1 / ((k : ℝ) + 1) :=
+    fun k => hf k _ (by positivity)
+  choose T hT using hk
+  let T' : ℕ → ℕ := fun k => (Finset.range (k + 1)).sup T ⊔ k
+  have hT'mono : Monotone T' := fun a b h =>
+    sup_le_sup (Finset.sup_mono (Finset.range_mono (Nat.succ_le_succ h))) h
+  have hTT' : ∀ k, T k ≤ T' k := fun k =>
+    le_trans (Finset.le_sup (f := T) (Finset.mem_range.mpr (Nat.lt_succ_self k))) le_sup_left
+  have hkT' : ∀ k, k ≤ T' k := fun k => le_sup_right
+  let κ : ℕ → ℕ := fun X => Nat.findGreatest (fun k => T' k ≤ X) X
+  have hκge : ∀ K X, T' K ≤ X → K ≤ κ X := fun K X h =>
+    Nat.le_findGreatest (le_trans (hkT' K) h) h
+  have hκspec : ∀ X, T' 0 ≤ X → T' (κ X) ≤ X := fun X h =>
+    Nat.findGreatest_spec (P := fun k => T' k ≤ X) (Nat.zero_le X) h
+  refine ⟨κ, Filter.tendsto_atTop_atTop.mpr fun K => ⟨T' K, fun X hX => hκge K X hX⟩, ?_⟩
+  intro ε hε
+  obtain ⟨K, hK⟩ := exists_nat_one_div_lt hε
+  refine ⟨T' K, fun X hX => ?_⟩
+  have h0 : T' 0 ≤ X := le_trans (hT'mono (Nat.zero_le K)) hX
+  have h1 := hT (κ X) X (le_trans (hTT' _) (hκspec X h0))
+  have h2 : (K : ℝ) ≤ (κ X : ℝ) := by exact_mod_cast hκge K X hX
+  calc f (κ X) X ≤ 1 / ((κ X : ℝ) + 1) := h1
+    _ ≤ 1 / ((K : ℝ) + 1) := by
+        apply one_div_le_one_div_of_le (by positivity); linarith
+    _ ≤ ε := hK.le
+
+/-- The prime zeta function at real `s`. -/
+def primeZeta (s : ℝ) : ℝ := ∑' q : ℕ, if q.Prime then ((q : ℝ) ^ s)⁻¹ else 0
+
+/-- The relative analytic mass of the missed set of `m` at `s`. -/
+def relMass (s : ℝ) (m : ℕ) : ℝ := mass (fun q => ((q : ℝ) ^ s)⁻¹) m / primeZeta s
+
+theorem summable_primeZeta {s : ℝ} (hs : 1 < s) :
+    Summable fun q : ℕ => if q.Prime then ((q : ℝ) ^ s)⁻¹ else 0 :=
+  Summable.of_nonneg_of_le (fun q => by split_ifs <;> positivity)
+    (fun q => by split_ifs <;> first | exact le_rfl | positivity)
+    (Real.summable_nat_rpow_inv.mpr hs)
+
+theorem primeZeta_ge {s : ℝ} (hs : 1 < s) : ((2 : ℝ) ^ s)⁻¹ ≤ primeZeta s := by
+  have h := (summable_primeZeta hs).le_tsum 2 (fun q _ => by split_ifs <;> positivity)
+  simpa [primeZeta, Nat.prime_two] using h
+
+theorem primeZeta_pos {s : ℝ} (hs : 1 < s) : 0 < primeZeta s :=
+  lt_of_lt_of_le (by positivity) (primeZeta_ge hs)
+
+theorem relMass_nonneg {s : ℝ} (hs : 1 < s) (m : ℕ) : 0 ≤ relMass s m :=
+  div_nonneg (mass_nonneg (fun q => by positivity) m) (primeZeta_pos hs).le
+
+/-- The relative mass is at most `1`. -/
+theorem relMass_le_one {s : ℝ} (hs : 1 < s) (m : ℕ) : relMass s m ≤ 1 := by
+  rw [relMass, div_le_one (primeZeta_pos hs), mass, primeZeta]
+  exact Summable.tsum_le_tsum
+    (fun q => by
+      by_cases h : Missed m q
+      · simp [h, h.1]
+      · simp only [h, ite_false]; split_ifs <;> positivity)
+    (summable_missed (fun q => by positivity) (Real.summable_nat_rpow_inv.mpr hs) m)
+    (summable_primeZeta hs)
+
+/-- For `1 < s ≤ 2` the relative mass is at most four times the mass. -/
+theorem relMass_le {s : ℝ} (hs : 1 < s) (hs2 : s ≤ 2) (m : ℕ) :
+    relMass s m ≤ 4 * mass (fun q => ((q : ℝ) ^ s)⁻¹) m := by
+  have hm := mass_nonneg (w := fun q : ℕ => ((q : ℝ) ^ s)⁻¹) (fun q => by positivity) m
+  have h4 : (1 : ℝ) / 4 ≤ primeZeta s := by
+    refine le_trans ?_ (primeZeta_ge hs)
+    have : (2 : ℝ) ^ s ≤ 2 ^ (2 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) hs2
+    have h22 : (2 : ℝ) ^ (2 : ℝ) = 4 := by norm_num
+    rw [h22] at this
+    rw [one_div]
+    exact inv_anti₀ (by positivity) this
+  rw [relMass, div_le_iff₀ (primeZeta_pos hs)]
+  nlinarith
+
+/-- **The relative analytic mass along `s(X) → 1`.**  There is `s : ℕ → ℝ` with `s X > 1`
+and `s X → 1` such that the mean over the seeds `m ≤ X` of the relative analytic mass of the
+missed set at `s X` tends to `0`. -/
+theorem mean_relMass_diagonal : ∃ s : ℕ → ℝ, (∀ X, 1 < s X) ∧
+    Filter.Tendsto s Filter.atTop (nhds 1) ∧
+    ∀ ε : ℝ, 0 < ε → ∃ X₀ : ℕ, ∀ X, X₀ ≤ X →
+      ∑ m ∈ Finset.Icc 1 X, relMass (s X) m ≤ ε * (X : ℝ) := by
+  let σ : ℕ → ℝ := fun k => 1 + 1 / ((k : ℝ) + 1)
+  have hσ1 : ∀ k, 1 < σ k := fun k => by
+    have : (0 : ℝ) < 1 / ((k : ℝ) + 1) := by positivity
+    show 1 < 1 + 1 / ((k : ℝ) + 1)
+    linarith
+  have hσ2 : ∀ k, σ k ≤ 2 := fun k => by
+    have : 1 / ((k : ℝ) + 1) ≤ 1 := by
+      rw [div_le_one (by positivity)]; linarith [(Nat.cast_nonneg k : (0 : ℝ) ≤ k)]
+    show 1 + 1 / ((k : ℝ) + 1) ≤ 2
+    linarith
+  have hf : ∀ k : ℕ, ∀ ε : ℝ, 0 < ε → ∃ X₀ : ℕ, ∀ X, X₀ ≤ X →
+      (∑ m ∈ Finset.Icc 1 X, relMass (σ k) m) / (X : ℝ) ≤ ε := by
+    intro k ε hε
+    obtain ⟨X₀, h⟩ := mean_missed_primeZeta (hσ1 k) (show (0 : ℝ) < ε / 4 by positivity)
+    refine ⟨X₀, fun X hX => ?_⟩
+    rcases Nat.eq_zero_or_pos X with rfl | hXpos
+    · simp [hε.le]
+    · have hXr : (0 : ℝ) < X := by exact_mod_cast hXpos
+      rw [div_le_iff₀ hXr]
+      calc ∑ m ∈ Finset.Icc 1 X, relMass (σ k) m
+          ≤ ∑ m ∈ Finset.Icc 1 X, 4 * mass (fun q => ((q : ℝ) ^ σ k)⁻¹) m :=
+            Finset.sum_le_sum fun m _ => relMass_le (hσ1 k) (hσ2 k) m
+        _ = 4 * ∑ m ∈ Finset.Icc 1 X, mass (fun q => ((q : ℝ) ^ σ k)⁻¹) m := by
+            rw [Finset.mul_sum]
+        _ ≤ 4 * (ε / 4 * (X : ℝ)) := by gcongr; exact h X hX
+        _ = ε * (X : ℝ) := by ring
+  obtain ⟨κ, hκ, hdiag⟩ := exists_diagonal _ hf
+  refine ⟨fun X => σ (κ X), fun X => hσ1 _, ?_, ?_⟩
+  · have h0 : Filter.Tendsto σ Filter.atTop (nhds 1) := by
+      have := (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).const_add 1
+      simpa [σ] using this
+    exact h0.comp hκ
+  · intro ε hε
+    obtain ⟨X₀, h⟩ := hdiag ε hε
+    refine ⟨X₀, fun X hX => ?_⟩
+    rcases Nat.eq_zero_or_pos X with rfl | hXpos
+    · simp
+    · have hXr : (0 : ℝ) < X := by exact_mod_cast hXpos
+      exact (div_le_iff₀ hXr).mp (h X hX)
 
 end MeanMissedMass
 
