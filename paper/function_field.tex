@@ -384,6 +384,23 @@ is geometrically distributed
 (\lean{EM/FunctionField/ExitLevel.lean}{survive\_analytic\_density},
 \lean{EM/FunctionField/ExitLevel.lean}{exit\_analytic\_density}).
 
+\smallskip\noindent\textbf{The prime as the seed.}\enspace Over $\ZZ$ the
+family is the set of seeds, and the seed-average theorems of
+\S\ref{sec:seed-average} are densities of sets of seeds.  Over $\FF_p[X]$
+every sequence starts at~$X$, and the first Euclid polynomials are
+reductions of fixed integer polynomials, so the prime~$p$ plays the role of
+the seed: a statement about the shape of the sequence over $\FF_p[X]$
+defines a set of primes, and that set has a density.  The first complete
+instance is the degree law at the exit from the tower.  If the levels
+$T_0,\dots,T_K$ are irreducible modulo~$p$ and $T_{K+1}$ is not, then for
+every sequence over $\FF_p[X]$ the terms at stages $1,\dots,K+1$ have
+degrees $1,2,\dots,2^K$ and the term at stage $K+2$ has degree exactly
+$2^K$: the reducible level is a product of two irreducible polynomials of
+degree $2^K$
+(\lean{EM/FunctionField/DegreeLaw.lean}{exit\_degree},
+\lean{EM/FunctionField/DegreeLaw.lean}{exit\_degree\_law}).  The set of
+such primes has analytic density $2^{-(K+1)}$.
+
 \smallskip\noindent\textbf{The first stage off the tower.}\enspace For
 $p\equiv 1\pmod 3$ every sequence begins $X,\ X+1,\ X-\omega$ with
 $\omega$ a primitive cube root of unity, and the roots $0,-1,\omega$ of
@@ -427,6 +444,25 @@ $P-\omega'$, the Euclid polynomial at stage~$4$ is the stage-$2$ cubic
 $Y(Y+1)(Y-\omega')+1$ evaluated at~$P$, irreducible if and only if its
 value at~$e$ is not a cube
 (\lean{EM/FunctionField/CubicStep.lean}{euclid\_four\_irreducible\_iff}).
+
+On this branch the seed is the pair $(p,\omega)$, and the cubic condition
+has a density as well.  The pairs $(\omega,b)$ modulo~$p$ with
+$\omega^2+\omega+1=0$ and $b^3=-6(5+\omega)$ are the roots of the sextic
+$S=(X^3+30)^2-6(X^3+30)+36$: for $p\ne2,3,7$ the number of roots of $S$
+modulo~$p$ is three times the number of~$\omega$ for which $-6(5+\omega)$
+is a cube
+(\lean{EM/FunctionField/CubicDensity.lean}{rootCount\_sextic}).
+Kronecker's theorem says that an irreducible integer polynomial has on
+average one root modulo~$p$.  Taking that statement for~$S$ as a
+hypothesis, in analytic form
+(\lean{EM/FunctionField/CubicDensity.lean}{KroneckerDensity}), the number
+of~$\omega$ modulo~$p$ with $-6(5+\omega)$ a cube has mean $1/3$ over the
+primes (\lean{EM/FunctionField/CubicDensity.lean}{cube\_density}); and the
+term at stage~$3$ has degree~$1$ exactly when the condition holds for the
+$\omega$ chosen at stage~$2$, degree~$3$ otherwise
+(\lean{EM/FunctionField/CubicDensity.lean}{ffSeq\_three\_natDegree\_eq\_one\_iff}).
+The hypothesis is not proved here, and neither is the irreducibility of
+$S$ over~$\mathbb{Q}$, on which Kronecker's theorem depends.
 
 Without further input the argument gives no rate better than a power of
 $\log\log x$.  With the Riemann hypothesis for Dirichlet $L$-functions

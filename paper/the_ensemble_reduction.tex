@@ -735,6 +735,103 @@ say anything about the orbit of~$2$: a density-one statement is silent
 about any single trajectory, and Dead End~\#90 stands.
 \end{remark}
 
+\paragraph{The size of the next multiplier: the scale law and records.}
+\label{sec:scale-law}
+The seed-average law above concerns the residue of the multipliers.  The
+same machinery describes their size.  Write $P^-(n)$ for the least prime
+factor of~$n$.  On the integers the law is classical: among the integers
+with $P^-(n)>y$, the proportion with $P^-(n)>z$ is exactly the Euler
+product $\prod_{y<r\le z}(1-1/r)$
+(\lean{EM/Population/ScaleLaw.lean}{tendsto\_rough\_ratio}), and by
+Mertens' third theorem this is
+\[
+  \frac{\log y}{\log z} + O\!\Bigl(\frac{1}{\log y}\Bigr)
+  \qquad (y_0 \le y \le z)
+\]
+(\lean{EM/Population/ScaleLaw.lean}{scale\_law}).  So for a $y$-rough
+integer the quantity $\log y/\log P^-(n)$ is uniform on $(0,1)$, whatever
+$y$ is: in logarithmic scale the least prime factor has a scale-invariant
+law with tail $1/t$, and no mean
+(\lean{EM/Population/ScaleLaw.lean}{mean\_log\_minFac\_unbounded}: the
+average of $\log P^-(m)$ over $m\le X$ is unbounded).  Mertens' theorems
+are not in Mathlib; the two statements used, the third theorem with error
+$O(1/\log^2 x)$ and the two-sided bound
+$c_1/\log y\le\prod_{p\le y}(1-1/p)\le c_2/\log y$, are taken as
+hypotheses, in the form in which they are proved in the Tau Ceti library
+(file \texttt{TauCeti/NumberTheory/Mertens.lean}), and are not re-proved
+here (\lean{EM/Population/ScaleLaw.lean}{MertensThird},
+\lean{EM/Population/ScaleLaw.lean}{MertensProductBounds}).
+
+The selection law (Theorem~\ref{thm:selection-law}) carries this to seeds.
+The box of a prime~$r$ records only the steps at which $r$ was exposed,
+that is the steps whose multiplier exceeds~$r$.  Let $M$ bound the first
+$n$ multipliers of a type cell.  Then every prime $r>M$ not dividing the
+seed has a full box and $\rho_r(n)=1/(r-1)$, whatever the history
+(\lean{EM/Population/SeedScaleLaw.lean}{rho\_above}), so the survival
+product factors as
+\[
+  S(y) \;=\; S(M)\cdot
+  \prod_{\substack{M<r\le y,\ r\ne q\\ r\,\nmid\, m}}
+     \Bigl(1-\frac{1}{r-1}\Bigr)
+  \qquad (M \le y)
+\]
+(\lean{EM/Population/SeedScaleLaw.lean}{survival\_tail}; counting form
+\lean{EM/Population/SeedScaleLaw.lean}{cell\_tail\_count}), and under
+Mertens' third theorem the product over all primes of $(M,y]$ is
+$\log M/\log y+O(1/\log M)$
+(\lean{EM/Population/SeedScaleLaw.lean}{gap\_scale\_law}).  The prime $q$
+and the divisors of the seed only remove factors, which makes the next
+multiplier larger
+(\lean{EM/Population/SeedScaleLaw.lean}{survival\_tail\_ge}).  In words:
+\emph{above the running maximum the history drops out}.  Given that the
+next multiplier of a seed of the cell is a new record, it is drawn from
+the scale law of a random $M$-rough integer.
+
+The weight of that regime is $S(M)$, the proportion of seeds of the cell
+whose next multiplier is a record, and it does depend on the history.  A
+prime $r\le M$ contributes a trivial factor to $S(M)$ in two cases only:
+$r$ is in the bag, or the cofactor residue has returned to a value visited
+at an exposed step, and then $r$ divides
+$\tilde p_j\tilde p_{j+1}\cdots\tilde p_{n-1}-1$ for some $j<n$
+(\lean{EM/Population/RecordProbability.lean}{dvd\_returnNumber\_of\_old}).
+All such primes divide the explicit integer
+$D=m\,\tilde c_n\prod_{j<n}(\tilde p_j\cdots\tilde p_{n-1}-1)$, and every
+other prime has $\rho_r\ge 1/(r-1)$ because a box is never larger than the
+unit group.  Hence
+\[
+  S(M)\cdot\prod_{\substack{r\le M\\ r=q\ \text{or}\ r\mid D}}
+     \Bigl(1-\frac1r\Bigr)
+  \;\le\; \prod_{r\le M}\Bigl(1-\frac1r\Bigr)
+  \;\le\; \frac{c_2}{\log M}
+\]
+(\lean{EM/Population/RecordProbability.lean}{record\_le\_cfun},
+unconditional; \lean{EM/Population/RecordProbability.lean}{record\_le\_log},
+under the two-sided Mertens bound).  So in every cell a new record has
+probability at most $(D'/\varphi(D'))\,c_2/\log M$, where $D'$ is the part
+of $qD$ supported on the primes $\le M$.  The factor $D'/\varphi(D')$ is
+not bounded here, and no matching lower bound of order $1/\log M$ is
+proved; the lower bounds of step~4 hold at good steps only.  These are
+statements about seed populations in the $q$-free dynamics, and they say
+nothing about the orbit of~$2$.
+
+\paragraph{The mean missed mass.}
+Theorem~\ref{thm:almost-all-capture} is a statement for each prime~$q$
+separately.  Summing it against a weight gives a first statement about the
+whole missed set of a seed.  For a nonnegative summable weight~$w$ on the
+primes let $\mu_w(m)=\sum w(q)$ over the primes $q\nmid m$ that the
+generalized sequence of~$m$ never captures.  Then the mean of $\mu_w$ over
+$m\le X$ tends to~$0$
+(\lean{EM/Population/MeanMissedMass.lean}{mean\_missed\_mass}), and by
+Markov's inequality the seeds with $\mu_w(m)>\delta$ have density zero
+(\lean{EM/Population/MeanMissedMass.lean}{markov\_missed\_mass}).  For
+$w(q)=q^{-s}$ normalized by the prime zeta function this holds along some
+$s(X)\to1^+$, obtained by a diagonal argument and with no rate
+(\lean{EM/Population/MeanMissedMass.lean}{mean\_relMass\_diagonal}).
+Summability is essential: the weight $1/q$, which would give analytic
+density zero of the missed set for almost all seeds, is out of reach, for
+the same reason that simultaneity in~$q$ is
+(\S\ref{sec:profinite}).
+
 \subsection{The Profinite Packaging: Simultaneity Is Additivity}
 \label{sec:profinite}
 

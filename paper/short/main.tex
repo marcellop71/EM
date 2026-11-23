@@ -831,6 +831,55 @@ factor~$2$ absorbing the incomplete final block.  The truncation~$Y$ appears
 in neither the hypotheses nor the conclusion of
 Theorem~\ref{thm:almost-all-capture}.
 
+\subsection{The size of the next multiplier}
+\label{sec:scale-law}
+
+The same counting describes the size of the multipliers.  Write $P^-(n)$
+for the least prime factor.  Among the integers with $P^-(n)>y$ the
+proportion with $P^-(n)>z$ is $\prod_{y<r\le z}(1-1/r)$
+(\lean{EM/Population/ScaleLaw.lean}{tendsto\_rough\_ratio}), which by
+Mertens' third theorem is $\log y/\log z+O(1/\log y)$
+(\lean{EM/Population/ScaleLaw.lean}{scale\_law}): for a $y$-rough integer,
+$\log y/\log P^-(n)$ is uniform on $(0,1)$ for every~$y$, a scale-invariant
+law with no mean
+(\lean{EM/Population/ScaleLaw.lean}{mean\_log\_minFac\_unbounded}).  The
+Mertens statements are hypotheses here, in the form proved in the Tau Ceti
+library (\texttt{TauCeti/NumberTheory/Mertens.lean}); they are not in
+Mathlib.
+
+Through the selection law this passes to seeds.  Let $M$ bound the first
+$n$ multipliers of a type cell.  A prime $r>M$ was never exposed, so its
+box is full and its local density is $1/(r-1)$ whatever the history
+(\lean{EM/Population/SeedScaleLaw.lean}{rho\_above}).  The survival product
+therefore factors, $S(y)=S(M)\prod(1-1/(r-1))$ over the primes $M<r\le y$,
+$r\ne q$, $r\nmid m$
+(\lean{EM/Population/SeedScaleLaw.lean}{survival\_tail}), and the product
+over all primes of $(M,y]$ is $\log M/\log y+O(1/\log M)$
+(\lean{EM/Population/SeedScaleLaw.lean}{gap\_scale\_law}).  Above the
+running maximum the history drops out: a new record is drawn from the
+scale law of a random $M$-rough integer.  The weight of that regime is
+$S(M)$.  The primes $r\le M$ with a trivial factor in $S(M)$ all divide
+$D=m\,\tilde c_n\prod_{j<n}(\tilde p_j\cdots\tilde p_{n-1}-1)$,
+where $\tilde p_0,\dots,\tilde p_{n-1}$ are the multipliers of the cell and
+$\tilde c_n$ is their product
+(\lean{EM/Population/RecordProbability.lean}{dvd\_returnNumber\_of\_old}),
+and
+\[
+  S(M)\prod_{\substack{r\le M\\ r=q\ \text{or}\ r\mid D}}\Bigl(1-\frac1r\Bigr)
+  \;\le\;\prod_{r\le M}\Bigl(1-\frac1r\Bigr)\;\le\;\frac{c_2}{\log M}
+\]
+(\lean{EM/Population/RecordProbability.lean}{record\_le\_cfun},
+\lean{EM/Population/RecordProbability.lean}{record\_le\_log}).  No matching
+lower bound is proved, and the factor from the primes dividing~$D$ is not
+bounded.  These are population statements; they say nothing about the
+orbit of~$2$.
+
+Summed over~$q$ against a nonnegative summable weight, the capture theorem
+gives that the mean over $m\le X$ of the weight of the primes missed by the
+seed~$m$ tends to~$0$
+(\lean{EM/Population/MeanMissedMass.lean}{mean\_missed\_mass}).  The weight
+$1/q$ is out of reach.
+
 \subsection{Almost-all hitting in the factor tree}
 
 Replace the deterministic choice by the \emph{factor tree}: from a
