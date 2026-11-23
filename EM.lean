@@ -203,6 +203,7 @@ import EM.Population.SeedCapture
 import EM.Population.SeedTypes
 import EM.Population.SelectionLaw
 import EM.Population.SeedScaleLaw
+import EM.Population.RecordProbability
 import EM.Population.SylvesterTower
 import EM.Population.SpectralConspiracy
 import EM.Population.SquareTree
