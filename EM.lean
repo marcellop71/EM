@@ -180,6 +180,7 @@ import EM.Population.BackwardOrbit
 import EM.Population.CompositeFloor
 import EM.Population.DefectTelescope
 import EM.Population.HeadDomination
+import EM.Population.ScaleLaw
 import EM.Population.SeededGrowth
 import EM.Population.BagConditionedLaw
 import EM.Population.GrowthDensity
